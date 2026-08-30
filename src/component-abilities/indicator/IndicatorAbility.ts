@@ -21,7 +21,6 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS } from '@/events';
 import type { FloatDecl, IndicatorOptions, IndicatorType } from '@/component-core';
 
@@ -121,12 +120,9 @@ export const IndicatorAbility = {
     updateIndicator(data: Record<string, any>): void {
         const overlayKey = `${this.id}:indicator`;
         this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`)
-                .withType(OVERLAY_ACTIONS.CHANGE)
-                .withSource(overlayKey)
-                .withData({ component: { id: this.id }, data })
-                .build()
+            `overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`,
+            { component: { id: this.id }, data },
+            { type: OVERLAY_ACTIONS.CHANGE, source: overlayKey }
         );
     },
 

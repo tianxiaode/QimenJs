@@ -1,6 +1,5 @@
 import { TOAST_TEMPLATE } from './toast-tpl';
 import { FloatingComponent } from '../overlay';
-import { EventContextBuilder } from '@/context';
 import type { TemplateDecl, ToastType } from '../types';
 import type { Definitions } from '@/composable';
 import './toast.css';
@@ -43,7 +42,7 @@ export class Toast extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.setStyle('root', 'pointerEvents', 'auto');
+        this.setStyles({ pointerEvents: 'auto' });
         const toastType: ToastType = this.toastType ?? 'info';
         this.addCls('root', `q-toast--${toastType}`);
         this.addCls('icon', `q-toast__icon--${toastType}`); // 添加样式类
@@ -80,14 +79,7 @@ export class Toast extends FloatingComponent {
             this.timerId = null;
         }
 
-        this.componentEmit(
-            EventContextBuilder.create()
-                .withEvent('closed')
-                .withType('closed')
-                .withSource(this.eventKey ?? 'toast')
-                .withData({})
-                .build()
-        );
+        this.componentEmit('closed', {}, { source: this.eventKey ?? 'toast' });
 
         await this.playLeave();
 

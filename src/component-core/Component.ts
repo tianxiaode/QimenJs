@@ -117,21 +117,6 @@ export class Component extends ComposableBase {
     }
 
     /**
-     * 获取组件根元素在视口中的位置和尺寸
-     *
-     * 等价于 `this.el.getBoundingClientRect()`，用于位置计算。
-     *
-     * @example
-     * ```ts
-     * const rect = this.getRect();
-     * // { x, y, width, height, top, right, bottom, left }
-     * ```
-     */
-    getRect(): DOMRect {
-        return this.el.getBoundingClientRect();
-    }
-
-    /**
      * 自定义事件数据 — body 中定义，编译时挂原型
      *
      * 与 defaultEventData 分离：defaultEventData 是类继承链，
@@ -145,7 +130,11 @@ export class Component extends ComposableBase {
         super();
         this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
         this.hasParent = options?.hasParent ?? false;
+        this.container = options?.container;
         delete options?.id;
+        delete options?.hasParent;
+        delete options?.container;
+
         this._initializing = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));
         this.onBeforeInit();

@@ -17,7 +17,6 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { EventContextBuilder } from '@/context';
 import { OVERLAY_ACTIONS, OverlayEventBus } from '@/events';
 import { getId } from '@/utils/string';
 import { FLOAT_CACHE_KEY } from '../../constants';
@@ -61,36 +60,27 @@ export const FloatAbility: AbilityDefinition = {
     _emitAction(key: string, action: string): void {
         const overlayKey = `${this.id}:${key}`;
         this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${action}`)
-                .withType(action)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
+            `overlay:${overlayKey}:${action}`,
+            { component: this },
+            { type: action, source: overlayKey }
         );
     },
 
     _emitControl(action: string, key: string): void {
         const overlayKey = `${this.id}:${key}`;
         this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${action}`)
-                .withType(action)
-                .withSource(overlayKey)
-                .withData({ component: this })
-                .build()
+            `overlay:${overlayKey}:${action}`,
+            { component: this },
+            { type: action, source: overlayKey }
         );
     },
 
     _emitChange(key: string, data: Record<string, any>): void {
         const overlayKey = `${this.id}:${key}`;
         this.overlayEmit(
-            EventContextBuilder.create()
-                .withEvent(`overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`)
-                .withType(OVERLAY_ACTIONS.CHANGE)
-                .withSource(overlayKey)
-                .withData({ component: { id: this.id }, data })
-                .build()
+            `overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`,
+            { component: { id: this.id }, data },
+            { type: OVERLAY_ACTIONS.CHANGE, source: overlayKey }
         );
     },
 

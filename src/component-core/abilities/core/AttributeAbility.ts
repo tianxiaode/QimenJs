@@ -1,60 +1,54 @@
-import { AbilityDefinition } from '@/composable';
+import { AbilityDefinition, TARGET_TO_OPTION_MAP } from '@/composable';
 
 /**
- * 节点属性操作（走脏追踪）
+ * 节点属性操作（直接操作 DOM）
  *
- * 所有属性变更都通过 _markNodeDirty 触发脏追踪
+ * 读取方法返回单个值；设置方法为对象模式，nodeName 后置，默认 'root'
  */
 export const AttributeAbility: AbilityDefinition = {
-    getAttribute(nodeName: string, attributeName: string): any {
-        return this._getNodeAttribute(nodeName, attributeName);
+    getAttribute(attributeName: string, nodeName: string = 'root'): any {
+        return this.getNodeEl(nodeName)?.getAttribute(attributeName);
     },
 
-    setAttribute(nodeName: string, attributeName: string, value: any): void {
-        this._markNodeAttributeDirty(nodeName, { [attributeName]: value });
+    getStyle(styleName: string, nodeName: string = 'root'): string {
+        return this.getNodeEl(nodeName)?.style?.[styleName] || '';
     },
 
-    setAttributes(nodeName: string, attributes: Record<string, any>): void {
-        this._markNodeAttributeDirty(nodeName, attributes);
+    setAttributes(attributes: Record<string, any>, nodeName: string = 'root'): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+        for (const [key, value] of Object.entries(attributes)) {
+            el.setAttribute(key, value);
+        }
     },
 
-    removeAttribute(nodeName: string, attribute: string): void {
-        this._markNodeAttributeDirty(nodeName, { [attribute]: null });
+    removeAttributes(attributes: string[], nodeName: string = 'root'): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+        for (const attr of attributes) {
+            el.removeAttribute(attr);
+        }
     },
 
-    removeAttributes(nodeName: string, attributes: string[]): void {
-        const removes = attributes.reduce((acc, attr) => {
-            acc[attr] = null;
-            return acc;
-        }, {} as any);
-        this._markNodeAttributeDirty(nodeName, removes);
+    setStyles(styles: Record<string, string>, nodeName: string = 'root'): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+        const style = el.style as any;
+        for (const [key, value] of Object.entries(styles)) {
+            style[key] = value;
+        }
     },
 
-    getStyle(nodeName: string, styleName: string): string {
-        return this._getNodeStyle(nodeName, styleName) || '';
+    removeStyles(styles: string[], nodeName: string = 'root'): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+        const style = el.style as any;
+        for (const key of styles) {
+            style[key] = '';
+        }
     },
 
-    setStyle(nodeName: string, styleName: string, value: string): void {
-        this._markNodeStyleDirty(nodeName, { [styleName]: value });
-    },
-
-    setStyles(nodeName: string, styles: Record<string, string>): void {
-        this._markNodeStyleDirty(nodeName, styles);
-    },
-
-    removeStyle(nodeName: string, style: string): void {
-        this._markNodeStyleDirty(nodeName, { [style]: null });
-    },
-
-    removeStyles(nodeName: string, styles: string[]): void {
-        const removes = styles.reduce((acc, style) => {
-            acc[style] = null;
-            return acc;
-        }, {} as any);
-        this._markNodeStyleDirty(nodeName, removes);
-    },
-
-    getCls(nodeName: string): DOMTokenList {
+    getCls(nodeName: string = 'root'): DOMTokenList {
         return this.getNodeEl(nodeName).classList;
     },
 
@@ -63,20 +57,20 @@ export const AttributeAbility: AbilityDefinition = {
         return tokens.filter(Boolean);
     },
 
-    hasCls(nodeName: string, cls: string | string[]): boolean {
+    hasCls(cls: string | string[], nodeName: string = 'root'): boolean {
         const clsList = this.getCls(nodeName);
         return this._toClsTokens(cls).every((token: string) => clsList.contains(token));
     },
 
-    addCls(nodeName: string, cls: string | string[]): void {
+    addCls(cls: string | string[], nodeName: string = 'root'): void {
         this.getCls(nodeName).add(...this._toClsTokens(cls));
     },
 
-    removeCls(nodeName: string, cls: string | string[]): void {
+    removeCls(cls: string | string[], nodeName: string = 'root'): void {
         this.getCls(nodeName).remove(...this._toClsTokens(cls));
     },
 
-    toggleCls(nodeName: string, cls: string | string[], force?: boolean): void {
+    toggleCls(cls: string | string[], nodeName: string = 'root', force?: boolean): void {
         const clsList = this.getCls(nodeName);
         for (const token of this._toClsTokens(cls)) {
             clsList.toggle(token, force);
@@ -84,93 +78,19 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     /**
-     * 标记节点为脏（自动分类）
+     * 获取组件根元素在视口中的位置和尺寸
+     *
+     * 等价于 `this.el.getBoundingClientRect()`，用于位置计算。
      */
-    _markNodeAttributeDirty(nodeName: string, attributes: Record<string, any>): void {
-        if (!attributes) return;
-        let dirtyAttributes = this._dirtyAttributes;
-        if (!dirtyAttributes) {
-            dirtyAttributes = {};
-            this._dirtyAttributes = dirtyAttributes;
-        }
-        if (!dirtyAttributes[nodeName]) {
-            dirtyAttributes[nodeName] = {};
-        }
-        for (const [key, value] of Object.entries(attributes)) {
-            dirtyAttributes[nodeName][key] = value;
-        }
-        this.debounce('attributeAbility:_flushNodes', () => this._flushNodes(), 100)();
+    getRect(): DOMRect {
+        return this.el!.getBoundingClientRect();
     },
 
-    _markNodeStyleDirty(nodeName: string, styles: Record<string, any>): void {
-        if (!styles) return;
-        let dirtyStyles = this._dirtyStyles;
-        if (!dirtyStyles) {
-            dirtyStyles = {};
-            this._dirtyStyles = dirtyStyles;
-        }
-        if (!dirtyStyles[nodeName]) {
-            dirtyStyles[nodeName] = {};
-        }
-        for (const [key, value] of Object.entries(styles)) {
-            dirtyStyles[nodeName][key] = value;
-        }
-        this.debounce('attributeAbility:_flushNodes', () => this._flushNodes(), 100)();
-    },
-
-    _getNodeAttribute(nodeName: string, attrubuteName: string): Record<string, any> {
-        const dirtyAttributes = this._dirtyAttributes;
-        if (
-            dirtyAttributes &&
-            dirtyAttributes[nodeName] &&
-            dirtyAttributes[nodeName][attrubuteName] !== undefined
-        ) {
-            return dirtyAttributes[nodeName][attrubuteName];
-        }
-        return this.getNodeEl(nodeName)?.getAttribute(attrubuteName);
-    },
-
-    _getNodeStyle(nodeName: string, styleName: string): Record<string, any> {
-        const dirtyStyles = this._dirtyStyles;
-        if (
-            dirtyStyles &&
-            dirtyStyles[nodeName] &&
-            dirtyStyles[nodeName][styleName] !== undefined
-        ) {
-            return dirtyStyles[nodeName][styleName];
-        }
-        return this.getNodeEl(nodeName)?.getStyle(styleName);
-    },
-
-    _flushNodeAttribute(nodeName: string, el: HTMLElement): void {
-        const dirtyAttributes = this._dirtyAttributes;
-        if (dirtyAttributes && dirtyAttributes[nodeName]) {
-            for (const [key, value] of Object.entries(dirtyAttributes[nodeName])) {
-                el.setAttribute(key, value as string);
-            }
-            delete dirtyAttributes[nodeName];
-        }
-    },
-
-    _flushNodeStyle(nodeName: string, el: HTMLElement): void {
-        const dirtyStyles = this._dirtyStyles;
-        if (dirtyStyles && dirtyStyles[nodeName]) {
-            const style = el.style as any;
-            if (!style) return;
-            for (const [key, value] of Object.entries(dirtyStyles[nodeName])) {
-                style[key] = value;
-            }
-            delete dirtyStyles[nodeName];
-        }
-    },
-
-    _flushNodes() {
-        const names = this.getNodeNames();
-        for (const name of names) {
-            const el = this.getNodeEl(name);
-            if (!el) continue;
-            this._flushNodeAttribute(name, el);
-            this._flushNodeStyle(name, el);
+    _applyContentToElement(target: string, text: string, to: string): void {
+        const el = this.getNodeEl(target);
+        const toMap = TARGET_TO_OPTION_MAP as any;
+        if (to && to in toMap) {
+            el[toMap[to]] = text;
         }
     },
 } satisfies AbilityDefinition;

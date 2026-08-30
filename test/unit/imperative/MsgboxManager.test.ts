@@ -78,6 +78,10 @@ jest.mock('@/context', () => {
             ctx._source = s;
             return ctx;
         },
+        withSourceType(st: string) {
+            ctx._sourceType = st;
+            return ctx;
+        },
         withData(d: any) {
             ctx._data = d;
             return ctx;

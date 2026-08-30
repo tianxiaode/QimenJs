@@ -21,11 +21,19 @@ export interface IComposableBase {
     logger: ILogger;
     getData(key: string): any;
     setData(key: string, value: any): void;
+    setI18n(optionKey: string, value: string): void;
     get targetToMap(): Map<string, TargetToOptionDefinition>;
     get i18nOptions(): string[];
     get optionsKeys(): Set<string>;
     get propertyKeys(): Set<string>;
-    _onOptionChange(_key: string, _value: any, _old: any, _definition: any): void;
+    _onOptionChange(
+        _key: string,
+        _value: any,
+        _old: any,
+        _definition: TargetToOptionDefinition
+    ): void;
+    abilityState(key: string, creator?: () => any): any | undefined;
+    setAbilityState(key: string, value: any): void;
     /**
      * 注册清理回调，dispose 时逆序执行
      *

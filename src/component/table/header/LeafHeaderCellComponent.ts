@@ -72,17 +72,9 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         this.sortState = next;
 
         if (next !== 'none') {
-            this.entityEmit({
-                source: this._colName,
-                type: 'sort',
-                data: { direction: next as SortDirection },
-            } as any);
+            this.entityEmit('sort', { direction: next as SortDirection }, { source: this._colName });
         } else {
-            this.entityEmit({
-                source: this._colName,
-                type: 'sort',
-                data: { direction: null },
-            } as any);
+            this.entityEmit('sort', { direction: null }, { source: this._colName });
         }
 
         this.emit('sortChange', {

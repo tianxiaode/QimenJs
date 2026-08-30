@@ -1,5 +1,3 @@
-import { IComponentCore } from './component';
-
 /**
  * 隐藏模式 — 控制 hidden 时的 DOM 表现
  *
@@ -109,26 +107,10 @@ export interface LoadingOptions {
     mask?: boolean | string;
 }
 
-export type I18nCustomOption = (target: HTMLElement | IComponentCore, t: any) => void;
-
-/**
- * i18n 声明
- */
-export interface I18nOptions {
-    text?: string;
-    hint?: string;
-    placeholder?: string;
-    value?: string;
-    title?: string;
-    label?: string;
-    description?: string;
-    custom?: I18nCustomOption;
-}
-
 /**
  * 箭头配置
  */
-export interface ArrowConfig {
+export interface ArrowOption {
     /** 是否显示箭头，默认 true */
     arrow?: boolean;
     /** CSS 变量覆盖，如 { '--q-arrow-color': '#fff', '--q-arrow-size': '6px' } */
@@ -136,8 +118,3 @@ export interface ArrowConfig {
     /** 箭头节点名称，默认 'arrow'（对应模板中 name 的 name 部分） */
     arrowName?: string;
 }
-
-/**
- * 权限声明
- */
-export type PermissionOptions = string | string[];

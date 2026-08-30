@@ -1,12 +1,5 @@
-export { EventAbility } from './EventAbility';
+export { EventsAbility } from './EventsAbility';
 export { DomEventsAbility } from './DomEventsAbility';
-export { ComponentEventBusAbility } from './ComponentEventBusAbility';
-export { EntityEventBusAbility } from './EntityEventBusAbility';
-export { OverlayEventBusAbility } from './OverlayEventBusAbility';
-export { DragEventBusAbility } from './DragEventBusAbility';
-export { RouteEventBusAbility } from './RouteEventBusAbility';
-export { SystemEventBusAbility } from './SystemEventBusAbility';
-export { FileEventBusAbility } from './FileEventBusAbility';
 export { DomainAbility } from './DomainAbility';
 export { SystemAbility } from './SystemAbility';
 export { DebounceAbility } from './DebounceAbility';

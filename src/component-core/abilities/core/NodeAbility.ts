@@ -40,7 +40,7 @@ export const NodeAbility: AbilityDefinition = {
      * ```
      */
     getNode(nodeName: string): NodeMeta | undefined {
-        return this._tplCache.nodes[nodeName];
+        return this._getCache().nodes[nodeName];
     },
 
     getNodeEl(nodeName: string): HTMLElement | undefined {
@@ -70,15 +70,15 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     _getNodeIndex(nodeName: string): number[] {
-        return this._tplCache.indexs[nodeName] || [];
+        return this._getCache().indexs[nodeName] || [];
     },
 
     getNodeNames(): string[] {
-        return this._tplCache.names;
+        return this._getCache().names;
     },
 
     getChildComponentNames(): string[] {
-        return this._tplCache.childComponents || [];
+        return this._getCache().childComponents || [];
     },
 
     /**
@@ -157,5 +157,13 @@ export const NodeAbility: AbilityDefinition = {
         this._setComponent(nodeName, newChild);
 
         return newChild;
+    },
+
+    _getCache() {
+        return this.getdata('__tplCache');
+    },
+
+    _setCache(cache: any) {
+        this.setdata('__tplCache', cache);
     },
 } satisfies AbilityDefinition;

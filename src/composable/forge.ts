@@ -13,7 +13,6 @@ export const DATA_MAP_SYMBOL = Symbol('data-map-symbol');
 export const DATA_SYMBOL = Symbol('data-symbol');
 const BUILTIN_KEYS = new Set([
     'logger',
-    'abilityStatesMap',
     'cleanups',
     'constructor',
     'getData',
@@ -118,7 +117,6 @@ export function withAbilities(target: any, abilities: readonly AbilityDefinition
 // forge.ts - withDefinitions 增强
 // ============================================================
 
-// ... 原有代码保持不变 ...
 export function withDefinitions(target: any, definitions: Definitions): void {
     const proto = target.prototype;
 
@@ -147,23 +145,36 @@ export function withDefinitions(target: any, definitions: Definitions): void {
             if (BUILTIN_KEYS.has(key)) continue;
 
             dataMap.optionsKeys.add(key);
-            dataMap.defaultValues[key] = def.default;
+            dataMap.defaultValues[key] = def;
             defineGetterSetter(proto, key);
         }
     }
 
     // ============================================================
-    // 2. 处理 property → 直接复制到组件实例
+    // 2. 处理 fields/privateFields → 直接复制到组件实例
     // ============================================================
     if (definitions.fields) {
         applyProperties(proto, definitions.fields, dataMap);
     }
 
-    if (definitions.privateField) {
-        applyProperties(proto, definitions.privateField, dataMap, true);
+    if (definitions.privateFields) {
+        applyProperties(proto, definitions.privateFields, dataMap, true);
+    }
+
+    // ============================================================
+    // 3. 处理方法 → 直接复制到原型
+    // ============================================================
+    for (const [key, value] of Object.entries(definitions)) {
+        if (key === 'options' || key === 'targetToOptions') continue;
+        if (key === 'fields' || key === 'privateFields') continue;
+        if (key === 'constructor') continue;
+        if (BUILTIN_KEYS.has(key)) continue;
+
+        if (typeof value === 'function') {
+            applyFunction(key, value, proto);
+        }
     }
 }
-// ... 原有代码保持不变 ...
 
 function applyFunction(key: string, value: any, proto: any) {
     const isInternal = typeof key === 'string' && key.startsWith('_');
@@ -213,13 +224,21 @@ function defineGetterSetter(proto: any, key: string) {
 function initConstructorProperties(proto: any) {
     const ctor = proto.constructor;
     const parent = Object.getPrototypeOf(ctor);
-    ctor[DATA_MAP_SYMBOL] = {
-        defaultValues: { ...parent[DATA_MAP_SYMBOL].defaultValues },
-        targetToMap: new Map<string, any>(parent[DATA_MAP_SYMBOL].targetToMap),
+    const parentData = parent[DATA_MAP_SYMBOL] ?? {
+        defaultValues: {},
+        targetToMap: new Map(),
         i18nOptions: [],
-        optionsKeys: new Set<string>(parent[DATA_MAP_SYMBOL].optionsKeys),
-        propertyKeys: new Set<string>(parent[DATA_MAP_SYMBOL].propertyKeys), // 3. 添加到 propertyKeys
-        propertyClearKeys: [...parent[DATA_MAP_SYMBOL].propertyClearKeys],
+        optionsKeys: new Set<string>(),
+        propertyKeys: new Set<string>(),
+        propertyClearKeys: [],
+    };
+    ctor[DATA_MAP_SYMBOL] = {
+        defaultValues: { ...parentData.defaultValues },
+        targetToMap: new Map<string, any>(parentData.targetToMap),
+        i18nOptions: [],
+        optionsKeys: new Set<string>(parentData.optionsKeys),
+        propertyKeys: new Set<string>(parentData.propertyKeys), // 3. 添加到 propertyKeys
+        propertyClearKeys: [...parentData.propertyClearKeys],
     };
     return ctor[DATA_MAP_SYMBOL]; // 4. 返回 dataMap
 }

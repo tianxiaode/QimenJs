@@ -66,11 +66,6 @@ export class ComponentEntityDispatch {
             instance.onEntityError?.(ctx, instance.domain);
         });
 
-        instance.entityEmit({
-            event: action,
-            type: action,
-            source: entityKey,
-            data,
-        });
+        instance.entityEmit(action, data, { source: entityKey });
     }
 }

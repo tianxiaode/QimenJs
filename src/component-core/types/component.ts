@@ -5,9 +5,7 @@ import {
     BadgeOptions,
     DragOptionsBase,
     DropOptions,
-    I18nOptions,
     LoadingOptions,
-    PermissionOptions,
     Tooltiptoptions,
 } from './options';
 import { NodeAttributes, NodeHTMLClass, NodeStyle } from './html';
@@ -109,6 +107,8 @@ export interface NodeOptions {
     tooltip?: Tooltiptoptions;
     /** 加载配置 */
     loading?: LoadingOptions;
+    /** 权限设置 */
+    permissions: string | string[];
     [key: string]: any;
 }
 
@@ -125,32 +125,15 @@ export interface ComponentCoreOptions extends NodeOptions {
     style?: NodeStyle;
     /** DOM 类 */
     classes?: NodeHTMLClass;
-    /** 本地化设置 */
-    i18n?: I18nOptions;
     /** DOM 样式 */
     [key: string]: any;
 }
 
 export interface NodeMeta {
-    tag?: string;
-    type?: IComponentCore | string;
-    options?: NodeOptions;
-    attributes?: NodeAttributes;
-    permission?: PermissionOptions;
-    classes?: NodeHTMLClass;
-    style?: NodeStyle;
-    isComponent: boolean;
-}
-
-export type NodeState = Omit<NodeMeta, 'tag' | 'type' | 'classes' | 'options'>;
-
-export interface TemplateDecl {
     /** 节点标签 */
     tag?: string;
     /** 组件类型 */
     type?: IComponentCore | string;
-    /** 节点名称 */
-    name?: string;
     /** 子组件选项（仅 type 时有效） */
     options?: NodeOptions;
     /** DOM的attribute 属性 */
@@ -159,10 +142,13 @@ export interface TemplateDecl {
     style?: NodeStyle;
     /** DOM的class 属性 */
     classes?: NodeHTMLClass;
-    /** 本地化设置 */
-    i18n?: I18nOptions;
-    /** 权限设置 */
-    permission?: PermissionOptions;
+    /** 组件是否是组件（仅 type 时有效） */
+    isComponent?: boolean;
+}
+
+export interface TemplateDecl extends NodeMeta {
+    /** 节点名称 */
+    name?: string;
     /** 子节点 */
     children?: TemplateDecl[];
 }
@@ -211,8 +197,6 @@ export interface IComponentCore extends LifecycleHooks {
     type: string;
     /** 日志接口 */
     logger: ILogger;
-    /** 禁用css */
-    disabledCls: string;
     /** 委托事件定义 */
     domEvents?: DomEventsMap;
     /** 事件监听 */
@@ -222,7 +206,7 @@ export interface IComponentCore extends LifecycleHooks {
     /** 模板声明 */
     get tpl(): TemplateDecl;
     /** 更新方法 */
-    update?: (...args: any[]) => void;
+    update?(...args: any[]): void;
     /** 挂载 */
     mount(): Promise<void>;
     /** 检查是否是组件 */

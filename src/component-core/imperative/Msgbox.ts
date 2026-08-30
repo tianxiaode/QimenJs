@@ -1,6 +1,5 @@
 import { MSGBOX_TPL } from './msgbox-tpl';
 import { FloatingComponent } from '../overlay';
-import { EventContextBuilder } from '@/context';
 import type { TemplateDecl, ViewportPosition } from '../types';
 import type { Definitions } from '@/composable';
 import './msgbox.css';
@@ -48,7 +47,7 @@ export class Msgbox extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.setStyle('root', 'pointerEvents', 'auto');
+        this.setStyles({ pointerEvents: 'auto' });
         const type = this.getOption('msgboxType');
         if (type === 'alert') {
             this.addCls('cancel', 'hidden');
@@ -111,14 +110,7 @@ export class Msgbox extends FloatingComponent {
         this._removeMask();
         this.releaseZIndex();
 
-        this.componentEmit(
-            EventContextBuilder.create()
-                .withEvent('closed')
-                .withType('closed')
-                .withSource(this.eventKey ?? 'msgbox')
-                .withData({})
-                .build()
-        );
+        this.componentEmit('closed', {}, { source: this.eventKey ?? 'msgbox' });
 
         this.dispose();
         this.onClose?.();
@@ -138,7 +130,7 @@ const MsgboxDefs: Definitions = {
         cancelText: { target: 'cancel', to: 'text', default: '取消' },
         value: { target: 'field', to: 'value', default: null },
     },
-    property: {
+    fields: {
         callback: null,
     },
 };

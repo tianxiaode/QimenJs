@@ -2,6 +2,7 @@ import { Definitions } from '@/composable/types';
 import { HIDDEN_MODE } from './constants';
 
 export const ComponentDefs: Definitions = {
+    /** 组件类型 — 控制组件的类型和用途 */
     options: {
         /** 组件状态 — 控制组件的启用状态 */
         disable: false,
@@ -43,6 +44,7 @@ export const ComponentDefs: Definitions = {
         position: null,
         zIndex: null,
         transform: null,
+        coursor: null,
     },
 
     fields: {
@@ -50,6 +52,8 @@ export const ComponentDefs: Definitions = {
         id: null,
         /** 是否有父组件 — 控制组件是否为子组件容器 */
         hasParent: false,
+        /** 组件容器 — 控制组件的容器，用于管理组件的生命周期和状态管理  */
+        container: null,
         /** 组件el */
         el: null,
         /** 组件dom元素，用于管理组件的生命周期和状态管理  */
@@ -129,11 +133,9 @@ export const ComponentDefs: Definitions = {
          */
     },
 
-    privateField: {
+    privateFields: {
         // 内部状态（外部不可见）
         _tplCache: null,
-        _dirtyAttributes: null,
-        _dirtyStyle: null,
         _i18n: {},
         _initializing: false,
         _templateInitialized: false,

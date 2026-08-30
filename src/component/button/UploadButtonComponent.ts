@@ -33,7 +33,6 @@ import {
 } from '@/file';
 
 import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
-import { EventContextBuilder } from '@/context';
 import { UPLOAD_BUTTON_TPL } from './upload-button-tpl';
 
 /** 上传按钮属性接口 */
@@ -156,20 +155,16 @@ class UploadButtonComponent extends Component {
         this._inputEl?.click();
     }
 
-    /** 构建并发送文件命令事件（经 FileEventBusAbility） */
+    /** 构建并发送文件命令事件（经 EventsAbility） */
     _fileCmd(action: string, data: any): void {
-        this.fileEmit(
-            EventContextBuilder.create()
-                .withEvent(`file:${this._fileKey}:${action}`)
-                .withType(action)
-                .withSource(this._fileKey)
-                .withSourceType('UploadButton')
-                .withData(data)
-                .build()
-        );
+        this.fileEmit(`file:${this._fileKey}:${action}`, data, {
+            type: action,
+            source: this._fileKey,
+            sourceType: 'UploadButton',
+        });
     }
 
-    /** 订阅 FileEventBus 反馈事件（经 FileEventBusAbility，onCleanup 自动清理） */
+    /** 订阅 FileEventBus 反馈事件（经 EventsAbility，onCleanup 自动清理） */
     _subscribeFeedback(): void {
         const key = this._fileKey;
         const events = [
@@ -221,14 +216,10 @@ class UploadButtonComponent extends Component {
         this.emit(emitName, data);
 
         if (this.eventKey && typeof this.componentEmit === 'function') {
-            const ctx = EventContextBuilder.create()
-                .withEvent(emitName)
-                .withType(emitName)
-                .withSource(this.eventKey as string)
-                .withSourceType('UploadButton')
-                .withData(data)
-                .build();
-            this.componentEmit(ctx);
+            this.componentEmit(emitName, data, {
+                source: this.eventKey as string,
+                sourceType: 'UploadButton',
+            });
         }
     }
 

@@ -12,16 +12,14 @@
  * - change：{ path, previousPath, params } → 路由变化通知
  * - change:路径：细分路径事件（/ 替换为 :）
  *
- * 窗口事件（hashchange/popstate）通过 SystemEventBusAbility 监听。
+ * 窗口事件（hashchange/popstate）通过 EventsAbility 监听。
  *
  * @example
  * ```ts
- * // 导航（组件侧，需 RouteEventBusAbility）
- * this.routeEmit(EventContextBuilder.create()
- *     .withEvent('switch').withType('switch').withSource('router')
- *     .withData({ path: '/users', replace: false }).build());
+ * // 导航（组件侧，需 EventsAbility）
+ * this.routeEmit('switch', { path: '/users', replace: false }, { source: 'router' });
  *
- * // 监听（组件侧，需 RouteEventBusAbility）
+ * // 监听（组件侧，需 EventsAbility）
  * this.routeOn('router', 'change', (data) => { ... });
  *
  * // 或用 listens 声明
@@ -31,9 +29,8 @@
 
 import { ComposableBase, withAbilities } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import { SystemEventBusAbility, RouteEventBusAbility } from '@/system-abilities';
+import { EventsAbility } from '@/system-abilities';
 import { SYSTEM_EVENTS } from '@qimenjs/events';
-import { EventContextBuilder } from '@/context';
 import type { RouteMap, RouteParams, RouteChangeEvent, RouteGuard } from './types';
 
 /**
@@ -198,23 +195,9 @@ export class Router extends ComposableBase {
             params,
         };
 
-        this.routeEmit(
-            EventContextBuilder.create()
-                .withEvent('change')
-                .withType('change')
-                .withSource('router')
-                .withData(event)
-                .build()
-        );
+        this.routeEmit('change', event, { source: 'router' });
         if (eventName) {
-            this.routeEmit(
-                EventContextBuilder.create()
-                    .withEvent(`change:${eventName}`)
-                    .withType(`change:${eventName}`)
-                    .withSource('router')
-                    .withData(event)
-                    .build()
-            );
+            this.routeEmit(`change:${eventName}`, event, { source: 'router' });
         }
     }
 
@@ -250,8 +233,6 @@ export class Router extends ComposableBase {
     }
 }
 
-withAbilities(Router, [SystemEventBusAbility, RouteEventBusAbility]);
+withAbilities(Router, [EventsAbility]);
 
-export interface Router extends InferAbilities<
-    [typeof SystemEventBusAbility, typeof RouteEventBusAbility]
-> {}
+export interface Router extends InferAbilities<[typeof EventsAbility]> {}

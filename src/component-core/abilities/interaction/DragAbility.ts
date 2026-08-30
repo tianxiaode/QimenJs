@@ -16,9 +16,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { EventContextBuilder } from '@/context';
 import { DRAG_ACTIONS } from '@/events';
-import { string } from '@/utils';
 import { DRAG_CACHE_KEY } from '../../constants';
 import type { DragOptions } from '../../types';
 
@@ -42,36 +40,21 @@ export const DragAbility: AbilityDefinition = {
         this._syncDrags(prev, val ?? {});
     },
 
-    // ── 事件发射 ──
-
-    _ensureDragComponentId(): string {
-        if (!this.id) {
-            this.id = this.props?.id || string.getId('cmp');
-        }
-        return this.id;
-    },
-
     _emitDragInit(key: string, options: DragOptions): void {
-        const componentId = this._ensureDragComponentId();
+        const componentId = this.id;
         this.dragEmit(
-            EventContextBuilder.create()
-                .withEvent(`drag:${componentId}:${DRAG_ACTIONS.INIT}`)
-                .withType(DRAG_ACTIONS.INIT)
-                .withSource(componentId)
-                .withData({ component: this, drags: { [key]: options } })
-                .build()
+            `drag:${componentId}:${DRAG_ACTIONS.INIT}`,
+            { component: this, drags: { [key]: options } },
+            { type: DRAG_ACTIONS.INIT, source: componentId }
         );
     },
 
     _emitDragAction(key: string, action: string): void {
         const dragKey = `${this.id}:${key}`;
         this.dragEmit(
-            EventContextBuilder.create()
-                .withEvent(`drag:${dragKey}:${action}`)
-                .withType(action)
-                .withSource(dragKey)
-                .withData({ component: this })
-                .build()
+            `drag:${dragKey}:${action}`,
+            { component: this },
+            { type: action, source: dragKey }
         );
     },
 
@@ -202,24 +185,18 @@ export const DragAbility: AbilityDefinition = {
     startDrag(key: string): void {
         const dragKey = `${this.id}:${key}`;
         this.dragEmit(
-            EventContextBuilder.create()
-                .withEvent(`drag:${dragKey}:${DRAG_ACTIONS.START}`)
-                .withType(DRAG_ACTIONS.START)
-                .withSource(dragKey)
-                .withData({ component: this, key })
-                .build()
+            `drag:${dragKey}:${DRAG_ACTIONS.START}`,
+            { component: this, key },
+            { type: DRAG_ACTIONS.START, source: dragKey }
         );
     },
 
     stopDrag(key: string): void {
         const dragKey = `${this.id}:${key}`;
         this.dragEmit(
-            EventContextBuilder.create()
-                .withEvent(`drag:${dragKey}:${DRAG_ACTIONS.STOP}`)
-                .withType(DRAG_ACTIONS.STOP)
-                .withSource(dragKey)
-                .withData({ component: this, key })
-                .build()
+            `drag:${dragKey}:${DRAG_ACTIONS.STOP}`,
+            { component: this, key },
+            { type: DRAG_ACTIONS.STOP, source: dragKey }
         );
     },
 

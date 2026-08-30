@@ -14,7 +14,7 @@ const FloatingComponentDefs: Definitions = {
         hideDelay: null,
         viewportPosition: null,
     },
-    property: {
+    fields: {
         _overlayOpen: false,
     },
 };
@@ -45,16 +45,17 @@ export class FloatingComponent extends Component {
 
     show(anchor: HTMLElement, placement?: Placement, offset?: number): void {
         this._anchor = anchor;
-        this.mountToOverlay(this.el);
-        this.el.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
-        this.el.style.pointerEvents = 'auto';
+        const el = this.el!;
+        this.mountToOverlay(el);
+        el.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
+        el.style.pointerEvents = 'auto';
 
         const p = placement ?? 'bottom';
         if (p !== 'center' && p !== 'anchor-center') {
-            this.el.style.position = 'absolute';
+            el.style.position = 'absolute';
         }
 
-        const actualPlacement = positionOverlay(this.el, anchor, p, offset ?? 4, true);
+        const actualPlacement = positionOverlay(el, anchor, p, offset ?? 4, true);
         (this as any)._actualPlacement = actualPlacement;
 
         if (typeof (this as any).open === 'function') {
@@ -64,12 +65,12 @@ export class FloatingComponent extends Component {
 
     hide(): void {
         this._removeMask();
-        this.unmountFromOverlay(this.el);
+        this.unmountFromOverlay(this.el!);
     }
 
     reposition(anchor: HTMLElement, placement?: Placement, offset?: number): void {
         this._anchor = anchor;
-        positionOverlay(this.el, anchor, placement ?? 'bottom', offset ?? 4, true);
+        positionOverlay(this.el!, anchor, placement ?? 'bottom', offset ?? 4, true);
         if (this._mask) {
             this._mask.updatePosition(anchor.getBoundingClientRect());
         }

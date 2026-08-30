@@ -1,6 +1,6 @@
 import { ComposableBase } from '@/composable';
 import type { InferAbilities } from '@/composable';
-import { EntityEventBusAbility, DebounceAbility } from '@/system-abilities';
+import { EventsAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '../abilities/SchemaAbility';
@@ -8,7 +8,7 @@ import type { ENTITY_ACTION } from '../types';
 import type { Schema, RegistrSchema } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http';
 import type { RequestContext } from '@/context';
-import { RequestContextBuilder, EventContextBuilder } from '@/context';
+import { RequestContextBuilder } from '@/context';
 import { DataProcessorRegistrar, DataProcessorRegistrarName } from '@/data-processor';
 import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
@@ -23,7 +23,7 @@ import { KernelErrorCode } from '@/error';
 import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
 export const CORE_ENTITY_ABILITIES = [
-    EntityEventBusAbility,
+    EventsAbility,
     DebounceAbility,
     DomainAbility,
     SystemAbility,
@@ -73,14 +73,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected emitEvent(event: string, data?: any): void {
-        this.entityEmit(
-            EventContextBuilder.create()
-                .withEvent(event)
-                .withType(event)
-                .withSource(this.entityKey)
-                .withData(data)
-                .build()
-        );
+        this.entityEmit(event, data, { source: this.entityKey });
     }
 
     get compiledSchema(): Schema {

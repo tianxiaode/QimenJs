@@ -8,3 +8,4 @@ export * from './float';
 export * from './arrow';
 export * from './badge';
 export * from './indicator';
+export * from './option';

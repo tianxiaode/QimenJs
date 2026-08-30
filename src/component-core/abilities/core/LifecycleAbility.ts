@@ -16,7 +16,6 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
-import { EventContextBuilder } from '@/context';
 
 /** 组件生命周期事件能力，统一管理 mounted/updated/resize 钩子调用与事件发送 */
 export const LifecycleAbility = {
@@ -46,20 +45,14 @@ export const LifecycleAbility = {
 
     _emitLifecycleEvent(event: string, data?: any): void {
         const eventKey = this.eventKey ?? (this.constructor as any).eventKey;
-        const ctx = EventContextBuilder.create()
-            .withEvent(event)
-            .withType(event)
-            .withSource(eventKey ?? this.constructor.name)
-            .withSourceType(this.constructor.name)
-            .withData(data)
-            .build();
+        const ctx = this.eventCtx(event, data);
 
         if (typeof this.emit === 'function') {
             this.emit(event, ctx);
         }
 
         if (eventKey && typeof this.componentEmit === 'function') {
-            this.componentEmit(ctx);
+            this.componentEmit(event, ctx);
         }
     },
 } as AbilityDefinition;

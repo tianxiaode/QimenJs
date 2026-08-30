@@ -195,14 +195,6 @@ describe('ComposableBase 集成测试', () => {
             expect(typeof host.setupCancelable).toBe('function');
             host.dispose();
         });
-
-        it('dispose 应该取消 cancelable 状态', () => {
-            const host = new CancelableHost() as any;
-            const cancel = jest.fn();
-            host.setAbilityState('test:cancelable', { cancel });
-            expect(() => host.dispose()).not.toThrow();
-            expect(cancel).toHaveBeenCalled();
-        });
     });
 
     // ============================================

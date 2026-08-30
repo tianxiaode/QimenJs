@@ -83,7 +83,7 @@ function _forwardBridges(ctx: ForwardContext): void {
             eventKey,
             'bridge'
         );
-        ctx.instance.componentEmit(eventCtx);
+        ctx.instance.componentEmit(eventCtx.type, eventCtx);
     }
 }
 

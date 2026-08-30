@@ -11,9 +11,9 @@ import type { ComponentClass } from './types';
 export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentClass>> {
     public readonly name = 'ComponentRegistrar';
 
-    protected storage = new Map<string, ComponentClass>();
+    protected storage = new Map<string, any>();
 
-    register(component: ComponentClass): this {
+    register(component: any): this {
         this.checkLock();
         const type = (component as any).type ?? (component as any).name;
         this.storage.set(type, component);
@@ -25,11 +25,11 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentClass
         this.storage.delete(type);
     }
 
-    get(type: string): ComponentClass | undefined {
+    get(type: string): any | undefined {
         return this.storage.get(type);
     }
 
-    getByType(type: string): ComponentClass | undefined {
+    getByType(type: string): any | undefined {
         return this.get(type);
     }
 

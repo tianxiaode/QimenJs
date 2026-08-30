@@ -65,7 +65,7 @@ export const ArrowAbility = {
         set(v: Record<string, string>) {
             const name = this.arrowName;
             if (!name) return;
-            this.setStyles(name, v);
+            this.setStyles(v, name);
         },
     },
 

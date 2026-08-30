@@ -27,7 +27,7 @@ jest.mock('@/logger', () => {
 
 import { ComposableBase } from '@/composable/ComposableBase';
 import type { AbilityDefinition } from '@/composable/types/ability';
-import { EventAbility } from '@/system-abilities';
+import { EventsAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SchemaAbility } from '@/entity/abilities/SchemaAbility';
 import { SchemaRegistrar } from '@/schema';
@@ -57,7 +57,7 @@ const testSchema: FlatSchema = {
 // ============================================
 
 class TestAbilityManagerBase extends ComposableBase {}
-TestAbilityManagerBase.use([EventAbility, DomainAbility, SchemaAbility]);
+TestAbilityManagerBase.use([EventsAbility, DomainAbility, SchemaAbility]);
 
 class TestAbilityManager extends TestAbilityManagerBase {
     domain = 'ability-test';

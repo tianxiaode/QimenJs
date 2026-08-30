@@ -77,6 +77,7 @@ jest.mock('@/context', () => ({
             withEvent: jest.fn().mockReturnThis(),
             withType: jest.fn().mockReturnThis(),
             withSource: jest.fn().mockReturnThis(),
+            withSourceType: jest.fn().mockReturnThis(),
             withData: jest.fn().mockReturnThis(),
             build: jest.fn().mockReturnValue({}),
         })),

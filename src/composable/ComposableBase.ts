@@ -22,15 +22,17 @@ import type {
     AbilityDefinition,
     DataMap,
     Definitions,
+    I18nMeta,
     IComposableBase,
     TargetToOptionDefinition,
 } from './types';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
-    private [DATA_SYMBOL]: Record<string, any> = {};
-    private abilityStatesMap: Map<string, any> = new Map();
-
+    private [DATA_SYMBOL]: Record<string, any> = {
+        __abilityStatesMap: new Map(), // 初始化能力状态集合
+        __i18nMeta: {} as Record<string, I18nMeta>,
+    };
     private cleanups: (() => void)[] = [];
 
     constructor() {
@@ -38,7 +40,9 @@ export class ComposableBase implements IComposableBase {
     }
 
     getData(key: string): any {
-        return this._getData()[key] ?? this.getDefaultValue(key);
+        const data = this._getData();
+
+        return key in data ? data[key] : this.getDefaultValue(key);
     }
 
     setData(key: string, value: any): void {
@@ -46,6 +50,11 @@ export class ComposableBase implements IComposableBase {
         const old = this.getData(key);
         if (old === value) return;
         data[key] = value;
+
+        if (this.i18nOptions.includes(key)) {
+            data.__i18nMeta[key].useI18n = false;
+        }
+
         const def: TargetToOptionDefinition | undefined = this.targetToMap.get(key);
         if (def?.change) {
             const change = typeof def.change === 'string' ? (this as any)[def.change] : def.change;
@@ -55,6 +64,13 @@ export class ComposableBase implements IComposableBase {
         }
 
         this._onOptionChange(key, value, old, def);
+    }
+
+    setI18n(optionKey: string, value: string): void {
+        if (!this.i18nOptions.includes(optionKey)) return;
+        const data = this._getData();
+        data.__i18nMeta[optionKey].useI18n = true;
+        data.__i18nMeta[optionKey] = value;
     }
 
     get targetToMap(): Map<string, TargetToOptionDefinition> {
@@ -78,11 +94,21 @@ export class ComposableBase implements IComposableBase {
     }
 
     private _getData(): Record<string, any> {
+        if (!this[DATA_SYMBOL]) {
+            this[DATA_SYMBOL] = {
+                __abilityStatesMap: new Map(),
+                __i18nMeta: {} as Record<string, I18nMeta>,
+            };
+        }
         return this[DATA_SYMBOL];
     }
 
     private getDefaultValue(key: string): any {
         return this.getDataMap().defaultValues[key];
+    }
+
+    private get abilityStatesMap(): Map<string, any> {
+        return this._getData().__abilityStatesMap;
     }
 
     /**
@@ -137,7 +163,12 @@ export class ComposableBase implements IComposableBase {
         return this;
     }
 
-    _onOptionChange(_key: string, _value: any, _old: any, _definition: any): void {}
+_onOptionChange(
+        _key: string,
+        _value: any,
+        _old: any,
+        _definition: TargetToOptionDefinition | undefined
+    ): void {}
 
     /**
      * 获取能力状态，不存在时可用 creator 惰性创建
@@ -201,9 +232,7 @@ export class ComposableBase implements IComposableBase {
         cleanups.length = 0;
 
         this.ClearProperties();
-        this.clearDataMap();
-        delete self[DATA_SYMBOL];
-        delete self[DATA_MAP_SYMBOL];
+        this.clearData();
         this.onDisposed();
     }
 
@@ -215,7 +244,12 @@ export class ComposableBase implements IComposableBase {
         }
     }
 
-    private clearDataMap(): void {
+    private clearData() {
+        const self = this as any;
+        const data = this._getData();
+        for (const key of Object.keys(data)) {
+            delete data[key];
+        }
         const dataMap = this.getDataMap();
         dataMap.defaultValues = {};
         dataMap.targetToMap = new Map();
@@ -223,5 +257,7 @@ export class ComposableBase implements IComposableBase {
         dataMap.optionsKeys = new Set();
         dataMap.propertyKeys = new Set();
         dataMap.propertyClearKeys = [];
+        delete self[DATA_SYMBOL];
+        delete self[DATA_MAP_SYMBOL];
     }
 }

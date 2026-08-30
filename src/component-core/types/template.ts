@@ -10,8 +10,6 @@ export interface TemplateCache {
     names: string[];
     /** 子组件名称列表  */
     childComponents: string[];
-    /** 权限节点名称列表 */
-    permissions: string[];
     /** 节点对应元素的路径映射表 */
     indexs: NodeIndexPathMap;
     /** 节点元数据 */

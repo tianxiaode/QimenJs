@@ -1,13 +1,7 @@
 import { InferDefinitions, type AbilityDefinition, type InferAbilities } from '@/composable';
 import {
-    EventAbility,
+    EventsAbility,
     DomEventsAbility,
-    ComponentEventBusAbility,
-    EntityEventBusAbility,
-    OverlayEventBusAbility,
-    DragEventBusAbility,
-    SystemEventBusAbility,
-    FileEventBusAbility,
     SystemAbility,
     DebounceAbility,
     PermissionAbility as SystemPermissionAbility,
@@ -36,14 +30,8 @@ import { ComponentDefs } from './ComponentDefs';
 
 /** 组件能力注册表，包含所有组件共享的系统能力与组件核心能力 */
 export const COMPONENT_ABILITIES = [
-    EventAbility,
+    EventsAbility,
     DomEventsAbility,
-    ComponentEventBusAbility,
-    EntityEventBusAbility,
-    OverlayEventBusAbility,
-    DragEventBusAbility,
-    SystemEventBusAbility,
-    FileEventBusAbility,
     SystemAbility,
     SystemPermissionAbility,
     DebounceAbility,

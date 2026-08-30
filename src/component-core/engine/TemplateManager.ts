@@ -28,7 +28,6 @@ export class TemplateManager {
             html: '',
             names: [],
             childComponents: [],
-            permissions: [],
             indexs: {},
             nodes: {},
         };
@@ -126,8 +125,7 @@ export class TemplateManager {
         return {
             tag: tpl.tag,
             type: tpl.type,
-            permission: tpl.permission,
-            isComponent: !!tpl.type,
+            isComponent: !!tpl.type, // 是否是组件
             options: tpl.options,
             attributes: tpl.attributes,
             style: tpl.style,

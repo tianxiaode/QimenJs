@@ -19,7 +19,6 @@ import type { AbilityDefinition } from '@/composable';
 import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
 import { SKELETON_CLS } from '../../constants';
 import { ComponentCoreOptions, IComponentCore } from '../../types';
-import { object } from '@/utils';
 /** 组件初始化能力 */
 export const InitAbility = {
     /**
@@ -28,7 +27,7 @@ export const InitAbility = {
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
     _buildDOM(options: ComponentCoreOptions): void {
-        this._tplCache = TemplateManager.get(this.tpl);
+        this._setCache(TemplateManager.get(this.tpl));
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
         this.nodeInstances = {};
@@ -38,7 +37,6 @@ export const InitAbility = {
         this._setNodeEl('root', el);
         this.logger.debug(`[prepare:build html]`, `[${this.type}]:[${this.id}]`);
         this._applyNodeMeta(options);
-        this._flushNodes();
 
         if (!this.hasParent) {
             if (this.container) {
@@ -56,15 +54,12 @@ export const InitAbility = {
             const nodeMeta = this.getNode(name);
             if (!nodeMeta || nodeMeta.isComponent) continue;
             const { attributes, style, classes } = nodeMeta;
-            this.setAttributes(name, attributes);
+            this.setAttributes(attributes, name);
             if (style && Object.keys(style).length > 0) {
-                this.setStyles(name, style);
+                this.setStyles(style, name);
             }
             if (classes) {
-                this.addCls(name, classes);
-            }
-            if (nodeMeta.i18n) {
-                this._i18n[name] = { ...nodeMeta.i18n };
+                this.addCls(classes, name);
             }
         }
         if (!options) return;
@@ -74,12 +69,8 @@ export const InitAbility = {
         const propertyMap: Map<string, any> = this.getPropertyMap();
         for (const [key, value] of Object.entries(options)) {
             if (key === 'id') continue;
-            if (key === 'i18n') {
-                object.deepMerge(this._i18n, value); // 合并 i18n
-                continue;
-            }
             if (optionMap.has(key)) {
-                this.setOption(key, value);
+                this.setData(key, value);
             } else if (propertyMap.has(key)) {
                 this[key] = value;
             }
@@ -88,7 +79,7 @@ export const InitAbility = {
 
     createChildren(childReady?: () => void): void {
         this.logger.debug(`[createChildren][${this.id}]`, '开始创建子组件');
-        const components = this._tplCache?.childComponents || [];
+        const components = this._getCache().childComponents || [];
         if (components.length === 0) {
             this.logger.debug(`[createChildren][${this.id}]`, '没有子组件');
             setTimeout(() => {
@@ -139,7 +130,7 @@ export const InitAbility = {
     /**
      * 串联后续初始化
      *
-     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 浮层注册 → 动画播放
+     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 浮层注册 → onAfterInit → 动画播放
      */
     _continueInit(childReady?: () => void) {
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
@@ -153,9 +144,9 @@ export const InitAbility = {
         this._initPopover();
         this._initIndicator();
         this._initLoading();
-        this.playEnter();
 
         this.onAfterInit();
+        this.playEnter();
         this._emitMounted();
 
         if (childReady) {

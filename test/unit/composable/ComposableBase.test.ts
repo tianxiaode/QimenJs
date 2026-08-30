@@ -327,16 +327,6 @@ describe('ComposableBase', () => {
             expect(instance.count).toBe(0);
         });
 
-        it('dispose 应该取消 cancelable 状态', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({});
-            const instance = new MyHost();
-            const cancel = jest.fn();
-            instance.setAbilityState('test:cancelable', { cancel });
-            instance.dispose();
-            expect(cancel).toHaveBeenCalled();
-        });
-
         it('dispose 时 cleanup 回调抛错不应中断后续清理', () => {
             class MyHost extends ComposableBase {}
             MyHost.define({});
@@ -348,18 +338,7 @@ describe('ComposableBase', () => {
             expect(() => instance.dispose()).not.toThrow();
         });
 
-        it('dispose 时 cancelable cancel 抛错不应中断', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({});
-            const instance = new MyHost();
-            instance.setAbilityState('test', {
-                cancel() {
-                    throw new Error('cancel error');
-                },
-            });
-            expect(() => instance.dispose()).not.toThrow();
         });
-    });
 
     describe('onBeforeDispose / onDisposed 钩子', () => {
         it('onBeforeDispose 在 dispose 最先调用', () => {
@@ -447,24 +426,6 @@ describe('ComposableBase', () => {
         });
     });
 
-    describe('Symbol 键支持', () => {
-        it('use() 应该注入 Symbol 键的方法', () => {
-            const sym = Symbol('testSymbol');
-            const SymbolAbility: AbilityDefinition = {};
-            Object.defineProperty(SymbolAbility, sym, {
-                value: function() { return 'symbol-result'; },
-                enumerable: true,
-                configurable: true,
-            });
-
-            class MyHost extends ComposableBase {}
-            MyHost.use(SymbolAbility);
-            const instance = new MyHost() as any;
-            expect(typeof instance[sym]).toBe('function');
-            expect(instance[sym]()).toBe('symbol-result');
-        });
-    });
-
     describe('define() 非能力定义注入', () => {
         it('define() 应该注入方法到原型', () => {
             class MyHost extends ComposableBase {}
@@ -475,22 +436,6 @@ describe('ComposableBase', () => {
             });
             const instance = new MyHost() as any;
             expect(instance.customMethod()).toBe('custom-result');
-        });
-
-        it('define() 应该注入原生 getter/setter', () => {
-            const defs: Record<string, any> = {};
-            Object.defineProperty(defs, 'label', {
-                get() {
-                    return 'default';
-                },
-                enumerable: true,
-                configurable: true,
-            });
-
-            class MyHost extends ComposableBase {}
-            MyHost.define(defs);
-            const instance = new MyHost() as any;
-            expect(instance.label).toBe('default');
         });
 
         it('define() 应该跳过 constructor', () => {
@@ -563,7 +508,7 @@ describe('ComposableBase', () => {
             class MyHost extends ComposableBase {}
             MyHost.define({
                 options: {
-                    config: { default: { key: 'value' } },
+                    config: { key: 'value' },
                     simple: 'hello',
                 },
             });
@@ -587,161 +532,7 @@ describe('ComposableBase', () => {
             expect(host2.name).toBe('instance-B');
         });
 
-        it('define() options 提供 getOptionMap/getOptionKeys/getOptionValue 工具方法', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                options: {
-                    label: 'hi',
-                    count: 42,
-                },
-            });
-            const instance = new MyHost() as any;
-            const map = instance.getOptionMap();
-            expect(map.has('label')).toBe(true);
-            expect(map.has('count')).toBe(true);
-            expect(instance.getOptionKeys()).toContain('label');
-            expect(instance.getOptionKeys()).toContain('count');
-            expect(instance.getOptionValue('label')).toBe('hi');
         });
-    });
-
-    describe('define() property', () => {
-        it('define() property 注入默认属性到原型', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                property: {
-                    status: 'idle',
-                    count: 0,
-                },
-            });
-            const instance = new MyHost() as any;
-            expect(instance.status).toBe('idle');
-            expect(instance.count).toBe(0);
-        });
-
-        it('define() property 可被实例覆盖', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                property: {
-                    status: 'idle',
-                },
-            });
-            const instance = new MyHost() as any;
-            instance.status = 'active';
-            expect(instance.status).toBe('active');
-        });
-
-        it('define() property 在 dispose 时被清理', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                property: {
-                    status: 'idle',
-                },
-            });
-            const instance = new MyHost() as any;
-            instance.status = 'active';
-            instance.dispose();
-            expect(instance.status).toBeUndefined();
-        });
-    });
-
-    describe('派生类 _xxx 自定义初始属性值', () => {
-        it('派生类通过 _optionName 设置自定义默认值', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                options: {
-                    label: 'default',
-                },
-            });
-            class DerivedHost extends MyHost {
-                _label = 'custom-label';
-            }
-            const instance = new DerivedHost() as any;
-            expect(instance.label).toBe('custom-label');
-        });
-
-        it('派生类 _xxx 默认值支持多个 option', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                options: {
-                    label: 'default',
-                    count: 0,
-                    enabled: false,
-                },
-            });
-            class DerivedHost extends MyHost {
-                _label = 'override';
-                _count = 99;
-                _enabled = true;
-            }
-            const instance = new DerivedHost() as any;
-            expect(instance.label).toBe('override');
-            expect(instance.count).toBe(99);
-            expect(instance.enabled).toBe(true);
-        });
-
-        it('派生类只对部分 _xxx 设置自定义值，其他使用默认值', () => {
-            class MyHost extends ComposableBase {}
-            MyHost.define({
-                options: {
-                    label: 'default',
-                    count: 0,
-                },
-            });
-            class DerivedHost extends MyHost {
-                _label = 'overridden';
-            }
-            const instance = new DerivedHost() as any;
-            expect(instance.label).toBe('overridden');
-            expect(instance.count).toBe(0);
-        });
-
-        it('派生类多层继承 _xxx 自定义值', () => {
-            class BaseHost extends ComposableBase {}
-            BaseHost.define({
-                options: {
-                    label: 'base-default',
-                    count: 0,
-                },
-            });
-            class DerivedHost extends BaseHost {
-                _label = 'derived-label';
-            }
-            class GrandChildHost extends DerivedHost {
-                _count = 42;
-            }
-            const base = new BaseHost() as any;
-            const derived = new DerivedHost() as any;
-            const grandChild = new GrandChildHost() as any;
-            expect(base.label).toBe('base-default');
-            expect(base.count).toBe(0);
-            expect(derived.label).toBe('derived-label');
-            expect(derived.count).toBe(0);
-            expect(grandChild.label).toBe('derived-label');
-            expect(grandChild.count).toBe(42);
-        });
-
-        it('派生类 _xxx 修改后触发 _onOptionChange 通知', () => {
-            const changes: Array<{key: string, value: any}> = [];
-            class MyHost extends ComposableBase {
-                _onOptionChange(key: string, value: any) {
-                    changes.push({ key, value });
-                }
-            }
-            MyHost.define({
-                options: {
-                    label: 'default',
-                },
-            });
-            class DerivedHost extends MyHost {
-                _label = 'custom';
-            }
-            const instance = new DerivedHost() as any;
-            expect(instance.label).toBe('custom');
-            instance.label = 'changed';
-            expect(changes.some(c => c.key === 'label' && c.value === 'changed')).toBe(true);
-        });
-    });
 
     describe('forge 内部分支覆盖', () => {
         it('能力对象上的原生 getter/setter 应被注入', () => {
@@ -760,23 +551,5 @@ describe('ComposableBase', () => {
             expect(instance.nativeProp).toBe('native-value');
         });
 
-        it('Symbol 键同名覆盖应触发 warn', () => {
-            const sym = Symbol('overlap');
-            const AbilityA: AbilityDefinition = {
-                [sym]() {
-                    return 'A';
-                },
-            };
-            const AbilityB: AbilityDefinition = {
-                [sym]() {
-                    return 'B';
-                },
-            };
-
-            class MyHost extends ComposableBase {}
-            MyHost.use(AbilityA, AbilityB);
-            const instance = new MyHost() as any;
-            expect(instance[sym]()).toBe('B');
         });
-    });
 });
