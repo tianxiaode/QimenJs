@@ -31,82 +31,14 @@ export const DropAbility: AbilityDefinition = {
         // drop === false: 禁用所有放置区
         if (dropMode === false) return;
 
-        const nodeMap = this.nodeMap ?? {};
         const dropZone = this.dropZone;
+        const el = this.el;
+        if (!el) return;
 
-        // 检查节点级 dropZone 标记
-        let nodeDropZone: string | undefined;
-        for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-            if (nodeName === 'root') continue;
-            if ((nodeMeta as any)?.dropZone === true) {
-                nodeDropZone = nodeName;
-                break;
-            }
-        }
-
-        // drop 有值（true 或 DropOptions）
-        if (dropMode !== undefined && dropMode !== null) {
-            const effectiveZone = dropZone || nodeDropZone;
-            if (effectiveZone) {
-                const el = (nodeMap as any)?.[effectiveZone]?.el ?? this.el;
-                if (el) {
-                    const config = typeof dropMode === 'object' ? dropMode : {};
-                    const dropKey = `${componentId}:${effectiveZone}`;
-                    dragDispatchCenter.registerDropZone(dropKey, el, this, effectiveZone, config);
-                }
-                return;
-            }
-
-            // 使用模板中的 drop:true 节点
-            let registered = false;
-            for (const [nodeName, nodeMetaRaw] of Object.entries(nodeMap)) {
-                if (nodeName === 'root') continue;
-                const nodeMeta = nodeMetaRaw as Record<string, any>;
-                const nodeDrop = nodeMeta?.drop;
-                if (!nodeDrop) continue;
-
-                const el = nodeMeta.el;
-                if (!el) continue;
-
-                const config = typeof nodeDrop === 'object' ? nodeDrop : {};
-                const dropKey = `${componentId}:${nodeName}`;
-                dragDispatchCenter.registerDropZone(dropKey, el, this, nodeName, config);
-                registered = true;
-            }
-
-            // 都没有，默认 self
-            if (!registered) {
-                const el = this.el;
-                if (el) {
-                    const config = typeof dropMode === 'object' ? dropMode : {};
-                    const dropKey = `${componentId}:self`;
-                    dragDispatchCenter.registerDropZone(dropKey, el, this, 'self', config);
-                }
-            }
-            return;
-        }
-
-        // drop === undefined: 仅使用模板中的 drop 声明 + 节点级 dropZone
-        if (nodeDropZone) {
-            const el = (nodeMap as any)?.[nodeDropZone]?.el ?? this.el;
-            if (el) {
-                const dropKey = `${componentId}:${nodeDropZone}`;
-                dragDispatchCenter.registerDropZone(dropKey, el, this, nodeDropZone, {});
-            }
-        }
-        for (const [nodeName, nodeMetaRaw] of Object.entries(nodeMap)) {
-            if (nodeName === 'root') continue;
-            const nodeMeta = nodeMetaRaw as Record<string, any>;
-            const nodeDrop = nodeMeta?.drop;
-            if (!nodeDrop) continue;
-
-            const el = nodeMeta.el;
-            if (!el) continue;
-
-            const config = typeof nodeDrop === 'object' ? nodeDrop : {};
-            const dropKey = `${componentId}:${nodeName}`;
-            dragDispatchCenter.registerDropZone(dropKey, el, this, nodeName, config);
-        }
+        const effectiveZone = dropZone || 'self';
+        const config = typeof dropMode === 'object' ? dropMode : {};
+        const dropKey = `${componentId}:${effectiveZone}`;
+        dragDispatchCenter.registerDropZone(dropKey, el, this, effectiveZone, config);
     },
 
     // ── 结构变更方法 ──
@@ -124,8 +56,7 @@ export const DropAbility: AbilityDefinition = {
         const componentId = this.id;
         if (!componentId) return;
 
-        const nodeMap = this.nodeMap ?? {};
-        const el = (nodeMap as any)?.[key]?.el ?? this.el;
+        const el = this.el;
         if (!el) return;
 
         const dropKey = `${componentId}:${key}`;
@@ -162,54 +93,19 @@ export const DropAbility: AbilityDefinition = {
      * this.setDropZone(false);
      */
     setDropZone(enabled: boolean, config?: DragOptions): void {
+        const componentId = this.id;
+        if (!componentId) return;
+
         if (enabled) {
-            const nodeMap = this.nodeMap ?? {};
             const dropZone = this.dropZone;
+            const el = this.el;
+            if (!el) return;
 
-            if (config) {
-                if (dropZone) {
-                    this.attachDropZone(dropZone, config);
-                } else {
-                    let attached = false;
-                    for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                        if (nodeName === 'root') continue;
-                        if ((nodeMeta as any)?.drop) {
-                            this.attachDropZone(nodeName, config);
-                            attached = true;
-                        }
-                    }
-                    if (!attached) {
-                        this.attachDropZone('self', config);
-                    }
-                }
-            } else {
-                if (dropZone) {
-                    this.attachDropZone(dropZone);
-                } else {
-                    let attached = false;
-                    for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                        if (nodeName === 'root') continue;
-                        const nodeDrop = (nodeMeta as any)?.drop;
-                        if (nodeDrop) {
-                            const dropConfig = typeof nodeDrop === 'object' ? nodeDrop : {};
-                            this.attachDropZone(nodeName, dropConfig);
-                            attached = true;
-                        }
-                    }
-                    if (!attached) {
-                        this.attachDropZone('self');
-                    }
-                }
-            }
+            const effectiveZone = dropZone || 'self';
+            const dropConfig = config || {};
+            const dropKey = `${componentId}:${effectiveZone}`;
+            dragDispatchCenter.registerDropZone(dropKey, el, this, effectiveZone, dropConfig);
         } else {
-            const componentId = this.id;
-            if (!componentId) return;
-
-            const nodeMap = this.nodeMap ?? {};
-            for (const nodeName of Object.keys(nodeMap)) {
-                if (nodeName === 'root') continue;
-                this.detachDropZone(nodeName);
-            }
             this.detachDropZone('self');
         }
     },
