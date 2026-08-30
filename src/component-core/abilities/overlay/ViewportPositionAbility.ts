@@ -3,12 +3,15 @@ import type { AbilityDefinition } from '@/composable';
 
 export const ViewportPositionAbility: AbilityDefinition = {
     setViewportPosition(position: ViewportPosition, offset: number = 0, margin: number = 16): void {
-        this.el.style.top = null;
-        this.el.style.bottom = null;
-        this.el.style.left = null;
-        this.el.style.right = null;
-        this.el.style.transform = null; // 保存变换
-        this.el.style.position = 'fixed'; // 保存位置
+        this.setStyles({
+            top: null,
+            bottom: null,
+            left: null,
+            right: null,
+            transform: null,
+            position: 'fixed',
+        });
+
         const isTop = position.startsWith('top');
         const isBottom = position.startsWith('bottom');
         const isLeft = position.endsWith('left');
@@ -17,25 +20,36 @@ export const ViewportPositionAbility: AbilityDefinition = {
         const isMiddle = position === 'center';
 
         if (isMiddle) {
-            this.el.style.top = '50%';
-            this.el.style.left = '50%';
-            this.el.style.transform = 'translate(-50%, -50%)';
+            this.setStyles({
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+            });
             return;
         }
 
         if (isTop) {
-            this.el.style.top = `${margin + offset}px`;
+            this.top = `${margin + offset}px`;
         } else if (isBottom) {
-            this.el.style.bottom = `${margin + offset}px`;
+            this.bottom = `${margin + offset}px`;
         }
 
         if (isLeft) {
+            this.left = `${margin}px`;
             this.el.style.left = `${margin}px`;
         } else if (isRight) {
-            this.el.style.right = `${margin}px`;
+            this.right = `${margin}px`;
         } else if (isCenter) {
+            this.setStyles({
+                left: '50%',
+                transform: 'translateX(-50%)',
+            });
             this.el.style.left = '50%';
-            this.el.style.transform = 'translateX(-50%)';
+        } else {
+            this.setStyles({
+                left: '50%',
+                transform: 'translateX(-50%)',
+            });
         }
     },
 
@@ -52,4 +66,4 @@ export const ViewportPositionAbility: AbilityDefinition = {
         if (position.startsWith('bottom')) return 'translateY(100%)';
         return 'translateY(-100%)';
     },
-};
+} satisfies AbilityDefinition;

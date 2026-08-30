@@ -2,13 +2,13 @@ export const HIDDEN_MODE_CSS_MAP = {
     display: 'hidden',
     visibility: 'invisible',
     opacity: 'opacity-0',
-};
+} as const;
 
 export const HIDDEN_MODE = {
     display: 'display',
     visibility: 'visibility',
     opacity: 'opacity',
-};
+} as const;
 
 /**
  * 特殊 key：用于标识带有 target/to 定义的选项

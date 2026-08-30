@@ -1,4 +1,8 @@
-import { OPTION_ATTRIBUTE_PROPS, OPTION_STYLE_PROPS } from '@/component-core/constants';
+import {
+    HIDDEN_MODE_CSS_MAP,
+    OPTION_ATTRIBUTE_PROPS,
+    OPTION_STYLE_PROPS,
+} from '@/component-core/constants';
 import { type AbilityDefinition, type TargetToOptionDefinition } from '@/composable';
 
 export const OptionAbility: AbilityDefinition = {
@@ -23,7 +27,20 @@ export const OptionAbility: AbilityDefinition = {
         }
         if (OPTION_ATTRIBUTE_PROPS.has(key)) {
             this.setAttributes({ [key]: value });
+            return;
         }
+        if (key === 'hidden') {
+            const cls = (HIDDEN_MODE_CSS_MAP as any)[this.hiddenMode];
+            value ? this.addCls(cls) : this.removeCls(cls);
+            return;
+        }
+
+        if (key === 'disabeld') {
+            const cls = this.disabledCls;
+            value ? this.addCls(cls) : this.removeCls(cls);
+            return;
+        }
+
         if (def) {
             if (def.i18n) {
                 this._applyI18nToElement(key, def);

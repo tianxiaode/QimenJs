@@ -108,7 +108,7 @@ export interface NodeOptions {
     /** 加载配置 */
     loading?: LoadingOptions;
     /** 权限设置 */
-    permissions: string | string[];
+    permission?: string | string[];
     [key: string]: any;
 }
 

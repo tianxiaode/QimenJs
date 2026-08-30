@@ -109,4 +109,4 @@ export const DropAbility: AbilityDefinition = {
             this.detachDropZone('self');
         }
     },
-};
+} satisfies AbilityDefinition;

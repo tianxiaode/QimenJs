@@ -1,41 +1,29 @@
 /**
  * PermissionAbility — 组件权限能力
  *
- * 提供节点权限的只读查询与可见性控制：
- *   getPermission(name) → 获取节点的权限配置（只读）
- *   hasPermission(name) → 检查当前用户是否有权限（委托到全局 checkPermission）
- *   show(name) / hide(name) → 根据权限控制隐藏/显示
+ * 组件根据自身的 permission option 控制可见性：
+ *   - permission === null/undefined: 无权限限制，始终显示
+ *   - permission === false: 无权限，隐藏组件
+ *   - permission === string | string[]: 检查权限，无权限时隐藏
  *
- * 权限配置来自模板编译期缓存的 _tplCache.nodes[name].permission，
- * 不支持动态修改，仅通过 hide/show 控制 DOM 可见性。
- * 权限校验委托给系统级 PermissionAbility.checkPermission()。
+ * 权限变化时触发 onPermissionChange(data)，data 包含：
+ *   - { hasPermission: boolean } - 是否有权限
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { PermissionOptions } from '../../types';
 import { SYSTEM_EVENTS } from '@/events';
 
 const PERMISSION_SEPARATOR = ':';
 
 export const PermissionAbility: AbilityDefinition = {
     /**
-     * 获取节点的权限配置（只读）
-     * @param nodeName - 节点名称
-     * @returns 权限配置，未配置时返回 undefined
-     */
-    getPermission(nodeName: string): PermissionOptions | undefined {
-        const nodeMeta = this.getNode(nodeName);
-        return nodeMeta?.permission;
-    },
-
-    /**
-     * 检查当前用户是否有权限访问指定节点
-     * @param nodeName - 节点名称
+     * 检查组件当前用户是否有权限
      * @returns 是否有权限（无权限配置时默认有权限）
      */
-    hasPermission(nodeName: string): boolean {
-        const permission = this.getPermission(nodeName);
-        if (permission === undefined) return true;
+    hasPermission(): boolean {
+        const permission = this.permission;
+        if (permission === null || permission === undefined) return true;
+        if (permission === false) return false;
 
         const entityKey = this.entityKey as string | undefined;
         const domain = this.domain as string | undefined;
@@ -48,45 +36,24 @@ export const PermissionAbility: AbilityDefinition = {
     },
 
     /**
-     * 隐藏节点
-     * @param nodeName - 节点名称
-     */
-    hide(nodeName: string): void {
-        const el = this.getNodeEl(nodeName);
-        if (!el) return;
-        el.style.display = 'none';
-    },
-
-    /**
-     * 显示节点
-     * @param nodeName - 节点名称
-     */
-    show(nodeName: string): void {
-        const el = this.getNodeEl(nodeName);
-        if (!el) return;
-        el.style.display = '';
-    },
-
-    /**
-     * 应用权限 — 遍历所有权限节点，根据权限控制可见性
+     * 应用权限 — 根据组件自己的 permission option 控制可见性
      */
     _applyPermission(): void {
-        const names = this._tplCache.permissions || [];
-        for (const name of names) {
-            if (this.hasPermission(name)) {
-                this.show(name);
-            } else {
-                this.hide(name);
-            }
+        const hasPermission = this.hasPermission();
+        if (hasPermission) {
+            this.hidden = false;
+        } else {
+            this.hidden = true;
         }
+        this.onPermissionChange?.({ hasPermission });
     },
 
     /**
      * 初始化权限
      */
     _initPermission(): void {
-        const names = this._tplCache.permissions || [];
-        if (names.length === 0) return;
+        const permission = this.permission;
+        if (permission === null || permission === undefined) return;
         this.systemOn(SYSTEM_EVENTS.PERMISSION_CHANGE, () => this._applyPermission());
         this._applyPermission();
     },

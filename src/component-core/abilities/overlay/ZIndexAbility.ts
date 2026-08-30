@@ -19,4 +19,4 @@ export const ZIndexAbility: AbilityDefinition = {
     releaseZIndex(): void {
         zIndexManager.release(this._zIndexLevel);
     },
-};
+} satisfies AbilityDefinition;
