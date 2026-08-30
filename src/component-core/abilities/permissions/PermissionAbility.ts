@@ -4,7 +4,7 @@
  * 组件根据自身的 permission option 控制可见性：
  *   - permission === null/undefined: 无权限限制，始终显示
  *   - permission === false: 无权限，隐藏组件
- *   - permission === string | string[]: 检查权限，无权限时隐藏
+ *   - permission === PermissionQuery | PermissionQuery[]: 检查权限，无权限时隐藏
  *
  * 权限变化时触发 onPermissionChange(data)，data 包含：
  *   - { hasPermission: boolean } - 是否有权限
@@ -12,8 +12,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { SYSTEM_EVENTS } from '@/events';
-
-const PERMISSION_SEPARATOR = ':';
+import type { PermissionQuery } from '@/permission';
 
 export const PermissionAbility: AbilityDefinition = {
     /**
@@ -28,10 +27,12 @@ export const PermissionAbility: AbilityDefinition = {
         const entityKey = this.entityKey as string | undefined;
         const domain = this.domain as string | undefined;
 
-        const permissions = Array.isArray(permission) ? permission : [permission];
-        return permissions.some(p => {
-            const query = this._resolvePermissionQuery(p, entityKey, domain);
-            return this.checkPermission(query);
+        const queries: PermissionQuery[] = Array.isArray(permission) ? permission : [permission];
+        return queries.some(query => {
+            const queryObj: PermissionQuery = typeof query === 'string'
+                ? this._resolvePermissionQuery(query, entityKey, domain)
+                : { action: query.action, entityKey: query.entityKey ?? entityKey, domain: query.domain ?? domain };
+            return this.checkPermission(queryObj);
         });
     },
 
@@ -59,11 +60,10 @@ export const PermissionAbility: AbilityDefinition = {
     },
 
     /**
-     * 将权限配置解析为结构化查询参数
+     * 将权限字符串解析为 PermissionQuery 对象
      */
-    _resolvePermissionQuery(permission: string, entityKey?: string, domain?: string) {
-        const parts = permission.split(PERMISSION_SEPARATOR);
-
+    _resolvePermissionQuery(permission: string, entityKey?: string, domain?: string): PermissionQuery {
+        const parts = permission.split(':');
         switch (parts.length) {
             case 1:
                 return { action: parts[0], entityKey, domain };

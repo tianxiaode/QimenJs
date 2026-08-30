@@ -21,11 +21,11 @@ export const OptionAbility: AbilityDefinition = {
 
     _onOptionChange(key: string, value: any, old: any, def: TargetToOptionDefinition): void {
         if (value === old) return;
-        if (OPTION_STYLE_PROPS.has(key)) {
+        if (OPTION_STYLE_PROPS.has(key) || key === 'style') {
             this.setStyles({ [key]: value });
             return;
         }
-        if (OPTION_ATTRIBUTE_PROPS.has(key)) {
+        if (OPTION_ATTRIBUTE_PROPS.has(key) || key === 'attributes') {
             this.setAttributes({ [key]: value });
             return;
         }
@@ -38,6 +38,11 @@ export const OptionAbility: AbilityDefinition = {
         if (key === 'disabeld') {
             const cls = this.disabledCls;
             value ? this.addCls(cls) : this.removeCls(cls);
+            return;
+        }
+
+        if (key === 'hint') {
+            this._applyContentToElement('root', value, this.rootTag === 'img' ? 'alt' : 'title');
             return;
         }
 

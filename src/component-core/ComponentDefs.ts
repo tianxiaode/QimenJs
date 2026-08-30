@@ -23,11 +23,11 @@ export const ComponentDefs: Definitions = {
         /** 组件样式 — 控制组件的样式 */
         style: null,
         /** 组件类名 — 控制组件的类名 */
-        cls: null,
+        classes: null,
         /** 组件提示信息 — 控制组件的提示信息 */
         hint: null,
         /** 组件属性 — 控制组件的属性 */
-        attribute: null,
+        attributes: null,
         /** 组件鼠标样式 — 控制组件的鼠标样式 */
         cursor: null,
         /** 定位样式 */
@@ -44,7 +44,8 @@ export const ComponentDefs: Definitions = {
         position: null,
         zIndex: null,
         transform: null,
-        coursor: null,
+        /** 权限配置 — 控制组件的访问权限 */
+        permission: null,
     },
 
     fields: {
@@ -134,9 +135,6 @@ export const ComponentDefs: Definitions = {
     },
 
     privateFields: {
-        // 内部状态（外部不可见）
-        _tplCache: null,
-        _i18n: {},
         _initializing: false,
         _templateInitialized: false,
         _disposing: false,
