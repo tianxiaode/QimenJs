@@ -212,4 +212,4 @@ export const InitAbility = {
         node.el = placeholder;
         node.instance = undefined;
     },
-} as AbilityDefinition;
+} satisfies AbilityDefinition;

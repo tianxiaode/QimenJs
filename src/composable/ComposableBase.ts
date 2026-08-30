@@ -163,7 +163,7 @@ export class ComposableBase implements IComposableBase {
         return this;
     }
 
-_onOptionChange(
+    _onOptionChange(
         _key: string,
         _value: any,
         _old: any,

@@ -55,4 +55,4 @@ export const LifecycleAbility = {
             this.componentEmit(event, ctx);
         }
     },
-} as AbilityDefinition;
+} satisfies AbilityDefinition;

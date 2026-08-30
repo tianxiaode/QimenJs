@@ -24,20 +24,22 @@ import type { DragOptions } from '../../types';
 export const DragAbility: AbilityDefinition = {
     // ── 缓存管理 ──
 
-    get drags(): Record<string, DragOptions> | undefined {
-        const cache = this.abilityState(DRAG_CACHE_KEY, () => ({})) ?? {};
-        return Object.keys(cache).length > 0 ? cache : undefined;
-    },
+    drags: {
+        get(): Record<string, DragOptions> | undefined {
+            const cache = this.abilityState(DRAG_CACHE_KEY, () => ({})) ?? {};
+            return Object.keys(cache).length > 0 ? cache : undefined;
+        },
 
-    set drags(val: Record<string, DragOptions> | undefined) {
-        const prev = this.abilityState(DRAG_CACHE_KEY) ?? {};
-        if (this._initializing) {
-            const merged = val ? { ...prev, ...val } : prev;
-            this.setAbilityState(DRAG_CACHE_KEY, merged);
-            return;
-        }
-        this.setAbilityState(DRAG_CACHE_KEY, val ?? {});
-        this._syncDrags(prev, val ?? {});
+        set(val: Record<string, DragOptions> | undefined) {
+            const prev = this.abilityState(DRAG_CACHE_KEY) ?? {};
+            if (this._initializing) {
+                const merged = val ? { ...prev, ...val } : prev;
+                this.setAbilityState(DRAG_CACHE_KEY, merged);
+                return;
+            }
+            this.setAbilityState(DRAG_CACHE_KEY, val ?? {});
+            this._syncDrags(prev, val ?? {});
+        },
     },
 
     _emitDragInit(key: string, options: DragOptions): void {
@@ -99,63 +101,14 @@ export const DragAbility: AbilityDefinition = {
             return;
         }
 
-        const nodeMap = this.nodeMap ?? {};
         const dragHandle = this.dragHandle;
+        const handleConfig = typeof dragMode === 'object' ? dragMode : {};
 
-        // 检查节点级 dragHandle 标记
-        let nodeDragHandle: string | undefined;
-        for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-            if (nodeName === 'root') continue;
-            if ((nodeMeta as any)?.dragHandle === true) {
-                nodeDragHandle = nodeName;
-                break;
-            }
-        }
-
-        // drag 有值（true 或 DragOptions）
+        // drag 有值（true 或 DragOptions）：使用 dragHandle 或默认为 'self'
         if (dragMode !== undefined && dragMode !== null) {
-            const handleConfig = typeof dragMode === 'object' ? dragMode : {};
-
-            const effectiveHandle = dragHandle || nodeDragHandle;
-            if (effectiveHandle) {
-                if (!cache[effectiveHandle]) {
-                    cache[effectiveHandle] = handleConfig as DragOptions;
-                }
-            } else if (nodeMap) {
-                for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                    if (nodeName === 'root') continue;
-                    const nodeDrag = (nodeMeta as any)?.drag;
-                    if (nodeDrag && !cache[nodeName]) {
-                        const nodeDragConfig = typeof nodeDrag === 'object' ? nodeDrag : {};
-                        cache[nodeName] = nodeDragConfig as DragOptions;
-                    }
-                }
-            }
-
-            if (!effectiveHandle) {
-                const hasTemplateDrag = Object.keys(nodeMap).some(
-                    (n: string) => n !== 'root' && (nodeMap as any)[n]?.drag
-                );
-                if (!hasTemplateDrag) {
-                    if (!cache['self']) {
-                        cache['self'] = handleConfig as DragOptions;
-                    }
-                }
-            }
-        }
-
-        // drag === undefined: 仅使用模板中的 drag 声明 + 节点级 dragHandle
-        if (dragMode === undefined && nodeMap) {
-            if (nodeDragHandle && !cache[nodeDragHandle]) {
-                cache[nodeDragHandle] = {} as DragOptions;
-            }
-            for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                if (nodeName === 'root') continue;
-                const nodeDrag = (nodeMeta as any)?.drag;
-                if (nodeDrag && !cache[nodeName]) {
-                    const nodeDragConfig = typeof nodeDrag === 'object' ? nodeDrag : {};
-                    cache[nodeName] = nodeDragConfig as DragOptions;
-                }
+            const effectiveHandle = dragHandle || 'self';
+            if (!cache[effectiveHandle]) {
+                cache[effectiveHandle] = handleConfig as DragOptions;
             }
         }
 
@@ -204,43 +157,13 @@ export const DragAbility: AbilityDefinition = {
 
     setDraggable(enabled: boolean, config?: DragOptions): void {
         if (enabled) {
-            const nodeMap = this.nodeMap ?? {};
             const dragHandle = this.dragHandle;
+            const handleConfig = config || {};
 
-            if (config) {
-                if (dragHandle) {
-                    this.attachDrag(dragHandle, config);
-                } else {
-                    let attached = false;
-                    for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                        if (nodeName === 'root') continue;
-                        if ((nodeMeta as any)?.drag) {
-                            this.attachDrag(nodeName, config);
-                            attached = true;
-                        }
-                    }
-                    if (!attached) {
-                        this.attachDrag('self', config);
-                    }
-                }
+            if (dragHandle) {
+                this.attachDrag(dragHandle, handleConfig);
             } else {
-                if (dragHandle) {
-                    this.attachDrag(dragHandle, {});
-                } else {
-                    let attached = false;
-                    for (const [nodeName, nodeMeta] of Object.entries(nodeMap)) {
-                        if (nodeName === 'root') continue;
-                        const nodeDrag = (nodeMeta as any)?.drag;
-                        if (nodeDrag) {
-                            const dragConfig = typeof nodeDrag === 'object' ? nodeDrag : {};
-                            this.attachDrag(nodeName, dragConfig as DragOptions);
-                            attached = true;
-                        }
-                    }
-                    if (!attached) {
-                        this.attachDrag('self', {});
-                    }
-                }
+                this.attachDrag('self', handleConfig);
             }
         } else {
             const cache = this.abilityState(DRAG_CACHE_KEY) ?? {};
@@ -249,4 +172,4 @@ export const DragAbility: AbilityDefinition = {
             }
         }
     },
-};
+} satisfies AbilityDefinition;
