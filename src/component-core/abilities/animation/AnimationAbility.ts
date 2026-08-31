@@ -154,4 +154,4 @@ export const AnimationAbility = {
         if (name) return ANIMATION_PRESETS[name] ?? null;
         return null;
     },
-} as AbilityDefinition;
+} satisfies AbilityDefinition;

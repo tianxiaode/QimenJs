@@ -15,57 +15,18 @@
 import { RegistrarBase } from '@/registry';
 import { DragEventBus } from '@/events';
 import { DragOptions, DropOptions } from '../types';
+import { string } from '@/utils';
 
-export interface DragDefinition extends DragOptions {}
-export interface DropDefinition extends DropOptions {}
-
-/** 拖拽实例内部结构 */
-interface DragInstance {
-    el: HTMLElement;
-    component: any;
-    nodeName: string;
-    config: DragOptions;
+function encodeInstanceKey(componentId: string, key: string): string {
+    return `${componentId}:${key}`;
 }
 
-/** 放置区实例内部结构 */
-interface DropZoneInstance {
-    el: HTMLElement;
-    component: any;
-    nodeName: string;
-    config: DropOptions;
-    dragEnterHandler: (e: DragEvent) => void;
-    dragOverHandler: (e: DragEvent) => void;
-    dragLeaveHandler: (e: DragEvent) => void;
-    dropHandler: (e: DragEvent) => void;
-}
-
-/**
- * 编码实例键
- *
- * @param componentId 组件 ID
- * @param nodeName 节点名
- * @returns 编码后的键（格式：componentId:nodeName）
- */
-function encodeInstanceKey(componentId: string, nodeName: string): string {
-    return `${componentId}:${nodeName}`;
-}
-
-/**
- * 首字母大写
- *
- * @param s 输入字符串
- * @returns 首字母大写后的字符串
- */
-function capitalize(s: string): string {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition>> {
+export class DragDispatchCenter extends RegistrarBase<Map<string, DragOptions>> {
     public readonly name = 'DragDispatchCenter';
-    protected storage = new Map<string, DragDefinition>();
+    protected storage = new Map<string, DragOptions>();
 
-    private readonly instances = new Map<string, DragInstance>();
-    private readonly dropZones = new Map<string, DropZoneInstance>();
+    private readonly instances = new Map<string, any>();
+    private readonly dropZones = new Map<string, any>();
     private readonly bus: DragEventBus;
 
     constructor() {
@@ -80,7 +41,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
      * @param dragKey 拖拽键
      * @param definition 拖拽定义
      */
-    register(dragKey: string, definition: DragDefinition): void {
+    register(dragKey: string, definition: DragOptions): void {
         this.checkLock();
         this.storage.set(dragKey, definition);
         this.logger.debug?.(`[DragDispatchCenter] registered dragKey="${dragKey}"`);
@@ -104,7 +65,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
      * @param dragKey 拖拽键
      * @returns 拖拽定义，若不存在则返回 undefined
      */
-    get(dragKey: string): DragDefinition | undefined {
+    get(dragKey: string): DragOptions | undefined {
         return this.storage.get(dragKey);
     }
 
@@ -145,10 +106,10 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
 
         component.onCleanup(() => this.disposeByComponent(componentId));
 
-        for (const [nodeName, dragDef] of Object.entries(drags)) {
+        for (const [key, dragDef] of Object.entries(drags)) {
             const def = dragDef as Record<string, any>;
-            const el = component.nodeMap?.[nodeName]?.el ?? component.el;
-            const dragKey = encodeInstanceKey(componentId, nodeName);
+            const el = component.el;
+            const dragKey = encodeInstanceKey(componentId, key);
 
             const config: DragOptions = {
                 type: def.type,
@@ -164,7 +125,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
             const inst: DragInstance = {
                 el,
                 component,
-                nodeName,
+                key,
                 config,
             };
             this.instances.set(dragKey, inst);
@@ -174,8 +135,8 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
     }
 
     private _bindDragEvents(dragKey: string, inst: DragInstance): void {
-        const { el, component, nodeName, config } = inst;
-        const handlerName = capitalize(nodeName);
+        const { el, component, key, config } = inst;
+        const handlerName = string.capitalize(key);
 
         // 计算拖拽类型：默认使用 component.type，config.type 可覆盖
         const dragType = config.type ?? component.type;
@@ -265,7 +226,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         const definitions = [...this.storage.keys()];
         const instances = [...this.instances.entries()].map(([key, inst]) => ({
             instanceKey: key,
-            nodeName: inst.nodeName,
+            key: inst.key,
         }));
         const dropZoneCount = this.dropZones.size;
 
@@ -296,17 +257,17 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
     /**
      * 注册放置区
      *
-     * @param dropKey 放置区键（通常为 componentId:nodeName）
+     * @param dropKey 放置区键（通常为 componentId:key）
      * @param el 放置区 DOM 元素
      * @param component 组件实例
-     * @param nodeName 节点名称
+     * @param key 拖拽句柄名称
      * @param config 放置区配置
      */
     registerDropZone(
         dropKey: string,
         el: HTMLElement,
         component: any,
-        nodeName: string,
+        key: string,
         config: DropOptions = {}
     ): void {
         this.checkLock();
@@ -318,7 +279,7 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
         const inst: DropZoneInstance = {
             el,
             component,
-            nodeName,
+            key,
             config,
             dragEnterHandler: () => {},
             dragOverHandler: () => {},
@@ -348,8 +309,8 @@ export class DragDispatchCenter extends RegistrarBase<Map<string, DragDefinition
     }
 
     private _bindDropZoneEvents(dropKey: string, inst: DropZoneInstance): void {
-        const { el, component, nodeName, config } = inst;
-        const handlerName = capitalize(nodeName);
+        const { el, component, key, config } = inst;
+        const handlerName = string.capitalize(key);
 
         const dragEnterHandler = (e: DragEvent) => {
             e.preventDefault();

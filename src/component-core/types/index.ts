@@ -7,3 +7,4 @@ export * from './index-path';
 
 export * from './float';
 export * from './imperative';
+export * from './drag-drop';

@@ -63,11 +63,7 @@ export const EventsAbility = {
         const ctx = EventContextBuilder.create()
             .withEvent(event)
             .withType(event)
-            .withSource(
-                this.eventKey ??
-                    (this.constructor as any).eventKey ??
-                    this.constructor.name
-            )
+            .withSource(this.eventKey)
             .withSourceType(this.constructor.name)
             .withData(data)
             .build();
