@@ -6,4 +6,4 @@
  * @module drag
  */
 
-export { DragDispatchCenter, dragDispatchCenter, type DragDefinition } from './DragDispatchCenter';
+export { DragDispatchCenter, dragDispatchCenter } from './DragDispatchCenter';

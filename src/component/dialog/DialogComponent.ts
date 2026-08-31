@@ -49,7 +49,7 @@
  */
 
 import { Component, DomEventsMap } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DragOptions } from '@qimenjs/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
 import { resolveI18nValue } from '@qimenjs/i18n';
 import { DIALOG_TPL } from './dialog-tpl';
@@ -126,6 +126,8 @@ class DialogComponent extends Component {
         },
     };
 
+    drag?: boolean | DragOptions = { axis: 'both', handle: 'header' };
+
     _dragOffsetX: number = 0;
     _dragOffsetY: number = 0;
 
@@ -135,8 +137,6 @@ class DialogComponent extends Component {
     }
 
     onAfterInit(props?: DialogProps): void {
-        this.attachDrag('header', { axis: 'both' as const });
-
         const headerComp = this.nodeMap?.header?.component;
         if (!headerComp) return;
 
@@ -231,7 +231,7 @@ class DialogComponent extends Component {
         footerComp.setItems(items);
     }
 
-    onHeaderDragStart(ctx: any): void {
+    onDragStart(ctx: any): void {
         const rect = this.el.getBoundingClientRect();
         this._dragOffsetX = rect.left;
         this._dragOffsetY = rect.top;
@@ -243,7 +243,7 @@ class DialogComponent extends Component {
         });
     }
 
-    onHeaderDragMove(ctx: any): void {
+    onDragMove(ctx: any): void {
         const dx = ctx.dx ?? 0;
         const dy = ctx.dy ?? 0;
         this.el.style.top = `${this._dragOffsetY + dy}px`;

@@ -22,7 +22,7 @@
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { ColumnAlign } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DragOptions } from '@qimenjs/component-core';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
 import './groupheadercell.css.ts';
@@ -51,6 +51,12 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         return GROUP_HEADER_CELL_TPL;
     }
 
+    drag?: boolean | DragOptions = {
+        axis: 'x',
+        activeClass: 'q-header-cell__resize--active',
+        handle: 'resizeHandle',
+    };
+
     _childNames: string[] = [];
     _childCells: Array<{ component: any; el: HTMLElement }> = [];
     _resizable: boolean = true;
@@ -63,10 +69,6 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
 
         if (props?.childNames) this._childNames = props.childNames;
         if (props?.resizable !== undefined) this._resizable = props.resizable;
-        this.attachDrag('resizeHandle', {
-            axis: 'x' as const,
-            activeClass: 'q-header-cell__resize--active',
-        });
         this._applyGroupWidth();
         this._applyResizable();
         if (props?.childConfigs) this._createChildren(props.childConfigs);
@@ -113,7 +115,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         }
     }
 
-    onResizeHandleDragStart(_ctx: {
+    onDragStart(_ctx: {
         dx: number;
         dy: number;
         el: HTMLElement;
@@ -123,7 +125,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
-    onResizeHandleDragMove(ctx: {
+    onDragMove(ctx: {
         dx: number;
         dy: number;
         el: HTMLElement;
@@ -138,7 +140,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         });
     }
 
-    onResizeHandleDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
+    onDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
 
     update(data: any): void {
         if (data?.title !== undefined) {

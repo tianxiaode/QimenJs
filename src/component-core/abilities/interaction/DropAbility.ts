@@ -1,11 +1,15 @@
 /**
  * DropAbility — 放置区能力
  *
- * 提供放置区的完整生命周期管理，通过 DragDispatchCenter 注册/注销放置区。
- * 采用懒注册模式：在 _commitDrops 阶段从组件配置解析放置区并注册。
+ * 通过 DragEventBus 的 dropInit/dropDispose 通道通知 DragDispatchCenter，
+ * 组件不感知调度中心。
  *
  * 通信链路：
- *   能力 → dragDispatchCenter.registerDropZone → DragDispatchCenter 管理放置区事件
+ *   能力 → dropInit/dropDispose → DragEventBus → DragDispatchCenter
+ *
+ * 放置回调约定（由调度中心在组件上查找）：
+ *   on${capitalize(zone)}DragEnter / DragLeave / DragDrop，
+ *   或通过配置的 onDrop 指定方法名。
  *
  * @example
  * // 组件 options 中声明
@@ -15,30 +19,32 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { dragDispatchCenter } from '@/component-core/drag';
-import type { DragOptions } from '../../types';
+import type { DropOptions } from '../../types';
 
 /** 放置区能力，提供 attach/detach/setDropZone 等 API */
 export const DropAbility: AbilityDefinition = {
     // ── 提交 ──
 
+    /**
+     * 提交放置区状态：drop 有值（true 或 DropOptions）→ 注册，
+     * drop 为 false/null/undefined → 注销
+     */
     _commitDrops(): void {
         const componentId = this.id;
         if (!componentId) return;
 
         const dropMode = this.drop;
+        const zone = this.dropZone || 'self';
 
-        // drop === false、null 或 undefined: 禁用所有放置区
-        if (dropMode === false || dropMode === null || dropMode === undefined) return;
+        if (dropMode === false || dropMode === null || dropMode === undefined) {
+            this.dropDispose(componentId, zone);
+            return;
+        }
 
-        const dropZone = this.dropZone;
         const el = this.el;
         if (!el) return;
 
-        const effectiveZone = dropZone || 'self';
-        const config = typeof dropMode === 'object' ? dropMode : {};
-        const dropKey = `${componentId}:${effectiveZone}`;
-        dragDispatchCenter.registerDropZone(dropKey, el, this, effectiveZone, config);
+        this.dropInit(this, zone, typeof dropMode === 'object' ? dropMode : {});
     },
 
     // ── 结构变更方法 ──
@@ -46,37 +52,28 @@ export const DropAbility: AbilityDefinition = {
     /**
      * 附加放置区
      *
-     * @param key - 节点名
+     * @param zone - 放置区名
      * @param options - 放置区配置
      *
      * @example
      * this.attachDropZone('content', { accept: ['Card'] });
      */
-    attachDropZone(key: string, options: DragOptions = {}): void {
-        const componentId = this.id;
-        if (!componentId) return;
-
-        const el = this.el;
-        if (!el) return;
-
-        const dropKey = `${componentId}:${key}`;
-        dragDispatchCenter.registerDropZone(dropKey, el, this, key, options);
+    attachDropZone(zone: string, options: DropOptions = {}): void {
+        this.dropInit(this, zone, options);
     },
 
     /**
      * 分离放置区
      *
-     * @param key - 节点名
+     * @param zone - 放置区名
      *
      * @example
      * this.detachDropZone('content');
      */
-    detachDropZone(key: string): void {
+    detachDropZone(zone: string): void {
         const componentId = this.id;
         if (!componentId) return;
-
-        const dropKey = `${componentId}:${key}`;
-        dragDispatchCenter.unregisterDropZone(dropKey);
+        this.dropDispose(componentId, zone);
     },
 
     // ── 便捷开关 ──
@@ -92,21 +89,13 @@ export const DropAbility: AbilityDefinition = {
      * this.setDropZone(true, { accept: ['Card'] });
      * this.setDropZone(false);
      */
-    setDropZone(enabled: boolean, config?: DragOptions): void {
-        const componentId = this.id;
-        if (!componentId) return;
+    setDropZone(enabled: boolean, config?: DropOptions): void {
+        const zone = this.dropZone || 'self';
 
         if (enabled) {
-            const dropZone = this.dropZone;
-            const el = this.el;
-            if (!el) return;
-
-            const effectiveZone = dropZone || 'self';
-            const dropConfig = config || {};
-            const dropKey = `${componentId}:${effectiveZone}`;
-            dragDispatchCenter.registerDropZone(dropKey, el, this, effectiveZone, dropConfig);
+            this.dropInit(this, zone, config || {});
         } else {
-            this.detachDropZone('self');
+            this.detachDropZone(zone);
         }
     },
 } satisfies AbilityDefinition;

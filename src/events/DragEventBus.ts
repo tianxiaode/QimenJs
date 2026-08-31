@@ -67,6 +67,16 @@ export class DragEventBus {
     private readonly dragScope: IEventScope;
     private readonly logger: ILogger;
 
+    /** 拖拽初始化监听（DragDispatchCenter 构造时订阅） */
+    private readonly initHandlers: Array<(component: any, config: any, handleEl?: HTMLElement) => void> = [];
+    /** 拖拽注销监听 */
+    private readonly disposeHandlers: Array<(componentId: string) => void> = [];
+    /** 放置区注册监听 */
+    private readonly dropInitHandlers: Array<(component: any, zone: string, config: any) => void> =
+        [];
+    /** 放置区注销监听 */
+    private readonly dropDisposeHandlers: Array<(componentId: string, zone: string) => void> = [];
+
     /** 当前全局拖拽状态，同一时刻只允许一个活跃拖拽 */
     private activeDrag: DragState | null = null;
 
@@ -82,6 +92,54 @@ export class DragEventBus {
             DragEventBus.instance = new DragEventBus();
         }
         return DragEventBus.instance;
+    }
+
+    /** 订阅拖拽初始化（调度中心在构造时调用） */
+    onInit(handler: (component: any, config: any, handleEl?: HTMLElement) => void): void {
+        this.initHandlers.push(handler);
+    }
+
+    /** 组件声明拖拽时调用，广播给所有订阅方（handleEl 为手柄元素，未指定手柄时为 undefined） */
+    emitInit(component: any, config: any, handleEl?: HTMLElement): void {
+        for (const handler of this.initHandlers) {
+            handler(component, config, handleEl);
+        }
+    }
+
+    /** 订阅拖拽注销 */
+    onDispose(handler: (componentId: string) => void): void {
+        this.disposeHandlers.push(handler);
+    }
+
+    /** 组件禁用拖拽时调用，广播给所有订阅方 */
+    emitDispose(componentId: string): void {
+        for (const handler of this.disposeHandlers) {
+            handler(componentId);
+        }
+    }
+
+    /** 订阅放置区注册 */
+    onDropInit(handler: (component: any, zone: string, config: any) => void): void {
+        this.dropInitHandlers.push(handler);
+    }
+
+    /** 组件声明放置区时调用，广播给所有订阅方 */
+    emitDropInit(component: any, zone: string, config: any): void {
+        for (const handler of this.dropInitHandlers) {
+            handler(component, zone, config);
+        }
+    }
+
+    /** 订阅放置区注销 */
+    onDropDispose(handler: (componentId: string, zone: string) => void): void {
+        this.dropDisposeHandlers.push(handler);
+    }
+
+    /** 组件移除放置区时调用，广播给所有订阅方 */
+    emitDropDispose(componentId: string, zone: string): void {
+        for (const handler of this.dropDisposeHandlers) {
+            handler(componentId, zone);
+        }
     }
 
     /** 获取当前拖拽作用域 ID */
@@ -231,6 +289,10 @@ export class DragEventBus {
     /** 销毁拖拽总线，清理状态和作用域 */
     dispose(): void {
         this.activeDrag = null;
+        this.initHandlers.length = 0;
+        this.disposeHandlers.length = 0;
+        this.dropInitHandlers.length = 0;
+        this.dropDisposeHandlers.length = 0;
         this.dragScope.dispose();
         this.logger.debug?.('[DragEventBus] disposed');
     }

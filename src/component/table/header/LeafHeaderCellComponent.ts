@@ -11,7 +11,7 @@
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DragOptions } from '@qimenjs/component-core';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
 
 /** 叶子表头单元格属性接口 */
@@ -27,6 +27,12 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         return LEAF_HEADER_CELL_TPL;
     }
 
+    drag?: boolean | DragOptions = {
+        axis: 'x',
+        activeClass: 'q-header-cell__resize--active',
+        handle: 'resizeHandle',
+    };
+
     _sortable: boolean = false;
     _resizable: boolean = true;
     _sortState: SortState = 'none';
@@ -36,10 +42,6 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         super.onAfterInit(props);
         if (props?.sortable !== undefined) this._sortable = props.sortable;
         if (props?.resizable !== undefined) this._resizable = props.resizable;
-        this.attachDrag('resizeHandle', {
-            axis: 'x' as const,
-            activeClass: 'q-header-cell__resize--active',
-        });
         this._applySortIcon();
         this._applyResizable();
     }
@@ -83,7 +85,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         });
     }
 
-    onResizeHandleDragStart(_ctx: {
+    onDragStart(_ctx: {
         dx: number;
         dy: number;
         el: HTMLElement;
@@ -93,7 +95,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
-    onResizeHandleDragMove(ctx: {
+    onDragMove(ctx: {
         dx: number;
         dy: number;
         el: HTMLElement;
@@ -107,7 +109,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         });
     }
 
-    onResizeHandleDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
+    onDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
 
     update(data: any): void {
         if (data?.title !== undefined) {

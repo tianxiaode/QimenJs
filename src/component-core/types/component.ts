@@ -68,21 +68,7 @@ export interface IPopover extends IComponentCore {
     close(): void;
 }
 
-export interface DragOptions extends DragOptionsBase {
-    /**
-     * 拖拽类型
-     *
-     * 仅在需要将组件伪装成其他类型时使用。
-     *
-     * @example
-     * { axis: 'both' }  // type 自动使用 component.type
-     * { type: 'item', axis: 'both' }  // 强制伪装为 'item' 类型
-     */
-    /** 拖拽影子组件类型（可选） */
-    type?: IComponentCore;
-    /** 拖拽影子组件类型（可选） */
-    ghost?: IDragGhost;
-}
+export interface DragOptions extends DragOptionsBase {}
 
 export interface NodeOptions {
     /** 节点 ID */

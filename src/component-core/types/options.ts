@@ -22,16 +22,28 @@ export interface DragOptionsBase {
     /**
      * 拖拽类型
      *
-     * 仅在需要将组件伪装成其他类型时使用。
+     * 仅在需要将组件伪装成其他类型时使用，drop 侧 accept 匹配的就是它。
      *
      * @example
      * { axis: 'both' }  // type 自动使用 component.type
      * { type: 'item', axis: 'both' }  // 强制伪装为 'item' 类型
      */
-    /** 拖拽影子组件类型（可选） */
-    //type?: string;
-    /** 拖拽影子组件类型（可选） */
-    //ghost?: IDragGhost;
+    type?: string;
+    /**
+     * 拖拽影子组件类型名（可选）
+     *
+     * 注册表模式下按类型名从 ComponentRegistrar 解析组件类，
+     * dragStart 时实例化影子跟随指针，dragEnd/cancel 时销毁。
+     * 未指定时拖原元素本身。
+     */
+    ghost?: string;
+    /**
+     * 拖拽手柄（可选）
+     *
+     * 组件内发起拖拽的子节点名（nodeMap 键）。
+     * 未指定时整个组件 root 可拖。
+     */
+    handle?: string;
     /** 拖拽轴向：'x' | 'y' | 'both' */
     axis?: 'x' | 'y' | 'both';
     /** 拖拽边界约束 */

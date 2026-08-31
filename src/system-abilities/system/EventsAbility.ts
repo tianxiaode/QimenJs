@@ -270,6 +270,26 @@ export const EventsAbility = {
         DragEventBus.getInstance().dragEmit(this._resolveCtx(event, dataOrCtx, overrides));
     },
 
+    /** 声明组件拖拽（广播给 DragDispatchCenter，handleEl 为手柄元素） */
+    dragInit(component: any, config: any, handleEl?: HTMLElement): void {
+        DragEventBus.getInstance().emitInit(component, config, handleEl);
+    },
+
+    /** 注销组件拖拽（广播给 DragDispatchCenter） */
+    dragDispose(componentId: string): void {
+        DragEventBus.getInstance().emitDispose(componentId);
+    },
+
+    /** 注册组件放置区（广播给 DragDispatchCenter） */
+    dropInit(component: any, zone: string, config: any): void {
+        DragEventBus.getInstance().emitDropInit(component, zone, config);
+    },
+
+    /** 注销组件放置区（广播给 DragDispatchCenter） */
+    dropDispose(componentId: string, zone: string): void {
+        DragEventBus.getInstance().emitDropDispose(componentId, zone);
+    },
+
     dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
         DragEventBus.getInstance().dragStart(dragKey, state);
     },
