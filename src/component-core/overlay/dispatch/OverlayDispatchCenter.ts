@@ -141,7 +141,7 @@ export class OverlayDispatchCenter extends RegistrarBase<Map<string, OverlayDefi
             if (existing && action === OVERLAY_ACTIONS.SHOW) {
                 const def = this.storage.get(overlayKey);
                 existing.overlay.show(
-                    data?.anchor ?? existing.component?.el,
+                    data?.anchor ?? existing.component?.el ?? existing._anchor,
                     def?.placement,
                     def?.offset
                 );
