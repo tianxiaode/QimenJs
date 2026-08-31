@@ -74,12 +74,12 @@ export class DialogComponent extends FloatingComponent {
     };
 
     open(): void {
-        this.setOption('hidden', false);
+        this.hidden = false;
         this._overlayOpen = true;
     }
 
     close(): void {
-        this.setOption('hidden', true);
+        this.hidden = true;
         this._overlayOpen = false;
     }
 
@@ -146,12 +146,12 @@ export class MenuComponent extends FloatingComponent {
     }
 
     open(): void {
-        this.setOption('hidden', false);
+        this.hidden = false;
         this._overlayOpen = true;
     }
 
     close(): void {
-        this.setOption('hidden', true);
+        this.hidden = true;
         this._overlayOpen = false;
     }
 }
@@ -208,12 +208,12 @@ export class IndicatorComponent extends FloatingComponent {
     }
 
     open(): void {
-        this.setOption('hidden', false);
+        this.hidden = false;
         this._overlayOpen = true;
     }
 
     close(): void {
-        this.setOption('hidden', true);
+        this.hidden = true;
         this._overlayOpen = false;
     }
 }

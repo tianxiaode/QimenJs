@@ -14,9 +14,9 @@ export interface DataMap {
 }
 
 export const TARGET_TO_OPTION_MAP = {
-    text: 'textContext',
+    text: 'textContent',
     src: 'src',
-    html: 'html',
+    html: 'innerHTML',
     href: 'href',
     value: 'value',
     title: 'title',
@@ -42,8 +42,6 @@ export interface TargetToOptionDefinition {
     i18n?: string;
     /** 默认值，当目标节点不存在时使用 */
     default?: any;
-    /** 值改变时执行 */
-    change?: (value: any, old: any, def: TargetToOptionDefinition) => void;
 }
 
 export type OptionDefinition = Record<string, TargetToOptionDefinition>;
@@ -53,6 +51,7 @@ export type Definitions = {
     options?: Record<string, any>;
     privateFields?: Record<string, any>;
     fields?: Record<string, any>;
+    overrides?: Record<string, any>;
 };
 
 export interface I18nMeta {

@@ -43,10 +43,6 @@ export class ToastManager {
         this.instances.set(id, toast);
 
         this.enforceMaxCount(alignment);
-        toast.el.style.opacity = '0';
-        toast.mountToOverlay(toast.el);
-        this.repositionAll(alignment);
-
         return toast;
     }
 
@@ -56,14 +52,14 @@ export class ToastManager {
 
         for (const toast of sameAlignment) {
             toast.setViewportPosition(alignment as ViewportPosition, offset, MARGIN);
-            offset += toast.el.offsetHeight + GAP;
+            offset += toast.el!.offsetHeight + GAP;
         }
     }
 
     private getInstancesByAligment(alignment: ToastAlignment): Toast[] {
         const result: Toast[] = [];
         for (const toast of this.instances.values()) {
-            if (toast.getOption('alignment') === alignment) {
+            if (toast.alignment === alignment) {
                 result.push(toast);
             }
         }

@@ -6,7 +6,15 @@
  */
 
 import type { Rect } from '@/utils/geometry';
-import { alignCenterX, alignCenterY, keepInside, alignLeft, alignRight, alignTop, alignBottom } from '@/utils/geometry';
+import {
+    alignCenterX,
+    alignCenterY,
+    keepInside,
+    alignLeft,
+    alignRight,
+    alignTop,
+    alignBottom,
+} from '@/utils/geometry';
 
 /**
  * 弹出方向

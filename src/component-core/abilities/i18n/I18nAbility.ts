@@ -21,8 +21,9 @@ export const I18nAbility: AbilityDefinition = {
         if (!el) return;
 
         const i18nMeta = this._getData().__i18nMeta[optionKey];
+        const useI18n = i18nMeta?.useI18n ?? true; // 是否使用i18n
 
-        const text = i18nMeta?.useI18n ? t(i18nMeta?.key ?? def.i18n) : this.getData(optionKey);
+        const text = useI18n ? t(i18nMeta?.key ?? def.i18n) : this.getData(optionKey);
         this._applyContentToElement(def.target ?? 'root', text, def.to);
     },
 

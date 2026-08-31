@@ -53,9 +53,9 @@ export const ArrowAbility = {
             const name = this.arrowName;
             if (!name) return;
             if (v) {
-                this.removeCls(name, ARROW_HIDDEN_CLS);
+                this.removeCls(ARROW_HIDDEN_CLS, name);
             } else {
-                this.addCls(name, ARROW_HIDDEN_CLS);
+                this.addCls(ARROW_HIDDEN_CLS, name);
             }
         },
     },
@@ -72,10 +72,10 @@ export const ArrowAbility = {
     updateArrowPlacement(placement: string): void {
         const name = this.arrowName;
         if (!name) return;
-        this.removeCls(name, ARROW_PLACEMENT_CLS.top);
-        this.removeCls(name, ARROW_PLACEMENT_CLS.bottom);
-        this.removeCls(name, ARROW_PLACEMENT_CLS.left);
-        this.removeCls(name, ARROW_PLACEMENT_CLS.right);
-        this.addCls(name, ARROW_PLACEMENT_CLS[placement as keyof typeof ARROW_PLACEMENT_CLS]);
+        this.removeCls(ARROW_PLACEMENT_CLS.top, name);
+        this.removeCls(ARROW_PLACEMENT_CLS.bottom, name);
+        this.removeCls(ARROW_PLACEMENT_CLS.left, name);
+        this.removeCls(ARROW_PLACEMENT_CLS.right, name);
+        this.addCls(ARROW_PLACEMENT_CLS[placement as keyof typeof ARROW_PLACEMENT_CLS], name);
     },
 } satisfies AbilityDefinition;

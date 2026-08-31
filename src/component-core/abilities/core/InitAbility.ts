@@ -31,7 +31,7 @@ export const InitAbility = {
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
         this.nodeInstances = {};
-        const fragment = this._tplCache.templateCache!.content.cloneNode(true);
+        const fragment = this._getCache().templateCache!.content.cloneNode(true);
         const el = (fragment.firstElementChild as HTMLElement) ?? document.createElement('div');
         this.el = el;
         this._setNodeEl('root', el);
@@ -48,7 +48,7 @@ export const InitAbility = {
     },
 
     _applyNodeMeta(options?: ComponentCoreOptions): void {
-        const names = this._tplCache.names;
+        const names = this._getCache().names;
         this.logger.debug(`[prepare:apply node meta]`, `[${this.type}]:[${this.id}]`);
         for (const name of names) {
             const nodeMeta = this.getNode(name);
@@ -65,13 +65,13 @@ export const InitAbility = {
         if (!options) return;
         // 将构造函数选项应用到组件实例
         this.logger.debug(`[prepare:apply options]`, `[${this.type}]:[${this.id}]`);
-        const optionMap: Map<string, any> = this.getOptionsMap();
-        const propertyMap: Map<string, any> = this.getPropertyMap();
+        const optionsKeys: Map<string, any> = this.optionsKeys;
+        const propertyKeys: Map<string, any> = this.propertyKeys;
         for (const [key, value] of Object.entries(options)) {
             if (key === 'id') continue;
-            if (optionMap.has(key)) {
+            if (optionsKeys.has(key)) {
                 this.setData(key, value);
-            } else if (propertyMap.has(key)) {
+            } else if (propertyKeys.has(key)) {
                 this[key] = value;
             }
         }

@@ -15,8 +15,8 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     open(): void {
-        this.setData('hidden', false);
-        this.setData('zIndex', zIndexManager.acquire(ZIndexLevel.tooltip));
+        this.hidden = false; // 修正这里
+        this.zIndex = zIndexManager.acquire(ZIndexLevel.tooltip); // 修正这里
         this._overlayOpen = true;
         if (typeof this.updateArrowPlacement === 'function') {
             requestAnimationFrame(() => {
@@ -30,7 +30,7 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     close(): void {
-        this.setData('hidden', true);
+        this.hidden = true; // 修正这里
         this._overlayOpen = false;
     }
 
@@ -50,12 +50,12 @@ export class TooltipComponent extends FloatingComponent {
     onOverlayChange(data: any): void {
         if (!data) return;
         if (data.tooltip !== undefined) this.text = data.tooltip;
-        if (data.visible !== undefined) this.setData('hidden', !data.visible);
+        if (data.visible !== undefined) this.hidden = !data.visible;
     }
 }
 
 const TooltipComponentDefs: Definitions = {
-    options: {
+    targetToOptions: {
         tooltip: { target: 'text', to: 'text' },
     },
 };

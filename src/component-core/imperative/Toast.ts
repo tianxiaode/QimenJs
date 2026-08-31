@@ -42,17 +42,17 @@ export class Toast extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.setStyles({ pointerEvents: 'auto' });
+        this.pointerEvents = 'auto';
         const toastType: ToastType = this.toastType ?? 'info';
-        this.addCls('root', `q-toast--${toastType}`);
-        this.addCls('icon', `q-toast__icon--${toastType}`); // 添加样式类
+        this.addCls(`q-toast--${toastType}`);
+        this.addCls(`q-toast__icon--${toastType}`, 'icon'); // 添加样式类
 
         if (this.title) {
-            this.addCls('root', 'q-toast--titled');
+            this.addCls('q-toast--titled');
         }
 
-        this.setData('zIndex', this.acquireZIndex());
-        this.mountToOverlay(this.el);
+        this.zIndex = this.acquireZIndex();
+        this.mountToOverlay(this.el!);
 
         this.playEnter();
 
@@ -83,7 +83,7 @@ export class Toast extends FloatingComponent {
 
         await this.playLeave();
 
-        this.unmountFromOverlay(this.el);
+        this.unmountFromOverlay(this.el!);
         this.releaseZIndex();
 
         this._resolve?.();
@@ -104,14 +104,16 @@ export class Toast extends FloatingComponent {
 }
 
 const ToastDefs: Definitions = {
+    targetToOptions: {
+        title: { target: 'text', to: 'html' },
+        message: { target: 'message', to: 'html' },
+    },
     options: {
         toastType: 'info',
         duration: 3000,
         alignment: 'top-right',
         minWidth: 200,
         maxWidth: 300,
-        title: { target: 'text', to: 'html', default: null },
-        message: { target: 'message', to: 'html', default: null },
     },
 };
 

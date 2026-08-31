@@ -223,7 +223,7 @@ export class DomEventAdapter {
             unbindFunctions
         );
 
-        this.logAdapter('info', 'bind_gesture_success', {
+        this.logAdapter('debug', 'bind_gesture_success', {
             semantic,
             signalCount: descriptor.requires.length,
             target: target.constructor.name,
@@ -283,7 +283,7 @@ export class DomEventAdapter {
             });
         }
 
-        this.logAdapter('info', 'bind_input_signal_success', {
+        this.logAdapter('debug', 'bind_input_signal_success', {
             signal,
             domEventCount: domEvents.length,
             target: target.constructor.name,

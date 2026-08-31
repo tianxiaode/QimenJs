@@ -76,7 +76,7 @@ export interface NodeOptions {
     /** 拖拽配置 */
     drag?: true | DragOptions;
     /** 指示器配置 */
-    indicator?: IIndicator;
+    indicator?: IndicatorOptions;
     /** 对话框配置 */
     dialog?: IDialog;
     /** 弹出层配置 */

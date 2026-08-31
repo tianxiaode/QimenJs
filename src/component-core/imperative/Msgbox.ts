@@ -47,15 +47,15 @@ export class Msgbox extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.setStyles({ pointerEvents: 'auto' });
-        const type = this.getOption('msgboxType');
+        this.pointerEvents = 'auto';
+        const type = this.msgboxType;
         if (type === 'alert') {
-            this.addCls('cancel', 'hidden');
+            this.addCls('hidden', 'cancel');
         } else if (type === 'prompt') {
             this.toggleCls('field', 'hidden');
         }
 
-        this.setData('zIndex', this.acquireZIndex());
+        this.zIndex = this.acquireZIndex(); // Acquire a unique zIndex
 
         this._initMask({ color: 'rgba(0,0,0,0.5)' });
 
@@ -70,7 +70,7 @@ export class Msgbox extends FloatingComponent {
         }
 
         this.setViewportPosition('center' as ViewportPosition);
-        this.mountToOverlay(this.el);
+        this.mountToOverlay(this.el!);
 
         this.animation.enterKeyframes = [
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
@@ -106,7 +106,7 @@ export class Msgbox extends FloatingComponent {
         });
         await Promise.all([this.playLeave(), maskAnim?.finished]);
 
-        this.unmountFromOverlay(this.el);
+        this.unmountFromOverlay(this.el!);
         this._removeMask();
         this.releaseZIndex();
 
@@ -122,13 +122,15 @@ export class Msgbox extends FloatingComponent {
 // ─── Definitions ────────────────────────────────────────────
 
 const MsgboxDefs: Definitions = {
+    targetToOptions: {
+        title: { target: 'title', to: 'text' },
+        content: { target: 'content', to: 'html' },
+        confirmText: { target: 'confirm', to: 'text', i18n: 'common:confirm' },
+        cancelText: { target: 'cancel', to: 'text', i18n: 'common:cancel' },
+        value: { target: 'field', to: 'value' },
+    },
     options: {
         msgboxType: 'alert',
-        title: { target: 'title', to: 'text', default: null },
-        content: { target: 'content', to: 'html', default: null },
-        confirmText: { target: 'confirm', to: 'text', default: '确定' },
-        cancelText: { target: 'cancel', to: 'text', default: '取消' },
-        value: { target: 'field', to: 'value', default: null },
     },
     fields: {
         callback: null,

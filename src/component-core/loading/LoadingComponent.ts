@@ -1,6 +1,6 @@
 import { FloatingComponent } from '../overlay/FloatingComponent';
 import type { TemplateDecl } from '../types';
-import type { Definitions } from '@/composable/types';
+import type { Definitions } from '@/composable';
 import { LOADING_TPL } from './loading-tpl';
 import './loading.css';
 
@@ -15,15 +15,15 @@ class LoadingComponent extends FloatingComponent {
         if (!data) return;
         const textEl = this.getNodeEl('text');
         if (data.text !== undefined) {
-            this.setData('text', data.text);
+            this.text = data.text; // Update the text property
             if (textEl) textEl.style.display = data.text ? '' : 'none';
         }
-        if (data.visible !== undefined) this.setData('hidden', !data.visible);
+        if (data.visible !== undefined) this.hidden = !data.visible;
     }
 }
 
 const LoadingComponentDefs: Definitions = {
-    options: {
+    targetToOptions: {
         text: { target: 'text', to: 'text' },
     },
 };

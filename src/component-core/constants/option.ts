@@ -14,6 +14,7 @@ export const OPTION_STYLE_PROPS = new Set([
     'zIndex',
     'transform',
     'cursor',
+    'pointerEvents',
 ]);
 
 /** 需要走 setAttribute 的选项属性 */

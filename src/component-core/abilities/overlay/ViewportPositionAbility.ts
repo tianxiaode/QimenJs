@@ -3,14 +3,12 @@ import type { AbilityDefinition } from '@/composable';
 
 export const ViewportPositionAbility: AbilityDefinition = {
     setViewportPosition(position: ViewportPosition, offset: number = 0, margin: number = 16): void {
-        this.setStyles({
-            top: null,
-            bottom: null,
-            left: null,
-            right: null,
-            transform: null,
-            position: 'fixed',
-        });
+        this.top = null;
+        this.bottom = null;
+        this.left = null;
+        this.right = null;
+        this.transform = null;
+        this.position = 'fixed'; // 设置固定定位
 
         const isTop = position.startsWith('top');
         const isBottom = position.startsWith('bottom');
@@ -20,11 +18,9 @@ export const ViewportPositionAbility: AbilityDefinition = {
         const isMiddle = position === 'center';
 
         if (isMiddle) {
-            this.setStyles({
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-            });
+            this.top = '50%';
+            this.bottom = '50%';
+            this.transform = 'translate(-50%, -50%)';
             return;
         }
 
@@ -36,20 +32,11 @@ export const ViewportPositionAbility: AbilityDefinition = {
 
         if (isLeft) {
             this.left = `${margin}px`;
-            this.el.style.left = `${margin}px`;
         } else if (isRight) {
             this.right = `${margin}px`;
         } else if (isCenter) {
-            this.setStyles({
-                left: '50%',
-                transform: 'translateX(-50%)',
-            });
-            this.el.style.left = '50%';
-        } else {
-            this.setStyles({
-                left: '50%',
-                transform: 'translateX(-50%)',
-            });
+            this.left = '50%';
+            this.transform = 'translateX(-50%)';
         }
     },
 

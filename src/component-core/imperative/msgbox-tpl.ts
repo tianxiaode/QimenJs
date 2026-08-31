@@ -14,7 +14,6 @@ export const MSGBOX_TPL: TemplateDecl = {
                     tag: 'div',
                     name: 'close',
                     classes: 'q-msgbox__close',
-                    i18n: { hint: 'common:close' },
                 },
             ],
         },
@@ -40,14 +39,12 @@ export const MSGBOX_TPL: TemplateDecl = {
                 {
                     tag: 'button',
                     name: 'cancel',
-                    i18n: { text: 'common:cancel', hint: 'common:cancel' },
                     options: { action: 'cancel' },
                     classes: 'q-btn q-btn--default',
                 },
                 {
                     tag: 'button',
                     name: 'confirm',
-                    i18n: { text: 'common:confirm', hint: 'common:confirm' },
                     options: { action: 'confirm' },
                     classes: 'q-btn q-btn--primary',
                 },

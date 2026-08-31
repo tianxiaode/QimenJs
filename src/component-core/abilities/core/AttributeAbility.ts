@@ -17,7 +17,7 @@ export const AttributeAbility: AbilityDefinition = {
     setAttributes(attributes: Record<string, any>, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
-        for (const [key, value] of Object.entries(attributes)) {
+        for (const [key, value] of Object.entries(attributes ?? {})) {
             el.setAttribute(key, value);
         }
     },

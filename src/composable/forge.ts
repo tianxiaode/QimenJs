@@ -24,7 +24,6 @@ const BUILTIN_KEYS = new Set([
     'getDataMap',
     '_getData',
     'getDefaultValue',
-    '_onOptionChange',
     'abilityState',
     'setAbilityState',
     'onCleanup',
@@ -164,10 +163,7 @@ export function withDefinitions(target: any, definitions: Definitions): void {
     // ============================================================
     // 3. 处理方法 → 直接复制到原型
     // ============================================================
-    for (const [key, value] of Object.entries(definitions)) {
-        if (key === 'options' || key === 'targetToOptions') continue;
-        if (key === 'fields' || key === 'privateFields') continue;
-        if (key === 'constructor') continue;
+    for (const [key, value] of Object.entries(definitions.overrides ?? {})) {
         if (BUILTIN_KEYS.has(key)) continue;
 
         if (typeof value === 'function') {

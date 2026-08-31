@@ -1,10 +1,10 @@
-import { Component, toast, msgbox } from '@qimenjs/component-core';
+import { Component, toast, msgbox, TemplateDecl } from '@qimenjs/component-core';
 import { Button } from './Button';
 import { DialogComponent, MenuComponent, IndicatorComponent } from './FloatsTest';
 export class OverlayTest extends Component {
     loading = { text: '加载中...' };
     dialog = { type: DialogComponent };
-    get tpl() {
+    override get tpl(): TemplateDecl {
         return {
             tag: 'div',
             name: 'root',
@@ -46,7 +46,7 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'badgeBtn',
                             options: {
                                 badge: { text: '99' },
@@ -175,7 +175,7 @@ export class OverlayTest extends Component {
                         {
                             type: Component,
                             style: {
-                                flex: 1,
+                                flex: '1',
                                 height: '100px',
                                 padding: '8px 16px',
                                 borderRadius: '6px',
@@ -185,7 +185,7 @@ export class OverlayTest extends Component {
                                 cursor: 'pointer',
                                 fontSize: '14px',
                             },
-                            options: { indicator: { type: IndicatorComponent } },
+                            options: { indicator: { type: 'dot' } },
                         },
                     ],
                 },

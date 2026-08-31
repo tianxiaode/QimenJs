@@ -61,7 +61,7 @@ export class EventScope implements IEventScope {
      */
     logScope(level: LogLevel, action: ScopeLogAction, data?: Record<string, any>) {
         if (!this.logger) return;
-        this.logger[level](`[event.scope] ${action}`, {
+        this.logger.debug(`[event.scope] ${action}`, {
             busId: this.bus.getBusId(),
             scopeId: this.scopeId,
             ...data,

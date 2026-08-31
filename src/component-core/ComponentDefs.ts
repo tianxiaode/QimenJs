@@ -1,5 +1,6 @@
-import { Definitions } from '@/composable/types';
+import { Definitions, TargetToOptionDefinition } from '@/composable/types';
 import { HIDDEN_MODE } from './constants';
+import { HIDDEN_MODE_CSS_MAP, OPTION_ATTRIBUTE_PROPS, OPTION_STYLE_PROPS } from './constants';
 
 export const ComponentDefs: Definitions = {
     /** 组件类型 — 控制组件的类型和用途 */
@@ -138,5 +139,48 @@ export const ComponentDefs: Definitions = {
         _initializing: false,
         _templateInitialized: false,
         _disposing: false,
+    },
+
+    overrides: {
+        _onOptionChange(key: string, value: any, old: any, def: TargetToOptionDefinition): void {
+            if (value === old) return;
+            if (OPTION_STYLE_PROPS.has(key) || key === 'style') {
+                this.setStyles({ [key]: value });
+                return;
+            }
+            if (OPTION_ATTRIBUTE_PROPS.has(key) || key === 'attributes') {
+                this.setAttributes({ [key]: value });
+                return;
+            }
+            if (key === 'hidden' || key === 'hiddenMode') {
+                const cls = (HIDDEN_MODE_CSS_MAP as any)[this.hiddenMode];
+                value ? this.addCls(cls) : this.removeCls(cls);
+                return;
+            }
+
+            if (key === 'disabeld' || key === 'disableCls') {
+                const cls = this.disabledCls;
+                value ? this.addCls(cls) : this.removeCls(cls);
+                return;
+            }
+
+            if (key === 'hint') {
+                this._applyContentToElement(
+                    'root',
+                    value,
+                    this.rootTag === 'img' ? 'alt' : 'title'
+                );
+                return;
+            }
+
+            if (def) {
+                if (def.i18n) {
+                    this._applyI18nToElement(key, def);
+                    return;
+                }
+                this.logger.info(`Option changed: ${key} = ${value}`, def);
+                this._applyContentToElement(def.target ?? 'root', value, def.to);
+            }
+        },
     },
 };

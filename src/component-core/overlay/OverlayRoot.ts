@@ -13,8 +13,6 @@ export class OverlayRoot {
     private static instance: OverlayRoot;
     private root: HTMLElement | null = null;
 
-    private constructor() {}
-
     /**
      * 获取单例实例
      */

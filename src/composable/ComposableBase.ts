@@ -26,6 +26,7 @@ import type {
     IComposableBase,
     TargetToOptionDefinition,
 } from './types';
+import { string } from '@/utils';
 
 export class ComposableBase implements IComposableBase {
     logger: ILogger;
@@ -46,24 +47,25 @@ export class ComposableBase implements IComposableBase {
     }
 
     setData(key: string, value: any): void {
+        const self = this as any;
         const data = this._getData();
         const old = this.getData(key);
         if (old === value) return;
         data[key] = value;
 
-        if (this.i18nOptions.includes(key)) {
-            data.__i18nMeta[key].useI18n = false;
-        }
-
-        const def: TargetToOptionDefinition | undefined = this.targetToMap.get(key);
-        if (def?.change) {
-            const change = typeof def.change === 'string' ? (this as any)[def.change] : def.change;
-            if (typeof change === 'function') {
-                change.call(this, value, old, def);
+        // 更新 i18nMeta
+        const def: TargetToOptionDefinition | undefined = self.targetToMap.get(key);
+        if (def && def.i18n) {
+            if (value !== null && value !== undefined) {
+                data.__i18nMeta[key].useI18n = false;
             }
         }
+        const changeKey = `_on${string.capitalize(key)}Change`;
+        if (typeof self[changeKey] === 'function') {
+            self[changeKey](value, old, def);
+        }
 
-        this._onOptionChange(key, value, old, def);
+        self._onOptionChange(key, value, old, def);
     }
 
     setI18n(optionKey: string, value: string): void {

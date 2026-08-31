@@ -1,9 +1,4 @@
-import {
-    HIDDEN_MODE_CSS_MAP,
-    OPTION_ATTRIBUTE_PROPS,
-    OPTION_STYLE_PROPS,
-} from '@/component-core/constants';
-import { type AbilityDefinition, type TargetToOptionDefinition } from '@/composable';
+import { type AbilityDefinition } from '@/composable';
 
 export const OptionAbility: AbilityDefinition = {
     getNodeOption(nodeName: string, key?: string): any {
@@ -17,41 +12,5 @@ export const OptionAbility: AbilityDefinition = {
             node.options = {};
         }
         node.options[key] = value;
-    },
-
-    _onOptionChange(key: string, value: any, old: any, def: TargetToOptionDefinition): void {
-        if (value === old) return;
-        if (OPTION_STYLE_PROPS.has(key) || key === 'style') {
-            this.setStyles({ [key]: value });
-            return;
-        }
-        if (OPTION_ATTRIBUTE_PROPS.has(key) || key === 'attributes') {
-            this.setAttributes({ [key]: value });
-            return;
-        }
-        if (key === 'hidden') {
-            const cls = (HIDDEN_MODE_CSS_MAP as any)[this.hiddenMode];
-            value ? this.addCls(cls) : this.removeCls(cls);
-            return;
-        }
-
-        if (key === 'disabeld') {
-            const cls = this.disabledCls;
-            value ? this.addCls(cls) : this.removeCls(cls);
-            return;
-        }
-
-        if (key === 'hint') {
-            this._applyContentToElement('root', value, this.rootTag === 'img' ? 'alt' : 'title');
-            return;
-        }
-
-        if (def) {
-            if (def.i18n) {
-                this._applyI18nToElement(key, def);
-                return;
-            }
-            this._applyContentToElement(def.target ?? 'root', value, def.to);
-        }
     },
 } satisfies AbilityDefinition;

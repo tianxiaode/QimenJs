@@ -160,10 +160,10 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     _getCache() {
-        return this.getdata('__tplCache');
+        return this.getData('__tplCache');
     },
 
     _setCache(cache: any) {
-        this.setdata('__tplCache', cache);
+        this.setData('__tplCache', cache);
     },
 } satisfies AbilityDefinition;

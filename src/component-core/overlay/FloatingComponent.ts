@@ -13,6 +13,7 @@ const FloatingComponentDefs: Definitions = {
         showDelay: null,
         hideDelay: null,
         viewportPosition: null,
+        pointerEvents: null,
     },
     fields: {
         _overlayOpen: false,
@@ -47,12 +48,11 @@ export class FloatingComponent extends Component {
         this._anchor = anchor;
         const el = this.el!;
         this.mountToOverlay(el);
-        el.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
-        el.style.pointerEvents = 'auto';
-
+        this.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
+        this.pointerEvents = 'auto';
         const p = placement ?? 'bottom';
         if (p !== 'center' && p !== 'anchor-center') {
-            el.style.position = 'absolute';
+            this.position = 'absolute';
         }
 
         const actualPlacement = positionOverlay(el, anchor, p, offset ?? 4, true);
@@ -110,3 +110,4 @@ export class FloatingComponent extends Component {
 
 FloatingComponent.define(FloatingComponentDefs);
 FloatingComponent.use([ZIndexAbility, ViewportPositionAbility]);
+FloatingComponent.register();
