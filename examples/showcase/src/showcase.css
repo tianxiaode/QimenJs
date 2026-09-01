@@ -14,10 +14,21 @@
     font-weight: 900;
 }
 
-.q-toast__icon--info::before { --q-icon-info: '\f05a'; }
-.q-toast__icon--success::before { --q-icon-success: '\f058'; }
-.q-toast__icon--warning::before { --q-icon-warning: '\f071'; }
-.q-toast__icon--error::before { --q-icon-error: '\f057'; }
+.q-toast__icon--info::before {
+    --q-icon-info: '\f05a';
+}
+
+.q-toast__icon--success::before {
+    --q-icon-success: '\f058';
+}
+
+.q-toast__icon--warning::before {
+    --q-icon-warning: '\f071';
+}
+
+.q-toast__icon--error::before {
+    --q-icon-error: '\f057';
+}
 
 .q-toast__close::before {
     --q-icon-close: '\f00d';

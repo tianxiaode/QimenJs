@@ -20,4 +20,4 @@ export class Button extends Component {
     }
 }
 //Button.use('TooltipAbility');
-Button.register();
+//Button.register();

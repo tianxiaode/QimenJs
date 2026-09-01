@@ -1,9 +1,10 @@
 import { Component, toast, msgbox, TemplateDecl } from '@qimenjs/component-core';
+import { DialogComponent, MenuComponent } from './FloatsTest';
 import { Button } from './Button';
-import { DialogComponent, MenuComponent, IndicatorComponent } from './FloatsTest';
+Button.register();
 export class OverlayTest extends Component {
     loading = { text: '加载中...' };
-    dialog = { type: DialogComponent };
+    dialog = { type: 'dialog' };
     override get tpl(): TemplateDecl {
         return {
             tag: 'div',
@@ -185,7 +186,7 @@ export class OverlayTest extends Component {
                                 cursor: 'pointer',
                                 fontSize: '14px',
                             },
-                            options: { indicator: { type: 'dot' } },
+                            options: { indicator: { type: 'dot', count: 5 } },
                         },
                     ],
                 },

@@ -34,8 +34,8 @@ export class ComponentRegistrar extends RegistrarBase<Map<string, ComponentClass
     }
 
     protected doInspect(): void {
-        for (const [type, component] of this.storage) {
-            console.log(`${type}:`, component.name);
+        for (const type of this.storage.keys()) {
+            console.log(`${type}:`, this.storage.get(type) ?? 'undefined');
         }
     }
 }

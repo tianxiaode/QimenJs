@@ -119,7 +119,7 @@ export interface NodeMeta {
     /** 节点标签 */
     tag?: string;
     /** 组件类型 */
-    type?: IComponentCore | string;
+    type?: any | string;
     /** 子组件选项（仅 type 时有效） */
     options?: NodeOptions;
     /** DOM的attribute 属性 */
