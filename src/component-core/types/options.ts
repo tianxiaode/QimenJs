@@ -61,6 +61,8 @@ export interface DragOptionsBase {
  * 放置声明
  */
 export interface DropOptions {
+    /** 放置区域节点名（默认 'self' 即组件 root） */
+    zone?: string;
     /** 接受的拖拽类型列表（为空表示接受所有） */
     accept?: string[];
     /** 拖拽悬停时添加的 CSS 类 */

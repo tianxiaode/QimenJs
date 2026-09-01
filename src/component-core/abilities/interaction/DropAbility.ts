@@ -5,7 +5,8 @@ import type { DropOptions } from '../../types';
 export const DropAbility: AbilityDefinition = {
     _commitDrops(): void {
         const dropMode = this.drop;
-        const zone = this.dropZone || 'self';
+        const config = typeof dropMode === 'object' ? dropMode : {};
+        const zone = config.zone || this.dropZone || 'self';
         console.log('[DropAbility] _commitDrops, drop =', dropMode, 'zone =', zone);
 
         if (dropMode === false || dropMode === null || dropMode === undefined) {
@@ -13,13 +14,12 @@ export const DropAbility: AbilityDefinition = {
             return;
         }
 
-        const el = this.el;
+        const el = zone === 'self' ? this.el : this.getNodeEl(zone);
         if (!el) {
-            console.log('[DropAbility] no el, abort');
+            console.log('[DropAbility] no el for zone =', zone, 'abort');
             return;
         }
 
-        const config = typeof dropMode === 'object' ? dropMode : {};
         this._initDropZone(zone, el, config);
     },
 
@@ -151,7 +151,7 @@ export const DropAbility: AbilityDefinition = {
     },
 
     attachDropZone(zone: string, options: DropOptions = {}): void {
-        const el = this.el;
+        const el = zone === 'self' ? this.el : this.getNodeEl(zone);
         if (!el) return;
         this._initDropZone(zone, el, options);
     },
@@ -161,10 +161,10 @@ export const DropAbility: AbilityDefinition = {
     },
 
     setDropZone(enabled: boolean, config?: DropOptions): void {
-        const zone = this.dropZone || 'self';
+        const zone = config?.zone || this.dropZone || 'self';
 
         if (enabled) {
-            const el = this.el;
+            const el = zone === 'self' ? this.el : this.getNodeEl(zone);
             if (!el) return;
             this._initDropZone(zone, el, config || {});
         } else {
