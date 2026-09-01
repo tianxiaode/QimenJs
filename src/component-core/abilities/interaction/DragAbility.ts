@@ -81,45 +81,6 @@ export const DragAbility: AbilityDefinition = {
         this.onCleanup(() => this._disposeDrag());
     },
 
-    _initDrag(config: DragOptions, handleEl?: HTMLElement): void {
-        const componentId = this.id;
-        if (!componentId) return;
-
-        this._disposeDrag();
-
-        const el = handleEl ?? this.el;
-        if (!el) return;
-
-        this._dragConfig = config;
-        this._dragEl = el;
-
-        this.bind(el, 'drag');
-
-        this._dragHandler = (gesture: any) => {
-            if (
-                gesture.originalEvent?.target !== el &&
-                !el.contains(gesture.originalEvent?.target)
-            ) {
-                return;
-            }
-
-            const phase = gesture.phase;
-
-            if (phase === 'start') {
-                this._onDragStart(gesture);
-            } else if (phase === 'move') {
-                this._onDragMove(gesture);
-            } else if (phase === 'end') {
-                this._onDragEnd(gesture);
-            } else if (phase === 'cancel') {
-                this._onDragCancel(gesture);
-            }
-        };
-        this.on('dom:drag', this._dragHandler);
-
-        this.onCleanup(() => this._disposeDrag());
-    },
-
     _disposeDrag(): void {
         const componentId = this.id;
         if (!componentId) return;
