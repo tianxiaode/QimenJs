@@ -52,7 +52,8 @@ export const DragAbility: AbilityDefinition = {
             console.error('[DragAbility] bind error:', e);
         }
 
-        this._dragHandler = (gesture: any) => {
+        this._dragHandler = (ctx: any) => {
+            const gesture = ctx?.data ?? ctx;
             console.log('[DragAbility] dom:drag received, phase =', gesture?.phase, 'target =', gesture?.originalEvent?.target);
 
             if (
