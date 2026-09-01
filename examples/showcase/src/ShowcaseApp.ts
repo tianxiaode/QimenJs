@@ -1,10 +1,11 @@
-import { Component } from '@qimenjs/component-core';
+import { Component, TemplateDecl } from '@qimenjs/component-core';
 import { NestedTest } from './NestedTest';
 import { EventTestPanel } from './EventTest';
 import { OverlayTest } from './FixesTest';
+import { DragDropTest } from './DragDropTest';
 
 export class ShowcaseApp extends Component {
-    get tpl() {
+    get tpl(): TemplateDecl {
         return {
             tag: 'div',
             name: 'root',
@@ -37,6 +38,11 @@ export class ShowcaseApp extends Component {
                     tag: 'div',
                     name: 'overlayTest',
                     type: OverlayTest,
+                },
+                {
+                    tag: 'div',
+                    name: 'dragDropTest',
+                    type: DragDropTest,
                 },
             ],
         };
