@@ -10,10 +10,8 @@
  * | system*     | SystemEventBus   | systemEmit / systemOn / systemOnce         |
  * | component*  | ComponentEventBus| componentEmit / componentOn / componentOnce|
  * | entity*     | EntityEventBus   | entityEmit / entityOn / entityOnce         |
- * | overlay*    | OverlayEventBus  | overlayEmit / overlayOn / overlayOnce      |
  * | route*      | RouteEventBus    | routeEmit / routeOn / routeOnce            |
  * | file*       | FileEventBus     | fileEmit / fileOn / fileOnce               |
- * | drag*       | DragEventBus     | dragEmit / dragOn / dragStart 等           |
  *
  * eventCtx 统一构建 EventContext，自动填充 event / type / source / sourceType，
  * AI 不再直接接触 EventContextBuilder。
@@ -34,12 +32,8 @@ import {
     SystemEventBus,
     ComponentEventBus,
     EntityEventBus,
-    OverlayEventBus,
-    DragEventBus,
     RouteEventBus,
     FileEventBus,
-    type DragState,
-    type DragAction,
 } from '@/events';
 import { EventContext, EventContextBuilder } from '@/context';
 
@@ -209,24 +203,6 @@ export const EventsAbility = {
     },
 
     // ============================================================
-    // overlay* — 浮层事件总线
-    // ============================================================
-
-    overlayEmit(event: string, dataOrCtx?: any, overrides?: Partial<EventContext>): void {
-        OverlayEventBus.getInstance().overlayEmit(this._resolveCtx(event, dataOrCtx, overrides));
-    },
-
-    overlayOn(overlayKey: string, action: string, handler: (data: any) => void): () => void {
-        const off = OverlayEventBus.getInstance().overlayOn(overlayKey, action, handler);
-        this.onCleanup(off);
-        return off;
-    },
-
-    overlayOnce(overlayKey: string, action: string, handler: (data: any) => void): void {
-        OverlayEventBus.getInstance().overlayOnce(overlayKey, action, handler);
-    },
-
-    // ============================================================
     // route* — 路由事件总线
     // ============================================================
 
@@ -260,75 +236,5 @@ export const EventsAbility = {
 
     fileOnce(fileKey: string, action: string, handler: (data: any) => void): void {
         FileEventBus.getInstance().fileOnce(fileKey, action, handler);
-    },
-
-    // ============================================================
-    // drag* — 拖拽事件总线
-    // ============================================================
-
-    dragEmit(event: string, dataOrCtx?: any, overrides?: Partial<EventContext>): void {
-        DragEventBus.getInstance().dragEmit(this._resolveCtx(event, dataOrCtx, overrides));
-    },
-
-    /** 声明组件拖拽（广播给 DragDispatchCenter，handleEl 为手柄元素） */
-    dragInit(component: any, config: any, handleEl?: HTMLElement): void {
-        DragEventBus.getInstance().emitInit(component, config, handleEl);
-    },
-
-    /** 注销组件拖拽（广播给 DragDispatchCenter） */
-    dragDispose(componentId: string): void {
-        DragEventBus.getInstance().emitDispose(componentId);
-    },
-
-    /** 注册组件放置区（广播给 DragDispatchCenter） */
-    dropInit(component: any, zone: string, config: any): void {
-        DragEventBus.getInstance().emitDropInit(component, zone, config);
-    },
-
-    /** 注销组件放置区（广播给 DragDispatchCenter） */
-    dropDispose(componentId: string, zone: string): void {
-        DragEventBus.getInstance().emitDropDispose(componentId, zone);
-    },
-
-    dragStart(dragKey: string, state: Omit<DragState, 'dragKey'>): void {
-        DragEventBus.getInstance().dragStart(dragKey, state);
-    },
-
-    dragEnd(dragKey: string): void {
-        DragEventBus.getInstance().dragEnd(dragKey);
-    },
-
-    dragCancel(dragKey: string): void {
-        DragEventBus.getInstance().dragCancel(dragKey);
-    },
-
-    dragEnter(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
-        DragEventBus.getInstance().dragEnter(dragKey, dropTarget, dropEl);
-    },
-
-    dragLeave(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
-        DragEventBus.getInstance().dragLeave(dragKey, dropTarget, dropEl);
-    },
-
-    dragDrop(dragKey: string, dropTarget: any, dropEl: HTMLElement): void {
-        DragEventBus.getInstance().dragDrop(dragKey, dropTarget, dropEl);
-    },
-
-    dragOn(dragKey: string, action: DragAction, handler: (data: any) => void): () => void {
-        const off = DragEventBus.getInstance().dragOn(dragKey, action, handler);
-        this.onCleanup(off);
-        return off;
-    },
-
-    dragOnce(dragKey: string, action: DragAction, handler: (data: any) => void): void {
-        DragEventBus.getInstance().dragOnce(dragKey, action, handler);
-    },
-
-    getActiveDrag(): DragState | null {
-        return DragEventBus.getInstance().getActiveDrag();
-    },
-
-    isDragging(): boolean {
-        return DragEventBus.getInstance().isDragging();
     },
 } satisfies AbilityDefinition;

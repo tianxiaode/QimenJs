@@ -3,7 +3,7 @@
  *
  * 为组件提供可拖拽的边缘和角点手柄，通过拖动改变组件宽高。
  * 内部使用 component.bind(el, 'drag') 走 DragProcessor，
- * 不依赖 DragDispatchCenter，自管理手柄 DOM 和拖拽逻辑。
+ * 自管理手柄 DOM 和拖拽逻辑。
  *
  * 使用方式：
  * 1. 组件声明 .with([ResizeAbility])

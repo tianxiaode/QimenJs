@@ -15,8 +15,6 @@ export * from './EventSourceRegistrar';
 
 export { ComponentEventBus, componentEventBus } from './ComponentEventBus';
 export { EntityEventBus, entityEventBus } from './EntityEventBus';
-export { OverlayEventBus, overlayEventBus } from './OverlayEventBus';
-export { DragEventBus, dragEventBus, type DragState, type DragAction } from './DragEventBus';
 export { FileEventBus, fileEventBus } from './FileEventBus';
 export { RouteEventBus, routeEventBus } from './RouteEventBus';
 export {
@@ -31,16 +29,7 @@ export { I18nEventBridge, i18nEventBridge } from './I18nEventBridge';
 // 导出实体事件常量
 export * from './entity-events';
 
-// 导出浮层事件常量
-export * from './overlay-events';
-
-// 导出拖拽事件常量
-export * from './drag-events';
-
-// 导出文件事件常量
 export * from './file-events';
-
-// 导出组件能力事件常量
 export * from './component-events';
 
 // 重新导出 EventContext 和 EventContextBuilder（来自 context 包）

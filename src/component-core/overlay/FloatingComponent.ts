@@ -14,6 +14,7 @@ const FloatingComponentDefs: Definitions = {
         hideDelay: null,
         viewportPosition: null,
         pointerEvents: null,
+        isFloat: true,
     },
     fields: {
         _overlayOpen: false,
@@ -25,6 +26,11 @@ export class FloatingComponent extends Component {
 
     protected _anchor: HTMLElement | null = null;
     protected _mask: MaskComponent | null = null;
+    private _handlersBound = false;
+
+    get isOpen(): boolean {
+        return this._overlayOpen;
+    }
 
     get overlayRoot(): HTMLElement | null {
         if (typeof document === 'undefined') return null;
@@ -46,6 +52,7 @@ export class FloatingComponent extends Component {
 
     show(anchor: HTMLElement, placement?: Placement, offset?: number): void {
         this._anchor = anchor;
+        this._overlayOpen = true;
         const el = this.el!;
         this.mountToOverlay(el);
         this.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
@@ -58,14 +65,56 @@ export class FloatingComponent extends Component {
         const actualPlacement = positionOverlay(el, anchor, p, offset ?? 4, true);
         (this as any)._actualPlacement = actualPlacement;
 
+        this._bindGlobalHandlers();
+
         if (typeof (this as any).open === 'function') {
             (this as any).open();
         }
     }
 
     hide(): void {
+        this._overlayOpen = false;
         this._removeMask();
         this.unmountFromOverlay(this.el!);
+    }
+
+    override dispose(): void {
+        //this._removeMask();
+        super.dispose();
+    }
+
+    protected _bindGlobalHandlers(): void {
+        if (this._handlersBound) return;
+        this._handlersBound = true;
+
+        this.bind(document, 'press');
+        this.bind(document, 'keydown');
+
+        const offPress = this.on('dom:press', (ctx: any) => {
+            if (!this._overlayOpen) return;
+            const event = ctx?.data?.originalEvent as MouseEvent;
+            const el = this.el;
+            const anchor = this._anchor;
+            if (
+                el &&
+                anchor &&
+                event &&
+                !el.contains(event.target as Node) &&
+                !anchor.contains(event.target as Node)
+            ) {
+                this.hide();
+            }
+        });
+        this.onCleanup(offPress);
+
+        const offKeydown = this.on('dom:keydown', (ctx: any) => {
+            if (!this._overlayOpen) return;
+            const event = ctx?.data?.originalEvent as KeyboardEvent;
+            if (event && event.key === 'Escape') {
+                this.hide();
+            }
+        });
+        this.onCleanup(offKeydown);
     }
 
     reposition(anchor: HTMLElement, placement?: Placement, offset?: number): void {
@@ -82,19 +131,16 @@ export class FloatingComponent extends Component {
         }
     }
 
-    override dispose(): void {
-        this._removeMask();
-        super.dispose();
-    }
-
     protected _initMask(config?: { scoped?: boolean; color?: string }): void {
         if (this._mask) return;
+        const zIndex = this.zIndex ? Number(this.zIndex) - 1 : 1;
         this._mask = new MaskComponent({
             scoped: config?.scoped,
             color: config?.color,
-            zIndex: 1,
+            zIndex,
         });
         this._mask.mount();
+        this.onCleanup(() => this._removeMask());
         if (this._anchor) {
             this._mask.updatePosition(this._anchor.getBoundingClientRect());
         }

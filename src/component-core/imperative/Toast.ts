@@ -45,15 +45,18 @@ export class Toast extends FloatingComponent {
         this.pointerEvents = 'auto';
         const toastType: ToastType = this.toastType ?? 'info';
         this.addCls(`q-toast--${toastType}`);
-        this.addCls(`q-toast__icon--${toastType}`, 'icon'); // 添加样式类
+        this.addCls(`q-toast__icon--${toastType}`, 'icon');
 
         if (this.title) {
             this.addCls('q-toast--titled');
         }
 
         this.zIndex = this.acquireZIndex();
-        this.mountToOverlay(this.el!);
+    }
 
+    show(): void {
+        this.mountToOverlay(this.el!);
+        this._bindGlobalHandlers();
         this.playEnter();
 
         const duration = this.duration ?? DEFAULT_DURATION;
@@ -83,14 +86,13 @@ export class Toast extends FloatingComponent {
 
         await this.playLeave();
 
-        this.unmountFromOverlay(this.el!);
+        this.hide();
         this.releaseZIndex();
 
         this._resolve?.();
         this._resolve = null;
 
         this.dispose();
-        this.onClose?.();
     }
 
     then<TResult1 = void, TResult2 = never>(
@@ -99,8 +101,6 @@ export class Toast extends FloatingComponent {
     ): Promise<TResult1 | TResult2> {
         return this._promise!.then(onfulfilled, onrejected);
     }
-
-    onClose?: () => void;
 }
 
 const ToastDefs: Definitions = {

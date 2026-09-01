@@ -11,6 +11,8 @@ export class ToastManager {
     static defaultAlignment: ToastAlignment = 'top-right';
 
     private instances = new Map<number, Toast>();
+    private shown = new Set<Toast>();
+    private pendingMap = new Map<ToastAlignment, Toast[]>();
     private nextId = 0;
 
     private constructor() {}
@@ -35,44 +37,76 @@ export class ToastManager {
             message: options.message,
         });
 
-        toast.onClose = () => {
+        toast.onCleanup(() => {
             this.instances.delete(id);
-            this.repositionAll(alignment);
-        };
+            this.shown.delete(toast);
+            const stillShown = this.getShownByAlignment(alignment);
+            if (stillShown.length === 0) {
+                this.showNextBatch(alignment);
+            }
+        });
 
         this.instances.set(id, toast);
 
-        this.enforceMaxCount(alignment);
+        const shownCount = this.getShownByAlignment(alignment).length;
+        if (shownCount < MAX_COUNT) {
+            this.shown.add(toast);
+            toast.show();
+            this.positionNew(toast, alignment);
+        } else {
+            this.getPendingList(alignment).push(toast);
+        }
+
         return toast;
     }
 
-    private repositionAll(alignment: ToastAlignment): void {
-        const sameAlignment = this.getInstancesByAligment(alignment);
-        let offset = 0;
+    private showNextBatch(alignment: ToastAlignment): void {
+        const pending = this.getPendingList(alignment);
+        if (pending.length === 0) return;
 
-        for (const toast of sameAlignment) {
+        const batch = pending.splice(0, MAX_COUNT);
+        batch.forEach((toast, i) => {
+            setTimeout(() => {
+                this.shown.add(toast);
+                toast.show();
+                this.positionNew(toast, alignment);
+            }, i * 50);
+        });
+    }
+
+    private positionNew(toast: Toast, alignment: ToastAlignment): void {
+        const visible = this.getShownByAlignment(alignment);
+        let offset = 0;
+        for (const t of visible) {
+            if (t === toast) break;
+            offset += t.el!.offsetHeight + GAP;
+        }
+        toast.setViewportPosition(alignment as ViewportPosition, offset, MARGIN);
+    }
+
+    private repositionAll(alignment: ToastAlignment): void {
+        const visible = this.getShownByAlignment(alignment);
+        let offset = 0;
+        for (const toast of visible) {
             toast.setViewportPosition(alignment as ViewportPosition, offset, MARGIN);
             offset += toast.el!.offsetHeight + GAP;
         }
     }
 
-    private getInstancesByAligment(alignment: ToastAlignment): Toast[] {
+    private getShownByAlignment(alignment: ToastAlignment): Toast[] {
         const result: Toast[] = [];
         for (const toast of this.instances.values()) {
-            if (toast.alignment === alignment) {
+            if (toast.alignment === alignment && this.shown.has(toast)) {
                 result.push(toast);
             }
         }
         return result;
     }
 
-    private enforceMaxCount(alignment: ToastAlignment): void {
-        const sameAlignment = this.getInstancesByAligment(alignment);
-        if (sameAlignment.length <= MAX_COUNT) return;
-
-        const oldest = sameAlignment[0];
-        if (!oldest.isClosed) {
-            oldest.close();
+    private getPendingList(alignment: ToastAlignment): Toast[] {
+        if (!this.pendingMap.has(alignment)) {
+            this.pendingMap.set(alignment, []);
         }
+        return this.pendingMap.get(alignment)!;
     }
 }

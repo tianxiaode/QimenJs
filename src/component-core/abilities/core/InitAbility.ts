@@ -148,7 +148,9 @@ export const InitAbility = {
         this._commitDrops();
 
         this.onAfterInit();
-        this.playEnter();
+        if (!this.isFloat) {
+            this.playEnter();
+        }
         this._emitMounted();
 
         if (childReady) {

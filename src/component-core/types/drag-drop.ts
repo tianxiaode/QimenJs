@@ -17,3 +17,11 @@ export interface DropZoneInstance {
     zone: string;
     config: DropOptions;
 }
+
+export interface DragState {
+    dragKey: string;
+    dragType: string | null;
+    dragData: any;
+    dragEl: HTMLElement | null;
+    dragSource: any;
+}

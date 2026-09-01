@@ -118,7 +118,7 @@ export class OverlayTest extends Component {
                             },
                         },
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'popoverBtn',
                             options: { popover: { type: MenuComponent } },
                         },
@@ -130,40 +130,40 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'tooltipTop',
                             options: {
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
                         },
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'tooltipBottom',
                             options: {
                                 tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
                             },
                         },
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'tooltipLeft',
                             options: {
                                 tooltip: { content: 'Tooltip Left', placement: 'left' },
                             },
                         },
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'tooltipRight',
                             options: {
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
                             },
                         },
                         {
-                            type: Button,
+                            type: 'button',
                             name: 'tooltipRightAutoFlip',
                             options: {
                                 tooltip: { content: 'Tooltip Right Auto Flip', placement: 'right' },
                             },
-                            style: { flex: 1, minWidth: '200px' },
+                            style: { flex: '1', minWidth: '200px' },
                         },
                     ],
                 },
@@ -173,7 +173,7 @@ export class OverlayTest extends Component {
                     style: { display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' },
                     children: [
                         {
-                            type: Component,
+                            type: 'component',
                             style: {
                                 flex: '1',
                                 height: '100px',
@@ -225,7 +225,10 @@ export class OverlayTest extends Component {
     }
 
     onToastBtnClick() {
-        toast({ message: 'Operation successful!', toastType: 'success' });
+        let count = this.toastCount || 0;
+        count++;
+        this.toastCount = count;
+        toast({ message: `Toast ${count}`, duration: 2000 });
     }
 
     onMsgboxBtnClick() {

@@ -19,7 +19,6 @@ export const ViewportPositionAbility: AbilityDefinition = {
 
         if (isMiddle) {
             this.top = '50%';
-            this.bottom = '50%';
             this.transform = 'translate(-50%, -50%)';
             return;
         }

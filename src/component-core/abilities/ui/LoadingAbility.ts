@@ -26,7 +26,6 @@ export const LoadingAbility: AbilityDefinition = {
         if (!cfg) return;
         const delc = this._getLoadingFloatDecl();
         this.attachFloat('loading', delc);
-        this._emitInit('loading', delc);
     },
 
     showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {

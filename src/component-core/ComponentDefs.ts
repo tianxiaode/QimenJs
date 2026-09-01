@@ -31,6 +31,8 @@ export const ComponentDefs: Definitions = {
         attributes: null,
         /** 组件鼠标样式 — 控制组件的鼠标样式 */
         cursor: null,
+        /** 是否浮动组件 — 浮动组件初始化时不播放进入动画 */
+        isFloat: false,
         /** 定位样式 */
         left: null,
         top: null,
@@ -178,7 +180,6 @@ export const ComponentDefs: Definitions = {
                     this._applyI18nToElement(key, def);
                     return;
                 }
-                this.logger.info(`Option changed: ${key} = ${value}`, def);
                 this._applyContentToElement(def.target ?? 'root', value, def.to);
             }
         },

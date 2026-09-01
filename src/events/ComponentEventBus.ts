@@ -18,7 +18,6 @@
  * 与其他事件总线的关系：
  * - EntityEventBus：实体数据操作事件（entity:{entityKey}:{event}）
  * - OverlayEventBus：浮层组件事件（overlay:{overlayKey}:{action}）
- * - DragEventBus：拖拽状态事件（drag:{dragKey}:{action}）
  * - FileEventBus：文件操作事件（file:{fileKey}:{action}）
  * - RouteEventBus：路由导航事件（route:{routeKey}:{event}）
  * - SystemEventBus：系统级事件（system:{event}）

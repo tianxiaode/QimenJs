@@ -1,17 +1,12 @@
 /**
  * 浮层事件常量定义
  *
- * 定义 OverlayDispatchCenter 及其相关组件触发的所有事件，
- * 供 overlay 包和 component 包统一引用，消除硬编码字符串。
+ * 已弃用：OverlayDispatchCenter 已移除，浮层组件直接管理生命周期。
+ * 这些常量保留供向后兼容，但不再使用。
  *
- * 事件分类：
- * - 请求动作：组件向调度中心发送的操作指令
- * - 反馈事件：调度中心执行操作后向组件发送的通知
+ * @deprecated 浮层组件直接管理生命周期，不再通过事件总线调度
  */
 
-// ============================================
-// 请求动作（组件 → OverlayDispatchCenter）
-// ============================================
 export const OVERLAY_ACTIONS = {
     /** 初始化浮层（组件实例+配置发送给调度中心） */
     INIT: 'init',
@@ -29,9 +24,6 @@ export const OVERLAY_ACTIONS = {
     DISPOSE: 'dispose',
 } as const;
 
-// ============================================
-// 反馈事件（OverlayDispatchCenter → 组件）
-// ============================================
 export const OVERLAY_FEEDBACK_EVENTS = {
     /** 浮层已显示 */
     SHOWN: 'shown',

@@ -5,7 +5,7 @@
  */
 
 import { ToastManager } from './ToastManager';
-import { MsgboxManager } from './MsgboxManager';
+import { Msgbox } from './Msgbox';
 import { Component } from '@/component-core';
 import { t } from '@/i18n/i18n-utils';
 import type { ToastOptions, ToastHandle, MsgboxOptions, MsgboxResult, MsgboxType } from '../types';
@@ -49,17 +49,26 @@ function normalizeMsgboxArgs(
 export const msgbox = {
     alert(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'alert');
-        return MsgboxManager.getInstance().create(options);
+        return new Promise<MsgboxResult>(resolve => {
+            const instance = new Msgbox({ ...options, callback: resolve });
+            instance.show();
+        });
     },
 
     confirm(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'confirm');
-        return MsgboxManager.getInstance().create(options);
+        return new Promise<MsgboxResult>(resolve => {
+            const instance = new Msgbox({ ...options, callback: resolve });
+            instance.show();
+        });
     },
 
     prompt(titleOrOptions: string | MsgboxOptions, content?: string): Promise<MsgboxResult> {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'prompt');
-        return MsgboxManager.getInstance().create(options);
+        return new Promise<MsgboxResult>(resolve => {
+            const instance = new Msgbox({ ...options, callback: resolve });
+            instance.show();
+        });
     },
 };
 

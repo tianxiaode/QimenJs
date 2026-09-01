@@ -21,7 +21,6 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { OVERLAY_ACTIONS } from '@/events';
 import type { FloatDecl, IndicatorOptions, IndicatorType } from '@/component-core';
 
 const INDICATOR_TYPE_MAP: Record<string, string> = {
@@ -118,12 +117,10 @@ export const IndicatorAbility = {
      * @param data - 更新数据（如 { activeIndex: 2 }）
      */
     updateIndicator(data: Record<string, any>): void {
-        const overlayKey = `${this.id}:indicator`;
-        this.overlayEmit(
-            `overlay:${overlayKey}:${OVERLAY_ACTIONS.CHANGE}`,
-            { component: { id: this.id }, data },
-            { type: OVERLAY_ACTIONS.CHANGE, source: overlayKey }
-        );
+        const inst = this.abilityState('float-instance:indicator');
+        if (inst?.overlay?.update) {
+            inst.overlay.update(data);
+        }
     },
 
     /**

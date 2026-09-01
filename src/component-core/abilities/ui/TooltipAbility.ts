@@ -28,7 +28,6 @@ export const TooltipAbility: AbilityDefinition = {
             data: { tooltip: cfg.content },
         } as FloatDecl;
         this.attachFloat('tooltip', decl);
-        this._emitInit('tooltip', decl);
     },
 
     updateTooltip(data: Record<string, any>): void {

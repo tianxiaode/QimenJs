@@ -11,7 +11,7 @@
  * 设计模式：
  *   - 单例（参照 FloatEngine，plain singleton，不继承 RegistrarBase）
  *   - ref-counted connect/disconnect（参照 DataDispatchCenter）
- *   - 直接 API + 反馈总线（非对称，参照 DragEventBus 混合模式）：
+ *   - 直接 API + 反馈总线（非对称）：
  *     组件命令直接调用本中心方法，中心执行后通过 FileEventBus 广播反馈
  *
  * 多消费者：多个组件 connect 同一 fileKey 可共享同一队列与配置，

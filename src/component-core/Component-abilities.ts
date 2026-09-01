@@ -21,7 +21,6 @@ import {
     DropAbility,
     LifecycleAbility,
     InitAbility,
-    OptionAbility,
     NodeAbility,
     PermissionAbility,
 } from './abilities';
@@ -37,7 +36,6 @@ export const COMPONENT_ABILITIES = [
     DebounceAbility,
 
     InitAbility,
-    OptionAbility,
     LifecycleAbility,
     NodeAbility,
     AttributeAbility,

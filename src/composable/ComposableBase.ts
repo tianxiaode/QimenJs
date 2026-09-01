@@ -252,14 +252,6 @@ export class ComposableBase implements IComposableBase {
         for (const key of Object.keys(data)) {
             delete data[key];
         }
-        const dataMap = this.getDataMap();
-        dataMap.defaultValues = {};
-        dataMap.targetToMap = new Map();
-        dataMap.i18nOptions = [];
-        dataMap.optionsKeys = new Set();
-        dataMap.propertyKeys = new Set();
-        dataMap.propertyClearKeys = [];
         delete self[DATA_SYMBOL];
-        delete self[DATA_MAP_SYMBOL];
     }
 }

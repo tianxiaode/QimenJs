@@ -31,7 +31,6 @@ export const PopoverAbility: AbilityDefinition = {
         const decl = this._getPopoverFloatDecl();
         if (!decl) return;
         this.attachFloat('popover', decl);
-        this._emitInit('popover', decl);
     },
 
     _getPopoverFloatDecl(): FloatDecl | undefined {

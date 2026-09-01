@@ -1,34 +1,9 @@
-/**
- * DragAbility — 拖拽能力
- *
- * 单源模型：一个组件就是一个拖动源，`drag` option 即唯一状态。
- * 通过 DragEventBus 的 init/dispose 通道通知 DragDispatchCenter，
- * 组件不感知调度中心。
- *
- * 通信链路：
- *   能力 → dragInit/dragDispose → DragEventBus → DragDispatchCenter
- *
- * 拖拽回调约定（由调度中心在组件上查找）：
- *   onDragStart / onDragMove / onDragEnd / onDragCancel
- *
- * @example
- * // 组件 options 中声明
- * drag: true
- * drag: { axis: 'x', grid: 10 }
- */
-
 import type { AbilityDefinition } from '@/composable';
-import { DRAG_ACTIONS } from '@/events';
+import { ComponentRegistrar } from '../../ComponentRegistrar';
+import { dragStateManager } from '../../engine';
 import type { DragOptions } from '../../types';
 
-/** 拖拽能力，提供 startDrag/stopDrag/setDraggable 等 API */
 export const DragAbility: AbilityDefinition = {
-    // ── 提交 ──
-
-    /**
-     * 提交拖拽状态：drag 有值（true 或 DragOptions）→ 注册，
-     * drag 为 false/null/undefined → 注销
-     */
     _commitDrags(): void {
         const componentId = this.id;
         if (!componentId) return;
@@ -36,58 +11,227 @@ export const DragAbility: AbilityDefinition = {
         const dragMode = this.drag;
 
         if (dragMode === false || dragMode === null || dragMode === undefined) {
-            this.dragDispose(componentId);
+            this._disposeDrag();
             return;
         }
 
         const config = typeof dragMode === 'object' ? dragMode : {};
         const handleEl = config.handle ? this.getNodeEl(config.handle) : undefined;
-        this.dragInit(this, config, handleEl);
+        this._initDrag(config, handleEl);
     },
 
-    // ── 拖拽会话控制 ──
+    _initDrag(config: DragOptions, handleEl?: HTMLElement): void {
+        const componentId = this.id;
+        if (!componentId) return;
 
-    /** 程序化开始拖拽会话（由调度中心消费） */
+        this._disposeDrag();
+
+        const el = handleEl ?? this.el;
+        if (!el) return;
+
+        this._dragConfig = config;
+        this._dragEl = el;
+
+        this.bind(el, 'drag');
+
+        this._dragHandler = (gesture: any) => {
+            if (
+                gesture.originalEvent?.target !== el &&
+                !el.contains(gesture.originalEvent?.target)
+            ) {
+                return;
+            }
+
+            const phase = gesture.phase;
+
+            if (phase === 'start') {
+                this._onDragStart(gesture);
+            } else if (phase === 'move') {
+                this._onDragMove(gesture);
+            } else if (phase === 'end') {
+                this._onDragEnd(gesture);
+            } else if (phase === 'cancel') {
+                this._onDragCancel(gesture);
+            }
+        };
+        this.on('dom:drag', this._dragHandler);
+
+        this.onCleanup(() => this._disposeDrag());
+    },
+
+    _disposeDrag(): void {
+        const componentId = this.id;
+        if (!componentId) return;
+
+        if (this._dragHandler) {
+            this.off('dom:drag', this._dragHandler);
+            this._dragHandler = undefined;
+        }
+
+        if (this._dragConfig?.activeClass && this._dragEl) {
+            this._dragEl.classList.remove(this._dragConfig.activeClass);
+        }
+
+        this._destroyGhost();
+
+        if (dragStateManager.isDragging() && dragStateManager.getActiveDrag()?.dragKey === componentId) {
+            dragStateManager.setActiveDrag(null);
+        }
+
+        this._dragConfig = undefined;
+        this._dragEl = undefined;
+    },
+
+    _onDragStart(gesture: any): void {
+        const componentId = this.id;
+        const config = this._dragConfig;
+        const el = this._dragEl;
+        if (!config || !el) return;
+
+        const dragType = config.type ?? this.type;
+
+        dragStateManager.setActiveDrag({
+            dragKey: componentId,
+            dragType,
+            dragData: config,
+            dragEl: el,
+            dragSource: this,
+        });
+
+        if (config.activeClass) el.classList.add(config.activeClass);
+
+        this._createGhost();
+        this._moveGhost(gesture);
+
+        const startHandler = this.onDragStart;
+        if (typeof startHandler === 'function') {
+            startHandler.call(this, {
+                dx: gesture.dx ?? 0,
+                dy: gesture.dy ?? 0,
+                el,
+                originalEvent: gesture.originalEvent,
+            });
+        }
+    },
+
+    _onDragMove(gesture: any): void {
+        const config = this._dragConfig;
+        const el = this._dragEl;
+        if (!config || !el) return;
+
+        this._moveGhost(gesture);
+
+        const moveHandler = this.onDragMove;
+        if (typeof moveHandler === 'function') {
+            moveHandler.call(this, {
+                dx: gesture.dx ?? 0,
+                dy: gesture.dy ?? 0,
+                el,
+                originalEvent: gesture.originalEvent,
+            });
+        }
+    },
+
+    _onDragEnd(gesture: any): void {
+        const componentId = this.id;
+        const config = this._dragConfig;
+        const el = this._dragEl;
+        if (!config || !el) return;
+
+        this.emit('drag:end', {
+            dragKey: componentId,
+            dragType: dragStateManager.getActiveDrag()?.dragType,
+            dragData: dragStateManager.getActiveDrag()?.dragData,
+            originalEvent: gesture.originalEvent,
+        });
+
+        if (config.activeClass) el.classList.remove(config.activeClass);
+
+        this._destroyGhost();
+        dragStateManager.setActiveDrag(null);
+
+        const endHandler = this.onDragEnd;
+        if (typeof endHandler === 'function') {
+            endHandler.call(this, {
+                el,
+                originalEvent: gesture.originalEvent,
+            });
+        }
+    },
+
+    _onDragCancel(gesture: any): void {
+        const componentId = this.id;
+        const config = this._dragConfig;
+        const el = this._dragEl;
+        if (!config || !el) return;
+
+        this.emit('drag:cancel', { dragKey: componentId });
+
+        if (config.activeClass) el.classList.remove(config.activeClass);
+
+        this._destroyGhost();
+        dragStateManager.setActiveDrag(null);
+
+        const cancelHandler = this.onDragCancel;
+        if (typeof cancelHandler === 'function') {
+            cancelHandler.call(this, { el });
+        }
+    },
+
+    _createGhost(): void {
+        const config = this._dragConfig;
+        if (!config?.ghost || this._ghostComponent) return;
+
+        const ctor = ComponentRegistrar.getInstance().getByType(config.ghost);
+        if (!ctor) return;
+
+        const ghost = new (ctor as any)();
+        if (!ghost?.el) return;
+
+        ghost.el.style.position = 'fixed';
+        ghost.el.style.pointerEvents = 'none';
+        ghost.el.style.zIndex = '9999';
+        document.body.appendChild(ghost.el);
+
+        this._ghostComponent = ghost;
+    },
+
+    _moveGhost(gesture: any): void {
+        const ghost = this._ghostComponent;
+        if (!ghost) return;
+
+        const x = gesture.originalEvent?.clientX ?? 0;
+        const y = gesture.originalEvent?.clientY ?? 0;
+
+        if (typeof ghost.update === 'function') {
+            ghost.update(x, y);
+        } else if (ghost.el) {
+            ghost.el.style.left = `${x}px`;
+            ghost.el.style.top = `${y}px`;
+        }
+    },
+
+    _destroyGhost(): void {
+        const ghost = this._ghostComponent;
+        if (!ghost) return;
+
+        this._ghostComponent = undefined;
+        ghost.el?.remove?.();
+        ghost.dispose?.();
+    },
+
     startDrag(): void {
         const componentId = this.id;
         if (!componentId) return;
-        this.dragEmit(
-            `drag:${componentId}:${DRAG_ACTIONS.START}`,
-            { component: this },
-            {
-                type: DRAG_ACTIONS.START,
-                source: componentId,
-            }
-        );
+        this.emit('drag:start', { dragKey: componentId, source: componentId });
     },
 
-    /** 程序化停止拖拽会话（由调度中心消费） */
     stopDrag(): void {
         const componentId = this.id;
         if (!componentId) return;
-        this.dragEmit(
-            `drag:${componentId}:${DRAG_ACTIONS.STOP}`,
-            { component: this },
-            {
-                type: DRAG_ACTIONS.STOP,
-                source: componentId,
-            }
-        );
+        this.emit('drag:stop', { dragKey: componentId, source: componentId });
     },
 
-    // ── 便捷开关 ──
-
-    /**
-     * 设置拖拽启用状态
-     *
-     * @param enabled - 是否启用
-     * @param config - 拖拽配置（可选）
-     *
-     * @example
-     * this.setDraggable(true);
-     * this.setDraggable(true, { axis: 'x' });
-     * this.setDraggable(false);
-     */
     setDraggable(enabled: boolean, config?: DragOptions): void {
         this.drag = enabled ? (config ?? true) : false;
         this._commitDrags();

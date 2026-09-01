@@ -55,7 +55,7 @@ export class Msgbox extends FloatingComponent {
             this.toggleCls('field', 'hidden');
         }
 
-        this.zIndex = this.acquireZIndex(); // Acquire a unique zIndex
+        this.zIndex = this.acquireZIndex();
 
         this._initMask({ color: 'rgba(0,0,0,0.5)' });
 
@@ -70,8 +70,11 @@ export class Msgbox extends FloatingComponent {
         }
 
         this.setViewportPosition('center' as ViewportPosition);
-        this.mountToOverlay(this.el!);
+    }
 
+    show(): void {
+        this.mountToOverlay(this.el!);
+        this._bindGlobalHandlers();
         this.animation.enterKeyframes = [
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
@@ -106,8 +109,7 @@ export class Msgbox extends FloatingComponent {
         });
         await Promise.all([this.playLeave(), maskAnim?.finished]);
 
-        this.unmountFromOverlay(this.el!);
-        this._removeMask();
+        this.hide();
         this.releaseZIndex();
 
         this.componentEmit('closed', {}, { source: this.eventKey ?? 'msgbox' });
