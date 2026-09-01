@@ -5,16 +5,19 @@ import type { DropOptions } from '../../types';
 export const DropAbility: AbilityDefinition = {
     _commitDrops(): void {
         const dropMode = this.drop;
-        const config = typeof dropMode === 'object' ? dropMode : {};
-        const zone = config.zone || this.dropZone || 'self';
-        console.log('[DropAbility] _commitDrops, drop =', dropMode, 'zone =', zone);
 
         if (dropMode === false || dropMode === null || dropMode === undefined) {
+            const zone = this.dropZone ||'self';
             this._disposeDropZone(zone);
             return;
         }
 
+        const config = typeof dropMode === 'object' && dropMode !== null ? dropMode : {};
+        const zone = config.zone || this.dropZone || 'self';
+        console.log('[DropAbility] _commitDrops, drop =', dropMode, 'zone =', zone);
+
         const el = zone === 'self' ? this.el : this.getNodeEl(zone);
+       6,
         if (!el) {
             console.log('[DropAbility] no el for zone =', zone, 'abort');
             return;

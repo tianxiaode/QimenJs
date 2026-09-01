@@ -16,7 +16,7 @@ export const DragAbility: AbilityDefinition = {
             return;
         }
 
-        const config = typeof dragMode === 'object' ? dragMode : {};
+        const config = typeof dragMode === 'object' && dragMode !== null ? dragMode : {};
         console.log('[DragAbility] config =', config, 'config.handle =', config.handle);
         let handleEl: HTMLElement | undefined;
         try {
