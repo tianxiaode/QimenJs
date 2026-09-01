@@ -23,6 +23,7 @@ export const DragAbility: AbilityDefinition = {
 
     _initDrag(config: DragOptions, handleEl?: HTMLElement): void {
         const componentId = this.id;
+        console.log('[DragAbility] _initDrag called, componentId =', componentId, 'handleEl =', handleEl?.tagName);
         if (!componentId) return;
 
         this._disposeDrag();
@@ -37,8 +38,12 @@ export const DragAbility: AbilityDefinition = {
         this._dragConfig = config;
         this._dragEl = el;
 
-        this.bind(el, 'drag');
-        console.log('[DragAbility] bind(el, "drag") called');
+        try {
+            this.bind(el, 'drag');
+            console.log('[DragAbility] bind(el, "drag") done');
+        } catch (e) {
+            console.error('[DragAbility] bind error:', e);
+        }
 
         this._dragHandler = (gesture: any) => {
             console.log('[DragAbility] dom:drag received, phase =', gesture?.phase, 'target =', gesture?.originalEvent?.target);

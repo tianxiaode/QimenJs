@@ -24,7 +24,7 @@ export const DropAbility: AbilityDefinition = {
     },
 
     _initDropZone(zone: string, el: HTMLElement, config: DropOptions): void {
-        console.log('[DropAbility] _initDropZone, zone =', zone, 'config =', config);
+        console.log('[DropAbility] _initDropZone, zone =', zone, 'config =', config, 'el =', el?.tagName);
         this._disposeDropZone(zone);
 
         this._dropConfig = config;
@@ -32,9 +32,15 @@ export const DropAbility: AbilityDefinition = {
         this._dropEl = el;
         this._dropEntered = false;
 
-        this.bind(el, 'enter');
-        this.bind(el, 'leave');
-        console.log('[DropAbility] bind(el, "enter"/"leave") called');
+        try {
+            console.log('[DropAbility] before bind enter');
+            this.bind(el, 'enter');
+            console.log('[DropAbility] bind enter done');
+            this.bind(el, 'leave');
+            console.log('[DropAbility] bind leave done');
+        } catch (e) {
+            console.error('[DropAbility] bind error:', e);
+        }
 
         this._dropEnterHandler = () => {
             console.log('[DropAbility] dom:enter fired, isDragging =', dragStateManager.isDragging());
