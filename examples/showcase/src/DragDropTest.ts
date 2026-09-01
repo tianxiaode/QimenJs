@@ -68,19 +68,20 @@ export class DropZone extends Component {
     }
 
     onSelfDragEnter(e: any) {
-        this._hovered = true;
-        this.render();
+        this.el.style.borderColor = '#22c55e';
+        this.el.style.background = '#f0fdf4';
     }
 
     onSelfDragLeave(e: any) {
-        this._hovered = false;
-        this.render();
+        this.el.style.borderColor = '#94a3b8';
+        this.el.style.background = '#f8fafc';
     }
 
     onSelfDragDrop(e: any) {
-        this._hovered = false;
-        this._dropped = `Dropped: ${e.dragType ?? 'item'}`;
-        this.render();
+        this.el.style.borderColor = '#22c55e';
+        this.el.style.background = '#f0fdf4';
+        const label = this.getNodeEl('label');
+        if (label) label.textContent = `Dropped: ${e.dragType ?? 'item'}`;
     }
 }
 
@@ -123,21 +124,20 @@ export class DragDropTest extends Component {
                                 {
                                     type: 'drag-item',
                                     name: 'item1',
-                                    options: { text: 'Item A' },
-                                    drag: { type: 'item-a' },
+                                    options: { text: 'Item A', drag: { type: 'item-a' } },
                                 },
                                 {
                                     type: 'drag-item',
                                     name: 'item2',
-                                    options: { text: 'Item B' },
-                                    drag: { type: 'item-b' },
+                                    options: { text: 'Item B', drag: { type: 'item-b' } },
                                 },
                             ],
                         },
                         {
                             type: 'drop-zone',
                             name: 'zone1',
-                            drop: { accept: ['item-a', 'item-b'] },
+                            options: { drop: { accept: ['item-a', 'item-b'] } },
+
                             style: { flex: '1' },
                         },
                     ],
