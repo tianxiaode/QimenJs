@@ -6,7 +6,6 @@ import type { DragOptions } from '../../types';
 export const DragAbility: AbilityDefinition = {
     _commitDrags(): void {
         const componentId = this.id;
-        console.log('[DragAbility] _commitDrags, id =', componentId, 'drag =', this.drag);
         if (!componentId) return;
 
         const dragMode = this.drag;
@@ -17,50 +16,31 @@ export const DragAbility: AbilityDefinition = {
         }
 
         const config = typeof dragMode === 'object' && dragMode !== null ? dragMode : {};
-        console.log('[DragAbility] config =', config, 'config.handle =', config.handle);
-        let handleEl: HTMLElement | undefined;
-        try {
-            handleEl = config.handle ? this.getNodeEl(config.handle) : undefined;
-        } catch (e) {
-            console.error('[DragAbility] getNodeEl error:', e);
-        }
-        console.log('[DragAbility] handleEl =', handleEl?.tagName, 'calling _initDrag...');
+        const handleEl = config.handle ? this.getNodeEl(config.handle) : undefined;
         this._initDrag(config, handleEl);
     },
 
     _initDrag(config: DragOptions, handleEl?: HTMLElement): void {
         const componentId = this.id;
-        console.log('[DragAbility] _initDrag called, componentId =', componentId, 'handleEl =', handleEl?.tagName);
         if (!componentId) return;
 
         this._disposeDrag();
 
         const el = handleEl ?? this.el;
-        if (!el) {
-            console.log('[DragAbility] _initDrag: no el, abort');
-            return;
-        }
+        if (!el) return;
 
-        console.log('[DragAbility] _initDrag, el =', el?.tagName, 'config =', config);
         this._dragConfig = config;
         this._dragEl = el;
 
-        try {
-            this.bind(el, 'drag');
-            console.log('[DragAbility] bind(el, "drag") done');
-        } catch (e) {
-            console.error('[DragAbility] bind error:', e);
-        }
+        this.bind(el, 'drag');
 
         this._dragHandler = (ctx: any) => {
             const gesture = ctx?.data ?? ctx;
-            console.log('[DragAbility] dom:drag received, phase =', gesture?.phase, 'target =', gesture?.originalEvent?.target);
 
             if (
                 gesture.originalEvent?.target !== el &&
                 !el.contains(gesture.originalEvent?.target)
             ) {
-                console.log('[DragAbility] target not in el, skip');
                 return;
             }
 
@@ -77,7 +57,6 @@ export const DragAbility: AbilityDefinition = {
             }
         };
         this.on('dom:drag', this._dragHandler);
-        console.log('[DragAbility] on("dom:drag") registered');
 
         this.onCleanup(() => this._disposeDrag());
     },
@@ -109,7 +88,6 @@ export const DragAbility: AbilityDefinition = {
         const componentId = this.id;
         const config = this._dragConfig;
         const el = this._dragEl;
-        console.log('[DragAbility] _onDragStart, config =', config, 'el =', el?.tagName);
         if (!config || !el) return;
 
         const dragType = config.type ?? this.type;
@@ -162,7 +140,6 @@ export const DragAbility: AbilityDefinition = {
         const el = this._dragEl;
         if (!config || !el) return;
 
-        console.log('[DragAbility] _onDragEnd, emitting drag:end');
         this.emit('drag:end', {
             dragKey: componentId,
             dragType: dragStateManager.getActiveDrag()?.dragType,
