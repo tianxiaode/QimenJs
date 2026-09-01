@@ -17,7 +17,14 @@ export const DragAbility: AbilityDefinition = {
         }
 
         const config = typeof dragMode === 'object' ? dragMode : {};
-        const handleEl = config.handle ? this.getNodeEl(config.handle) : undefined;
+        console.log('[DragAbility] config =', config, 'config.handle =', config.handle);
+        let handleEl: HTMLElement | undefined;
+        try {
+            handleEl = config.handle ? this.getNodeEl(config.handle) : undefined;
+        } catch (e) {
+            console.error('[DragAbility] getNodeEl error:', e);
+        }
+        console.log('[DragAbility] handleEl =', handleEl?.tagName, 'calling _initDrag...');
         this._initDrag(config, handleEl);
     },
 
