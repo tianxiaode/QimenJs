@@ -6,6 +6,7 @@ export const DropAbility: AbilityDefinition = {
     _commitDrops(): void {
         const dropMode = this.drop;
         const zone = this.dropZone || 'self';
+        console.log('[DropAbility] _commitDrops, drop =', dropMode, 'zone =', zone);
 
         if (dropMode === false || dropMode === null || dropMode === undefined) {
             this._disposeDropZone(zone);
@@ -13,13 +14,17 @@ export const DropAbility: AbilityDefinition = {
         }
 
         const el = this.el;
-        if (!el) return;
+        if (!el) {
+            console.log('[DropAbility] no el, abort');
+            return;
+        }
 
         const config = typeof dropMode === 'object' ? dropMode : {};
         this._initDropZone(zone, el, config);
     },
 
     _initDropZone(zone: string, el: HTMLElement, config: DropOptions): void {
+        console.log('[DropAbility] _initDropZone, zone =', zone, 'config =', config);
         this._disposeDropZone(zone);
 
         this._dropConfig = config;
@@ -29,8 +34,10 @@ export const DropAbility: AbilityDefinition = {
 
         this.bind(el, 'enter');
         this.bind(el, 'leave');
+        console.log('[DropAbility] bind(el, "enter"/"leave") called');
 
         this._dropEnterHandler = () => {
+            console.log('[DropAbility] dom:enter fired, isDragging =', dragStateManager.isDragging());
             if (!dragStateManager.isDragging()) return;
 
             const activeDrag = dragStateManager.getActiveDrag();
@@ -39,10 +46,12 @@ export const DropAbility: AbilityDefinition = {
             const accept = config.accept;
             if (accept && accept.length > 0) {
                 if (!activeDrag.dragType || !accept.includes(activeDrag.dragType)) {
+                    console.log('[DropAbility] accept mismatch, dragType =', activeDrag.dragType, 'accept =', accept);
                     return;
                 }
             }
 
+            console.log('[DropAbility] enter accepted, zone =', zone);
             this._dropEntered = true;
 
             if (config.activeClass) el.classList.add(config.activeClass);
@@ -84,6 +93,7 @@ export const DropAbility: AbilityDefinition = {
         };
 
         this._dropLeaveHandler = () => {
+            console.log('[DropAbility] dom:leave fired, _dropEntered =', this._dropEntered);
             if (!this._dropEntered) return;
 
             this._dropEntered = false;
@@ -106,6 +116,7 @@ export const DropAbility: AbilityDefinition = {
 
         this.on('dom:enter', this._dropEnterHandler);
         this.on('dom:leave', this._dropLeaveHandler);
+        console.log('[DropAbility] on("dom:enter"/"dom:leave") registered');
 
         this.onCleanup(() => this._disposeDropZone(zone));
     },
