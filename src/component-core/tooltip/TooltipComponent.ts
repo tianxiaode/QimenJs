@@ -46,12 +46,6 @@ export class TooltipComponent extends FloatingComponent {
         const arrowPlacement = map[placement];
         return arrowPlacement;
     }
-
-    onOverlayChange(data: any): void {
-        if (!data) return;
-        if (data.tooltip !== undefined) this.text = data.tooltip;
-        if (data.visible !== undefined) this.hidden = !data.visible;
-    }
 }
 
 const TooltipComponentDefs: Definitions = {
@@ -62,6 +56,5 @@ const TooltipComponentDefs: Definitions = {
 
 TooltipComponent.use(ArrowAbility);
 TooltipComponent.define(TooltipComponentDefs);
-TooltipComponent.register();
 
 export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

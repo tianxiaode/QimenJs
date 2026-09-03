@@ -1,5 +1,5 @@
 import { ShowcaseApp } from './ShowcaseApp';
-import { LoadingComponent, TooltipComponent } from '@qimenjs/component-core';
+import './register';
 import '@/theme/light.css';
 import '@/theme/skeleton.css';
 import '@/theme/layout.css';

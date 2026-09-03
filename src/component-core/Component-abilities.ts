@@ -23,6 +23,8 @@ import {
     InitAbility,
     NodeAbility,
     PermissionAbility,
+    OptionAbility,
+    EntityAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
@@ -39,6 +41,7 @@ export const COMPONENT_ABILITIES = [
     LifecycleAbility,
     NodeAbility,
     AttributeAbility,
+    OptionAbility,
     I18nAbility,
     BadgeAbility,
     FloatAbility,
@@ -51,6 +54,7 @@ export const COMPONENT_ABILITIES = [
     DropAbility,
     AnimationAbility,
     PermissionAbility,
+    EntityAbility,
 
     // ChildrenAbility,
 ] as const satisfies readonly AbilityDefinition[];

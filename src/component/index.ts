@@ -20,13 +20,6 @@ export { AvatarComponent, type AvatarProps } from './avatar/AvatarComponent';
 export { avatarCSS } from './avatar/avatar.css';
 export { CardComponent, type CardProps } from './card/CardComponent';
 export { cardCSS } from './card/card.css';
-export {
-    IndicatorComponent,
-    type IndicatorProps,
-    type IndicatorMode,
-} from './indicator/IndicatorComponent';
-export { IndicatorDotComponent } from './indicator/IndicatorDotComponent';
-export { indicatorCSS } from './indicator/indicator.css';
 
 // Tabs 标签页组件（Tab + TabBar + Tabs）
 export { TabComponent, type TabProps } from './tabs/TabComponent';
@@ -34,8 +27,7 @@ export { TabBarComponent, type TabBarProps, type TabBarPosition } from './tabs/T
 export { TabsComponent, type TabPaneItem, type TabsProps } from './tabs/TabsComponent';
 export { tabsCSS } from './tabs/tabs.css';
 
-export { ButtonComponent } from './button/ButtonComponent';
-export { buttonCSS } from './button/button.css';
+export * from './button';
 export { DropdownComponent } from './dropdown/DropdownComponent';
 export { ToggleComponent, type ToggleProps } from './toggle/ToggleComponent';
 export { toggleCSS } from './toggle/toggle.css';

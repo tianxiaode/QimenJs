@@ -22,7 +22,6 @@ import type {
     AbilityDefinition,
     DataMap,
     Definitions,
-    I18nMeta,
     IComposableBase,
     TargetToOptionDefinition,
 } from './types';
@@ -32,7 +31,6 @@ export class ComposableBase implements IComposableBase {
     logger: ILogger;
     private [DATA_SYMBOL]: Record<string, any> = {
         __abilityStatesMap: new Map(), // 初始化能力状态集合
-        __i18nMeta: {} as Record<string, I18nMeta>,
     };
     private cleanups: (() => void)[] = [];
 
@@ -43,7 +41,7 @@ export class ComposableBase implements IComposableBase {
     getData(key: string): any {
         const data = this._getData();
 
-        return key in data ? data[key] : this.getDefaultValue(key);
+        return key in data ? data[key] : undefined;
     }
 
     setData(key: string, value: any): void {
@@ -51,28 +49,18 @@ export class ComposableBase implements IComposableBase {
         const data = this._getData();
         const old = this.getData(key);
         if (old === value) return;
+        //如果value以@开头，表示i18n，value为i18n的key，否则value为i18n的value,@@为转义字符，不作为i18n的key
         data[key] = value;
-
-        // 更新 i18nMeta
-        const def: TargetToOptionDefinition | undefined = self.targetToMap.get(key);
-        if (def && def.i18n) {
-            if (value !== null && value !== undefined) {
-                data.__i18nMeta[key].useI18n = false;
-            }
-        }
-        const changeKey = `_on${string.capitalize(key)}Change`;
+        const changeKey = `_on${string.capitalize(key)}OptionChange`;
         if (typeof self[changeKey] === 'function') {
-            self[changeKey](value, old, def);
+            self[changeKey](value, old);
         }
 
-        self._onOptionChange(key, value, old, def);
+        self._onOptionChange(key, value, old);
     }
 
-    setI18n(optionKey: string, value: string): void {
-        if (!this.i18nOptions.includes(optionKey)) return;
-        const data = this._getData();
-        data.__i18nMeta[optionKey].useI18n = true;
-        data.__i18nMeta[optionKey] = value;
+    getTargetToDef(key: string): TargetToOptionDefinition | undefined {
+        return this.targetToMap.get(key);
     }
 
     get targetToMap(): Map<string, TargetToOptionDefinition> {
@@ -99,14 +87,9 @@ export class ComposableBase implements IComposableBase {
         if (!this[DATA_SYMBOL]) {
             this[DATA_SYMBOL] = {
                 __abilityStatesMap: new Map(),
-                __i18nMeta: {} as Record<string, I18nMeta>,
             };
         }
         return this[DATA_SYMBOL];
-    }
-
-    private getDefaultValue(key: string): any {
-        return this.getDataMap().defaultValues[key];
     }
 
     private get abilityStatesMap(): Map<string, any> {
@@ -163,6 +146,25 @@ export class ComposableBase implements IComposableBase {
     static define(definitions: Definitions) {
         withDefinitions(this, definitions);
         return this;
+    }
+
+    /**
+     * 派生类可覆写（prototype getter，类似 tpl）：为 option 提供默认值覆盖。
+     *
+     * getter 定义在原型链上，实例化即可读取（不依赖字段初始化顺序），
+     * 在 applyOptionDefaults 应用默认值时合并。
+     *
+     * @example
+     * ```ts
+     * class DangerButton extends ButtonComponent {
+     *     get defaultOptions() {
+     *         return { buttonType: 'danger' };
+     *     }
+     * }
+     * ```
+     */
+    get defaultOptions(): Record<string, any> | undefined {
+        return undefined;
     }
 
     _onOptionChange(
@@ -236,6 +238,13 @@ export class ComposableBase implements IComposableBase {
         this.ClearProperties();
         this.clearData();
         this.onDisposed();
+    }
+
+    private applyOptionDefaults(): void {
+        const overrides = this.defaultOptions;
+        for (const [key, value] of Object.entries(this.getDataMap().defaultValues)) {
+            this.setData(key, overrides && key in overrides ? overrides[key] : value);
+        }
     }
 
     private ClearProperties(): void {

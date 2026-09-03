@@ -22,9 +22,6 @@ export { SizeAbility, type SizeConfig } from './size';
 // 调整大小能力
 export { ResizeAbility, type ResizeConfig, type ResizeEdge } from './resize';
 
-// 指示器能力
-export { IndicatorAbility, type IndicatorType, type IndicatorConfig } from './indicator';
-
 // 溢出能力
 export {
     OverflowAbility,

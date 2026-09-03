@@ -10,16 +10,6 @@ class LoadingComponent extends FloatingComponent {
     get tpl(): TemplateDecl {
         return LOADING_TPL;
     }
-
-    onOverlayChange(data: any): void {
-        if (!data) return;
-        const textEl = this.getNodeEl('text');
-        if (data.text !== undefined) {
-            this.text = data.text; // Update the text property
-            if (textEl) textEl.style.display = data.text ? '' : 'none';
-        }
-        if (data.visible !== undefined) this.hidden = !data.visible;
-    }
 }
 
 const LoadingComponentDefs: Definitions = {
@@ -29,7 +19,6 @@ const LoadingComponentDefs: Definitions = {
 };
 
 LoadingComponent.define(LoadingComponentDefs);
-LoadingComponent.register();
 
 export { LoadingComponent };
 export type LoadingComponentInstance = InstanceType<typeof LoadingComponent>;

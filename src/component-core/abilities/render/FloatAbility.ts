@@ -1,64 +1,32 @@
 /**
- * FloatAbility — 浮层管理能力
+ * FloatAbility — 浮层工具能力
  *
- * 提供浮层的完整生命周期管理，包括缓存管理、直接创建/销毁，
- * 以及通用的 show/hide/toggle/update/attach/detach API。
- * 各浮层类型（tooltip/dialog/popover/indicator/loading）的快捷方法
- * 由对应的独立能力提供。
+ * 提供浮层操作的通用工具方法，两类使用者：
  *
- * 通信链路：
- *   能力 → 直接创建浮层组件实例 → 组件自己管理生命周期
+ * 1. UI 能力（TooltipAbility、PopoverAbility、LoadingAbility、DialogAbility）
+ *    使用底层工具 _createFloat / _disposeFloat / _bindFloatTrigger 自管实例。
  *
- * @see TooltipAbility 提示浮层能力
- * @see DialogAbility 对话框浮层能力
- * @see PopoverAbility 弹出层能力
- * @see IndicatorAbility 指示器浮层能力
- * @see LoadingAbility 加载浮层能力
+ * 2. 业务组件（DropdownComponent、NavItemComponent、ItemGroupBaseComponent）
+ *    使用 attachFloat / showFloat / hideFloat / detachFloat 通用操作。
+ *
+ * 不再维护 _syncFloats diff 引擎和 floats 响应式 setter。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { getId } from '@/utils/string';
-import { FLOAT_CACHE_KEY } from '../../constants';
 import type { FloatDecl } from '../../types';
 import { ComponentRegistrar } from '../../ComponentRegistrar';
 
-interface FloatInstance {
-    overlay: any;
-    anchor: HTMLElement;
-    decl: FloatDecl;
-}
-
 export const FloatAbility: AbilityDefinition = {
-    get floats(): Record<string, FloatDecl> | undefined {
-        const cache = this.abilityState(FLOAT_CACHE_KEY, () => ({})) ?? {};
-        return Object.keys(cache).length > 0 ? cache : undefined;
-    },
+    // ═══════════════════════════════════════════════
+    // 底层工具
+    // ═══════════════════════════════════════════════
 
-    set floats(val: Record<string, FloatDecl> | undefined) {
-        const prev = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-        if (this._initializing) {
-            const merged = val ? { ...prev, ...val } : prev;
-            this.setAbilityState(FLOAT_CACHE_KEY, merged);
-            return;
-        }
-        const next = val ?? {};
-        this.setAbilityState(FLOAT_CACHE_KEY, next);
-        this._syncFloats(prev, next);
-    },
-
-    _ensureComponentId(): string {
-        if (!this.id) {
-            this.id = this.props?.id || getId('cmp');
-        }
-        return this.id;
-    },
-
-    _resolveComponentType(type: string | { new (...args: any[]): any }): any {
+    _resolveFloatType(type: string | { new (...args: any[]): any }): any {
         if (typeof type === 'function') return type;
-        return ComponentRegistrar.getInstance().getByType(type);
+        return ComponentRegistrar.getInstance().get(type);
     },
 
-    _getAnchor(key: string, decl: FloatDecl): HTMLElement {
+    _getFloatAnchor(key: string, decl: FloatDecl): HTMLElement {
         if (decl.anchor === 'self') {
             return this.el!;
         }
@@ -68,109 +36,48 @@ export const FloatAbility: AbilityDefinition = {
         return this.getNodeEl?.(key) ?? this.el!;
     },
 
-    _createOverlay(key: string, decl: FloatDecl): FloatInstance | null {
-        this._ensureComponentId();
-        const OverlayClass = this._resolveComponentType(decl.type);
+    _createFloat(
+        key: string,
+        decl: FloatDecl
+    ): { overlay: any; anchorEl: HTMLElement; decl: FloatDecl } | null {
+        const OverlayClass = this._resolveFloatType(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[FloatAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 
-        const overlayData = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlayInst = new OverlayClass({ ...overlayData });
-        const anchorEl = this._getAnchor(key, decl);
+        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
+        const overlay = new OverlayClass({ ...data });
+        const anchorEl = this._getFloatAnchor(key, decl);
 
-        overlayInst.show(anchorEl, decl.placement, decl.offset);
+        overlay.show(anchorEl, decl.placement, decl.offset);
 
         if (decl.mask) {
-            overlayInst._initMask({
+            overlay._initMask?.({
                 color: typeof decl.mask === 'string' ? decl.mask : undefined,
                 scoped: decl.maskMode === 'scoped',
             });
         }
 
-        return { overlay: overlayInst, anchor: anchorEl, decl };
+        return { overlay, anchorEl, decl };
     },
 
-    _disposeOverlay(key: string): void {
-        const inst = this.abilityState(`float-instance:${key}`);
-        if (inst) {
-            inst.overlay.dispose();
-            this.setAbilityState(`float-instance:${key}`, undefined);
-        }
+    _disposeFloat(inst: { overlay: any } | null): void {
+        inst?.overlay?.dispose();
     },
 
-    _syncFloats(prev: Record<string, FloatDecl>, next: Record<string, FloatDecl>): void {
-        this._ensureComponentId();
-
-        const prevKeys = Object.keys(prev);
-        const nextKeys = Object.keys(next);
-
-        const removed = prevKeys.filter(k => !nextKeys.includes(k));
-        const added = nextKeys.filter(k => !prevKeys.includes(k));
-        const changed = nextKeys.filter(
-            k => prevKeys.includes(k) && JSON.stringify(prev[k]) !== JSON.stringify(next[k])
-        );
-
-        for (const key of removed) {
-            this._disposeOverlay(key);
+    _bindFloatTrigger(
+        key: string,
+        decl: FloatDecl,
+        handlers: {
+            onShow: () => void;
+            onHide: () => void;
+            onToggle: () => void;
         }
-        for (const key of added) {
-            const inst = this._createOverlay(key, next[key]);
-            if (inst) {
-                this.setAbilityState(`float-instance:${key}`, inst);
-            }
-        }
-        for (const key of changed) {
-            this._disposeOverlay(key);
-            const inst = this._createOverlay(key, next[key]);
-            if (inst) {
-                this.setAbilityState(`float-instance:${key}`, inst);
-            }
-        }
-    },
-
-    attachFloat(key: string, decl: FloatDecl): void {
-        const current = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-        const merged = { ...current, [key]: decl };
-
-        if (this._initializing) {
-            this.setAbilityState(FLOAT_CACHE_KEY, merged);
-        } else {
-            this.setAbilityState(FLOAT_CACHE_KEY, merged);
-            this._syncFloats(current, merged);
-        }
-
-        this._setupFloatTrigger(key, decl);
-    },
-
-    detachFloat(key: string): void {
-        const current = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-        if (!(key in current)) return;
-
-        const bound = this.abilityState('float-trigger-bound');
-        if (bound) bound.delete(key);
-
-        const next = { ...current };
-        delete next[key];
-        const nextVal = Object.keys(next).length > 0 ? next : {};
-
-        if (this._initializing) {
-            this.setAbilityState(FLOAT_CACHE_KEY, nextVal);
-        } else {
-            this.setAbilityState(FLOAT_CACHE_KEY, nextVal);
-            this._syncFloats(current, nextVal);
-        }
-    },
-
-    _setupFloatTrigger(key: string, decl: FloatDecl): void {
+    ): void {
         if (decl.trigger === 'manual') return;
 
-        const bound = this.abilityState('float-trigger-bound', () => new Set<string>());
-        if (bound.has(key)) return;
-        bound.add(key);
-
-        const anchorEl = this._getAnchor(key, decl);
+        const anchorEl = this._getFloatAnchor(key, decl);
 
         if (decl.trigger === 'hover') {
             this.onCleanup(this.bind(anchorEl, 'enter'));
@@ -179,7 +86,7 @@ export const FloatAbility: AbilityDefinition = {
                 this.on('dom:enter', (ctx: any) => {
                     const event = ctx?.data?.originalEvent as MouseEvent;
                     if (event && anchorEl.contains(event.target as Node)) {
-                        this.showFloat(key);
+                        handlers.onShow();
                     }
                 })
             );
@@ -187,7 +94,7 @@ export const FloatAbility: AbilityDefinition = {
                 this.on('dom:leave', (ctx: any) => {
                     const event = ctx?.data?.originalEvent as MouseEvent;
                     if (event && anchorEl.contains(event.target as Node)) {
-                        this.hideFloat(key);
+                        handlers.onHide();
                     }
                 })
             );
@@ -197,66 +104,69 @@ export const FloatAbility: AbilityDefinition = {
                 this.on('dom:click', (ctx: any) => {
                     const event = ctx?.data?.originalEvent as MouseEvent;
                     if (event && anchorEl.contains(event.target as Node)) {
-                        this.toggleFloat(key);
+                        handlers.onToggle();
                     }
                 })
             );
         }
     },
 
-    _ensureFloat(key: string, decl: FloatDecl): void {
-        const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-        if (key in cache) return;
-        this.attachFloat(key, decl);
+    // ═══════════════════════════════════════════════
+    // 通用操作（供业务组件使用）
+    // ═══════════════════════════════════════════════
+
+    attachFloat(key: string, decl: FloatDecl): void {
+        this.abilityState(`float-decl:${key}`, () => decl);
+        this._bindFloatTrigger(key, decl, {
+            onShow: () => this.showFloat(key),
+            onHide: () => this.hideFloat(key),
+            onToggle: () => this.toggleFloat(key),
+        });
     },
 
     showFloat(key: string): void {
-        let inst = this.abilityState(`float-instance:${key}`);
+        let inst = this.abilityState(`float-instance:${key}`) as any;
         if (!inst) {
-            const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-            if (key in cache) {
-                inst = this._createOverlay(key, cache[key]);
-                if (inst) {
-                    this.setAbilityState(`float-instance:${key}`, inst);
-                    return;
-                }
-            }
-        }
-        if (inst) {
-            inst.overlay.show(inst.anchor, inst.decl.placement, inst.decl.offset);
+            const decl = this.abilityState(`float-decl:${key}`) as any;
+            if (!decl) return;
+            inst = this._createFloat(key, decl);
+            if (!inst) return;
+            this.abilityState(`float-instance:${key}`, () => inst);
+            this.onCleanup(() => this._disposeFloat(inst));
+        } else {
+            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
         }
     },
 
     hideFloat(key: string): void {
-        const inst = this.abilityState(`float-instance:${key}`);
+        const inst = this.abilityState(`float-instance:${key}`) as any;
         if (inst) {
             inst.overlay.hide();
         }
     },
 
     toggleFloat(key: string): void {
-        let inst = this.abilityState(`float-instance:${key}`);
-        if (inst) {
-            if (inst.overlay.isOpen) {
-                inst.overlay.hide();
-            } else {
-                inst.overlay.show(inst.anchor, inst.decl.placement, inst.decl.offset);
-            }
+        const inst = this.abilityState(`float-instance:${key}`) as any;
+        if (inst && inst.overlay.isOpen) {
+            inst.overlay.hide();
         } else {
-            const cache = this.abilityState(FLOAT_CACHE_KEY) ?? {};
-            if (key in cache) {
-                inst = this._createOverlay(key, cache[key]);
-                if (inst) {
-                    this.setAbilityState(`float-instance:${key}`, inst);
-                }
-            }
+            this.showFloat(key);
         }
     },
 
     updateFloat(key: string, data: Record<string, any>): void {
-        const inst = this.abilityState(`float-instance:${key}`);
+        const inst = this.abilityState(`float-instance:${key}`) as any;
         if (inst) {
             inst.overlay.update(data);
         }
+    },
+
+    detachFloat(key: string): void {
+        const inst = this.abilityState(`float-instance:${key}`) as any;
+        if (inst) {
+            this._disposeFloat(inst);
+            this.setAbilityState(`float-instance:${key}`, undefined);
+        }
+        this.setAbilityState(`float-decl:${key}`, undefined);
     },
 } satisfies AbilityDefinition;

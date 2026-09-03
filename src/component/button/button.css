@@ -6,15 +6,16 @@
  * small/medium/large 三种尺寸，以及禁用状态。
  */
 
-export const buttonCSS = `
 /* Button 根元素 */
 .q-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     padding: 0 16px;
     border: 2px solid var(--q-colors-border, #dcdfe6);
     border-radius: 0;
+    font-family: inherit;
     font-size: 14px;
     font-weight: 600;
     line-height: 1;
@@ -92,26 +93,7 @@ export const buttonCSS = `
     border-color: #b22c2f;
 }
 
-/* 尺寸：小 */
-.q-button--small {
-    height: 28px;
-    padding: 0 12px;
-    font-size: 12px;
-}
-
-/* 尺寸：中 */
-.q-button--medium {
-    height: 36px;
-    padding: 0 16px;
-    font-size: 14px;
-}
-
-/* 尺寸：大 */
-.q-button--large {
-    height: 44px;
-    padding: 0 20px;
-    font-size: 16px;
-}
+/* 尺寸由全局 q-size--sm/md/lg 提供（SizeAbility 自动添加），此处无需组件特定定义 */
 
 /* 禁用状态 */
 .q-button--disabled {
@@ -119,11 +101,48 @@ export const buttonCSS = `
     opacity: 0.4;
 }
 
-/* 内容文本 */
+/* 内容容器（icon + text） */
 .q-button__content {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+}
+
+/* 图标 */
+.q-button__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    line-height: 1;
+}
+
+/* 内容文本 */
+.q-button__text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 布局：默认（icon 左，text 右） */
+.q-button-layout--default .q-button__content {
+    flex-direction: row;
+}
+
+/* 布局：icon 右，text 左 */
+.q-button-layout--icon-right .q-button__content {
+    flex-direction: row-reverse;
+}
+
+/* 布局：icon 上，text 下 */
+.q-button-layout--icon-top .q-button__content {
+    flex-direction: column;
+}
+
+/* 布局：icon 下，text 上 */
+.q-button-layout--icon-bottom .q-button__content {
+    flex-direction: column-reverse;
 }
 
 /* 下拉展开箭头 */
@@ -163,4 +182,3 @@ export const buttonCSS = `
     background: var(--q-colors-primary-hover, rgba(0, 120, 212, 0.1));
     border-color: transparent;
 }
-`;

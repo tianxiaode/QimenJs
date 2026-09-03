@@ -1,9 +1,8 @@
 /**
  * LoadingAbility — 加载浮层能力
  *
- * 提供 loading 浮层的快捷操作方法，底层通过 FloatAbility 的 show/hide/updateFloat 发送事件。
- * 通过 `_initLoading` 在初始化阶段根据配置自动注册浮层，
- * 运行时通过 `showLoading` 懒加载（未配置时也可手动调用）。
+ * 由能力自行创建 loading 浮层实例并管理生命周期，
+ * 创建时不自动显示，由 showLoading 控制显示，实例纳入宿主 onCleanup 自动清理。
  *
  * @example
  * // 组件 options 中声明
@@ -24,28 +23,65 @@ export const LoadingAbility: AbilityDefinition = {
     _initLoading(): void {
         const cfg: LoadingOptions = this.loading;
         if (!cfg) return;
-        const delc = this._getLoadingFloatDecl();
-        this.attachFloat('loading', delc);
+        this._ensureLoadingFloat();
     },
 
     showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
-        const decl = this._getLoadingFloatDecl();
-        this._ensureFloat('loading', decl);
+        const inst = this._ensureLoadingFloat();
+        if (!inst) return;
         if (text !== undefined || maskMode !== undefined) {
             const data: Record<string, any> = {};
             if (text !== undefined) data.text = text;
             if (maskMode !== undefined) data.maskMode = maskMode;
-            this.updateFloat('loading', data);
+            inst.overlay.update(data);
         }
-        this.showFloat('loading');
+        inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
     },
 
     hideLoading(): void {
-        this.hideFloat('loading');
+        const inst = this.abilityState('loading-instance') as
+            | { overlay: any }
+            | undefined;
+        if (inst) {
+            inst.overlay.hide();
+        }
     },
 
     updateLoading(data: Record<string, any>): void {
-        this.updateFloat('loading', data);
+        const inst = this.abilityState('loading-instance') as
+            | { overlay: any }
+            | undefined;
+        if (inst) {
+            inst.overlay.update(data);
+        }
+    },
+
+    _ensureLoadingFloat() {
+        const existing = this.abilityState('loading-instance') as any;
+        if (existing) return existing;
+
+        const decl = this._getLoadingFloatDecl();
+        const OverlayClass = this._resolveFloatType(decl.type);
+        if (!OverlayClass) {
+            this.logger?.warn?.(`[LoadingAbility] overlay type not found: ${decl.type}`);
+            return null;
+        }
+
+        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
+        const overlay = new OverlayClass({ ...data });
+        const anchorEl = this._getFloatAnchor('loading', decl);
+        const inst = { overlay, anchorEl, decl };
+
+        if (decl.mask) {
+            overlay._initMask?.({
+                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+                scoped: decl.maskMode === 'scoped',
+            });
+        }
+
+        this.abilityState('loading-instance', () => inst);
+        this.onCleanup(() => this._disposeFloat(inst));
+        return inst;
     },
 
     _getLoadingFloatDecl(): FloatDecl {

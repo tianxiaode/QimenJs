@@ -51,7 +51,7 @@ export const msgbox = {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'alert');
         return new Promise<MsgboxResult>(resolve => {
             const instance = new Msgbox({ ...options, callback: resolve });
-            instance.show();
+            instance.ready.then(() => instance.show());
         });
     },
 
@@ -59,7 +59,7 @@ export const msgbox = {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'confirm');
         return new Promise<MsgboxResult>(resolve => {
             const instance = new Msgbox({ ...options, callback: resolve });
-            instance.show();
+            instance.ready.then(() => instance.show());
         });
     },
 
@@ -67,7 +67,7 @@ export const msgbox = {
         const options = normalizeMsgboxArgs(titleOrOptions, content, 'prompt');
         return new Promise<MsgboxResult>(resolve => {
             const instance = new Msgbox({ ...options, callback: resolve });
-            instance.show();
+            instance.ready.then(() => instance.show());
         });
     },
 };

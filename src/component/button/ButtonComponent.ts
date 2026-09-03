@@ -28,52 +28,57 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@/component-core';
-import { resolveI18nValue } from '@qimenjs/i18n';
-import { SizeAbility } from '@qimenjs/component-abilities';
+import type { TemplateDecl } from '@/component-core';
 import { BUTTON_TPL } from './button-tpl';
+import { Definitions } from '@/composable';
+import { SizeAbility } from '@/component-abilities';
 import './button.css';
 
-const I18N_PREFIX = 'i18n:';
-
-/** 按钮属性接口 */
-export interface ButtonProps {
-    icon?: string;
-    text?: string;
-    hint?: string;
-    size?: 'sm' | 'md' | 'lg';
-}
+const ButtonComponentDefs: Definitions = {
+    targetToOptions: {
+        text: { target: 'text', to: 'text' },
+    },
+    options: {
+        size: 'md', // 默认尺寸,
+        ghost: false, // 无边框
+        iconAlign: 'default', // 布局
+        buttonType: 'default', // 按钮类型
+        iconCls: null, // 图标内容
+    },
+} as const;
 
 class ButtonComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'button';
+    get tpl(): TemplateDecl {
         return BUTTON_TPL;
     }
 
-    onAfterInit(): void {
-        this.initSize();
-        const { icon, text, size } = this._rawProps;
-
-        if (icon !== undefined) this.icon = this._resolveVal(icon);
-        if (text !== undefined) this.text = this._resolveVal(text);
-        this.size = size || 'md';
+    _onIconOptionChange(value: string, old: string) {
+        value ? this.removeCls('hidden') : this.addCls('hidden');
+        this.removeCls(old);
+        this.addCls(value);
     }
 
-    private _resolveVal(val: any): any {
-        if (typeof val === 'string' && val.startsWith(I18N_PREFIX)) {
-            return resolveI18nValue(val);
-        }
-        return val;
+    _onButtonTypeOptionChange(value: string, old: string) {
+        this._applyNewCls(this._composeStateCls('', value), this._composeStateCls('', old));
     }
 
-    update(props?: Partial<ButtonProps>): void {
-        if (props?.icon !== undefined) this.icon = props.icon;
-        if (props?.text !== undefined) this.text = props.text;
-        if (props?.hint !== undefined) this.hint = props.hint;
-        if (props?.size !== undefined) this.size = props.size;
+    _onGhostOptionChange(value: boolean) {
+        const cls = this._composeStateCls('', 'ghost');
+        value ? this.addCls(cls) : this.removeCls(cls);
+    }
+
+    _onLayoutOptionChange(value: string, old: string) {
+        this._applyNewCls(
+            this._composeStateCls('layout', value),
+            this._composeStateCls('layout', old)
+        );
     }
 }
 
+ButtonComponent.define(ButtonComponentDefs);
 ButtonComponent.use(SizeAbility);
+
 export { ButtonComponent };
 /** 按钮实例类型 */
-export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;
+//export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

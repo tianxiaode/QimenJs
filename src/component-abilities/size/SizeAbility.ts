@@ -28,54 +28,10 @@
 
 import type { AbilityDefinition } from '@/composable';
 
-/** 尺寸配置 */
-export interface SizeConfig {
-    /** 可用尺寸列表，默认 ['sm','md','lg'] */
-    sizes?: string[];
-    /** 默认尺寸，默认 'md' */
-    defaultSize?: string;
-}
-
-const STATE_KEY = 'SizeAbility:state';
-
-const DEFAULT_SIZES = ['sm', 'md', 'lg'];
-const DEFAULT_SIZE = 'md';
-
-interface SizeState {
-    sizes: string[];
-    currentSize: string;
-    classPrefix: string;
-}
-
 export const SizeAbility = {
-    /** 初始化尺寸能力，设置默认尺寸 CSS 类 */
-    initSize(config?: SizeConfig): void {
-        const sizes = config?.sizes ?? DEFAULT_SIZES;
-        const defaultSize = config?.defaultSize ?? DEFAULT_SIZE;
-        const type = this.type as string | undefined;
-        const classPrefix = type ? `q-${type.toLowerCase()}--` : 'q-size--';
-
-        this.setAbilityState(STATE_KEY, {
-            sizes,
-            currentSize: defaultSize,
-            classPrefix,
-        });
-
-        this.addCls(`${classPrefix}${defaultSize}`);
-    },
-
-    get size(): string {
-        const state = this.abilityState(STATE_KEY) as SizeState | undefined;
-        return state?.currentSize ?? DEFAULT_SIZE;
-    },
-
-    set size(value: string) {
-        const state = this.abilityState(STATE_KEY) as SizeState | undefined;
-        if (!state || state.currentSize === value) return;
-
-        this.removeCls(`${state.classPrefix}${state.currentSize}`);
-        this.addCls(`${state.classPrefix}${value}`);
-
-        state.currentSize = value;
+    _onSizeOptionChange(value: string, old: string) {
+        const oldCls = this._composeStateCls('size', old, false);
+        const cls = this._composeStateCls('size', value, false);
+        this._applyNewCls(cls, oldCls); // 移除旧类，添加新类
     },
 } satisfies AbilityDefinition;

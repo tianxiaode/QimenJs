@@ -5,7 +5,6 @@
 
 import { Component, TplNode } from '@qimenjs/component-core';
 import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
-import { IndicatorAbility, type IndicatorConfig } from '@qimenjs/component-abilities';
 import { OverflowAbility } from '@qimenjs/component-abilities';
 
 export type { OverflowMode } from '@qimenjs/component-abilities';
@@ -51,7 +50,7 @@ export interface ItemGroupConfig {
     defaultItem?: DefaultItemConfig;
     overflowMode?: import('@qimenjs/component-abilities').OverflowMode;
     step?: number;
-    indicator?: IndicatorConfig;
+    indicator?: any;
 }
 
 /** 项组属性接口 */
@@ -386,7 +385,7 @@ class ItemGroupBaseComponent extends Component {
     }
 }
 
-ItemGroupBaseComponent.use([IndicatorAbility, OverflowAbility]);
+ItemGroupBaseComponent.use([OverflowAbility]);
 
 export { ItemGroupBaseComponent };
 /** 项组基类实例类型 */

@@ -16,7 +16,7 @@ const FloatingComponentDefs: Definitions = {
         pointerEvents: null,
         isFloat: true,
     },
-    fields: {
+    privateFields: {
         _overlayOpen: false,
     },
 };
@@ -78,11 +78,6 @@ export class FloatingComponent extends Component {
         this.unmountFromOverlay(this.el!);
     }
 
-    override dispose(): void {
-        //this._removeMask();
-        super.dispose();
-    }
-
     protected _bindGlobalHandlers(): void {
         if (this._handlersBound) return;
         this._handlersBound = true;
@@ -125,12 +120,6 @@ export class FloatingComponent extends Component {
         }
     }
 
-    update(data: Record<string, any>): void {
-        if (typeof (this as any).onOverlayChange === 'function') {
-            (this as any).onOverlayChange(data);
-        }
-    }
-
     protected _initMask(config?: { scoped?: boolean; color?: string }): void {
         if (this._mask) return;
         const zIndex = this.zIndex ? Number(this.zIndex) - 1 : 1;
@@ -156,4 +145,3 @@ export class FloatingComponent extends Component {
 
 FloatingComponent.define(FloatingComponentDefs);
 FloatingComponent.use([ZIndexAbility, ViewportPositionAbility]);
-FloatingComponent.register();

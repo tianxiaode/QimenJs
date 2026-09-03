@@ -60,13 +60,14 @@ export class Msgbox extends FloatingComponent {
         this._initMask({ color: 'rgba(0,0,0,0.5)' });
 
         if (this.msgboxType === 'alert' && this._mask) {
-            this.bind(this._mask.el, 'click');
-            this.on('dom:click', (e: any) => {
+            this.onCleanup(this.bind(this._mask.el, 'click'));
+            const off = this.on('dom:click', (e: any) => {
                 const target = e?.data?.originalEvent?.target ?? e?.target;
                 if (target === this._mask!.el) {
                     this.close('cancel');
                 }
             });
+            this.onCleanup(off);
         }
 
         this.setViewportPosition('center' as ViewportPosition);
@@ -83,7 +84,6 @@ export class Msgbox extends FloatingComponent {
     }
 
     _onConfirmClick(): void {
-        this.logger?.info?.('msgbox confirm click'); // Log the click
         this.close('confirm');
     }
 
@@ -127,8 +127,8 @@ const MsgboxDefs: Definitions = {
     targetToOptions: {
         title: { target: 'title', to: 'text' },
         content: { target: 'content', to: 'html' },
-        confirmText: { target: 'confirm', to: 'text', i18n: 'common:confirm' },
-        cancelText: { target: 'cancel', to: 'text', i18n: 'common:cancel' },
+        confirmText: { target: 'confirm', to: 'text', default: '@common:confirm' },
+        cancelText: { target: 'cancel', to: 'text', default: '@common:cancel' },
         value: { target: 'field', to: 'value' },
     },
     options: {
@@ -140,4 +140,3 @@ const MsgboxDefs: Definitions = {
 };
 
 Msgbox.define(MsgboxDefs);
-Msgbox.register();

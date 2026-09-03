@@ -1,4 +1,4 @@
-import { AbilityDefinition, TARGET_TO_OPTION_MAP } from '@/composable';
+import { AbilityDefinition } from '@/composable';
 
 /**
  * 节点属性操作（直接操作 DOM）
@@ -84,13 +84,5 @@ export const AttributeAbility: AbilityDefinition = {
      */
     getRect(): DOMRect {
         return this.el!.getBoundingClientRect();
-    },
-
-    _applyContentToElement(target: string, text: string, to: string): void {
-        const el = this.getNodeEl(target);
-        const toMap = TARGET_TO_OPTION_MAP as any;
-        if (to && to in toMap) {
-            el[toMap[to]] = text;
-        }
     },
 } satisfies AbilityDefinition;

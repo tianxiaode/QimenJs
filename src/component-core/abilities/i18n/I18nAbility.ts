@@ -1,5 +1,4 @@
-import { TargetToOptionDefinition, type AbilityDefinition } from '@/composable';
-import { t } from '@/i18n';
+import { type AbilityDefinition } from '@/composable';
 import { SYSTEM_EVENTS } from '@/events';
 
 export const I18nAbility: AbilityDefinition = {
@@ -9,22 +8,8 @@ export const I18nAbility: AbilityDefinition = {
     _flushI18n(): void {
         const i18ns = this.i18nOptions;
         for (const optionKey of i18ns) {
-            this._applyI18nToElement(optionKey);
+            this._applyContentToElement(optionKey);
         }
-    },
-
-    _applyI18nToElement(optionKey: string, def?: TargetToOptionDefinition): void {
-        def = def || this.targetToMap.get(optionKey);
-        if (!def || !def.to) return; // 没有对应的定义
-
-        const el = def.target ? this.getNodeEl(def.target) : this.el;
-        if (!el) return;
-
-        const i18nMeta = this._getData().__i18nMeta[optionKey];
-        const useI18n = i18nMeta?.useI18n ?? true; // 是否使用i18n
-
-        const text = useI18n ? t(i18nMeta?.key ?? def.i18n) : this.getData(optionKey);
-        this._applyContentToElement(def.target ?? 'root', text, def.to);
     },
 
     /**

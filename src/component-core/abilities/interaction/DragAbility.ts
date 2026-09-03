@@ -76,7 +76,10 @@ export const DragAbility: AbilityDefinition = {
 
         this._destroyGhost();
 
-        if (dragStateManager.isDragging() && dragStateManager.getActiveDrag()?.dragKey === componentId) {
+        if (
+            dragStateManager.isDragging() &&
+            dragStateManager.getActiveDrag()?.dragKey === componentId
+        ) {
             dragStateManager.setActiveDrag(null);
         }
 
@@ -161,7 +164,7 @@ export const DragAbility: AbilityDefinition = {
         }
     },
 
-    _onDragCancel(gesture: any): void {
+    _onDragCancel(_gesture: any): void {
         const componentId = this.id;
         const config = this._dragConfig;
         const el = this._dragEl;

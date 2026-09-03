@@ -21,7 +21,7 @@ export interface IComposableBase {
     logger: ILogger;
     getData(key: string): any;
     setData(key: string, value: any): void;
-    setI18n(optionKey: string, value: string): void;
+    getTargetToDef(key: string): TargetToOptionDefinition | undefined;
     get targetToMap(): Map<string, TargetToOptionDefinition>;
     get i18nOptions(): string[];
     get optionsKeys(): Set<string>;

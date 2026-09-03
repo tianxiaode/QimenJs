@@ -90,7 +90,6 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
  */
 export function withAbilities(target: any, abilities: readonly AbilityDefinition[]): void {
     const proto = target.prototype;
-    initConstructorProperties(proto);
     for (const ability of abilities) {
         applyAbilitie(proto, ability);
     }
@@ -131,20 +130,26 @@ export function withDefinitions(target: any, definitions: Definitions): void {
 
             dataMap.optionsKeys.add(key);
             dataMap.targetToMap.set(key, def);
-            dataMap.defaultValues[key] = def.default;
-            if (def.i18n) {
-                dataMap.i18nOptions.push(key); // 3. 添加到 i18nOptions
+            const defaultValue = def.default;
+            if (defaultValue) {
+                dataMap.defaultValues[key] = defaultValue;
+                if (defaultValue.startsWith('@') && !defaultValue.startsWith('@@')) {
+                    dataMap.i18nOptions.push(key);
+                }
             }
+
             defineGetterSetter(proto, key);
         }
     }
 
     if (definitions.options) {
-        for (const [key, def] of Object.entries(definitions.options)) {
+        for (const [key, value] of Object.entries(definitions.options)) {
             if (BUILTIN_KEYS.has(key)) continue;
-
             dataMap.optionsKeys.add(key);
-            dataMap.defaultValues[key] = def;
+            if (value) {
+                dataMap.defaultValues[key] = value;
+            }
+
             defineGetterSetter(proto, key);
         }
     }

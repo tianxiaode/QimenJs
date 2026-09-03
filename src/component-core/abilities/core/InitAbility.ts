@@ -62,19 +62,10 @@ export const InitAbility = {
                 this.addCls(classes, name);
             }
         }
-        if (!options) return;
+        this.applyOptionDefaults();
+        this._applyOptions(options);
         // 将构造函数选项应用到组件实例
         this.logger.debug(`[prepare:apply options]`, `[${this.type}]:[${this.id}]`);
-        const optionsKeys: Map<string, any> = this.optionsKeys;
-        const propertyKeys: Map<string, any> = this.propertyKeys;
-        for (const [key, value] of Object.entries(options)) {
-            if (key === 'id') continue;
-            if (optionsKeys.has(key)) {
-                this.setData(key, value);
-            } else if (propertyKeys.has(key)) {
-                this[key] = value;
-            }
-        }
     },
 
     createChildren(childReady?: () => void): void {

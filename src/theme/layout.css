@@ -55,3 +55,8 @@
 .h-full { height: 100%; }
 .w-screen { width: 100vw; }
 .h-screen { height: 100vh; }
+
+/* 组件尺寸分档（由 SizeAbility 自动添加到组件根元素） */
+.q-size--sm { height: 28px; padding: 0 12px; font-size: 12px; }
+.q-size--md { height: 36px; padding: 0 16px; font-size: 14px; }
+.q-size--lg { height: 44px; padding: 0 20px; font-size: 16px; }

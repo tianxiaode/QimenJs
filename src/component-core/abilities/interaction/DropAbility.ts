@@ -112,7 +112,7 @@ export const DropAbility: AbilityDefinition = {
         this.onCleanup(() => this._disposeDropZone(zone));
     },
 
-    _disposeDropZone(zone: string): void {
+    _disposeDropZone(_zone: string): void {
         if (this._dropEnterHandler) {
             this.off('dom:enter', this._dropEnterHandler);
             this._dropEnterHandler = undefined;

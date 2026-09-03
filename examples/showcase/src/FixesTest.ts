@@ -1,7 +1,5 @@
 import { Component, toast, msgbox, TemplateDecl } from '@qimenjs/component-core';
 import { DialogComponent, MenuComponent } from './FloatsTest';
-import { Button } from './Button';
-Button.register();
 export class OverlayTest extends Component {
     loading = { text: '加载中...' };
     dialog = { type: 'dialog' };
@@ -50,16 +48,9 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'badgeBtn',
                             options: {
+                                buttonType: 'primary',
+                                text: 'Badge',
                                 badge: { text: '99' },
-                            },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #22c55e',
-                                background: '#f0fdf4',
-                                color: '#15803d',
-                                cursor: 'pointer',
-                                fontSize: '14px',
                             },
                         },
                         {
@@ -134,6 +125,8 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipTop',
                             options: {
+                                buttonType: 'success',
+                                text: 'top',
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
                         },
@@ -141,6 +134,8 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipBottom',
                             options: {
+                                text: 'bottom',
+                                buttonType: 'warning',
                                 tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
                             },
                         },
@@ -148,6 +143,8 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipLeft',
                             options: {
+                                buttonType: 'danger',
+                                text: 'left',
                                 tooltip: { content: 'Tooltip Left', placement: 'left' },
                             },
                         },
@@ -155,6 +152,7 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipRight',
                             options: {
+                                text: 'right',
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
                             },
                         },
@@ -162,6 +160,7 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipRightAutoFlip',
                             options: {
+                                text: 'right auto flip',
                                 tooltip: { content: 'Tooltip Right Auto Flip', placement: 'right' },
                             },
                             style: { flex: '1', minWidth: '200px' },

@@ -1,13 +1,12 @@
 /**
  * DialogAbility — 对话框浮层能力
  *
- * 提供 dialog 浮层的快捷操作方法，底层通过 FloatAbility 的 show/hide/toggle/updateFloat 发送事件。
- * 通过 `_initDialog` 在初始化阶段根据配置自动注册浮层，
- * 运行时通过 `showDialog` 懒加载（未配置时也可手动调用）。
+ * 由能力自行创建 DialogComponent 实例并管理生命周期：
+ * showDialog 时创建并挂载到 overlay root，关闭后自行销毁，不纳入宿主 cleanup。
  *
  * this.dialog 支持两种形式：
  * - 组件类：class MyDialog extends Component { ... }
- * - 配置对象：{ type: 'MyDialog', title: '确认', content: '确定要删除吗？' }
+ * - 配置对象：{ type: 'MyDialog', title: '确认' }
  *
  * @example
  * // 组件类
@@ -23,17 +22,12 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../../types';
+import { OverlayRoot } from '../../overlay/OverlayRoot';
+import { ZIndexLevel, zIndexManager } from '../../engine';
 
 /** 对话框浮层能力，提供 show/hide/toggle/update 快捷方法 */
 export const DialogAbility: AbilityDefinition = {
-    _initDialog(): void {
-        const decl = this._getDialogFloatDecl();
-        if (!decl) return;
-        this.attachFloat('dialog', decl);
-    },
-
-    _getDialogFloatDecl(): FloatDecl | undefined {
+    _getDialogFloatDecl(): any {
         const dialog = this.dialog;
         if (!dialog) return;
 
@@ -46,16 +40,8 @@ export const DialogAbility: AbilityDefinition = {
             };
         }
 
-        const {
-            type,
-            trigger,
-            placement,
-            mask,
-            closeOnEscape,
-            closeOnClickOutside,
-            emits,
-            ...data
-        } = dialog as Record<string, any>;
+        const { type, trigger, placement, mask, closeOnEscape, closeOnClickOutside, emits, ...data } =
+            dialog as Record<string, any>;
         return {
             type,
             trigger: trigger ?? 'manual',
@@ -69,20 +55,50 @@ export const DialogAbility: AbilityDefinition = {
     },
 
     showDialog(): void {
-        this._ensureFloat('dialog', this._getDialogFloatDecl());
-        this.showFloat('dialog');
+        const inst = this.abilityState('dialog-instance') as any;
+        if (inst) {
+            inst.el?.parentNode || OverlayRoot.getInstance().getRoot().appendChild(inst.el);
+            return;
+        }
+
+        const decl = this._getDialogFloatDecl();
+        if (!decl) return;
+
+        const OverlayClass = this._resolveFloatType(decl.type);
+        if (!OverlayClass) return;
+
+        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
+        const overlay = new OverlayClass({ ...data });
+
+        this.abilityState('dialog-instance', () => ({ overlay, decl }));
+
+        overlay.ready.then(() => {
+            OverlayRoot.getInstance().getRoot().appendChild(overlay.el);
+            overlay.zIndex = String(zIndexManager.acquire(ZIndexLevel.modal));
+        });
     },
 
     hideDialog(): void {
-        this.hideFloat('dialog');
+        const inst = this.abilityState('dialog-instance') as any;
+        if (inst) {
+            inst.overlay.dispose();
+            this.setAbilityState('dialog-instance', undefined);
+        }
     },
 
     toggleDialog(): void {
-        this._ensureFloat('dialog', this._getDialogFloatDecl());
-        this.toggleFloat('dialog');
+        const inst = this.abilityState('dialog-instance') as any;
+        if (inst) {
+            this.hideDialog();
+        } else {
+            this.showDialog();
+        }
     },
 
     updateDialog(data: Record<string, any>): void {
-        this.updateFloat('dialog', data);
+        const inst = this.abilityState('dialog-instance') as any;
+        if (inst) {
+            inst.overlay.onOverlayChange?.(data);
+        }
     },
 } satisfies AbilityDefinition;

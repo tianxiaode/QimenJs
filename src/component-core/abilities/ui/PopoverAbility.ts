@@ -1,9 +1,9 @@
 /**
  * PopoverAbility — 弹出层能力
  *
- * 提供 popover 浮层的快捷操作方法，底层通过 FloatAbility 的 show/hide/toggle/updateFloat 发送事件。
- * 通过 `_initPopover` 在初始化阶段根据配置自动注册浮层，
- * 运行时通过 `showPopover` 懒加载（未配置时也可手动调用）。
+ * 由能力自行创建 popover 浮层实例并管理生命周期，
+ * 创建时不自动显示，click 时由 _bindFloatTrigger 触发 show，
+ * 实例纳入宿主 onCleanup 自动清理。
  *
  * this.popover 支持两种形式：
  * - 组件类：class MyPopover extends Component { ... }
@@ -23,17 +23,16 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import type { FloatDecl } from '../../types';
 
 /** 弹出层能力，提供 show/hide/toggle/update 快捷方法 */
 export const PopoverAbility: AbilityDefinition = {
     _initPopover(): void {
         const decl = this._getPopoverFloatDecl();
         if (!decl) return;
-        this.attachFloat('popover', decl);
+        this._ensurePopoverFloat(decl);
     },
 
-    _getPopoverFloatDecl(): FloatDecl | undefined {
+    _getPopoverFloatDecl(): any {
         const popover = this.popover;
         if (!popover) return;
 
@@ -48,16 +47,8 @@ export const PopoverAbility: AbilityDefinition = {
             };
         }
 
-        const {
-            type,
-            trigger,
-            placement,
-            mask,
-            closeOnEscape,
-            closeOnClickOutside,
-            emits,
-            ...data
-        } = popover as Record<string, any>;
+        const { type, trigger, placement, mask, closeOnEscape, closeOnClickOutside, emits, ...data } =
+            popover as Record<string, any>;
         return {
             type,
             trigger: trigger ?? 'click',
@@ -71,20 +62,81 @@ export const PopoverAbility: AbilityDefinition = {
     },
 
     showPopover(): void {
-        this._ensureFloat('popover', this._getPopoverFloatDecl());
-        this.showFloat('popover');
+        const decl = this._getPopoverFloatDecl();
+        if (!decl) return;
+        const inst = this._ensurePopoverFloat(decl);
+        if (inst) {
+            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+        }
     },
 
     hidePopover(): void {
-        this.hideFloat('popover');
+        const inst = this.abilityState('popover-instance') as
+            | { overlay: any }
+            | undefined;
+        if (inst) {
+            inst.overlay.hide();
+        }
     },
 
     togglePopover(): void {
-        this._ensureFloat('popover', this._getPopoverFloatDecl());
-        this.toggleFloat('popover');
+        const decl = this._getPopoverFloatDecl();
+        if (!decl) return;
+        const inst = this._ensurePopoverFloat(decl);
+        if (!inst) return;
+        if (inst.overlay.isOpen) {
+            inst.overlay.hide();
+        } else {
+            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+        }
     },
 
     updatePopover(data: Record<string, any>): void {
-        this.updateFloat('popover', data);
+        const inst = this.abilityState('popover-instance') as
+            | { overlay: any }
+            | undefined;
+        if (inst) {
+            inst.overlay.update(data);
+        }
+    },
+
+    _ensurePopoverFloat(decl: any) {
+        const existing = this.abilityState('popover-instance') as any;
+        if (existing) return existing;
+
+        const OverlayClass = this._resolveFloatType(decl.type);
+        if (!OverlayClass) {
+            this.logger?.warn?.(`[PopoverAbility] overlay type not found: ${decl.type}`);
+            return null;
+        }
+
+        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
+        const overlay = new OverlayClass({ ...data });
+        const anchorEl = this._getFloatAnchor('popover', decl);
+        const inst = { overlay, anchorEl, decl };
+
+        if (decl.mask) {
+            overlay._initMask?.({
+                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+                scoped: decl.maskMode === 'scoped',
+            });
+        }
+
+        this.abilityState('popover-instance', () => inst);
+        this.onCleanup(() => this._disposeFloat(inst));
+
+        this._bindFloatTrigger('popover', inst.decl, {
+            onShow: () => inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset),
+            onHide: () => inst.overlay.hide(),
+            onToggle: () => {
+                if (inst.overlay.isOpen) {
+                    inst.overlay.hide();
+                } else {
+                    inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+                }
+            },
+        });
+
+        return inst;
     },
 } satisfies AbilityDefinition;

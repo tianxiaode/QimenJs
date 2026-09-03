@@ -124,12 +124,12 @@ export class DragDropTest extends Component {
                                 {
                                     type: 'drag-item',
                                     name: 'item1',
-                                    options: { text: 'Item A', drag: { type: 'item-a' } },
+                                    options: { drag: { type: 'item-a' } },
                                 },
                                 {
                                     type: 'drag-item',
                                     name: 'item2',
-                                    options: { text: 'Item B', drag: { type: 'item-b' } },
+                                    options: { drag: { type: 'item-b' } },
                                 },
                             ],
                         },

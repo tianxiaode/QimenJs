@@ -23,6 +23,7 @@ export const TARGET_TO_OPTION_MAP = {
     alt: 'alt',
     style: 'style',
     attribute: 'attribute',
+    class: 'class',
 } as const;
 
 /**
@@ -38,8 +39,6 @@ export interface TargetToOptionDefinition {
     target?: string;
     /** 映射到目标的属性，如value, text,src, link,href等 */
     to?: keyof typeof TARGET_TO_OPTION_MAP;
-    /** 本地化key */
-    i18n?: string;
     /** 默认值，当目标节点不存在时使用 */
     default?: any;
 }
@@ -53,13 +52,6 @@ export type Definitions = {
     fields?: Record<string, any>;
     overrides?: Record<string, any>;
 };
-
-export interface I18nMeta {
-    /** 当前生效的 i18n key（可能被用户覆盖） */
-    key?: string;
-    /** 来源：'default' | 'user-override' | 'explicit-value' */
-    useI18n: boolean;
-}
 
 // ============================================================
 // 类型工具 - 对齐 InferAbilities

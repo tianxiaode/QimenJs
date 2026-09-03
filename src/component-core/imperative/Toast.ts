@@ -118,4 +118,3 @@ const ToastDefs: Definitions = {
 };
 
 Toast.define(ToastDefs);
-Toast.register();

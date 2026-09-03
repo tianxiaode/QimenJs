@@ -1,13 +1,12 @@
-import { Definitions, TargetToOptionDefinition } from '@/composable/types';
+import { Definitions } from '@/composable/types';
 import { HIDDEN_MODE } from './constants';
-import { HIDDEN_MODE_CSS_MAP, OPTION_ATTRIBUTE_PROPS, OPTION_STYLE_PROPS } from './constants';
+import { OPTION_ATTRIBUTE_PROPS, OPTION_STYLE_PROPS } from './constants';
 
 export const ComponentDefs: Definitions = {
     /** 组件类型 — 控制组件的类型和用途 */
     options: {
         /** 组件状态 — 控制组件的启用状态 */
         disable: false,
-        disabledCls: null,
         /** 控制组件是否隐藏 — 控制组件的显示状态 */
         hidden: false,
         /**
@@ -144,43 +143,33 @@ export const ComponentDefs: Definitions = {
     },
 
     overrides: {
-        _onOptionChange(key: string, value: any, old: any, def: TargetToOptionDefinition): void {
+        _onOptionChange(key: string, value: any, old: any): void {
             if (value === old) return;
-            if (OPTION_STYLE_PROPS.has(key) || key === 'style') {
+            if (OPTION_STYLE_PROPS.has(key)) {
                 this.setStyles({ [key]: value });
                 return;
             }
-            if (OPTION_ATTRIBUTE_PROPS.has(key) || key === 'attributes') {
+            if (OPTION_ATTRIBUTE_PROPS.has(key)) {
                 this.setAttributes({ [key]: value });
                 return;
             }
-            if (key === 'hidden' || key === 'hiddenMode') {
-                const cls = (HIDDEN_MODE_CSS_MAP as any)[this.hiddenMode];
-                value ? this.addCls(cls) : this.removeCls(cls);
-                return;
-            }
 
-            if (key === 'disabeld' || key === 'disableCls') {
-                const cls = this.disabledCls;
-                value ? this.addCls(cls) : this.removeCls(cls);
-                return;
-            }
-
-            if (key === 'hint') {
-                this._applyContentToElement(
-                    'root',
-                    value,
-                    this.rootTag === 'img' ? 'alt' : 'title'
-                );
-                return;
-            }
+            const def = this.getTargetToDef(key); // 获取目标到选项映射
 
             if (def) {
-                if (def.i18n) {
-                    this._applyI18nToElement(key, def);
+                if (def.to === 'class' && value) {
+                    this.addCls(value);
                     return;
                 }
-                this._applyContentToElement(def.target ?? 'root', value, def.to);
+                if (def.to === 'style' && value) {
+                    this.setStyles({ [key]: value });
+                    return;
+                }
+                if (def.to === 'attribute' && value) {
+                    this.setAttributes({ [key]: value });
+                    return;
+                }
+                this._applyContentToElement(key);
             }
         },
     },

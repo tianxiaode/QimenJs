@@ -26,13 +26,13 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import { string } from '@/utils';
-import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
+import { ComponentClass, ComponentCoreOptions, IComponentCore, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import './badge.css';
 import './indicator.css';
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
-export class Component extends ComposableBase {
+export class Component extends ComposableBase implements IComponentCore {
     static type = 'component';
     static register() {
         ComponentRegistrar.getInstance().register(this);
@@ -51,30 +51,6 @@ export class Component extends ComposableBase {
     ): void {
         if (error) Component.prototype.defaultEntityErrorHandler = error;
         if (loading) Component.prototype.defaultEntityLoadingHandler = loading;
-    }
-
-    defaultEntityErrorHandler(_ctx: any, _domain: string): void {}
-
-    defaultEntityLoadingHandler(_entityKey: string, isLoading: boolean): void {
-        if (isLoading) {
-            this.showLoading();
-        } else {
-            this.hideLoading();
-        }
-    }
-
-    onEntityActionSuccess(_result: any, _action: string, _entityKey: string) {}
-
-    onEntityError(ctx: any, domain: string) {
-        if (this.onBeforeEntityError?.() === false) return;
-        this.defaultEntityErrorHandler(ctx, domain);
-        this.onAfterEntityError?.();
-    }
-
-    onEntityLoading(entityKey: string, isLoading: boolean) {
-        if (this.onBeforeEntityLoading?.(entityKey, isLoading) === false) return;
-        this.defaultEntityLoadingHandler(entityKey, isLoading);
-        this.onAfterEntityLoading?.(entityKey, isLoading);
     }
 
     /**
@@ -141,6 +117,10 @@ export class Component extends ComposableBase {
         this._buildDOM(options);
     }
 
+    update(options?: ComponentCoreOptions) {
+        this._applyOptions(options);
+    }
+
     onBeforeInit(): void {}
     onAfterInit(): void {}
 
@@ -185,7 +165,6 @@ export class Component extends ComposableBase {
 
 Component.use(COMPONENT_ABILITIES);
 Component.define(ComponentDefs);
-Component.register();
 
 /** Component 类的能力方法接口，将 IComponent 的能力方法合并到 Component 类型 */
 export interface Component extends IComponent {}
