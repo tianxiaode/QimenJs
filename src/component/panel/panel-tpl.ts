@@ -1,17 +1,22 @@
-import type { TplNode } from '@/component-core';
-
-import { HeaderComponent } from '../header/HeaderComponent';
+import type { TemplateDecl } from '@/component-core';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 
 /** 面板模板定义 */
-export const PANEL_TPL: TplNode = {
+export const PANEL_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-panel',
+    classes: 'q-panel',
     children: [
         {
-            name: 'header',
-            type: HeaderComponent,
-            cls: 'q-panel__header',
+            tag: 'div',
+            classes: 'q-panel__header',
+            children: [
+                { name: 'toolsLeft', type: ItemGroupPooledComponent },
+                { tag: 'div', name: 'title', classes: 'q-panel__title' },
+                { name: 'toolsRight', type: ItemGroupPooledComponent },
+                { tag: 'i', name: 'expandAction', classes: 'q-panel__expand hidden' },
+                { tag: 'i', name: 'closeAction', classes: 'q-panel__close hidden' },
+            ],
         },
-        { tag: 'div', name: 'body', cls: 'q-panel__body' },
+        { tag: 'div', name: 'body', classes: 'q-panel__body' },
     ],
 };

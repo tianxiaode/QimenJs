@@ -1,81 +1,61 @@
-/**
- * TagComponent 标签组件
- *
- * 紧凑标记，支持类型色、可关闭、图标。
- * 单 tag 渲染单元，不负责 close 事件 emit —— close 语义由 TagsComponent
- * 容器层统一代理（事件委托），避免 N 次绑定与职责下沉。
- *
- * 模板节点：
- * - icon — 图标（可选）
- * - closeBtn — 关闭按钮（可选）
- *
- * @example
- * ```ts
- * new TagComponent({ text: '新功能' })
- * new TagComponent({ text: '可删除', closable: true })
- * new TagComponent({ text: '警告', type: 'warning' })
- * ```
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
-import { SizeAbility } from '@qimenjs/component-abilities';
+import type { TemplateDecl } from '@/component-core';
 import { TAG_TPL } from './tag-tpl';
-import './tag.css.ts';
+import { Definitions } from '@/composable';
+import { SizeAbility } from '@/component-abilities';
+import './tag.css';
 
-/** 标签类型 */
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
-/** 标签属性接口 */
 export interface TagProps {
     text?: string;
     tagType?: TagType;
-    icon?: string;
+    iconCls?: string;
     closable?: boolean;
     size?: 'sm' | 'md' | 'lg';
 }
 
+const TagComponentDefs: Definitions = {
+    targetToOptions: {
+        text: { target: 'text', to: 'text' },
+    },
+    options: {
+        tagType: 'default',
+        iconCls: null,
+        closable: false,
+        size: 'md',
+    },
+} as const;
+
 class TagComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'tag';
+    get tpl(): TemplateDecl {
         return TAG_TPL;
     }
 
-    _initTag(props?: TagProps): void {
-        if (props?.tagType) this.addCls(`q-tag--${props.tagType}`);
-        if (props?.icon) {
-            this.icon = props.icon;
-            this.setNodeHidden(false, 'icon');
-        }
-        if (props?.text) this.text = props.text;
-        if (props?.closable) this.setNodeHidden(false, 'closeBtn');
-        if (props?.size) this.size = props.size;
+    _onTagTypeOptionChange(value: string, old: string) {
+        this._toggleOptionCls('q-tag--', value, old);
     }
 
-    get tagType(): TagType {
-        for (const t of ['primary', 'success', 'warning', 'error', 'info']) {
-            if (this.contains(`q-tag--${t}`)) return t as TagType;
+    _onIconClsOptionChange(value: string, old: string) {
+        const nodeName = 'icon';
+        if (old) this.removeCls(old, nodeName);
+        if (value) {
+            this.addCls(value, nodeName);
+            this.removeCls('hidden', nodeName);
+        } else {
+            this.addCls('hidden', nodeName);
         }
-        return 'default';
-    }
-    set tagType(value: TagType) {
-        this.removeCls(`q-tag--${this.tagType}`);
-        if (value !== 'default') this.addCls(`q-tag--${value}`);
     }
 
-    update(props?: Partial<TagProps>): void {
-        if (props?.tagType !== undefined) this.tagType = props.tagType;
-        if (props?.icon !== undefined) {
-            this.icon = props.icon;
-            this.setNodeHidden(!props.icon, 'icon');
-        }
-        if (props?.text !== undefined) this.text = props.text;
-        if (props?.closable !== undefined) this.setNodeHidden(!props.closable, 'closeBtn');
-        if (props?.size !== undefined) this.size = props.size;
+    _onClosableOptionChange(value: boolean) {
+        const nodeName = 'closeBtn';
+        value ? this.removeCls('hidden', nodeName) : this.addCls('hidden', nodeName);
     }
 }
 
-TagComponent.use([SizeAbility]);
+TagComponent.define(TagComponentDefs);
+TagComponent.use(SizeAbility);
 
 export { TagComponent };
-/** 标签实例类型 */
 export type TagComponentInstance = InstanceType<typeof TagComponent>;

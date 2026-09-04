@@ -1,47 +1,13 @@
-/**
- * FormFieldComponent 表单字段基类
- *
- * 提供所有表单字段（Input/Select/CheckboxGroup/RadioGroup）的通用逻辑：
- * - labelGroup  标签封装：label + requiredMark + separator
- * - fieldBody   字段内容区：可替换子组件，el 直接充当 wrapper 层
- * - infoGroup   信息封装：error/help/扩展信息
- *
- * fieldBody 子组件的 el 同时承载 q-formfield__wrapper（布局）和
- * 具体字段样式（如 q-input__wrapper），避免多套一层 div。
- * 子组件的 nodeMap 会自动合并到父组件，可直接 this.nodeMap.field 访问。
- *
- * 构建自动生成（无需手写）：
- * - $infoGroup / $fieldBody — 子组件快捷访问（addComponentRefDesc）
- * - this.label — i18n 内容属性（addContentPropDesc + i18n: 'label'）
- *   设 i18nKey 自动翻译，locale 切换自动更新（initI18nFromTemplate）
- *
- * 通用能力：
- * - 标签位置（top/left/right）+ labelWidth 通过 CSS 变量驱动
- * - required 标记 + i18n 感知
- * - error/help 便捷方法（委托 $infoGroup）
- * - 验证逻辑：字段自验证，Form 通过 getFormError() 收集错误
- * - 表单值接口（getFormValue/setFormValue，子类覆写）
- * - SizeAbility
- *
- * @example
- * ```ts
- * const InputComponent = FormFieldComponent.replace({
- *     type: 'Input',
- *     cls: 'q-input',
- *     body: { nodes: { fieldBody: { type: InputFieldBodyComponent } } },
- * });
- * ```
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
+import { Definitions } from '@/composable';
+import { resolveI18nValue } from '@qimenjs/i18n';
 import { FORMFIELD_TPL } from './formfield-tpl';
-import './formfield.css.ts';
+import './formfield.css';
 
 import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';
-import './formfield.css';
 
 export type LabelPosition = 'top' | 'left' | 'right';
 export type ValidateTrigger = 'blur' | 'change' | 'input';
@@ -67,109 +33,134 @@ const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
     right: 'q-formfield--right',
 };
 
+const FormFieldComponentDefs: Definitions = {
+    options: {
+        label: null,
+        i18nLabel: null,
+        labelPosition: 'top',
+        labelWidth: null,
+        required: false,
+        requiredMark: null,
+        requiredMarkPosition: 'after',
+        size: null,
+        colSpan: 0,
+    },
+    fields: {
+        fieldName: '',
+        validation: null,
+        validateTrigger: 'blur',
+    },
+} as const;
+
 class FormFieldComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'formfield';
+
+    get tpl(): TemplateDecl {
         return FORMFIELD_TPL;
     }
 
     _error: string = '';
-    _required: boolean = false;
-    _requiredMark: string = '';
-    _requiredMarkPosition: 'before' | 'after' = 'after';
     _labelText: string = '';
-    _fieldName: string = '';
-    _validation: boolean | ValidationRule | ValidationRule[] | null = null;
-    _validateTrigger: ValidateTrigger = 'blur';
     _initialValue: any = undefined;
-    _colSpan: number = 0;
 
-    onAfterInit(props?: FormFieldProps): void {
-        this._applyLabelPosition(props?.labelPosition);
-        this._applyLabelWidth(props?.labelWidth);
-        this.initSize();
-        this._initLabel(props);
-        this._initValidation(props);
-        if (props?.colSpan) this.colSpan = props.colSpan;
+    _onLabelOptionChange(value: string): void {
+        if (value) {
+            this._labelText = value;
+            const el = this.getNodeEl('label');
+            if (el) el.textContent = value;
+            this._setNodeHidden(false, 'labelGroup');
+            this._applyRequiredConfig();
+        }
+    }
+
+    _onI18nLabelOptionChange(value: string): void {
+        if (value) {
+            const text = resolveI18nValue(value);
+            this._labelText = text;
+            const el = this.getNodeEl('label');
+            if (el) el.textContent = text;
+            this._setNodeHidden(false, 'labelGroup');
+            this._applyRequiredConfig();
+        }
+    }
+
+    _onLabelPositionOptionChange(value: LabelPosition): void {
+        for (const cls of Object.values(LABEL_POSITION_MAP)) {
+            this.removeCls(cls);
+        }
+        const cls = LABEL_POSITION_MAP[value];
+        if (cls) this.addCls(cls);
+    }
+
+    _onLabelWidthOptionChange(value: string): void {
+        if (value) {
+            this.el!.style.setProperty('--q-formfield-label-width', value);
+        }
+    }
+
+    _onRequiredOptionChange(value: boolean): void {
+        if (value && this._labelText) {
+            this._applyRequiredConfig();
+            this._setNodeHidden(false, 'requiredMark');
+        } else {
+            this._setNodeHidden(true, 'requiredMark');
+        }
+    }
+
+    _onRequiredMarkOptionChange(_value: string): void {
+        this._applyRequiredConfig();
+    }
+
+    _onRequiredMarkPositionOptionChange(_value: string): void {
+        this._applyRequiredConfig();
+    }
+
+    _onSizeOptionChange(value: string, old: string): void {
+        if (value) this.addCls(`q-formfield--${value}`);
+        if (old) this.removeCls(`q-formfield--${old}`);
+    }
+
+    _onColSpanOptionChange(value: number): void {
+        this.el!.style.gridColumn = value > 1 ? `span ${value}` : '';
+    }
+
+    onAfterInit(): void {
+        this._applyRequiredConfig();
     }
 
     onLocaleChange(): void {
         this._applyRequiredConfig();
     }
 
-    _applyLabelPosition(position?: LabelPosition): void {
-        const pos = position || 'top';
-        const cls = LABEL_POSITION_MAP[pos];
-        if (cls) this.toggleCls(cls, true);
-    }
-
-    _applyLabelWidth(width?: string): void {
-        if (width) {
-            this.el.style.setProperty('--q-formfield-label-width', width);
-        }
-    }
-
-    _initLabel(props?: FormFieldProps): void {
-        const ui = this.i18nConfig()?.ui;
-        this._requiredMark = props?.requiredMark ?? ui?.requiredMark ?? '*';
-        this._requiredMarkPosition =
-            props?.requiredMarkPosition ?? ui?.requiredMarkPosition ?? 'after';
-
-        if (props?.i18nLabel) {
-            this._labelText = props.i18nLabel;
-            this.label = props.i18nLabel;
-        } else if (props?.label) {
-            this._labelText = props.label;
-            this.label = props.label;
-        }
-
-        if (this._labelText) {
-            this.setNodeHidden(false, 'labelGroup');
-            this._applyRequiredConfig();
-        }
-        if (props?.required) {
-            this._required = true;
-            this._applyRequiredConfig();
-            if (this._labelText) {
-                this.setNodeHidden(false, 'requiredMark');
-            }
-        }
-    }
-
     _applyRequiredConfig(): void {
-        const ui = this.i18nConfig()?.ui;
-        const mark = this._requiredMark || ui?.requiredMark || '*';
-        const position = this._requiredMarkPosition || ui?.requiredMarkPosition || 'after';
+        const ui = (this as any).i18nConfig?.()?.ui;
+        const mark = this.requiredMark ?? ui?.requiredMark ?? '*';
+        const position = this.requiredMarkPosition ?? ui?.requiredMarkPosition ?? 'after';
 
-        const markEl = this.nodeMap?.requiredMark?.el as HTMLElement | null;
+        const markEl = this.getNodeEl('requiredMark');
         if (markEl) {
-            markEl.textContent = mark;
-            markEl.classList.toggle('q-formfield__required-mark--before', position === 'before');
-            markEl.classList.toggle('q-formfield__required-mark--after', position === 'after');
+            (markEl as HTMLElement).textContent = mark;
+            (markEl as HTMLElement).classList.toggle('q-formfield__required-mark--before', position === 'before');
+            (markEl as HTMLElement).classList.toggle('q-formfield__required-mark--after', position === 'after');
         }
 
-        const separatorEl = this.nodeMap?.separator?.el as HTMLElement | null;
+        const separatorEl = this.getNodeEl('separator');
         if (separatorEl) {
-            separatorEl.textContent = ui?.labelSeparator ?? '：';
+            (separatorEl as HTMLElement).textContent = ui?.labelSeparator ?? '：';
         }
-    }
-
-    _initValidation(props?: FormFieldProps): void {
-        if (props?.fieldName) this._fieldName = props.fieldName;
-        if (props?.validation !== undefined) this._validation = props.validation;
-        if (props?.validateTrigger) this._validateTrigger = props.validateTrigger;
     }
 
     _shouldValidate(eventName: string): boolean {
-        if (!this._validation) return false;
-        if (eventName === this._validateTrigger) return true;
-        if (this._validateTrigger === 'blur' && eventName === 'change') return false;
+        if (!this.validation) return false;
+        if (eventName === this.validateTrigger) return true;
+        if (this.validateTrigger === 'blur' && eventName === 'change') return false;
         return false;
     }
 
     async _doValidate(): Promise<void> {
-        if (!this._validation) return;
+        if (!this.validation) return;
 
-        const rules = Array.isArray(this._validation) ? this._validation : [this._validation];
+        const rules = Array.isArray(this.validation) ? this.validation : [this.validation];
         const allErrors: any[] = [];
 
         for (const rule of rules) {
@@ -182,27 +173,33 @@ class FormFieldComponent extends Component {
     }
 
     addError(text: string): any {
-        return this.$infoGroup?.addError(text);
+        const infoGroup = this.getComponent('infoGroup') as any;
+        return infoGroup?.addError(text);
     }
 
     removeError(): void {
-        this.$infoGroup?.removeError();
+        const infoGroup = this.getComponent('infoGroup') as any;
+        infoGroup?.removeError();
     }
 
     addHelp(text: string): any {
-        return this.$infoGroup?.addHelp(text);
+        const infoGroup = this.getComponent('infoGroup') as any;
+        return infoGroup?.addHelp(text);
     }
 
     removeHelp(): void {
-        this.$infoGroup?.removeHelp();
+        const infoGroup = this.getComponent('infoGroup') as any;
+        infoGroup?.removeHelp();
     }
 
     addInfo(data: Record<string, any>): any {
-        return this.$infoGroup?.addInfo(data);
+        const infoGroup = this.getComponent('infoGroup') as any;
+        return infoGroup?.addInfo(data);
     }
 
     removeInfo(index: number): any {
-        return this.$infoGroup?.removeInfo(index);
+        const infoGroup = this.getComponent('infoGroup') as any;
+        return infoGroup?.removeInfo(index);
     }
 
     get error(): string {
@@ -211,31 +208,16 @@ class FormFieldComponent extends Component {
     set error(v: string) {
         this._error = v;
         if (v) {
-            this.$infoGroup?.addError(v);
-            this.toggleCls('q-formfield--error', true);
+            this.addError(v);
+            this.addCls('q-formfield--error');
         } else {
-            this.$infoGroup?.removeError();
-            this.toggleCls('q-formfield--error', false);
+            this.removeError();
+            this.removeCls('q-formfield--error');
         }
-    }
-
-    get validation(): boolean | ValidationRule | ValidationRule[] | null {
-        return this._validation;
-    }
-    set validation(v: boolean | ValidationRule | ValidationRule[] | null) {
-        this._validation = v;
     }
 
     get field(): any {
         return this.getNode('field');
-    }
-
-    get colSpan(): number {
-        return this._colSpan;
-    }
-    set colSpan(v: number) {
-        this._colSpan = v;
-        this.el.style.gridColumn = v > 1 ? `span ${v}` : '';
     }
 
     _applyState(): void {
@@ -263,61 +245,10 @@ class FormFieldComponent extends Component {
         this.setFormValue(v);
         this.error = '';
     }
-
-    update(props?: Partial<FormFieldProps>): void {
-        if (props?.i18nLabel !== undefined) {
-            this._labelText = props.i18nLabel;
-            this.label = props.i18nLabel;
-            this.setNodeHidden(false, 'labelGroup');
-        }
-        if (props?.label !== undefined) {
-            this._labelText = props.label || '';
-            if (props.label) {
-                this.label = props.label;
-                this.setNodeHidden(false, 'labelGroup');
-                if (this._required) {
-                    this.setNodeHidden(false, 'requiredMark');
-                }
-            } else {
-                this.setNodeHidden(true, 'labelGroup');
-                this.setNodeHidden(true, 'requiredMark');
-            }
-        }
-        if (props?.labelPosition !== undefined) {
-            for (const cls of Object.values(LABEL_POSITION_MAP)) {
-                this.toggleCls(cls, false);
-            }
-            this._applyLabelPosition(props.labelPosition);
-        }
-        if (props?.labelWidth !== undefined) {
-            this._applyLabelWidth(props.labelWidth);
-        }
-        if (props?.required !== undefined) {
-            this._required = props.required;
-            if (props.required && this._labelText) {
-                this._applyRequiredConfig();
-                this.setNodeHidden(false, 'requiredMark');
-            } else {
-                this.setNodeHidden(true, 'requiredMark');
-            }
-        }
-        if (props?.requiredMark !== undefined) {
-            this._requiredMark = props.requiredMark;
-            this._applyRequiredConfig();
-        }
-        if (props?.requiredMarkPosition !== undefined) {
-            this._requiredMarkPosition = props.requiredMarkPosition;
-            this._applyRequiredConfig();
-        }
-        if (props?.size !== undefined) this.size = props.size;
-        if (props?.fieldName !== undefined) this._fieldName = props.fieldName;
-        if (props?.validation !== undefined) this._validation = props.validation;
-        if (props?.validateTrigger !== undefined) this._validateTrigger = props.validateTrigger;
-        if (props?.colSpan !== undefined) this.colSpan = props.colSpan;
-    }
 }
 
-FormFieldComponent.use(SizeAbility);
+FormFieldComponent.use([SizeAbility]);
+FormFieldComponent.define(FormFieldComponentDefs);
 
 export { FormFieldComponent };
 export type FormFieldComponentInstance = InstanceType<typeof FormFieldComponent>;

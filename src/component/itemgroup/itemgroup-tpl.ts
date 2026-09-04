@@ -1,28 +1,12 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 项组基础模板定义 */
-export const ITEMGROUP_BASE_TPL: TplNode = {
+export const ITEMGROUP_BASE_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-itemgroup',
+    classes: 'q-itemgroup',
     children: [
-        {
-            tag: 'div',
-            name: 'overflowPrev',
-            cls: 'q-itemgroup__overflow-prev',
-            hidden: true,
-        },
-        { tag: 'div', name: 'itemContainer', cls: 'q-itemgroup__items' },
-        {
-            tag: 'div',
-            name: 'overflowNext',
-            cls: 'q-itemgroup__overflow-next',
-            hidden: true,
-        },
-        {
-            tag: 'div',
-            name: 'overflowMore',
-            cls: 'q-itemgroup__overflow-more',
-            hidden: true,
-        },
+        { tag: 'div', name: 'overflowPrev', classes: 'q-itemgroup__overflow-prev hidden' },
+        { tag: 'div', name: 'itemContainer', classes: 'q-itemgroup__items' },
+        { tag: 'div', name: 'overflowNext', classes: 'q-itemgroup__overflow-next hidden' },
+        { tag: 'div', name: 'overflowMore', classes: 'q-itemgroup__overflow-more hidden' },
     ],
 };

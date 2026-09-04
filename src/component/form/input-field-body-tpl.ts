@@ -1,27 +1,25 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
-export const INPUT_FIELD_BODY_TPL: TplNode = {
+export const INPUT_FIELD_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-input__wrapper',
+    classes: 'q-input__wrapper',
     children: [
         {
             tag: 'span',
             name: 'prefix',
-            cls: 'q-input__prefix',
-            hidden: true,
+            classes: 'q-input__prefix hidden',
         },
         {
             tag: 'input',
             name: 'field',
-            cls: 'q-input__field',
+            classes: 'q-input__field',
         },
         {
             name: 'actions',
             type: ItemGroupStaticComponent,
-            cls: 'q-input__actions',
-            hidden: true,
-            initConfig: {
+            classes: 'q-input__actions hidden',
+            options: {
                 direction: 'horizontal',
                 gap: '4px',
             },
@@ -29,14 +27,12 @@ export const INPUT_FIELD_BODY_TPL: TplNode = {
         {
             tag: 'div',
             name: 'suffix',
-            cls: 'q-input__slot q-input__slot--suffix',
-            hidden: true,
+            classes: 'q-input__slot q-input__slot--suffix hidden',
         },
         {
             tag: 'div',
             name: 'dropdownIcon',
-            cls: 'q-input__slot q-input__slot--dropdown',
-            hidden: true,
+            classes: 'q-input__slot q-input__slot--dropdown hidden',
         },
     ],
 };

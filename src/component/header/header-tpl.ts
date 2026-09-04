@@ -1,34 +1,17 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { ButtonComponent } from '../button/ButtonComponent';
 
-/** 头部模板定义 */
-export const HEADER_TPL: TplNode = {
+export const HEADER_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-header',
-    flex: { direction: 'row', align: 'center', gap: '8px' },
+    classes: 'q-header',
     children: [
-        {
-            tag: 'i',
-            name: 'icon',
-            cls: 'q-header__icon',
-            hidden: true,
-        },
-        {
-            name: 'toolsLeft',
-            type: ItemGroupPooledComponent,
-            cls: 'q-header__tools q-header__tools--left',
-            hidden: true,
-        },
-        { tag: 'div', name: 'title', cls: 'q-header__title' },
-        { tag: 'span', name: 'subtitle', cls: 'q-header__subtitle', hidden: true },
-        {
-            name: 'toolsRight',
-            type: ItemGroupPooledComponent,
-            cls: 'q-header__tools q-header__tools--right',
-            hidden: true,
-        },
-        { name: 'action', type: ButtonComponent, cls: 'q-header__action', hidden: true },
+        { tag: 'i', name: 'icon', classes: 'q-header__icon hidden' },
+        { name: 'toolsLeft', type: ItemGroupPooledComponent, classes: 'q-header__tools q-header__tools--left hidden' },
+        { tag: 'div', name: 'title', classes: 'q-header__title' },
+        { tag: 'span', name: 'subtitle', classes: 'q-header__subtitle hidden' },
+        { name: 'toolsRight', type: ItemGroupPooledComponent, classes: 'q-header__tools q-header__tools--right hidden' },
+        { name: 'action', type: ButtonComponent, classes: 'q-header__action hidden' },
     ],
 };

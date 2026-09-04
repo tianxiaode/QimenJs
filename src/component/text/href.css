@@ -1,0 +1,32 @@
+.q-href {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--q-font-size-md, 14px);
+    line-height: 1.5;
+    color: var(--q-color-primary, #0078d4);
+    text-decoration: none;
+    cursor: var(--q-cursor-pointer, pointer);
+    transition: color var(--q-transition-fast);
+    white-space: nowrap;
+}
+
+.q-href:hover {
+    color: var(--q-color-primary-hover, #106ebe);
+    text-decoration: underline;
+}
+
+.q-href:focus-visible {
+    outline: 2px solid var(--q-color-primary, #0078d4);
+    outline-offset: 2px;
+    border-radius: var(--q-radius-md);
+}
+
+.q-href-disabled {
+    color: var(--q-color-text-disabled, #999);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.q-href-disabled:hover {
+    text-decoration: none;
+}

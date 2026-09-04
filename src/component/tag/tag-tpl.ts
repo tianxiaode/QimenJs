@@ -1,23 +1,12 @@
-/**
- * Tag 模板定义 — 独立于组件类
- *
- * 通过 ComponentRegistrar 注册，编译产物缓存于注册表。
- */
-
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 标签模板定义 */
-export const TAG_TPL: TplNode = {
+export const TAG_TPL: TemplateDecl = {
     tag: 'span',
-    cls: 'q-tag',
+    classes: 'q-tag',
     children: [
-        { tag: 'i', name: 'icon', cls: 'q-tag__icon', hidden: true },
-        { tag: 'span', name: 'text', cls: 'q-tag__text' },
-        {
-            tag: 'span',
-            name: 'closeBtn',
-            cls: 'q-tag__close',
-            hidden: true,
-        },
+        { tag: 'i', name: 'icon', classes: 'q-tag__icon hidden' },
+        { tag: 'span', name: 'text', classes: 'q-tag__text' },
+        { tag: 'span', name: 'closeBtn', classes: 'q-tag__close hidden' },
     ],
 };

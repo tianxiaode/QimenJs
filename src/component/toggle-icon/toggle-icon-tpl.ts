@@ -1,8 +1,7 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 切换图标模板定义 */
-export const TOGGLE_ICON_TPL: TplNode = {
+export const TOGGLE_ICON_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-toggle-icon',
-    children: [{ tag: 'i', name: 'icon', cls: 'q-toggle-icon__icon' }],
+    classes: 'q-toggle-icon',
+    children: [{ tag: 'i', name: 'icon', classes: 'q-toggle-icon__icon' }],
 };

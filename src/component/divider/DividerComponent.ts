@@ -3,6 +3,9 @@
  *
  * 水平/垂直分割线，支持文字标签和虚线样式。
  *
+ * 模板节点：
+ * - text — 文字标签（默认隐藏）
+ *
  * @example
  * ```ts
  * new DividerComponent()
@@ -13,45 +16,39 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { DIVIDER_TPL } from './divider-tpl';
-import './divider.css.ts';
+import { Definitions } from '@/composable';
+import './divider.css';
 
-/** 分割线属性接口 */
-export interface DividerProps {
-    vertical?: boolean;
-    dashed?: boolean;
-    text?: string;
-}
+const DividerComponentDefs: Definitions = {
+    targetToOptions: {
+        text: { target: 'text', to: 'text' },
+    },
+    options: {
+        vertical: false,
+        dashed: false,
+    },
+} as const;
 
 class DividerComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'divider';
+    get tpl(): TemplateDecl {
         return DIVIDER_TPL;
     }
 
-    onAfterInit(props?: DividerProps): void {
-        this._initDivider(props);
+    _onTextOptionChange(value: string, _old: string): void {
+        this._setNodeHidden(!value, 'text');
     }
 
-    _initDivider(props?: DividerProps): void {
-        if (props?.vertical) this.addCls('q-divider--vertical');
-        if (props?.dashed) this.addCls('q-divider--dashed');
-        if (props?.text) {
-            this.text = props.text;
-            this.setNodeHidden(false, 'text');
-        }
+    _onVerticalOptionChange(value: boolean): void {
+        this.toggleCls('q-divider--vertical', value);
     }
 
-    update(props?: Partial<DividerProps>): void {
-        if (props?.vertical !== undefined) this.toggleCls('q-divider--vertical', props.vertical);
-        if (props?.dashed !== undefined) this.toggleCls('q-divider--dashed', props.dashed);
-        if (props?.text !== undefined) {
-            this.text = props.text;
-            this.setNodeHidden(!props.text, 'text');
-        }
+    _onDashedOptionChange(value: boolean): void {
+        this.toggleCls('q-divider--dashed', value);
     }
 }
 
+DividerComponent.define(DividerComponentDefs);
 export { DividerComponent };
-/** 分割线实例类型 */
-export type DividerComponentInstance = InstanceType<typeof DividerComponent>;

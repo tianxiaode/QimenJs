@@ -1,0 +1,10 @@
+/* Spacer 弹性间距组件样式 — Metro 风格 */
+.q-spacer {
+    display: block;
+    box-sizing: border-box;
+}
+
+/* 弹性填充 */
+.q-spacer--grow {
+    flex: 1;
+}

@@ -1,14 +1,6 @@
-/**
- * Href 模板定义 — 独立于组件类
- *
- * 根节点 <a> 自动注册为 'root'，通过 ComponentRegistrar 注册，
- * 编译产物缓存于注册表。
- */
+import type { TemplateDecl } from '@/component-core';
 
-import type { TplNode } from '@/component-core';
-
-/** 链接模板定义 */
-export const HREF_TPL: TplNode = {
+export const HREF_TPL: TemplateDecl = {
     tag: 'a',
-    cls: 'q-href',
+    classes: 'q-href',
 };

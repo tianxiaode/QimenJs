@@ -1,0 +1,105 @@
+.q-list__item {
+    display: flex;
+    align-items: flex-start;
+    padding: var(--q-space-xs, 8px) 0;
+    box-sizing: border-box;
+}
+
+.q-list__mark {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-top: 3px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.q-list__mark--dot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-border, #dcdfe6);
+}
+
+.q-list__mark--dash::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 12px;
+    height: 4px;
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-border, #dcdfe6);
+}
+
+.q-list__mark--ring::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: var(--q-radius-md);
+    border: 2px solid var(--q-color-border, #dcdfe6);
+    background: none;
+}
+
+.q-list__content {
+    flex: 1;
+    padding-left: var(--q-space-sm, 12px);
+    min-width: 0;
+}
+
+.q-list__label {
+    color: var(--q-color-text, #1a1a1a);
+}
+
+.q-list__desc {
+    font-size: var(--q-font-size-sm, 13px);
+    color: var(--q-color-text-secondary, #666);
+    margin-top: 2px;
+}
+
+.q-list__item--primary .q-list__mark--dot::before {
+    background: var(--q-color-primary, #0078d4);
+}
+.q-list__item--primary .q-list__mark--dash::before {
+    background: var(--q-color-primary, #0078d4);
+}
+.q-list__item--primary .q-list__mark--ring::before {
+    border-color: var(--q-color-primary, #0078d4);
+}
+
+.q-list__item--success .q-list__mark--dot::before {
+    background: var(--q-color-success, #107c10);
+}
+.q-list__item--success .q-list__mark--dash::before {
+    background: var(--q-color-success, #107c10);
+}
+.q-list__item--success .q-list__mark--ring::before {
+    border-color: var(--q-color-success, #107c10);
+}
+
+.q-list__item--warning .q-list__mark--dot::before {
+    background: var(--q-color-warning, #ca5010);
+}
+.q-list__item--warning .q-list__mark--dash::before {
+    background: var(--q-color-warning, #ca5010);
+}
+.q-list__item--warning .q-list__mark--ring::before {
+    border-color: var(--q-color-warning, #ca5010);
+}
+
+.q-list__item--error .q-list__mark--dot::before {
+    background: var(--q-color-error, #d13438);
+}
+.q-list__item--error .q-list__mark--dash::before {
+    background: var(--q-color-error, #d13438);
+}
+.q-list__item--error .q-list__mark--ring::before {
+    border-color: var(--q-color-error, #d13438);
+}

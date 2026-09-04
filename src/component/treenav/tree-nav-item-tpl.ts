@@ -1,25 +1,19 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 树导航项模板定义 */
-export const TREE_NAV_ITEM_TPL: TplNode = {
+export const TREE_NAV_ITEM_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-tree-nav-item',
+    classes: 'q-tree-nav-item',
     children: [
         {
             tag: 'div',
             name: 'content',
-            cls: 'q-tree-nav-item__content',
+            classes: 'q-tree-nav-item__content',
             children: [
-                { tag: 'i', name: 'icon', cls: 'q-tree-nav-item__icon' },
-                { tag: 'span', name: 'text', cls: 'q-tree-nav-item__text' },
-                { tag: 'span', name: 'expand', cls: 'q-tree-nav-item__expand' },
+                { tag: 'i', name: 'icon', classes: 'q-tree-nav-item__icon' },
+                { tag: 'span', name: 'text', classes: 'q-tree-nav-item__text' },
+                { tag: 'span', name: 'expand', classes: 'q-tree-nav-item__expand' },
             ],
         },
-        {
-            tag: 'div',
-            name: 'children',
-            cls: 'q-tree-nav-item__children',
-            hidden: true,
-        },
+        { tag: 'div', name: 'children', classes: 'q-tree-nav-item__children hidden' },
     ],
 };

@@ -1,15 +1,15 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
-export const CHECKBOX_GROUP_FIELD_BODY_TPL: TplNode = {
+export const CHECKBOX_GROUP_FIELD_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-checkbox-group__wrapper',
+    classes: 'q-checkbox-group__wrapper',
     children: [
         {
             name: 'options',
             type: ItemGroupStaticComponent,
-            cls: 'q-checkbox-group__options',
-            initConfig: {
+            classes: 'q-checkbox-group__options',
+            options: {
                 direction: 'vertical',
                 gap: '8px',
             },

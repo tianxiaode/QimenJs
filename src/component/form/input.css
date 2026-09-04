@@ -1,0 +1,169 @@
+.q-input {
+    --q-input-field-height: 36px;
+    --q-input-field-padding: 0 12px;
+    --q-input-field-font-size: var(--q-font-size-md);
+}
+
+.q-input__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.q-input__field {
+    display: block;
+    width: 100%;
+    height: var(--q-input-field-height);
+    padding: var(--q-input-field-padding);
+    border: 2px solid var(--q-color-border);
+    border-radius: var(--q-radius-md);
+    font-size: var(--q-input-field-font-size);
+    line-height: var(--q-line-height-normal);
+    color: var(--q-color-text);
+    background: var(--q-color-bg);
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color var(--q-transition-fast), box-shadow var(--q-transition-fast);
+}
+
+.q-input__field::placeholder {
+    color: var(--q-color-text-placeholder);
+}
+
+.q-input__field:focus {
+    border-color: var(--q-color-primary);
+    box-shadow: 0 0 0 2px var(--q-overlay-focus);
+}
+
+.q-input__prefix {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--q-space-sm);
+    height: var(--q-input-field-height);
+    font-size: var(--q-input-field-font-size);
+    color: var(--q-color-text-secondary);
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.q-input__prefix[class*="--icon-"]::before {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+.q-input__actions {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: var(--q-space-sm);
+    z-index: 1;
+}
+
+.q-input__actions .q-itemgroup__items {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.q-input__actions .q-itemgroup__items > * {
+    background: transparent;
+}
+
+.q-input__clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--q-color-text-placeholder);
+    font-size: var(--q-font-size-lg);
+    line-height: 1;
+    cursor: var(--q-cursor-pointer);
+    border-radius: var(--q-radius-md);
+    transition: color var(--q-transition-fast);
+}
+
+.q-input__clear-btn:hover {
+    color: var(--q-color-text-secondary);
+}
+
+.q-input__slot {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.q-input__slot--suffix {
+    right: 40px;
+}
+
+.q-input__slot--dropdown {
+    right: 72px;
+}
+
+.q-input--focused .q-input__field {
+    border-color: var(--q-color-primary);
+    box-shadow: 0 0 0 2px var(--q-overlay-focus);
+}
+
+.q-input--disabled .q-input__field {
+    background: var(--q-color-bg-tertiary);
+    border-color: var(--q-color-border);
+    color: var(--q-color-text-disabled);
+    cursor: var(--q-cursor-not-allowed);
+}
+
+.q-input--disabled .q-formfield__label {
+    color: var(--q-color-text-disabled);
+    cursor: var(--q-cursor-not-allowed);
+}
+
+.q-input--disabled .q-input__clear-btn {
+    cursor: var(--q-cursor-not-allowed);
+    opacity: var(--q-opacity-disabled);
+}
+
+.q-input--readonly .q-input__field {
+    background: var(--q-color-bg-secondary);
+    border-color: var(--q-color-border);
+    color: var(--q-color-text);
+    cursor: default;
+}
+
+.q-input--error .q-input__field {
+    border-color: var(--q-color-error);
+}
+
+.q-input--error.q-input--focused .q-input__field {
+    box-shadow: 0 0 0 2px var(--q-overlay-focus);
+}
+
+.q-input--sm {
+    --q-input-field-height: 28px;
+    --q-input-field-padding: 0 var(--q-space-sm);
+    --q-input-field-font-size: var(--q-font-size-sm);
+}
+
+.q-input--md {
+    --q-input-field-height: 36px;
+    --q-input-field-padding: 0 12px;
+    --q-input-field-font-size: var(--q-font-size-md);
+}
+
+.q-input--lg {
+    --q-input-field-height: 44px;
+    --q-input-field-padding: 0 var(--q-space-lg);
+    --q-input-field-font-size: var(--q-font-size-lg);
+}

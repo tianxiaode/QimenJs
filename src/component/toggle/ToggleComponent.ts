@@ -5,115 +5,77 @@
  * 点击自动切换状态，视觉反馈跟随状态变化。
  *
  * 模板节点：
- * - icon — 图标（DOM 节点），通过 this.icon 设置内容
+ * - icon — 图标（默认隐藏）
  * - text — 文本
  *
  * 事件：
  * - toggle — 切换状态变化时触发，数据 { pressed }
  *
- * 使用示例：
+ * @example
  * ```ts
- * new ToggleComponent({ text: '粗体', icon: 'B' })
- * new ToggleComponent({ text: '斜体', icon: 'I', pressed: true })
+ * new ToggleComponent({ text: '粗体', iconCls: 'q-icon-bold' })
+ * new ToggleComponent({ text: '斜体', pressed: true })
  * toggle.on('toggle', ({ pressed }) => { ... })
  * ```
  */
 
-import { Component, DomEventsMap } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
+import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
-import './toggle.css.ts';
+import { Definitions } from '@/composable';
+import './toggle.css';
 
 /** 切换属性接口 */
 export interface ToggleProps {
     text?: string;
-    icon?: string;
+    iconCls?: string;
     pressed?: boolean;
     disabled?: boolean;
     size?: 'sm' | 'md' | 'lg';
     value?: any;
 }
 
+const ToggleComponentDefs: Definitions = {
+    targetToOptions: {
+        text: { target: 'text', to: 'text' },
+    },
+    options: {
+        pressed: false,
+        iconCls: null,
+        size: 'md',
+    },
+} as const;
+
 class ToggleComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'toggle';
+    get tpl(): TemplateDecl {
         return TOGGLE_TPL;
     }
 
-    _pressed: boolean = false;
-    _value: any = undefined;
-
-    onAfterInit(props?: ToggleProps): void {
-        this.initSize();
-        if (props?.pressed) this._pressed = props.pressed;
-        if (props?.disabled) this.disabled = props.disabled;
-        if (props?.size) this.size = props.size;
-        if (props?.text) this.text = props.text;
-        if (props?.icon) this._setIcon(props.icon);
-        if (props?.value !== undefined) this._value = props.value;
-        this._applyState();
-    }
-
     domEvents?: DomEventsMap | undefined = {
-        click: { handler: 'onRootClick' },
+        click: { handler: true },
     };
 
-    onRootClick(): void {
-        if (this.disabled) return;
-        this._pressed = !this._pressed;
-        this._applyState();
+    _onPressedOptionChange(value: boolean): void {
+        this.toggleCls('q-toggle--pressed', value);
+        this.setAttributes({ 'aria-pressed': String(value) });
     }
 
-    get defaultEventData() {
-        return { ...super.defaultEventData, pressed: this._pressed };
+    _onIconClsOptionChange(value: string, old: string): void {
+        this._setNodeHidden(!value, 'icon');
+        if (value) this.addCls(value, 'icon');
+        if (old) this.removeCls(old, 'icon');
     }
 
-    get pressed(): boolean {
-        return this._pressed;
-    }
-    set pressed(value: boolean) {
-        this._pressed = value;
-        this._applyState();
-    }
-
-    get value(): any {
-        return this._value;
-    }
-    set value(val: any) {
-        this._value = val;
-    }
-
-    _setIcon(value: string): void {
-        this.icon = value;
-        this.setNodeHidden(false, 'icon');
-    }
-
-    _applyState(): void {
-        this.el.classList.toggle('q-toggle--pressed', this._pressed);
-        this.el.classList.toggle('q-toggle--disabled', this.disabled);
-
-        if (this.disabled) {
-            this.el.setAttribute('aria-disabled', 'true');
-        } else {
-            this.el.removeAttribute('aria-disabled');
-        }
-
-        this.el.setAttribute('aria-pressed', String(this._pressed));
-    }
-
-    update(props?: Partial<ToggleProps>): void {
-        if (props?.pressed !== undefined) this.pressed = props.pressed;
-        if (props?.disabled !== undefined) {
-            this.disabled = props.disabled;
-            this._applyState();
-        }
-        if (props?.size !== undefined) this.size = props.size;
-        if (props?.text !== undefined) this.text = props.text;
-        if (props?.icon !== undefined) this._setIcon(props.icon);
-        if (props?.value !== undefined) this._value = props.value;
+    onClick(): void {
+        if (this.disable) return;
+        this.pressed = !this.pressed;
+        this.emit('toggle', { pressed: this.pressed });
     }
 }
 
+ToggleComponent.define(ToggleComponentDefs);
 ToggleComponent.use([SizeAbility]);
 
 export { ToggleComponent };

@@ -1,0 +1,73 @@
+/* Tag 标签组件样式 — Metro 风格 */
+.q-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--q-space-sm, 8px);
+    border: 1px solid var(--q-color-border);
+    border-radius: var(--q-radius-md);
+    font-size: var(--q-font-size-sm, 12px);
+    font-weight: var(--q-font-weight-medium, 500);
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+    background: var(--q-color-bg);
+    color: var(--q-color-text);
+    vertical-align: middle;
+}
+
+.q-tag--primary {
+    background: var(--q-color-primary);
+    border-color: var(--q-color-primary);
+    color: var(--q-color-on-primary);
+}
+
+.q-tag--success {
+    background: var(--q-color-success);
+    border-color: var(--q-color-success);
+    color: var(--q-color-on-success);
+}
+
+.q-tag--warning {
+    background: var(--q-color-warning);
+    border-color: var(--q-color-warning);
+    color: var(--q-color-on-warning);
+}
+
+.q-tag--error {
+    background: var(--q-color-error);
+    border-color: var(--q-color-error);
+    color: var(--q-color-on-error);
+}
+
+.q-tag--info {
+    background: var(--q-color-info);
+    border-color: var(--q-color-info);
+    color: var(--q-color-on-info);
+}
+
+.q-tag__icon {
+    margin-right: var(--q-space-xs, 4px);
+    line-height: 1;
+}
+
+.q-tag__text {
+    line-height: 1;
+}
+
+.q-tag__close {
+    margin-left: var(--q-space-xs, 4px);
+    margin-right: calc(-1 * var(--q-space-xs, 4px));
+    cursor: var(--q-cursor-pointer, pointer);
+    line-height: 1;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity var(--q-transition-fast);
+    background: none;
+    border: none;
+    padding: 0;
+    user-select: none;
+}
+
+.q-tag__close:hover {
+    opacity: 1;
+}

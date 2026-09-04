@@ -1,0 +1,64 @@
+/* Card 卡片组件样式 — Metro 风格 */
+.q-card {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--q-color-border, #c8bdb0);
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-bg, #f7f2e8);
+    box-sizing: border-box;
+    font-size: var(--q-font-size-md, 14px);
+    color: var(--q-color-text, #1a1613);
+}
+
+/* 头部 */
+.q-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--q-space-sm, 8px);
+    padding: var(--q-space-sm, 8px) var(--q-space-md, 16px);
+    border-bottom: 2px solid var(--q-color-border, #c8bdb0);
+    background: var(--q-color-bg-secondary, #f0eadc);
+}
+
+.q-card__header-icon {
+    flex-shrink: 0;
+    font-size: var(--q-font-size-lg, 16px);
+    line-height: 1;
+}
+
+.q-card__header-title {
+    flex: 1;
+    font-weight: var(--q-font-weight-semibold, 600);
+    font-size: var(--q-font-size-md, 14px);
+    line-height: 1.5;
+    min-width: 0;
+}
+
+.q-card__header-action {
+    flex-shrink: 0;
+    cursor: var(--q-cursor-pointer, pointer);
+    font-size: var(--q-font-size-md, 14px);
+    line-height: 1;
+    color: var(--q-color-text-secondary, #6b5f52);
+    transition: color var(--q-transition-fast, 150ms ease);
+    user-select: none;
+}
+
+.q-card__header-action:hover {
+    color: var(--q-color-text, #1a1613);
+}
+
+/* 内容区 */
+.q-card__body {
+    flex: 1;
+    padding: var(--q-space-md, 16px);
+    line-height: 1.5;
+    overflow: auto;
+}
+
+/* 底部 */
+.q-card__footer {
+    padding: var(--q-space-sm, 8px) var(--q-space-md, 16px);
+    border-top: 2px solid var(--q-color-border, #c8bdb0);
+    background: var(--q-color-bg-secondary, #f0eadc);
+}

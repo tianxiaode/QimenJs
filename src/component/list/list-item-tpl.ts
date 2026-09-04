@@ -1,19 +1,18 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 列表项模板定义 */
-export const LIST_ITEM_TPL: TplNode = {
+export const LIST_ITEM_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-list__item',
-    attrs: { role: 'listitem' },
+    classes: 'q-list__item',
+    attributes: { role: 'listitem' },
     children: [
-        { tag: 'div', name: 'mark', cls: 'q-list__mark' },
+        { tag: 'div', name: 'mark', classes: 'q-list__mark' },
         {
             tag: 'div',
             name: 'content',
-            cls: 'q-list__content',
+            classes: 'q-list__content',
             children: [
-                { tag: 'div', name: 'label', cls: 'q-list__label' },
-                { tag: 'div', name: 'desc', cls: 'q-list__desc', hidden: true },
+                { tag: 'div', name: 'label', classes: 'q-list__label' },
+                { tag: 'div', name: 'desc', classes: 'q-list__desc hidden' },
             ],
         },
     ],

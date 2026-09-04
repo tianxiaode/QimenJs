@@ -1,47 +1,9 @@
-/**
- * HeaderComponent 头部组件
- *
- * 统一架构的头部组件，可复用于 Dialog、Panel 等容器。
- * 通过 CSS 和 childProps 区分不同场景的样式和行为。
- *
- * 子节点：
- * - icon: 图标（DOM 节点）
- * - toolsLeft: 左侧工具区（ItemGroupPooledComponent）
- * - title: 标题文本（DOM 节点）
- * - subtitle: 子标题文本（DOM 节点）
- * - toolsRight: 右侧工具区（ItemGroupPooledComponent）
- * - action: 操作按钮（ButtonComponent，如 close/collapse）
- *
- * 使用示例：
- * ```ts
- * // Dialog 头部 — 带 close 按钮
- * { type: HeaderComponent, props: {
- *     childProps: {
- *         icon: { props: { innerHTML: '⚠' } },
- *         title: { props: { innerHTML: '确认删除' } },
- *         action: { props: { icon: 'close' } },
- *     }
- * }}
- *
- * // Panel 头部 — 左右工具区 + 折叠按钮
- * { type: HeaderComponent, props: {
- *     childProps: {
- *         title: { props: { innerHTML: '数据面板' } },
- *         toolsLeft: { props: { items: [...] } },
- *         toolsRight: { props: { items: [...] } },
- *         action: { props: { icon: 'collapse' } },
- *     }
- * }}
- * ```
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { ComponentProps } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
+import { Definitions } from '@/composable';
 import { HEADER_TPL } from './header-tpl';
-import './header.css.ts';
+import './header.css';
 
-/** 头部属性接口 */
 export interface HeaderProps {
     icon?: string;
     title?: string;
@@ -51,52 +13,70 @@ export interface HeaderProps {
     action?: Record<string, any>;
 }
 
+const HeaderComponentDefs: Definitions = {
+    targetToOptions: {
+        title: { target: 'title', to: 'text' },
+    },
+    options: {
+        icon: null,
+        subtitle: null,
+        toolsLeft: null,
+        toolsRight: null,
+        action: null,
+    },
+} as const;
+
 class HeaderComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'header';
+
+    get tpl(): TemplateDecl {
         return HEADER_TPL;
     }
 
-    forwards = {
-        action: 'action',
-    };
+    _onIconOptionChange(value: string): void {
+        if (value) {
+            this._setNodeHidden(false, 'icon');
+            const el = this.getNodeEl('icon');
+            if (el) el.innerHTML = value;
+        }
+    }
 
-    onAfterInit(props?: ComponentProps): void {
-        const headerProps = props as HeaderProps | undefined;
-        if (headerProps?.icon !== undefined) {
-            this.setNodeHidden(false, 'icon');
-            this.icon = headerProps.icon;
+    _onSubtitleOptionChange(value: string): void {
+        if (value) {
+            this._setNodeHidden(false, 'subtitle');
+            const el = this.getNodeEl('subtitle');
+            if (el) el.textContent = value;
         }
-        if (headerProps?.title !== undefined) {
-            this.title = headerProps.title;
+    }
+
+    _onToolsLeftOptionChange(value: Record<string, any>): void {
+        if (value) {
+            this._setNodeHidden(false, 'toolsLeft');
+            const comp = this.getComponent('toolsLeft');
+            if (comp) comp._initItemGroupComponent(value);
         }
-        if (headerProps?.subtitle !== undefined) {
-            this.setNodeHidden(false, 'subtitle');
-            this.subtitle = headerProps.subtitle;
+    }
+
+    _onToolsRightOptionChange(value: Record<string, any>): void {
+        if (value) {
+            this._setNodeHidden(false, 'toolsRight');
+            const comp = this.getComponent('toolsRight');
+            if (comp) comp._initItemGroupComponent(value);
         }
-        if (headerProps?.toolsLeft) {
-            this.setNodeHidden(false, 'toolsLeft');
-            const toolsLeftComp = this.nodeMap?.toolsLeft?.component;
-            if (toolsLeftComp) {
-                toolsLeftComp._initItemGroupComponent(headerProps.toolsLeft);
-            }
-        }
-        if (headerProps?.toolsRight) {
-            this.setNodeHidden(false, 'toolsRight');
-            const toolsRightComp = this.nodeMap?.toolsRight?.component;
-            if (toolsRightComp) {
-                toolsRightComp._initItemGroupComponent(headerProps.toolsRight);
-            }
-        }
-        if (headerProps?.action) {
-            this.setNodeHidden(false, 'action');
-            const actionComp = this.nodeMap?.action?.component;
-            if (actionComp && typeof actionComp.update === 'function') {
-                actionComp.update(headerProps.action);
+    }
+
+    _onActionOptionChange(value: Record<string, any>): void {
+        if (value) {
+            this._setNodeHidden(false, 'action');
+            const comp = this.getComponent('action');
+            if (comp && typeof comp.update === 'function') {
+                comp.update(value);
             }
         }
     }
 }
 
+HeaderComponent.define(HeaderComponentDefs);
+
 export { HeaderComponent };
-/** 头部实例类型 */
 export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

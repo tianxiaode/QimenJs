@@ -1,7 +1,7 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 间距模板定义 */
-export const SPACER_TPL: TplNode = {
+export const SPACER_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-spacer',
+    classes: 'q-spacer',
 };

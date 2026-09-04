@@ -1,46 +1,14 @@
-// ============================================
-// ItemGroupBaseComponent.ts - 基类
-// 提供：模板、工具方法、事件处理、defaultItem 合并
-// ============================================
-
-import { Component, TplNode } from '@qimenjs/component-core';
-import type { TplEventAction, FloatDecl } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl, TplEventAction, FloatDecl } from '@qimenjs/component-core';
 import { OverflowAbility } from '@qimenjs/component-abilities';
+import { Definitions } from '@/composable';
+import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
+import './itemgroup.css';
 
 export type { OverflowMode } from '@qimenjs/component-abilities';
-/** 默认项定义 */
 export type DefaultItemDef = Record<string, any>;
-/** 默认项配置 */
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
 
-/** 项组基础模板定义 */
-const ITEMGROUP_BASE_TPL: TplNode = {
-    tag: 'div',
-    cls: 'q-itemgroup',
-    children: [
-        {
-            tag: 'div',
-            name: 'overflowPrev',
-            cls: 'q-itemgroup__overflow-prev',
-            hidden: true,
-        },
-        { tag: 'div', name: 'itemContainer', cls: 'q-itemgroup__items' },
-        {
-            tag: 'div',
-            name: 'overflowNext',
-            cls: 'q-itemgroup__overflow-next',
-            hidden: true,
-        },
-        {
-            tag: 'div',
-            name: 'overflowMore',
-            cls: 'q-itemgroup__overflow-more',
-            hidden: true,
-        },
-    ],
-};
-
-/** 项组配置 */
 export interface ItemGroupConfig {
     direction?: 'horizontal' | 'vertical';
     defaultItemType?: string;
@@ -53,15 +21,31 @@ export interface ItemGroupConfig {
     indicator?: any;
 }
 
-/** 项组属性接口 */
 export interface ItemGroupProps extends ItemGroupConfig {
     cls?: string;
     itemsCls?: string;
 }
 
-/** 项组基类组件 */
+const ItemGroupBaseComponentDefs: Definitions = {
+    options: {
+        direction: 'horizontal',
+        gap: '',
+        cols: 1,
+        overflowMode: 'none',
+        step: 100,
+        items: null,
+    },
+    fields: {
+        defaultItemType: '',
+        defaultItem: {},
+        indicator: undefined,
+    },
+} as const;
+
 class ItemGroupBaseComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'itemgroup';
+
+    get tpl(): TemplateDecl {
         return ITEMGROUP_BASE_TPL;
     }
 
@@ -72,51 +56,85 @@ class ItemGroupBaseComponent extends Component {
         events?: Record<string, TplEventAction>;
     }> = [];
 
-    _direction: 'horizontal' | 'vertical' = 'horizontal';
-    _defaultItemType: string = '';
-    _gap: string = '';
-    _cols: number = 1;
-    _defaultItem: DefaultItemConfig = {};
-    _overflowMode: import('@qimenjs/component-abilities').OverflowMode = 'none';
-    _step: number = 100;
-
     get isItemContainer(): boolean {
         return true;
     }
 
-    onAfterInit(props?: any): void {
-        this._initItemGroupComponent(props);
+    _onDirectionOptionChange(value: string): void {
+        this.el!.classList.remove('q-itemgroup--horizontal', 'q-itemgroup--vertical');
+        this.el!.classList.add(`q-itemgroup--${value}`);
+        if (typeof (this as any)._onOverflowDirectionChange === 'function') {
+            (this as any)._onOverflowDirectionChange();
+        }
+        this._applyOrders();
+    }
 
-        if (typeof this.indicatorFloat === 'object') {
-            for (const [key, decl] of Object.entries(this.indicatorFloat)) {
+    _onGapOptionChange(value: string): void {
+        const container = this.getNodeEl('itemContainer');
+        if (container) (container as HTMLElement).style.gap = value || '';
+    }
+
+    _onColsOptionChange(value: number): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+        if (value > 1) {
+            (container as HTMLElement).style.setProperty('--q-itemgroup-cols', String(value));
+            container.classList.add('q-itemgroup__items--cols');
+        } else {
+            (container as HTMLElement).style.removeProperty('--q-itemgroup-cols');
+            container.classList.remove('q-itemgroup__items--cols');
+        }
+    }
+
+    _onOverflowModeOptionChange(value: string): void {
+        if (typeof (this as any)._applyOverflowMode === 'function') {
+            (this as any)._applyOverflowMode();
+        }
+    }
+
+    _onStepOptionChange(value: number): void {
+        if (typeof (this as any)._onOverflowStepChange === 'function') {
+            (this as any)._onOverflowStepChange(value);
+        }
+        this._applyOrders();
+    }
+
+    _onItemsOptionChange(value: Record<string, any>[]): void {
+        if (value) this.setItems(value);
+    }
+
+    onAfterInit(): void {
+        this._initItemGroupComponent();
+
+        if (typeof (this as any).indicatorFloat === 'object') {
+            for (const [key, decl] of Object.entries((this as any).indicatorFloat)) {
                 this.attachFloat(key, decl as FloatDecl);
             }
         }
     }
 
     _initItemGroupComponent(props?: any): void {
-        if (props?.direction) this.direction = props.direction;
-        if (props?.gap) this.gap = props.gap;
-        if (props?.cols) this.cols = props.cols;
-        if (props?.defaultItemType) this.defaultItemType = props.defaultItemType;
-        if (props?.defaultItem) this.defaultItem = props.defaultItem;
-        if (props?.step) this.step = props.step;
-        if (props?.indicator && typeof this.initIndicator === 'function') {
-            this.initIndicator(props.indicator);
+        const data = props ?? {};
+        if (data.direction) this.direction = data.direction;
+        if (data.gap) this.gap = data.gap;
+        if (data.cols) this.cols = data.cols;
+        if (data.defaultItemType) this.defaultItemType = data.defaultItemType;
+        if (data.defaultItem) this.defaultItem = data.defaultItem;
+        if (data.step) this.step = data.step;
+        if (data.indicator && typeof (this as any).initIndicator === 'function') {
+            (this as any).initIndicator(data.indicator);
         }
-
-        if (props?.cls) this.addCls(props.cls);
-        if (props?.items) this.setItems(props.items);
-
-        this._initOverflow(props);
+        if (data.cls) this.addCls(data.cls);
+        if (data.items) this.setItems(data.items);
+        this._initOverflow(data);
     }
 
     _initOverflow(props?: any): void {
-        if (typeof this.initOverflow === 'function') {
-            this.initOverflow({
-                mode: props?.overflowMode ?? 'none',
-                direction: this._direction,
-                step: this._step,
+        if (typeof (this as any).initOverflow === 'function') {
+            (this as any).initOverflow({
+                mode: props?.overflowMode ?? this.overflowMode,
+                direction: this.direction,
+                step: this.step,
             });
         }
     }
@@ -128,69 +146,10 @@ class ItemGroupBaseComponent extends Component {
         return (this._items || []).length;
     }
 
-    get direction(): 'horizontal' | 'vertical' {
-        return this._direction;
-    }
-    set direction(value: 'horizontal' | 'vertical') {
-        this._direction = value;
-        this._applyDirection();
-    }
-
-    get defaultItemType(): string {
-        return this._defaultItemType;
-    }
-    set defaultItemType(value: string) {
-        this._defaultItemType = value;
-    }
-
-    get gap(): string {
-        return this._gap;
-    }
-    set gap(value: string) {
-        this._gap = value;
-        this._applyGap();
-    }
-
-    get cols(): number {
-        return this._cols;
-    }
-    set cols(value: number) {
-        this._cols = value;
-        this._applyCols();
-    }
-
-    get defaultItem(): DefaultItemConfig {
-        return this._defaultItem;
-    }
-    set defaultItem(value: DefaultItemConfig) {
-        this._defaultItem = value;
-    }
-
-    get overflowMode(): import('@qimenjs/component-abilities').OverflowMode {
-        return this._overflowMode;
-    }
-    set overflowMode(value: import('@qimenjs/component-abilities').OverflowMode) {
-        this._overflowMode = value;
-        if (typeof this._applyOverflowMode === 'function') {
-            this._applyOverflowMode();
-        }
-    }
-
-    get step(): number {
-        return this._step;
-    }
-    set step(value: number) {
-        this._step = value;
-        if (typeof this._onOverflowStepChange === 'function') {
-            this._onOverflowStepChange(value);
-        }
-        this._applyOrders();
-    }
-
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
         for (let i = 0; i < this._items.length; i++) {
             const item = this._items[i];
-            if (item.component.containsElement('', target) || item.el.contains(target)) {
+            if (this.containsElement('', target) || item.el.contains(target)) {
                 const type = item.component.constructor?._type || item.component.type || '';
                 return { component: item.component, type, index: i };
             }
@@ -220,40 +179,31 @@ class ItemGroupBaseComponent extends Component {
         this._emitItemUpdate(index, item.component, data);
     }
 
-    // ============================================
-    // 事件辅助方法
-    // ============================================
-
-    /** 触发 itemadd 事件 */
     _emitItemAdd(index: number, component: any, data: Record<string, any>): void {
         this.emit('itemadd', { index, component, data });
     }
 
-    /** 触发 itemremove 事件 */
     _emitItemRemove(index: number, component: any, data: Record<string, any>): void {
         this.emit('itemremove', { index, component, data });
     }
 
-    /** 触发 itemupdate 事件 */
     _emitItemUpdate(index: number, component: any, data: Record<string, any>): void {
         this.emit('itemupdate', { index, component, data });
     }
 
-    /** 触发 itemchange 事件（批量变化，如 setItems/clear） */
     _emitItemsChange(type: 'set' | 'clear' | 'sort' | 'move', details?: Record<string, any>): void {
         this.emit('itemchange', { type, ...details });
     }
 
     _createItem(data: Record<string, any>): any {
-        const itemType = data.type ?? this._defaultItemType;
+        const itemType = data.type ?? this.defaultItemType;
         if (!itemType) return null;
 
-        // 支持组件类直接引用或字符串类型名
         let ItemClass: any;
         if (typeof itemType === 'function') {
             ItemClass = itemType;
         } else if (typeof itemType === 'string') {
-            ItemClass = CompileEngine.get(itemType);
+            ItemClass = this.resolveComponent(itemType);
             if (!ItemClass) {
                 console.warn(`[_createItem] type "${itemType}" not found`);
                 return null;
@@ -270,29 +220,20 @@ class ItemGroupBaseComponent extends Component {
 
         const instance = new ItemClass(props);
 
-        const name = instance.id;
-
-        this.nodeMap[name] = {
-            name,
-            el: instance.el,
-            component: instance,
-        };
-
         const item = {
-            name,
             data,
             component: instance,
             el: instance.el,
             events: itemEvents,
         };
 
-        this.itemContainer?.el?.appendChild(instance.el);
+        const container = this.getNodeEl('itemContainer');
+        if (container) container.appendChild(instance.el);
 
         return item;
     }
 
     _destroyItem(item: any): void {
-        delete this.nodeMap[item.name];
         if (typeof item?.component?.dispose === 'function') {
             item.component.dispose();
         }
@@ -301,7 +242,7 @@ class ItemGroupBaseComponent extends Component {
     _applyOrders(): void {}
 
     _reorderDOM(): void {
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
         const fragment = document.createDocumentFragment();
         for (const item of this._items) {
@@ -311,32 +252,6 @@ class ItemGroupBaseComponent extends Component {
             container.removeChild(container.firstChild);
         }
         container.appendChild(fragment);
-    }
-
-    _applyDirection(): void {
-        this.el.classList.remove('q-itemgroup--horizontal', 'q-itemgroup--vertical');
-        this.el.classList.add(`q-itemgroup--${this._direction}`);
-        if (typeof this._onOverflowDirectionChange === 'function') {
-            this._onOverflowDirectionChange();
-        }
-        this._applyOrders();
-    }
-
-    _applyGap(): void {
-        if (!this.itemContainer?.el) return;
-        this.itemContainer.el.style.gap = this._gap || '';
-    }
-
-    _applyCols(): void {
-        const container = this.itemContainer?.el;
-        if (!container) return;
-        if (this._cols > 1) {
-            container.style.setProperty('--q-itemgroup-cols', String(this._cols));
-            container.classList.add('q-itemgroup__items--cols');
-        } else {
-            container.style.removeProperty('--q-itemgroup-cols');
-            container.classList.remove('q-itemgroup__items--cols');
-        }
     }
 
     setItems(datas: Record<string, any>[]): void {
@@ -356,37 +271,22 @@ class ItemGroupBaseComponent extends Component {
     }
 
     update(props?: Record<string, any>): void {
-        if (props?.direction !== undefined) {
-            this._direction = props.direction;
-            this._applyDirection();
+        this._applyOptions(props);
+        if (typeof (this as any).onUpdated === 'function') {
+            (this as any).onUpdated(props);
         }
-        if (props?.gap !== undefined) {
-            this._gap = props.gap;
-            this._applyGap();
-        }
-        if (props?.cols !== undefined) {
-            this._cols = props.cols;
-            this._applyCols();
-        }
-        if (props?.defaultItemType !== undefined) {
-            this.defaultItemType = props.defaultItemType;
-        }
-        if (props?.overflowMode !== undefined) {
-            this.overflowMode = props.overflowMode;
-        }
-        if (typeof this.onUpdated === 'function') (this as any).onUpdated(props);
     }
 
     onBeforeDispose(): void {
-        if (typeof this._teardownOverflow === 'function') {
-            this._teardownOverflow();
+        if (typeof (this as any)._teardownOverflow === 'function') {
+            (this as any)._teardownOverflow();
         }
         this.clear();
     }
 }
 
 ItemGroupBaseComponent.use([OverflowAbility]);
+ItemGroupBaseComponent.define(ItemGroupBaseComponentDefs);
 
 export { ItemGroupBaseComponent };
-/** 项组基类实例类型 */
 export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

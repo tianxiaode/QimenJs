@@ -1,26 +1,19 @@
-/**
- * SliderFieldBody 模板定义
- *
- * 结构：track（轨道） > fill（已填充） + thumb（滑块）
- * value 显示在 thumb 上方或右侧
- */
+import type { TemplateDecl } from '@/component-core';
 
-import type { TplNode } from '@/component-core';
-
-export const SLIDER_BODY_TPL: TplNode = {
+export const SLIDER_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-slider__wrapper',
-    attrs: { role: 'slider' },
+    classes: 'q-slider__wrapper',
+    attributes: { role: 'slider' },
     children: [
         {
             tag: 'div',
             name: 'track',
-            cls: 'q-slider__track',
+            classes: 'q-slider__track',
             children: [
-                { tag: 'div', name: 'fill', cls: 'q-slider__fill' },
-                { tag: 'div', name: 'thumb', cls: 'q-slider__thumb' },
+                { tag: 'div', name: 'fill', classes: 'q-slider__fill' },
+                { tag: 'div', name: 'thumb', classes: 'q-slider__thumb' },
             ],
         },
-        { tag: 'div', name: 'valueLabel', cls: 'q-slider__value' },
+        { tag: 'div', name: 'valueLabel', classes: 'q-slider__value' },
     ],
 };

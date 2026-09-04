@@ -1,27 +1,12 @@
-/**
- * AvatarComponent 头像组件
- *
- * 支持图片、文字、图标三种头像模式，优先级：src > text > icon。
- * 圆形裁切，尺寸分档由 SizeAbility 提供。
- *
- * @example
- * ```ts
- * new AvatarComponent({ src: '/avatar.png' })
- * new AvatarComponent({ text: '张' })
- * new AvatarComponent({ icon: '👤' })
- * ```
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
-import { SizeAbility } from '@qimenjs/component-abilities';
+import type { TemplateDecl } from '@/component-core';
 import { AVATAR_TPL } from './avatar-tpl';
-import './avatar.css.ts';
+import { Definitions } from '@/composable';
+import { SizeAbility } from '@/component-abilities';
+import './avatar.css';
 
-/** 头像模式类型 */
 export type AvatarMode = 'src' | 'text' | 'icon';
 
-/** 头像属性接口 */
 export interface AvatarProps {
     src?: string;
     text?: string;
@@ -29,36 +14,56 @@ export interface AvatarProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
+const AvatarComponentDefs: Definitions = {
+    options: {
+        src: null,
+        text: null,
+        icon: null,
+        size: 'md',
+    },
+} as const;
+
 class AvatarComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'avatar';
+    get tpl(): TemplateDecl {
         return AVATAR_TPL;
     }
 
-    onAfterInit(props?: AvatarProps): void {
-        this.initSize();
-        this.update(props);
+    _onSrcOptionChange(value: string) {
+        const nodeName = 'image';
+        if (value) {
+            this.setAttributes({ src: value }, nodeName);
+            this.removeCls('hidden', nodeName);
+        } else {
+            this.addCls('hidden', nodeName);
+        }
     }
 
-    update(props?: Partial<AvatarProps>): void {
-        if (props?.src !== undefined) {
-            this.image = props.src;
+    _onTextOptionChange(value: string) {
+        const nodeName = 'text';
+        const el = this.getNodeEl(nodeName);
+        if (value) {
+            if (el) el.textContent = value.charAt(0).toUpperCase();
+            this.removeCls('hidden', nodeName);
+        } else {
+            this.addCls('hidden', nodeName);
         }
-        if (props?.text !== undefined) {
-            this.text = props.text.charAt(0).toUpperCase();
-        }
-        if (props?.icon !== undefined) {
-            this.icon = props.icon;
-        }
-        this.size = props?.size || 'md';
+    }
 
-        this.setNodeHidden(props?.src === undefined, 'image');
-        this.setNodeHidden(props?.text === undefined, 'text');
-        this.setNodeHidden(props?.icon === undefined, 'icon');
+    _onIconOptionChange(value: string) {
+        const nodeName = 'icon';
+        const el = this.getNodeEl(nodeName);
+        if (value) {
+            if (el) el.textContent = value;
+            this.removeCls('hidden', nodeName);
+        } else {
+            this.addCls('hidden', nodeName);
+        }
     }
 }
 
+AvatarComponent.define(AvatarComponentDefs);
 AvatarComponent.use(SizeAbility);
 
 export { AvatarComponent };
-/** 头像实例类型 */
 export type AvatarComponentInstance = InstanceType<typeof AvatarComponent>;

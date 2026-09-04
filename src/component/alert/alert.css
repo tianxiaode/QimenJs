@@ -10,62 +10,62 @@
     display: flex;
     align-items: flex-start;
     padding: 12px 16px;
-    border: 2px solid var(--q-colors-border, #dcdfe6);
+    border: 2px solid var(--q-color-border, #dcdfe6);
     border-left-width: 4px;
-    border-radius: 0;
-    font-size: 14px;
+    border-radius: var(--q-radius-md);
+    font-size: var(--q-font-size-md, 14px);
     line-height: 1.5;
     box-sizing: border-box;
-    background: var(--q-colors-bg, #fff);
-    color: var(--q-colors-text, #1a1a1a);
+    background: var(--q-color-bg, #f7f2e8);
+    color: var(--q-color-text, #1a1a1a);
 }
 
 /* 类型：信息 */
 .q-alert--info {
     border-left-color: var(--q-color-info, #0078d4);
-    background: var(--q-color-on-info, #deecf9);
+    background: var(--q-color-info-bg, #deecf9);
 }
 
 .q-alert--info .q-alert__icon {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-info, #0078d4);
 }
 
 /* 类型：成功 */
 .q-alert--success {
-    border-left-color: var(--q-colors-success, #107c10);
-    background: var(--q-colors-success-bg, #dff6dd);
+    border-left-color: var(--q-color-success, #107c10);
+    background: var(--q-color-success-bg, #dff6dd);
 }
 
 .q-alert--success .q-alert__icon {
-    color: var(--q-colors-success, #107c10);
+    color: var(--q-color-success, #107c10);
 }
 
 /* 类型：警告 */
 .q-alert--warning {
-    border-left-color: var(--q-colors-warning, #ca5010);
-    background: var(--q-colors-warning-bg, #fff4ce);
+    border-left-color: var(--q-color-warning, #ca5010);
+    background: var(--q-color-warning-bg, #fff4ce);
 }
 
 .q-alert--warning .q-alert__icon {
-    color: var(--q-colors-warning, #ca5010);
+    color: var(--q-color-warning, #ca5010);
 }
 
 /* 类型：错误 */
 .q-alert--error {
-    border-left-color: var(--q-colors-error, #d13438);
-    background: var(--q-colors-error-bg, #fde7e9);
+    border-left-color: var(--q-color-error, #d13438);
+    background: var(--q-color-error-bg, #fde7e9);
 }
 
 .q-alert--error .q-alert__icon {
-    color: var(--q-colors-error, #d13438);
+    color: var(--q-color-error, #d13438);
 }
 
 /* 类型图标 */
 .q-alert__icon {
     flex-shrink: 0;
     margin-right: 12px;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: var(--q-font-size-md, 14px);
+    font-weight: var(--q-font-weight-bold, 700);
     line-height: 1.5;
 }
 
@@ -77,14 +77,14 @@
 
 /* 标题 */
 .q-alert__title {
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: var(--q-font-weight-bold, 700);
+    font-size: var(--q-font-size-md, 14px);
     margin-bottom: 4px;
 }
 
 /* 文本内容 */
 .q-alert__text {
-    font-size: 14px;
+    font-size: var(--q-font-size-md, 14px);
 }
 
 /* 关闭按钮 */
@@ -92,10 +92,10 @@
     flex-shrink: 0;
     margin-left: 12px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: var(--q-font-size-md, 14px);
     line-height: 1;
-    color: var(--q-colors-text-secondary, #666);
-    transition: color 0.15s;
+    color: var(--q-color-text-secondary, #6b5f52);
+    transition: color var(--q-transition-fast, 150ms ease);
     background: none;
     border: none;
     padding: 0;
@@ -103,5 +103,5 @@
 }
 
 .q-alert__close:hover {
-    color: var(--q-colors-error, #d13438);
+    color: var(--q-color-error, #d13438);
 }

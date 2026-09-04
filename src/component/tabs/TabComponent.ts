@@ -1,47 +1,36 @@
-/**
- * TabComponent 单个标签组件
- *
- * 标签栏中的单个标签项，支持 pressed（激活）、closable（可关闭）、disabled（禁用）状态。
- * 由 TabBarComponent 通过 ItemGroupPooledComponent 池化管理。
- *
- * 模板节点：
- * - label   — 标签文本
- * - icon    — 图标（可选）
- * - close   — 关闭按钮（closable=true 时显示）
- *
- * @example
- * ```ts
- * new TabComponent({ label: '首页', icon: '🏠', closable: true })
- * tab.on('click', ({ index }) => { ... })
- * tab.on('close', ({ index }) => { ... })
- * ```
- */
-
-import { Component, DomEventsMap } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
+import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { TAB_TPL } from './tab-tpl';
+import { Definitions } from '@/composable';
+import './tab.css';
 
-/** 标签页属性接口 */
 export interface TabProps {
     label?: string;
     icon?: string;
     closable?: boolean;
     disabled?: boolean;
-    /** 标签索引（由父组件 TabBar 设置） */
     index?: number;
 }
 
+const TabComponentDefs: Definitions = {
+    targetToOptions: {
+        label: { target: 'label', to: 'text' },
+    },
+    options: {
+        icon: null,
+        closable: false,
+        pressed: false,
+    },
+    fields: {
+        index: 0,
+    },
+} as const;
+
 class TabComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'tab';
+    get tpl(): TemplateDecl {
         return TAB_TPL;
     }
-
-    _label: string = '';
-    _icon: string = '';
-    _closable: boolean = false;
-    _disabled: boolean = false;
-    _pressed: boolean = false;
-    _index: number = 0;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -49,97 +38,36 @@ class TabComponent extends Component {
         },
     };
 
+    _onIconOptionChange(value: string): void {
+        const el = this.getNodeEl('icon');
+        if (el) el.textContent = value ?? '';
+        value ? this.removeCls('hidden', 'icon') : this.addCls('hidden', 'icon');
+    }
+
+    _onClosableOptionChange(value: boolean): void {
+        value ? this.removeCls('hidden', 'close') : this.addCls('hidden', 'close');
+    }
+
+    _onPressedOptionChange(value: boolean): void {
+        this.toggleCls('q-tab--pressed', value);
+    }
+
     _onCloseClick(): void {
-        if (this._disabled) return;
-        // close 事件由 domEvents emits 自动触发
-    }
-
-    onAfterInit(props?: TabProps): void {
-        this.update(props);
-    }
-
-    update(props?: Partial<TabProps>): void {
-        if (props?.label !== undefined) {
-            this._label = props.label;
-            this.setNodeProp('text', props.label, 'label');
-        }
-        if (props?.icon !== undefined) {
-            this._icon = props.icon;
-            this.setNodeProp('text', props.icon, 'icon');
-            this.setNodeHidden(!props.icon, 'icon');
-        }
-        if (props?.closable !== undefined) {
-            this._closable = props.closable;
-            this.setNodeHidden(!props.closable, 'close');
-        }
-        if (props?.disabled !== undefined) {
-            this._disabled = props.disabled;
-            this.toggleCls('q-tab--disabled', props.disabled);
-        }
-        if (props?.index !== undefined) {
-            this._index = props.index;
-        }
-    }
-
-    get label(): string {
-        return this._label;
-    }
-    set label(v: string) {
-        this._label = v;
-        this.setNodeProp('text', v, 'label');
-    }
-
-    get icon(): string {
-        return this._icon;
-    }
-    set icon(v: string) {
-        this._icon = v;
-        this.setNodeProp('text', v, 'icon');
-        this.setNodeHidden(!v, 'icon');
-    }
-
-    get closable(): boolean {
-        return this._closable;
-    }
-    set closable(v: boolean) {
-        this._closable = v;
-        this.setNodeHidden(!v, 'close');
-    }
-
-    get disabled(): boolean {
-        return this._disabled;
-    }
-    set disabled(v: boolean) {
-        this._disabled = v;
-        this.toggleCls('q-tab--disabled', v);
-    }
-
-    get pressed(): boolean {
-        return this._pressed;
-    }
-    set pressed(v: boolean) {
-        this._pressed = v;
-        this.toggleCls('q-tab--pressed', v);
-    }
-
-    get index(): number {
-        return this._index;
-    }
-    set index(v: number) {
-        this._index = v;
+        if (this.disable) return;
     }
 
     get defaultEventData(): Record<string, any> {
         return {
             ...super.defaultEventData,
-            index: this._index,
-            label: this._label,
-            closable: this._closable,
-            disabled: this._disabled,
+            index: this.index,
+            label: this.label,
+            closable: this.closable,
+            disabled: this.disable,
         };
     }
 }
 
+TabComponent.define(TabComponentDefs);
+
 export { TabComponent };
-/** 标签页实例类型 */
 export type TabComponentInstance = InstanceType<typeof TabComponent>;

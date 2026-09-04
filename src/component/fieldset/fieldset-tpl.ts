@@ -1,33 +1,18 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 字段集模板定义 */
-export const FIELDSET_TPL: TplNode = {
+export const FIELDSET_TPL: TemplateDecl = {
     tag: 'fieldset',
-    cls: 'q-fieldset',
+    classes: 'q-fieldset',
     children: [
         {
             tag: 'legend',
             name: 'legend',
-            cls: 'q-fieldset__legend',
-            i18n: 'legend',
+            classes: 'q-fieldset__legend',
             children: [
-                {
-                    tag: 'span',
-                    name: 'toggleIcon',
-                    cls: 'q-fieldset__toggle-icon',
-                    hidden: true,
-                },
-                {
-                    tag: 'span',
-                    name: 'legendText',
-                    cls: 'q-fieldset__legend-text',
-                },
+                { tag: 'span', name: 'toggleIcon', classes: 'q-fieldset__toggle-icon hidden' },
+                { tag: 'span', name: 'legendText', classes: 'q-fieldset__legend-text' },
             ],
         },
-        {
-            tag: 'div',
-            name: 'content',
-            cls: 'q-fieldset__content',
-        },
+        { tag: 'div', name: 'content', classes: 'q-fieldset__content' },
     ],
 };

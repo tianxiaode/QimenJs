@@ -1,0 +1,36 @@
+.q-dialog {
+    width: var(--q-dialog-width, 480px);
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--q-color-border);
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-bg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+.q-dialog__header .q-header {
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--q-color-border);
+}
+
+.q-dialog__header .q-header__title {
+    font-size: 16px;
+}
+
+.q-dialog__header .q-header__action {
+    cursor: var(--q-cursor-pointer);
+}
+
+.q-dialog__body {
+    flex: 1;
+    padding: 16px;
+    overflow: auto;
+}
+
+.q-dialog__footer {
+    padding: 12px 16px;
+    border-top: 2px solid var(--q-color-border);
+}

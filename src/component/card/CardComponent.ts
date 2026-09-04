@@ -1,7 +1,15 @@
 /**
  * CardComponent 卡片组件
  *
- * 通用内容容器，由 header + body + footer 三区组成。
+ * 通用内容容器，由 header（icon + title + action） + body + footer 三区组成。
+ * 内联 header 结构，不再依赖 HeaderComponent。
+ *
+ * 模板节点：
+ * - headerIcon  — 头部图标（默认隐藏）
+ * - headerTitle — 头部标题
+ * - headerAction — 头部操作按钮（默认隐藏）
+ * - body        — 内容区
+ * - footer      — 底部（默认隐藏）
  *
  * @example
  * ```ts
@@ -11,39 +19,45 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { CARD_TPL } from './card-tpl';
-import './card.css.ts';
+import { Definitions } from '@/composable';
+import './card.css';
 
-/** 卡片属性接口 */
-export interface CardProps {
-    title?: string;
-    icon?: string;
-    action?: string;
-}
+const CardComponentDefs: Definitions = {
+    targetToOptions: {
+        title: { target: 'headerTitle', to: 'text' },
+    },
+    options: {
+        icon: null,
+        action: null,
+    },
+} as const;
 
 class CardComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'card';
+    get tpl(): TemplateDecl {
         return CARD_TPL;
     }
 
-    _initCard(props?: CardProps): void {
-        if (props?.title) {
-            this.headerTitle = props.title;
-        }
+    _onTitleOptionChange(value: string, _old: string) {
+        this._setNodeHidden(!value, 'headerTitle');
+    }
 
-        if (props?.icon) {
-            this.headerIcon = props.icon;
-            this.setNodeHidden(false, 'headerIcon');
-        }
+    _onIconOptionChange(value: string, old: string) {
+        this._setNodeHidden(!value, 'headerIcon');
+        if (value) this.addCls(value, 'headerIcon');
+        if (old) this.removeCls(old, 'headerIcon');
+    }
 
-        if (props?.action) {
-            this.headerActionIcon = props.action;
-            this.setNodeHidden(false, 'headerAction');
-        }
+    _onActionOptionChange(value: string, old: string) {
+        this._setNodeHidden(!value, 'headerAction');
+        if (value) this.addCls(value, 'headerAction');
+        if (old) this.removeCls(old, 'headerAction');
     }
 }
 
+CardComponent.define(CardComponentDefs);
 export { CardComponent };
 /** 卡片实例类型 */
 export type CardComponentInstance = InstanceType<typeof CardComponent>;

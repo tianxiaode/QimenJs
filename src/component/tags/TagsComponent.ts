@@ -267,7 +267,7 @@ class TagsComponent extends ItemGroupPooledComponent {
             if (!this._overflowTag) {
                 this._overflowTag = new TagComponent({
                     text,
-                    type: this._overflowTagType,
+                    tagType: this._overflowTagType,
                 }) as TagComponentInstance;
                 this._overflowTag.el.classList.add('q-tags__overflow-tag');
                 this._overflowTag.el.addEventListener('click', () => this._onOverflowClick());

@@ -1,19 +1,15 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-export const SWITCH_FIELD_BODY_TPL: TplNode = {
+export const SWITCH_FIELD_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-switch__wrapper',
+    classes: 'q-switch__wrapper',
     children: [
         {
             tag: 'div',
             name: 'track',
-            cls: 'q-switch__track',
+            classes: 'q-switch__track',
             children: [
-                {
-                    tag: 'div',
-                    name: 'thumb',
-                    cls: 'q-switch__thumb',
-                },
+                { tag: 'div', name: 'thumb', classes: 'q-switch__thumb' },
             ],
         },
     ],

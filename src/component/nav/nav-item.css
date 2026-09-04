@@ -1,0 +1,95 @@
+.q-nav-item {
+    display: flex;
+    align-items: center;
+    cursor: var(--q-cursor-pointer);
+    user-select: none;
+    transition: background var(--q-transition-fast), color var(--q-transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.q-nav-item__content {
+    display: flex;
+    align-items: center;
+    gap: var(--q-space-md);
+    width: 100%;
+    padding: 10px 16px;
+    color: var(--q-color-text-secondary);
+    text-decoration: none;
+    font-weight: var(--q-font-weight-medium);
+    transition: background var(--q-transition-fast), color var(--q-transition-fast);
+}
+
+.q-nav-item__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-font-size-lg);
+    min-width: 20px;
+}
+
+.q-nav-item__text {
+    font-size: var(--q-font-size-md);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.q-nav-item__expand {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    font-size: var(--q-font-size-sm);
+    transition: transform var(--q-transition-fast);
+    color: var(--q-color-text-secondary);
+}
+
+.q-nav-item__expand::after {
+    content: '›';
+}
+
+.q-nav-item__expand--expanded {
+    transform: rotate(90deg);
+}
+
+.q-nav-item__expand--collapsed {
+    transform: rotate(0deg);
+}
+
+.q-nav-item--has-children .q-nav-item__expand {
+    display: flex;
+}
+
+.q-nav-item--collapsed .q-nav-item__content {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.q-nav-item--collapsed .q-nav-item__icon {
+    margin: 0 auto;
+}
+
+.q-nav-item--collapsed .q-nav-item__expand {
+    display: none;
+}
+
+.q-nav-item:hover .q-nav-item__content {
+    color: var(--q-color-primary);
+    background: var(--q-overlay-hover);
+}
+
+.q-nav-item--active {
+    border-left-color: var(--q-color-primary);
+}
+
+.q-nav-item--active .q-nav-item__content {
+    color: var(--q-color-primary);
+    background: var(--q-overlay-active);
+    font-weight: var(--q-font-weight-bold);
+}
+
+.q-nav-item--disabled {
+    opacity: var(--q-opacity-disabled);
+    cursor: not-allowed;
+    pointer-events: none;
+}

@@ -78,6 +78,22 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     /**
+     * 统一设置指定节点的隐藏状态（通过 addCls/removeCls 切换 hidden 类）
+     *
+     * @param hidden - 是否隐藏
+     * @param nodeName - 节点名称，默认 'root'
+     *
+     * @example
+     * ```ts
+     * this._setNodeHidden(true, 'body');   // 隐藏 body 节点
+     * this._setNodeHidden(false, 'body');  // 显示 body 节点
+     * ```
+     */
+    _setNodeHidden(hidden: boolean, nodeName: string = 'root'): void {
+        hidden ? this.addCls('hidden', nodeName) : this.removeCls('hidden', nodeName);
+    },
+
+    /**
      * 获取组件根元素在视口中的位置和尺寸
      *
      * 等价于 `this.el.getBoundingClientRect()`，用于位置计算。

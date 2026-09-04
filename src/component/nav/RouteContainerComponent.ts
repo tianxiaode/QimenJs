@@ -1,24 +1,16 @@
-/**
- * RouteContainerComponent — 路由容器组件
- *
- * 通过 listens 声明式监听路由 change 事件，根据 path 挂载对应页面组件。
- * 直接 new + appendChild 管理子组件，无需 content 占位符与 ChildSlotAbility。
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
-import './routecontainer.css.ts';
+import './routecontainer.css';
 
-/** 路由容器属性接口 */
 export interface RouteContainerProps {
     routeMap?: Record<string, new (props?: Record<string, any>) => any>;
     defaultComponent?: new (props?: Record<string, any>) => any;
 }
 
-/** 路由容器组件 */
 class RouteContainerComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'route-container';
+    get tpl(): TemplateDecl {
         return ROUTE_CONTAINER_TPL;
     }
 
@@ -28,9 +20,7 @@ class RouteContainerComponent extends Component {
     _defaultComponent: (new (props?: Record<string, any>) => any) | null = null;
     _currentInstance: any = null;
 
-    onAfterInit(props?: RouteContainerProps): void {
-        this.addCls('q-route-container');
-
+    onAfterInit(props?: Record<string, any>): void {
         if (props?.routeMap) this._routeMap = props.routeMap;
         if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
 
@@ -53,18 +43,17 @@ class RouteContainerComponent extends Component {
             this._currentInstance = null;
         }
         this._currentInstance = new PageClass({ parent: this });
-        this.el.appendChild(this._currentInstance.el);
+        if (this.el) this.el.appendChild(this._currentInstance.el);
     }
 
-    dispose(): void {
+    onBeforeDispose(): void {
         if (this._currentInstance) {
             this._currentInstance.dispose();
             this._currentInstance = null;
         }
-        super.dispose();
+        super.onBeforeDispose();
     }
 }
 
 export { RouteContainerComponent };
-/** 路由容器实例类型 */
 export type RouteContainerComponentInstance = InstanceType<typeof RouteContainerComponent>;

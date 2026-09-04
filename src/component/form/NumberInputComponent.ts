@@ -1,27 +1,7 @@
-/**
- * NumberInputComponent 数字输入框组件
- *
- * 从 InputComponent 派生，共享统一模板（继承父类模板，无需 useTemplate）。
- * 设置 field type 为 number，添加步进按钮到 actions。
- *
- * 特有功能：
- * - min/max/step 数值约束
- * - 步进按钮（增加/减少）
- * - precision 小数精度控制
- * - 数值格式化显示
- *
- * 事件：input / focus / blur / change / stepUp / stepDown。
- *
- * @example
- * ```ts
- * new NumberInputComponent({ value: 0, min: 0, max: 100, step: 1 })
- * num.on('input', ({ value }) => { ... })
- * ```
- */
-
 import { InputComponent, type InputProps } from './InputComponent';
+import { Definitions } from '@/composable';
 import { TextComponent } from '../text/TextComponent';
-import './numberinput.css.ts';
+import './numberinput.css';
 
 export interface NumberInputProps extends Omit<InputProps, 'value'> {
     value?: number;
@@ -47,54 +27,64 @@ function toPrecision(v: number, precision?: number): number {
     return Math.round(v * factor) / factor;
 }
 
+const NumberInputComponentDefs: Definitions = {
+    options: {
+        type: 'number',
+        min: null,
+        max: null,
+        step: 1,
+        precision: null,
+        controls: true,
+    },
+} as const;
+
 class NumberInputComponent extends InputComponent {
+    static type = 'number-input';
+
     _numValue: number = NaN;
-    _min: number | undefined = undefined;
-    _max: number | undefined = undefined;
-    _step: number = 1;
-    _precision: number | undefined = undefined;
     _stepUpItem: any = null;
     _stepDownItem: any = null;
 
-    onAfterInit(props?: NumberInputProps): void {
-        super.onAfterInit(props);
+    _onMinOptionChange(value: number | null): void {
+        const fieldEl = this.getNodeEl('field');
+        if (!fieldEl) return;
+        if (value != null) fieldEl.setAttribute('min', String(value));
+        else fieldEl.removeAttribute('min');
+    }
+
+    _onMaxOptionChange(value: number | null): void {
+        const fieldEl = this.getNodeEl('field');
+        if (!fieldEl) return;
+        if (value != null) fieldEl.setAttribute('max', String(value));
+        else fieldEl.removeAttribute('max');
+    }
+
+    _onStepOptionChange(value: number): void {
+        const fieldEl = this.getNodeEl('field');
+        if (fieldEl) fieldEl.setAttribute('step', String(value));
+    }
+
+    _onControlsOptionChange(value: boolean): void {
+        if (value) {
+            this._mountStepButtons();
+        } else {
+            this._unmountStepButtons();
+        }
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-input--number');
 
-        const fieldEl = this.field;
-
+        const fieldEl = this.getNodeEl('field');
         if (fieldEl) {
-            fieldEl.setAttribute('type', 'number');
             fieldEl.setAttribute('inputmode', 'numeric');
-        }
-
-        this._min = props?.min;
-        this._max = props?.max;
-        this._step = props?.step ?? 1;
-        this._precision = props?.precision;
-
-        if (props?.min !== undefined && fieldEl) {
-            fieldEl.setAttribute('min', String(props.min));
-        }
-        if (props?.max !== undefined && fieldEl) {
-            fieldEl.setAttribute('max', String(props.max));
-        }
-        if (props?.step !== undefined && fieldEl) {
-            fieldEl.setAttribute('step', String(props.step));
-        }
-
-        if (props?.value !== undefined) {
-            this._numValue = props.value;
-            this._value = String(props.value);
-            if (fieldEl) fieldEl.value = String(props.value);
-        }
-
-        if (props?.controls !== false) {
-            this._mountStepButtons();
         }
     }
 
     _mountStepButtons(): void {
-        this.setNodeHidden(false, 'actions');
+        if (this._stepUpItem) return;
+        this._setNodeHidden(false, 'actions');
 
         this.addAction({
             type: TextComponent,
@@ -102,7 +92,7 @@ class NumberInputComponent extends InputComponent {
             text: '▲',
             order: STEP_UP_ORDER,
         });
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         const items = actionsCmp?._items ?? [];
         this._stepUpItem = items[items.length - 1] ?? null;
 
@@ -115,10 +105,25 @@ class NumberInputComponent extends InputComponent {
         this._stepDownItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
     }
 
+    _unmountStepButtons(): void {
+        const actionsCmp = this.getComponent('actions') as any;
+        if (!actionsCmp) return;
+        if (this._stepUpItem) {
+            const idx = this._itemsIndexOf(actionsCmp, this._stepUpItem);
+            if (idx >= 0) actionsCmp.removeAt(idx);
+            this._stepUpItem = null;
+        }
+        if (this._stepDownItem) {
+            const idx = this._itemsIndexOf(actionsCmp, this._stepDownItem);
+            if (idx >= 0) actionsCmp.removeAt(idx);
+            this._stepDownItem = null;
+        }
+    }
+
     onFieldBodyActionClick(data: any): void {
         const index = data?.index;
         if (index === undefined) return;
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return;
 
         if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
@@ -136,29 +141,29 @@ class NumberInputComponent extends InputComponent {
     }
 
     stepUp(): void {
-        const current = isNaN(this._numValue) ? (this._min ?? 0) : this._numValue;
-        let next = current + this._step;
-        next = toPrecision(next, this._precision);
-        next = clamp(next, this._min, this._max);
+        const current = isNaN(this._numValue) ? (this.min ?? 0) : this._numValue;
+        let next = current + this.step;
+        next = toPrecision(next, this.precision);
+        next = clamp(next, this.min, this.max);
         this._numValue = next;
         this.value = String(next);
         this.emit('stepUp', { value: next });
     }
 
     stepDown(): void {
-        const current = isNaN(this._numValue) ? (this._min ?? 0) : this._numValue;
-        let next = current - this._step;
-        next = toPrecision(next, this._precision);
-        next = clamp(next, this._min, this._max);
+        const current = isNaN(this._numValue) ? (this.min ?? 0) : this._numValue;
+        let next = current - this.step;
+        next = toPrecision(next, this.precision);
+        next = clamp(next, this.min, this.max);
         this._numValue = next;
         this.value = String(next);
         this.emit('stepDown', { value: next });
     }
 
     onFieldInput(): void {
-        const fieldEl = this.field;
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
         const raw = fieldEl?.value ?? '';
-        this._value = raw;
+        this.value = raw;
         const num = parseFloat(raw);
         this._numValue = isNaN(num) ? NaN : num;
         this._toggleClearBtn();
@@ -166,14 +171,14 @@ class NumberInputComponent extends InputComponent {
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
-        return { value: this._numValue, rawValue: this._value };
+        return { value: this._numValue, rawValue: this.value };
     }
 
     get numValue(): number {
         return this._numValue;
     }
     set numValue(v: number) {
-        const clamped = toPrecision(clamp(v, this._min, this._max), this._precision);
+        const clamped = toPrecision(clamp(v, this.min, this.max), this.precision);
         this._numValue = clamped;
         this.value = String(clamped);
     }
@@ -199,34 +204,9 @@ class NumberInputComponent extends InputComponent {
         this.value = isNaN(num) ? '' : String(num);
         this.error = '';
     }
-
-    update(props?: Partial<NumberInputProps>): void {
-        super.update(props);
-        const fieldEl = this.field;
-
-        if (props?.min !== undefined) {
-            this._min = props.min;
-            if (fieldEl) fieldEl.setAttribute('min', String(props.min));
-        }
-        if (props?.max !== undefined) {
-            this._max = props.max;
-            if (fieldEl) fieldEl.setAttribute('max', String(props.max));
-        }
-        if (props?.step !== undefined) {
-            this._step = props.step;
-            if (fieldEl) fieldEl.setAttribute('step', String(props.step));
-        }
-        if (props?.precision !== undefined) {
-            this._precision = props.precision;
-        }
-        if (props?.value !== undefined) {
-            const num =
-                typeof props.value === 'number' ? props.value : parseFloat(String(props.value));
-            this._numValue = isNaN(num) ? NaN : num;
-            this.value = isNaN(num) ? '' : String(num);
-        }
-    }
 }
+
+NumberInputComponent.define(NumberInputComponentDefs);
 
 export { NumberInputComponent };
 export type NumberInputComponentInstance = InstanceType<typeof NumberInputComponent>;

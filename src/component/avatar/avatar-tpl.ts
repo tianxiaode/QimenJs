@@ -1,12 +1,11 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 头像模板定义 */
-export const AVATAR_TPL: TplNode = {
+export const AVATAR_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-avatar',
+    classes: 'q-avatar',
     children: [
-        { tag: 'img', name: 'image', cls: 'q-avatar__image', hidden: true },
-        { tag: 'span', name: 'text', cls: 'q-avatar__text', hidden: true },
-        { tag: 'i', name: 'icon', cls: 'q-avatar__icon', hidden: true },
+        { tag: 'img', name: 'image', classes: 'q-avatar__image hidden' },
+        { tag: 'span', name: 'text', classes: 'q-avatar__text hidden' },
+        { tag: 'i', name: 'icon', classes: 'q-avatar__icon hidden' },
     ],
 };

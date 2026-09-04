@@ -1,14 +1,15 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
-export const RADIO_GROUP_FIELD_BODY_TPL: TplNode = {
+export const RADIO_GROUP_FIELD_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-radio-group__wrapper',
+    classes: 'q-radio-group__wrapper',
     children: [
         {
             name: 'options',
-            type: 'ItemGroupStatic',
-            cls: 'q-radio-group__options',
-            initConfig: {
+            type: ItemGroupStaticComponent,
+            classes: 'q-radio-group__options',
+            options: {
                 direction: 'vertical',
                 gap: '8px',
             },

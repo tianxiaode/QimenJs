@@ -1,0 +1,86 @@
+/* Progress 进度条组件样式 — Metro 风格 */
+.q-progress {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    font-size: var(--q-font-size-md, 14px);
+    line-height: 1.5;
+}
+
+.q-progress__track {
+    flex: 1;
+    height: 8px;
+    background: var(--q-color-border, #dcdfe6);
+    border: 1px solid var(--q-color-border, #dcdfe6);
+    border-radius: var(--q-radius-md);
+    overflow: hidden;
+    position: relative;
+}
+
+.q-progress__bar {
+    height: 100%;
+    background: var(--q-color-primary);
+    border-radius: var(--q-radius-md);
+    transition: width var(--q-transition-fast);
+}
+
+.q-progress--success .q-progress__bar {
+    background: var(--q-color-success);
+}
+
+.q-progress--warning .q-progress__bar {
+    background: var(--q-color-warning);
+}
+
+.q-progress--error .q-progress__bar {
+    background: var(--q-color-error);
+}
+
+.q-progress--striped .q-progress__bar {
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 16px 16px;
+    animation: q-progress-stripes 1s linear infinite;
+}
+
+.q-progress--striped.q-progress--default .q-progress__bar {
+    background-color: var(--q-color-primary);
+}
+
+.q-progress--striped.q-progress--success .q-progress__bar {
+    background-color: var(--q-color-success);
+}
+
+.q-progress--striped.q-progress--warning .q-progress__bar {
+    background-color: var(--q-color-warning);
+}
+
+.q-progress--striped.q-progress--error .q-progress__bar {
+    background-color: var(--q-color-error);
+}
+
+.q-progress__text {
+    margin-left: var(--q-space-md, 12px);
+    font-size: var(--q-font-size-md, 14px);
+    font-weight: var(--q-font-weight-semibold, 600);
+    color: var(--q-color-text);
+    min-width: 40px;
+    text-align: right;
+}
+
+@keyframes q-progress-stripes {
+    0% {
+        background-position: 16px 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}

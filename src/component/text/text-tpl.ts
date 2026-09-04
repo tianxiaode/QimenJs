@@ -1,14 +1,6 @@
-/**
- * Text 模板定义 — 独立于组件类
- *
- * 通过 ComponentRegistrar 注册，编译产物缓存于注册表。
- */
+import type { TemplateDecl } from '@/component-core';
 
-import type { TplNode } from '@/component-core';
-
-/** 文本模板定义 */
-export const TEXT_TPL: TplNode = {
+export const TEXT_TPL: TemplateDecl = {
     tag: 'span',
-    name: 'content',
-    cls: 'q-text',
+    classes: 'q-text',
 };

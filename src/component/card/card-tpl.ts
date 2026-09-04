@@ -1,13 +1,20 @@
-import type { TplNode } from '@/component-core';
-import { HeaderComponent } from '../header/HeaderComponent';
+import type { TemplateDecl } from '@/component-core';
 
 /** 卡片模板定义 */
-export const CARD_TPL: TplNode = {
+export const CARD_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-card',
+    classes: 'q-card',
     children: [
-        { type: HeaderComponent, cls: 'q-card__header' },
-        { tag: 'div', name: 'body', cls: 'q-card__body' },
-        { tag: 'div', name: 'footer', cls: 'q-card__footer', hidden: true },
+        {
+            tag: 'div',
+            classes: 'q-card__header',
+            children: [
+                { tag: 'i', name: 'headerIcon', classes: 'q-card__header-icon hidden' },
+                { tag: 'div', name: 'headerTitle', classes: 'q-card__header-title' },
+                { tag: 'i', name: 'headerAction', classes: 'q-card__header-action hidden' },
+            ],
+        },
+        { tag: 'div', name: 'body', classes: 'q-card__body' },
+        { tag: 'div', name: 'footer', classes: 'q-card__footer hidden' },
     ],
 };

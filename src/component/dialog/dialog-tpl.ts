@@ -1,24 +1,14 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 import { HeaderComponent } from '../header/HeaderComponent';
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
-/** 对话框模板定义 */
-export const DIALOG_TPL: TplNode = {
+export const DIALOG_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-dialog',
+    classes: 'q-dialog',
     children: [
-        {
-            name: 'header',
-            type: HeaderComponent,
-            cls: 'q-dialog__header',
-        },
-        { tag: 'div', name: 'body', cls: 'q-dialog__body' },
-        {
-            name: 'footer',
-            type: ItemGroupStaticComponent,
-            cls: 'q-dialog__footer',
-            hidden: true,
-        },
+        { name: 'header', type: HeaderComponent, classes: 'q-dialog__header' },
+        { tag: 'div', name: 'body', classes: 'q-dialog__body' },
+        { name: 'footer', type: ItemGroupStaticComponent, classes: 'q-dialog__footer hidden' },
     ],
 };

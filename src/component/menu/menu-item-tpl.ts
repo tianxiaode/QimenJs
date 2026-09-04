@@ -1,22 +1,21 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 菜单项模板定义 */
-export const MENU_ITEM_TPL: TplNode = {
+export const MENU_ITEM_TPL: TemplateDecl = {
     tag: 'div',
+    classes: 'q-menu-item',
     children: [
         {
             tag: 'div',
             name: 'content',
-            cls: 'q-menu-item__content',
+            classes: 'q-menu-item__content',
             children: [
-                { tag: 'i', name: 'icon', cls: 'q-menu-item__icon' },
-                { tag: 'span', name: 'text', cls: 'q-menu-item__text' },
-                { tag: 'span', name: 'shortcut', cls: 'q-menu-item__shortcut' },
+                { tag: 'i', name: 'icon', classes: 'q-menu-item__icon' },
+                { tag: 'span', name: 'text', classes: 'q-menu-item__text' },
+                { tag: 'span', name: 'shortcut', classes: 'q-menu-item__shortcut' },
                 {
                     tag: 'div',
                     name: 'expand',
-                    cls: 'q-expand-arrow q-expand-arrow--collapsed',
-                    hidden: true,
+                    classes: 'q-expand-arrow q-expand-arrow--collapsed hidden',
                     children: [{ tag: 'i' }],
                 },
             ],

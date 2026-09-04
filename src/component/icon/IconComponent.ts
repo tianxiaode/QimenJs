@@ -1,47 +1,43 @@
 /**
  * IconComponent 图标组件
  *
- * 支持尺寸控制，通过 SizeAbility 提供 sm/md/lg 三种尺寸。
- * 默认尺寸为 md。
+ * 通用图标容器，通过 content 指定图标类名（如 save/eye），
+ * 尺寸由 SizeAbility 提供 sm/md/lg 三档，默认 md。
  *
- * 使用方式：
- * - icon.el.querySelector('.q-icon').className = 'q-icon save'  // 直接操作 DOM
- * - 或通过 nodeMap 访问：icon.nodeMap._.content.el.className = 'q-icon save'
- * - 通过 size 属性控制图标尺寸：icon.size = 'lg'
+ * @example
+ * ```ts
+ * new IconComponent({ content: 'save' })
+ * new IconComponent({ content: 'eye', size: 'lg' })
+ * ```
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { ICON_TPL } from './icon-tpl';
-import './icon.css.ts';
+import { Definitions } from '@/composable';
+import './icon.css';
 
-/** 图标属性接口 */
-export interface IconProps {
-    content?: string;
-    size?: 'sm' | 'md' | 'lg';
-}
+const IconComponentDefs: Definitions = {
+    options: {
+        content: null,
+        size: 'md',
+    },
+} as const;
 
 class IconComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'icon';
+    get tpl(): TemplateDecl {
         return ICON_TPL;
     }
 
-    onAfterInit(props?: IconProps): void {
-        this.initSize();
-        this.update(props);
-    }
-
-    update(props?: Partial<IconProps>): void {
-        if (props?.content !== undefined) {
-            this.content = props.content;
-        }
-        this.size = props?.size || 'md';
+    _onContentOptionChange(value: string, old: string): void {
+        if (value) this.addCls(value, 'content');
+        if (old) this.removeCls(old, 'content');
     }
 }
 
+IconComponent.define(IconComponentDefs);
 IconComponent.use([SizeAbility]);
 
 export { IconComponent };
-/** 图标实例类型 */
-export type IconComponentInstance = InstanceType<typeof IconComponent>;

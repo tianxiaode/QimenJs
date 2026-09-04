@@ -1,7 +1,6 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-/** 路由容器模板定义 */
-export const ROUTE_CONTAINER_TPL: TplNode = {
+export const ROUTE_CONTAINER_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-route-container',
+    classes: 'q-route-container',
 };

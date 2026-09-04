@@ -1,24 +1,7 @@
-/**
- * SliderFieldBodyComponent 滑动条字段体组件
- *
- * 承载 track + fill + thumb + valueLabel，
- * 处理拖拽交互和值计算。
- *
- * 事件：sliderChange（值变化时触发）
- */
-
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { SLIDER_BODY_TPL } from './slider-body-tpl';
-
-export interface SliderBodyProps {
-    value?: number;
-    min?: number;
-    max?: number;
-    step?: number;
-    showValue?: boolean;
-    disabled?: boolean;
-}
 
 function clamp(v: number, min: number, max: number): number {
     return Math.min(Math.max(v, min), max);
@@ -30,67 +13,88 @@ function toStep(v: number, step: number, min: number): number {
     return min + steps * step;
 }
 
+const SliderFieldBodyComponentDefs: Definitions = {
+    options: {
+        value: 0,
+        min: 0,
+        max: 100,
+        step: 1,
+        showValue: true,
+    },
+} as const;
+
 class SliderFieldBodyComponent extends Component {
-    get tpl(): TplNode {
+    static type = 'SliderFieldBody';
+
+    get tpl(): TemplateDecl {
         return SLIDER_BODY_TPL;
     }
 
-    _value: number = 0;
-    _min: number = 0;
-    _max: number = 100;
-    _step: number = 1;
-    _showValue: boolean = true;
-    _disabled: boolean = false;
     _dragging: boolean = false;
 
-    onAfterInit(props?: SliderBodyProps): void {
-        this._min = props?.min ?? 0;
-        this._max = props?.max ?? 100;
-        this._step = props?.step ?? 1;
-        this._showValue = props?.showValue ?? true;
-        this._disabled = props?.disabled ?? false;
+    _onValueOptionChange(_value: number): void {
+        this._applyState();
+    }
 
-        const v = clamp(props?.value ?? this._min, this._min, this._max);
-        this._value = toStep(v, this._step, this._min);
+    _onMinOptionChange(_value: number): void {
+        this._applyState();
+    }
 
+    _onMaxOptionChange(_value: number): void {
+        this._applyState();
+    }
+
+    _onStepOptionChange(_value: number): void {
+        this._applyState();
+    }
+
+    _onShowValueOptionChange(value: boolean): void {
+        const valueLabelEl = this.getNodeEl('valueLabel');
+        if (valueLabelEl) {
+            (valueLabelEl as HTMLElement).hidden = !value;
+        }
+    }
+
+    onAfterInit(): void {
         this._applyState();
         this._bindDrag();
     }
 
-    private _applyState(): void {
-        const ratio =
-            this._max === this._min ? 0 : (this._value - this._min) / (this._max - this._min);
+    _applyState(): void {
+        const value = this.value as number;
+        const min = this.min as number;
+        const max = this.max as number;
+        const ratio = max === min ? 0 : (value - min) / (max - min);
         const percent = `${ratio * 100}%`;
 
-        const fillEl = this._resolveNodeEl('fill');
-        if (fillEl) fillEl.style.width = percent;
+        const fillEl = this.getNodeEl('fill');
+        if (fillEl) (fillEl as HTMLElement).style.width = percent;
 
-        const thumbEl = this._resolveNodeEl('thumb');
-        if (thumbEl) thumbEl.style.left = percent;
+        const thumbEl = this.getNodeEl('thumb');
+        if (thumbEl) (thumbEl as HTMLElement).style.left = percent;
 
-        const valueLabelEl = this._resolveNodeEl('valueLabel');
+        const valueLabelEl = this.getNodeEl('valueLabel');
         if (valueLabelEl) {
-            valueLabelEl.textContent = String(this._value);
-            valueLabelEl.hidden = !this._showValue;
+            (valueLabelEl as HTMLElement).textContent = String(value);
+            (valueLabelEl as HTMLElement).hidden = !this.showValue;
         }
 
-        const trackEl = this._resolveNodeEl('track');
+        const trackEl = this.getNodeEl('track');
         if (trackEl) {
-            trackEl.setAttribute('aria-valuenow', String(this._value));
-            trackEl.setAttribute('aria-valuemin', String(this._min));
-            trackEl.setAttribute('aria-valuemax', String(this._max));
+            (trackEl as HTMLElement).setAttribute('aria-valuenow', String(value));
+            (trackEl as HTMLElement).setAttribute('aria-valuemin', String(min));
+            (trackEl as HTMLElement).setAttribute('aria-valuemax', String(max));
         }
 
-        this.toggleCls('q-slider--disabled', this._disabled);
         this.toggleCls('q-slider--dragging', this._dragging);
     }
 
-    private _bindDrag(): void {
-        const trackEl = this._resolveNodeEl('track');
+    _bindDrag(): void {
+        const trackEl = this.getNodeEl('track');
         if (!trackEl) return;
 
         const onPointerDown = (e: PointerEvent) => {
-            if (this._disabled) return;
+            if (this.disable) return;
             e.preventDefault();
             this._dragging = true;
             this._updateFromPointer(e);
@@ -112,55 +116,30 @@ class SliderFieldBodyComponent extends Component {
             document.addEventListener('pointerup', onPointerUp);
         };
 
-        trackEl.addEventListener('pointerdown', onPointerDown);
+        (trackEl as HTMLElement).addEventListener('pointerdown', onPointerDown);
     }
 
-    private _updateFromPointer(e: PointerEvent): void {
-        const trackEl = this._resolveNodeEl('track');
+    _updateFromPointer(e: PointerEvent): void {
+        const trackEl = this.getNodeEl('track');
         if (!trackEl) return;
 
-        const rect = trackEl.getBoundingClientRect();
+        const rect = (trackEl as HTMLElement).getBoundingClientRect();
         const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-        const raw = this._min + ratio * (this._max - this._min);
-        const stepped = toStep(raw, this._step, this._min);
-        const clamped = clamp(stepped, this._min, this._max);
+        const min = this.min as number;
+        const max = this.max as number;
+        const step = this.step as number;
+        const raw = min + ratio * (max - min);
+        const stepped = toStep(raw, step, min);
+        const clamped = clamp(stepped, min, max);
 
-        if (clamped !== this._value) {
-            this._value = clamped;
-            this.emit('sliderChange', { value: this._value });
+        if (clamped !== (this.value as number)) {
+            this.value = clamped;
+            this.emit('sliderChange', { value: clamped });
         }
-    }
-
-    get value(): number {
-        return this._value;
-    }
-    set value(v: number) {
-        const clamped = clamp(toStep(v, this._step, this._min), this._min, this._max);
-        if (clamped === this._value) return;
-        this._value = clamped;
-        this._applyState();
-    }
-
-    get disabled(): boolean {
-        return this._disabled;
-    }
-    set disabled(v: boolean) {
-        this._disabled = v;
-        this._applyState();
-    }
-
-    update(props?: Partial<SliderBodyProps>): void {
-        if (props?.min !== undefined) this._min = props.min;
-        if (props?.max !== undefined) this._max = props.max;
-        if (props?.step !== undefined) this._step = props.step;
-        if (props?.showValue !== undefined) this._showValue = props.showValue;
-        if (props?.disabled !== undefined) this._disabled = props.disabled;
-        if (props?.value !== undefined) {
-            this._value = clamp(toStep(props.value, this._step, this._min), this._min, this._max);
-        }
-        this._applyState();
     }
 }
+
+SliderFieldBodyComponent.define(SliderFieldBodyComponentDefs);
 
 export { SliderFieldBodyComponent };
 export type SliderFieldBodyComponentInstance = InstanceType<typeof SliderFieldBodyComponent>;

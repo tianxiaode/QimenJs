@@ -1,0 +1,50 @@
+/* Toggle 切换按钮样式 — Metro 风格 */
+.q-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--q-space-md, 16px);
+    border: 2px solid var(--q-color-border);
+    border-radius: var(--q-radius-md);
+    font-size: var(--q-font-size-md, 14px);
+    font-weight: var(--q-font-weight-semibold, 600);
+    line-height: 1;
+    white-space: nowrap;
+    cursor: var(--q-cursor-pointer, pointer);
+    transition: background var(--q-transition-fast), border-color var(--q-transition-fast), color var(--q-transition-fast);
+    box-sizing: border-box;
+    outline: none;
+    user-select: none;
+    background: var(--q-color-bg);
+    color: var(--q-color-text);
+}
+
+.q-toggle:hover {
+    border-color: var(--q-color-text-secondary);
+}
+
+.q-toggle--pressed {
+    background: var(--q-color-primary);
+    border-color: var(--q-color-primary);
+    color: var(--q-color-on-primary);
+}
+
+.q-toggle--pressed:hover {
+    background: var(--q-color-primary-hover);
+    border-color: var(--q-color-primary-hover);
+}
+
+.q-toggle--disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.q-toggle__icon {
+    flex-shrink: 0;
+    margin-right: var(--q-space-xs, 6px);
+}
+
+.q-toggle__text {
+    display: inline-flex;
+    align-items: center;
+}

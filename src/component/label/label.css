@@ -1,0 +1,28 @@
+/* Label 标签组件样式 — Metro 风格 */
+.q-label {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--q-font-size-md, 14px);
+    font-weight: var(--q-font-weight-semibold, 600);
+    color: var(--q-color-text);
+    line-height: 1.5;
+    cursor: default;
+}
+
+.q-label__required-mark {
+    color: var(--q-color-error);
+    font-weight: var(--q-font-weight-bold, 700);
+    margin: 0 2px;
+}
+
+.q-label__required-mark--before {
+    order: -1;
+    margin-right: var(--q-space-xs, 4px);
+    margin-left: 0;
+}
+
+.q-label__required-mark--after {
+    order: 1;
+    margin-left: 2px;
+    margin-right: 0;
+}

@@ -1,85 +1,118 @@
-/**
- * InputComponent 输入框组件
- *
- * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * fieldBody 子组件为 InputFieldBodyComponent（由 FormFieldComponent 模板默认提供）。
- *
- * 三封装结构（继承自 FormField）：
- * - labelGroup  标签封装：label + requiredMark + separator
- * - fieldBody   输入封装：prefix + field + actions(ItemGroup) + suffix + dropdownIcon
- * - infoGroup   信息封装：InputInfoGroupComponent (error/help/扩展信息)
- *
- * Input 特有功能：
- * - value/disabled/readonly 属性
- * - clearable 清除按钮
- * - field 事件处理（input/focus/blur/change/keydown）
- * - actions 便捷方法
- *
- * 派生组件（PasswordInput/NumberInput/Select/DatePicker）通过 addAction/节点显隐扩展。
- *
- * 事件：input / focus / blur / change / keydown / clear。
- *
- * @example
- * ```ts
- * new InputComponent({ value: 'hello', placeholder: '请输入' })
- * new InputComponent({ label: '用户名', labelPosition: 'left', required: true })
- * input.on('input', ({ value }) => { ... })
- * ```
- */
-
 import { FormFieldComponent } from './FormFieldComponent';
+import type { TemplateDecl } from '@/component-core';
+import type { FormFieldProps } from './FormFieldComponent';
+import { Definitions } from '@/composable';
 import type { ValidationRule } from '@qimenjs/schema';
 import { TextComponent } from '../text/TextComponent';
-import './input.css.ts';
+import { FORMFIELD_TPL } from './formfield-tpl';
+import './input.css';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
 
-export interface InputProps {
+export interface InputProps extends FormFieldProps {
     value?: string;
     placeholder?: string;
-    label?: string;
-    labelPosition?: 'top' | 'left' | 'right';
     type?: InputType;
-    disabled?: boolean;
+    disable?: boolean;
     readonly?: boolean;
     maxLength?: number;
-    required?: boolean;
-    size?: 'sm' | 'md' | 'lg';
     clearable?: boolean;
-    requiredMark?: string;
-    requiredMarkPosition?: 'before' | 'after';
-    fieldName?: string;
-    validation?: boolean | ValidationRule | ValidationRule[];
-    validateTrigger?: 'blur' | 'change' | 'input';
 }
 
 const CLEAR_BTN_ORDER = 0;
 
+const InputComponentDefs: Definitions = {
+    options: {
+        value: '',
+        placeholder: null,
+        type: 'text',
+        readonly: false,
+        maxLength: null,
+        clearable: false,
+    },
+} as const;
+
 class InputComponent extends FormFieldComponent {
-    _value: string = '';
+    static type = 'input';
+
+    get tpl(): TemplateDecl {
+        return FORMFIELD_TPL;
+    }
+
     _focused: boolean = false;
     _clearable: boolean = false;
     _clearBtnItem: any = null;
-    _offValidation: (() => void) | null = null;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
-        this.addCls('q-input');
-        this._initInput(props as InputProps);
-    }
-
-    onBeforeDispose(): void {
-        if (this._offValidation) {
-            this._offValidation();
-            this._offValidation = null;
+    _onValueOptionChange(value: string): void {
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        if (fieldEl && fieldEl.value !== value) {
+            fieldEl.value = value;
         }
-        super.onBeforeDispose();
+        this._toggleClearBtn();
     }
 
-    _initInput(props?: InputProps): void {
-        const fieldEl = this.field;
+    _onPlaceholderOptionChange(value: string): void {
+        const fieldEl = this.getNodeEl('field');
+        if (!fieldEl) return;
+        if (value) fieldEl.setAttribute('placeholder', value);
+        else fieldEl.removeAttribute('placeholder');
+    }
 
-        const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
+    _onTypeOptionChange(value: string): void {
+        const fieldEl = this.getNodeEl('field');
+        if (fieldEl) fieldEl.setAttribute('type', value);
+    }
+
+    _onReadonlyOptionChange(value: boolean): void {
+        const fieldEl = this.getNodeEl('field');
+        if (fieldEl) {
+            if (value) fieldEl.setAttribute('readonly', 'true');
+            else fieldEl.removeAttribute('readonly');
+        }
+        this.toggleCls('q-input--readonly', value);
+    }
+
+    _onMaxLengthOptionChange(value: number | null): void {
+        const fieldEl = this.getNodeEl('field');
+        if (!fieldEl) return;
+        if (value != null) fieldEl.setAttribute('maxlength', String(value));
+        else fieldEl.removeAttribute('maxlength');
+    }
+
+    _onClearableOptionChange(value: boolean): void {
+        this._clearable = value;
+        if (value) {
+            this._setNodeHidden(false, 'actions');
+            this._initClearBtn();
+            this._toggleClearBtn();
+        } else {
+            if (this._clearBtnItem) {
+                this._clearBtnItem.el.hidden = true;
+            }
+            this._setNodeHidden(true, 'actions');
+        }
+    }
+
+    _onDisableOptionChange(value: boolean): void {
+        const cls = this._composeStateCls(null, 'disabled');
+        value ? this.addCls(cls) : this.removeCls(cls);
+        const fieldEl = this.getNodeEl('field');
+        if (fieldEl) {
+            if (value) fieldEl.setAttribute('disabled', 'true');
+            else fieldEl.removeAttribute('disabled');
+        }
+    }
+
+    _onSizeOptionChange(value: string, old: string): void {
+        super._onSizeOptionChange(value, old);
+        if (value) this.addCls(`q-input--${value}`);
+        if (old) this.removeCls(`q-input--${old}`);
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.addCls('q-input');
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
         if (fieldBodyCmp) {
             fieldBodyCmp.on('actionClick', (data: any) => this.onFieldBodyActionClick(data));
             fieldBodyCmp.on('input', () => this.onFieldInput());
@@ -87,35 +120,12 @@ class InputComponent extends FormFieldComponent {
             fieldBodyCmp.on('blur', () => this.onFieldBlur());
             fieldBodyCmp.on('change', () => this.onFieldChange());
         }
-
-        if (props?.value !== undefined) {
-            this._value = props.value;
-            if (fieldEl) fieldEl.value = props.value;
-        }
-        if (props?.placeholder && fieldEl) {
-            fieldEl.setAttribute('placeholder', props.placeholder);
-        }
-        if (props?.type && fieldEl) {
-            fieldEl.setAttribute('type', props.type);
-        }
-        if (props?.maxLength !== undefined && fieldEl) {
-            fieldEl.setAttribute('maxlength', String(props.maxLength));
-        }
-        if (props?.disabled) this.disabled = true;
-        if (props?.readonly) this.readonly = true;
-        if (props?.clearable) {
-            this._clearable = true;
-            this.setNodeHidden(false, 'actions');
-            this._initClearBtn();
-            this._toggleClearBtn();
-        }
-        this._applyState();
     }
 
     onFieldBodyActionClick(data: any): void {
         const index = data?.index;
         if (index === undefined) return;
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return;
         if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
             this.onClearBtnClick();
@@ -131,7 +141,7 @@ class InputComponent extends FormFieldComponent {
 
     _initClearBtn(): void {
         if (this._clearBtnItem) return;
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return;
         actionsCmp.add({
             type: TextComponent,
@@ -146,17 +156,19 @@ class InputComponent extends FormFieldComponent {
         this.value = '';
         this.emit('input', { value: '' });
         this._toggleClearBtn();
-        this.field?.focus();
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        fieldEl?.focus();
     }
 
     _toggleClearBtn(): void {
         if (!this._clearable || !this._clearBtnItem) return;
-        const hasValue = !!this._value;
+        const hasValue = !!this.value;
         this._clearBtnItem.el.hidden = !hasValue;
     }
 
     onFieldInput(): void {
-        this._value = this.field?.value ?? '';
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        this.value = fieldEl?.value ?? '';
         this._toggleClearBtn();
         if (this._shouldValidate('input')) this._doValidate();
     }
@@ -173,82 +185,50 @@ class InputComponent extends FormFieldComponent {
     }
 
     onFieldChange(): void {
-        this._value = this.field?.value ?? '';
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        this.value = fieldEl?.value ?? '';
         if (this._shouldValidate('change')) this._doValidate();
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
-        return { value: this._value };
+        return { value: this.value };
     }
 
     addAction(data: Record<string, any>): any {
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return null;
-        this.setNodeHidden(false, 'actions');
+        this._setNodeHidden(false, 'actions');
         return actionsCmp.add(data);
     }
 
     removeAction(index: number): any {
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return undefined;
         const result = actionsCmp.removeAt(index);
-        if (actionsCmp.count === 0) this.setNodeHidden(true, 'actions');
+        if (actionsCmp.count === 0) this._setNodeHidden(true, 'actions');
         return result;
     }
 
     setActionHidden(index: number, hidden: boolean): void {
-        const actionsCmp = this.nodeMap?.actions?.component;
+        const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return;
         const item = actionsCmp.getAt(index);
         if (item?.el) item.el.hidden = hidden;
     }
 
-    get value(): string {
-        return this._value;
-    }
-    set value(v: string) {
-        this._value = v;
-        const fieldEl = this.field;
-        if (fieldEl && fieldEl.value !== v) {
-            fieldEl.value = v;
-        }
-        this._toggleClearBtn();
-    }
-
-    get disabled(): boolean {
-        return this.el.classList.contains('q-input--disabled');
-    }
-    set disabled(v: boolean) {
-        const fieldEl = this.field;
-        if (fieldEl) {
-            if (v) fieldEl.setAttribute('disabled', 'true');
-            else fieldEl.removeAttribute('disabled');
-        }
-        this.toggleCls('q-input--disabled', v);
-    }
-
-    get readonly(): boolean {
-        return this.el.classList.contains('q-input--readonly');
-    }
-    set readonly(v: boolean) {
-        const fieldEl = this.field;
-        if (fieldEl) {
-            if (v) fieldEl.setAttribute('readonly', 'true');
-            else fieldEl.removeAttribute('readonly');
-        }
-        this.toggleCls('q-input--readonly', v);
-    }
-
     focus(): void {
-        this.field?.focus();
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        fieldEl?.focus();
     }
 
     blur(): void {
-        this.field?.blur();
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        fieldEl?.blur();
     }
 
     select(): void {
-        this.field?.select();
+        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        fieldEl?.select();
     }
 
     _applyState(): void {
@@ -257,7 +237,7 @@ class InputComponent extends FormFieldComponent {
     }
 
     getFormValue(): any {
-        return this._value;
+        return this.value;
     }
 
     setFormValue(v: any): void {
@@ -265,46 +245,16 @@ class InputComponent extends FormFieldComponent {
     }
 
     getFormDisplayValue(): any {
-        return this._value;
+        return this.value;
     }
 
     formReset(defaultValue?: any): void {
         this.value = defaultValue ?? '';
         this.error = '';
     }
-
-    update(props?: Record<string, any>): void {
-        super.update(props);
-        const inputProps = props as Partial<InputProps>;
-        const fieldEl = this.field;
-
-        if (inputProps?.value !== undefined) this.value = inputProps.value;
-        if (inputProps?.placeholder !== undefined && fieldEl) {
-            fieldEl.setAttribute('placeholder', inputProps.placeholder);
-        }
-        if (inputProps?.type !== undefined && fieldEl) {
-            fieldEl.setAttribute('type', inputProps.type);
-        }
-        if (inputProps?.disabled !== undefined) this.disabled = inputProps.disabled;
-        if (inputProps?.readonly !== undefined) this.readonly = inputProps.readonly;
-        if (inputProps?.maxLength !== undefined && fieldEl) {
-            fieldEl.setAttribute('maxlength', String(inputProps.maxLength));
-        }
-        if (inputProps?.clearable !== undefined) {
-            this._clearable = inputProps.clearable;
-            if (inputProps.clearable) {
-                this.setNodeHidden(false, 'actions');
-                this._initClearBtn();
-                this._toggleClearBtn();
-            } else {
-                if (this._clearBtnItem) {
-                    this._clearBtnItem.el.hidden = true;
-                }
-                this.setNodeHidden(true, 'actions');
-            }
-        }
-    }
 }
+
+InputComponent.define(InputComponentDefs);
 
 export { InputComponent };
 export type InputComponentInstance = InstanceType<typeof InputComponent>;

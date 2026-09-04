@@ -1,41 +1,10 @@
-/**
- * CheckboxGroupComponent 复选框组组件
- *
- * 从 FormFieldComponent 派生，复用标签/验证/信息区域等通用逻辑。
- * fieldBody 子组件为 CheckboxGroupFieldBodyComponent（由 CHECKBOX_GROUP_TPL 指定）。
- *
- * 三封装结构（继承自 FormField）：
- * - labelGroup  标签封装：label + requiredMark + separator
- * - fieldBody   复选框组封装：ItemGroupStatic 管理选项
- * - infoGroup   信息封装：InputInfoGroupComponent
- *
- * CheckboxGroup 特有功能：
- * - options 选项列表
- * - value 已选值数组
- * - direction 排列方向（vertical/horizontal）
- * - disabled 全部禁用
- *
- * 事件：checkbox:change。
- *
- * @example
- * ```ts
- * new CheckboxGroupComponent({
- *     options: [
- *         { label: '选项1', value: '1' },
- *         { label: '选项2', value: '2' },
- *     ],
- *     value: ['1'],
- * })
- * group.on('checkbox:change', ({ value }) => { ... })
- * ```
- */
-
 import { TextComponent } from '../text/TextComponent';
-
 import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@/component-core';
+import { Definitions } from '@/composable';
 import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
-import './checkboxgroup.css.ts';
+import './checkboxgroup.css';
+import './selection-group.css';
 
 export interface CheckboxOption {
     label: string;
@@ -44,54 +13,73 @@ export interface CheckboxOption {
 }
 
 export interface CheckboxGroupProps extends FormFieldProps {
-    options?: CheckboxOption[];
+    items?: CheckboxOption[];
     value?: (string | number)[];
     direction?: 'vertical' | 'horizontal';
-    disabled?: boolean;
+    disable?: boolean;
 }
 
+const CheckboxGroupComponentDefs: Definitions = {
+    options: {
+        value: [],
+        direction: 'vertical',
+        items: [],
+    },
+} as const;
+
 class CheckboxGroupComponent extends FormFieldComponent {
-    get tpl(): TplNode {
+    static type = 'checkbox-group';
+
+    get tpl(): TemplateDecl {
         return CHECKBOX_GROUP_TPL;
     }
 
-    _options: CheckboxOption[] = [];
-    _value: (string | number)[] = [];
-    _disabled: boolean = false;
     _checkboxItems: any[] = [];
 
-    onAfterInit(props?: CheckboxGroupProps): void {
-        super.onAfterInit(props);
-        this.addCls('q-checkbox-group');
-        this._initCheckboxGroup(props);
+    _onValueOptionChange(value: (string | number)[]): void {
+        this._updateCheckedState();
     }
 
-    _initCheckboxGroup(props?: CheckboxGroupProps): void {
-        this._options = props?.options ?? [];
-        this._value = props?.value ? [...props.value] : [];
-
-        if (props?.direction) {
-            const optionsCmp = this.nodeMap?.options?.component;
-            if (optionsCmp) {
-                optionsCmp.direction = props.direction;
-            }
+    _onDirectionOptionChange(value: string): void {
+        const optionsCmp = this.getComponent('options') as any;
+        if (optionsCmp) {
+            optionsCmp.direction = value;
         }
+    }
 
-        if (props?.disabled) this._disabled = props.disabled;
-
+    _onItemsOptionChange(_value: CheckboxOption[]): void {
         this._renderOptions();
-        this._applyState();
+    }
+
+    _onDisableOptionChange(value: boolean): void {
+        const cls = this._composeStateCls(null, 'disabled');
+        value ? this.addCls(cls) : this.removeCls(cls);
+        this._renderOptions();
+    }
+
+    _onSizeOptionChange(value: string, old: string): void {
+        super._onSizeOptionChange(value, old);
+        if (value) this.addCls(`q-checkbox-group--${value}`);
+        if (old) this.removeCls(`q-checkbox-group--${old}`);
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.addCls('q-checkbox-group');
+        this._renderOptions();
     }
 
     _renderOptions(): void {
-        const optionsCmp = this.nodeMap?.options?.component;
+        const optionsCmp = this.getComponent('options') as any;
         if (!optionsCmp) return;
 
         optionsCmp.clear();
         this._checkboxItems = [];
 
-        for (const opt of this._options) {
-            const checked = this._value.includes(opt.value);
+        const items = this.items ?? [];
+        const currentValues = this.value ?? [];
+        for (const opt of items) {
+            const checked = currentValues.includes(opt.value);
             optionsCmp.add({
                 type: TextComponent,
                 cls: 'q-checkbox-group__item',
@@ -105,7 +93,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
                     el.classList.toggle('q-checkbox-group__item--checked', checked);
                     el.classList.toggle(
                         'q-checkbox-group__item--disabled',
-                        !!opt.disabled || this._disabled
+                        !!opt.disabled || this.disable
                     );
 
                     const box = document.createElement('span');
@@ -116,7 +104,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
                     el.setAttribute('role', 'checkbox');
                     el.setAttribute('aria-checked', String(checked));
 
-                    if (!opt.disabled && !this._disabled) {
+                    if (!opt.disabled && !this.disable) {
                         el.style.cursor = 'pointer';
                         el.addEventListener('click', () => {
                             this._onCheckboxClick(opt.value);
@@ -129,20 +117,24 @@ class CheckboxGroupComponent extends FormFieldComponent {
     }
 
     _onCheckboxClick(value: string | number): void {
-        const idx = this._value.indexOf(value);
+        const currentValues = this.value ?? [];
+        const idx = currentValues.indexOf(value);
+        const newValues = [...currentValues];
         if (idx >= 0) {
-            this._value.splice(idx, 1);
+            newValues.splice(idx, 1);
         } else {
-            this._value.push(value);
+            newValues.push(value);
         }
+        this.value = newValues;
         this._updateCheckedState();
-        this.emit('checkbox:change', { value: [...this._value] });
+        this.emit('checkbox:change', { value: [...newValues] });
         if (this._shouldValidate('change')) this._doValidate();
     }
 
     _updateCheckedState(): void {
+        const currentValues = this.value ?? [];
         for (const { item, option } of this._checkboxItems) {
-            const checked = this._value.includes(option.value);
+            const checked = currentValues.includes(option.value);
             const el = item.el as HTMLElement;
             if (!el) continue;
 
@@ -157,66 +149,31 @@ class CheckboxGroupComponent extends FormFieldComponent {
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
-        return { value: [...this._value] };
-    }
-
-    get value(): (string | number)[] {
-        return [...this._value];
-    }
-    set value(v: (string | number)[]) {
-        this._value = [...v];
-        this._updateCheckedState();
-    }
-
-    get options(): CheckboxOption[] {
-        return this._options;
-    }
-    set options(v: CheckboxOption[]) {
-        this._options = v;
-        this._renderOptions();
-    }
-
-    get disabled(): boolean {
-        return this._disabled;
-    }
-    set disabled(v: boolean) {
-        this._disabled = v;
-        this.toggleCls('q-checkbox-group--disabled', v);
-        this._renderOptions();
+        return { value: [...(this.value ?? [])] };
     }
 
     _applyState(): void {
-        this.toggleCls('q-checkbox-group--disabled', this._disabled);
+        this.toggleCls('q-checkbox-group--disabled', this.disable);
         this.toggleCls('q-checkbox-group--error', !!this._error);
     }
 
     getFormValue(): any {
-        return [...this._value];
+        return [...(this.value ?? [])];
     }
 
     setFormValue(v: any): void {
-        this._value = Array.isArray(v) ? [...v] : [];
+        this.value = Array.isArray(v) ? [...v] : [];
         this._updateCheckedState();
     }
 
     formReset(defaultValue?: any): void {
-        this._value = Array.isArray(defaultValue) ? [...defaultValue] : [];
+        this.value = Array.isArray(defaultValue) ? [...defaultValue] : [];
         this._updateCheckedState();
         this.error = '';
     }
-
-    update(props?: Partial<CheckboxGroupProps>): void {
-        super.update(props);
-
-        if (props?.options !== undefined) this.options = props.options;
-        if (props?.value !== undefined) this.value = props.value;
-        if (props?.direction !== undefined) {
-            const optionsCmp = this.nodeMap?.options?.component;
-            if (optionsCmp) optionsCmp.direction = props.direction;
-        }
-        if (props?.disabled !== undefined) this.disabled = props.disabled;
-    }
 }
+
+CheckboxGroupComponent.define(CheckboxGroupComponentDefs);
 
 export { CheckboxGroupComponent };
 export type CheckboxGroupComponentInstance = InstanceType<typeof CheckboxGroupComponent>;

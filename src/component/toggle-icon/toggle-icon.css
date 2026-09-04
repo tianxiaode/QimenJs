@@ -1,0 +1,40 @@
+.q-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid transparent;
+    cursor: var(--q-cursor-pointer, pointer);
+    transition: background var(--q-transition-fast), border-color var(--q-transition-fast);
+    box-sizing: border-box;
+    outline: none;
+    user-select: none;
+    background: transparent;
+}
+
+.q-toggle-icon:hover {
+    background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
+}
+
+.q-toggle-icon:active {
+    background: var(--q-overlay-active, rgba(128, 128, 128, 0.15));
+}
+
+.q-toggle-icon--on {
+    background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.08));
+}
+
+.q-toggle-icon--on:hover {
+    background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.15));
+}
+
+.q-toggle-icon-disabled {
+    cursor: not-allowed;
+    opacity: var(--q-opacity-disabled, 0.4);
+}
+
+.q-toggle-icon__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

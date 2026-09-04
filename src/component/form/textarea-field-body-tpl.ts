@@ -1,13 +1,13 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
-export const TEXTAREA_FIELD_BODY_TPL: TplNode = {
+export const TEXTAREA_FIELD_BODY_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-textarea__wrapper',
+    classes: 'q-textarea__wrapper',
     children: [
         {
             tag: 'textarea',
             name: 'field',
-            cls: 'q-textarea__field',
+            classes: 'q-textarea__field',
         },
     ],
 };
