@@ -1,11 +1,65 @@
+/* ========================================
+   🚀 中国风主题系统 - 完整入口
+   ======================================== */
+
+/* 基础主题 */
 @import './light.css';
 @import './dark.css';
+
+/* 预设主题 */
 @import './preset.css';
-@import './custom.css';
-@import './utilities.css';
-@import './skeleton.css';
+
+/* 尺寸系统 */
+@import './size.css';
+
+/* 布局系统 */
 @import './layout.css';
-@import './utility.css';
+
+/* 工具类（合并后） */
+@import './utilities.css';
+
+/* 骨架屏 */
+@import './skeleton.css';
+
+/* ========================================
+   💡 系统偏好检测
+   ======================================== */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]):not([data-theme="dark"]) {
+        /* 由 JS 处理 */
+    }
+}
+
+/* ========================================
+   🔄 主题切换平滑过渡
+   ======================================== */
+* {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow, opacity, transform;
+    transition-duration: var(--q-transition-normal);
+    transition-timing-function: ease;
+}
+
+/* 排除某些不需要过渡的属性 */
+.no-transition {
+    transition: none !important;
+}
+
+/* 过渡速度变体 */
+.transition-fast {
+    transition-duration: var(--q-transition-fast);
+}
+
+.transition-normal {
+    transition-duration: var(--q-transition-normal);
+}
+
+.transition-slow {
+    transition-duration: var(--q-transition-slow);
+}
+
+.transition-bounce {
+    transition: all var(--q-transition-bounce);
+}
 
 [data-no-radius] {
     --q-radius-none: 0;

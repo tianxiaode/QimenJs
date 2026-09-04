@@ -17,7 +17,7 @@
     font-family: inherit;
     font-size: var(--q-font-size-md);
     font-weight: var(--q-font-weight-semibold);
-    line-height: 1;
+    line-height: 1.2;
     white-space: nowrap;
     cursor: pointer;
     transition: background var(--q-transition-fast), border-color var(--q-transition-fast), color var(--q-transition-fast);
@@ -26,6 +26,7 @@
     user-select: none;
     background: var(--q-color-bg, #fff);
     color: var(--q-color-text, #1a1a1a);
+    overflow: visible;
 }
 
 /* 类型：默认 */
@@ -119,6 +120,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    line-height: 1.2;
+    overflow: visible;
 }
 
 /* 当 .content 内没有 .icon 且没有可见 loading 时，去掉间隔 */
@@ -137,7 +140,12 @@
     align-items: center;
     justify-content: center;
     font-style: normal;
-    line-height: 1;
+    width: 1em;
+    height: 1em;
+    font-size: 1em;
+    line-height: 1.2;
+    margin-top: 1px;
+    flex-shrink: 0;
 }
 
 /* 加载状态旋转圈 */
@@ -146,7 +154,7 @@
     align-items: center;
     justify-content: center;
     font-style: normal;
-    line-height: 1;
+    line-height: 1.2;
     width: 1em;
     height: 1em;
     border: 2px solid currentColor;
@@ -166,6 +174,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* 核心修复点 4：文字容器放宽行高，允许下延部留出空间 */
+    line-height: 1.2;
+    padding-bottom: 1px;
 }
 
 /* 布局：默认（icon 左，text 右） */

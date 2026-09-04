@@ -5,7 +5,6 @@
  * 方角、粗边框、高对比色块。
  */
 
-export const alertCSS = `
 /* Alert 根元素 */
 .q-alert {
     display: flex;
@@ -23,8 +22,8 @@ export const alertCSS = `
 
 /* 类型：信息 */
 .q-alert--info {
-    border-left-color: var(--q-colors-primary, #0078d4);
-    background: var(--q-colors-info-bg, #deecf9);
+    border-left-color: var(--q-color-info, #0078d4);
+    background: var(--q-color-on-info, #deecf9);
 }
 
 .q-alert--info .q-alert__icon {
@@ -106,4 +105,3 @@ export const alertCSS = `
 .q-alert__close:hover {
     color: var(--q-colors-error, #d13438);
 }
-`;

@@ -15,9 +15,11 @@ const FloatingComponentDefs: Definitions = {
         viewportPosition: null,
         pointerEvents: null,
         isFloat: true,
+        persistent: false,
     },
     privateFields: {
         _overlayOpen: false,
+        _mounted: false,
     },
 };
 
@@ -54,7 +56,18 @@ export class FloatingComponent extends Component {
         this._anchor = anchor;
         this._overlayOpen = true;
         const el = this.el!;
-        this.mountToOverlay(el);
+        if (this.persistent) {
+            if (!this._mounted) {
+                this.mountToOverlay(el);
+                this._mounted = true;
+                this.onCleanup(() => {
+                    if (this._mounted) this.unmountFromOverlay(el);
+                });
+            }
+            el.style.display = '';
+        } else {
+            this.mountToOverlay(el);
+        }
         this.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
         this.pointerEvents = 'auto';
         const p = placement ?? 'bottom';
@@ -65,6 +78,11 @@ export class FloatingComponent extends Component {
         const actualPlacement = positionOverlay(el, anchor, p, offset ?? 4, true);
         (this as any)._actualPlacement = actualPlacement;
 
+        if (this._mask) {
+            this._mask.show();
+            this._mask.updatePosition(anchor.getBoundingClientRect());
+        }
+
         this._bindGlobalHandlers();
 
         if (typeof (this as any).open === 'function') {
@@ -74,8 +92,14 @@ export class FloatingComponent extends Component {
 
     hide(): void {
         this._overlayOpen = false;
-        this._removeMask();
-        this.unmountFromOverlay(this.el!);
+        if (this.persistent) {
+            this.el!.style.display = 'none';
+        } else {
+            this.unmountFromOverlay(this.el!);
+        }
+        if (this._mask) {
+            this._mask.hide();
+        }
     }
 
     protected _bindGlobalHandlers(): void {
@@ -128,6 +152,7 @@ export class FloatingComponent extends Component {
             zIndex,
         });
         this._mask.mount();
+        this._mask.hide();
         this.onCleanup(() => this._removeMask());
         if (this._anchor) {
             this._mask.updatePosition(this._anchor.getBoundingClientRect());

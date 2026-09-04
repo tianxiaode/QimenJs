@@ -15,7 +15,6 @@
 
     --q-color-on-primary: #ffffff;
 
-    /* 中国风专属 - 金色点缀 */
     --q-color-accent-gold: #c9a96e;
     --q-color-accent-gold-light: #e8d5b5;
 }
@@ -164,13 +163,45 @@
     --q-color-accent-gold-light: #ddd0b8;
 }
 
+/* -------- 主题 11：青花瓷（新增） -------- */
+[data-theme-preset="qinghua"] {
+    --q-color-primary-h: 205;
+    --q-color-primary-s: 45%;
+    --q-color-primary-l: 40%;
+
+    --q-color-secondary-h: 35;
+    --q-color-secondary-s: 18%;
+    --q-color-secondary-l: 70%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #c4a87a;
+    --q-color-accent-gold-light: #e0d0b8;
+}
+
+/* -------- 主题 12：天青（新增） -------- */
+[data-theme-preset="skyblue"] {
+    --q-color-primary-h: 195;
+    --q-color-primary-s: 40%;
+    --q-color-primary-l: 45%;
+
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 20%;
+    --q-color-secondary-l: 68%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #c4a87a;
+    --q-color-accent-gold-light: #e0d0b8;
+}
+
 /* ========================================
    🏮 中国风专用扩展变量
    预设主题通用装饰元素
    ======================================== */
 
 [data-theme-preset] {
-    /* -------- 中国风纹理背景（可选） -------- */
+    /* -------- 中国风纹理背景 -------- */
     --q-bg-pattern: none;
 
     /* -------- 中国风边框装饰 -------- */
@@ -180,7 +211,7 @@
     /* -------- 中国风字体 -------- */
     --q-font-family-chinese: "Noto Serif SC", "华文楷体", "KaiTi", "楷体", serif;
 
-    /* -------- 金色系（中国风标志色） -------- */
+    /* -------- 金色系 -------- */
     --q-color-gold: var(--q-color-accent-gold);
     --q-color-gold-light: var(--q-color-accent-gold-light);
     --q-color-gold-hover: hsl(38, 50%, 55%);
@@ -188,6 +219,7 @@
     /* -------- 印章红 -------- */
     --q-color-seal: #c41a1a;
     --q-color-seal-hover: #a01515;
+    --q-color-seal-light: #d94a4a;
 
     /* -------- 墨色系 -------- */
     --q-color-ink: #1a1613;
@@ -198,7 +230,7 @@
     --q-color-xuan-paper: #f5efe0;
     --q-color-xuan-paper-dark: #e8ddc8;
 
-    /* -------- 中国风阴影（偏暖） -------- */
+    /* -------- 中国风阴影 -------- */
     --q-shadow-chinese: 0 4px 20px rgba(48, 42, 35, 0.15);
     --q-shadow-chinese-lg: 0 8px 40px rgba(48, 42, 35, 0.20);
 }
@@ -215,24 +247,26 @@
     /* -------- 暗色模式金色微调 -------- */
     --q-color-gold: hsl(38, 45%, 55%);
     --q-color-gold-light: hsl(38, 30%, 45%);
+    --q-color-gold-hover: hsl(38, 50%, 60%);
 
     /* -------- 暗色模式墨色反转 -------- */
     --q-color-ink: #f0ebe3;
     --q-color-ink-light: #b5a692;
+    --q-color-ink-lighter: #8a7a66;
 
-    /* -------- 中国风阴影（暗色更重） -------- */
+    /* -------- 暗色模式中国风阴影 -------- */
     --q-shadow-chinese: 0 4px 20px rgba(0, 0, 0, 0.50);
     --q-shadow-chinese-lg: 0 8px 40px rgba(0, 0, 0, 0.60);
 }
 
 /* ========================================
-   🖌️ 中国风工具类（可选）
+   🖌️ 中国风工具类
    ======================================== */
 
 /* 印章效果 */
 .chinese-seal {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 0.25rem 0.75rem;
     border: 2px solid var(--q-color-seal);
     color: var(--q-color-seal);
     font-family: var(--q-font-family-chinese);
@@ -240,6 +274,7 @@
     transform: rotate(-2deg);
     background: transparent;
     transition: all var(--q-transition-fast);
+    cursor: pointer;
 }
 
 .chinese-seal:hover {
@@ -272,16 +307,17 @@
 .border-chinese {
     border: var(--q-border-width-chinese) var(--q-border-style-chinese) var(--q-color-gold);
     position: relative;
+    padding: var(--q-space-md);
 }
 
 .border-chinese::before {
     content: '◆';
     position: absolute;
-    top: -12px;
+    top: -0.75rem;
     left: 50%;
     transform: translateX(-50%);
     background: var(--q-color-bg);
-    padding: 0 8px;
+    padding: 0 0.5rem;
     color: var(--q-color-gold);
     font-size: var(--q-font-size-xs);
 }
@@ -294,4 +330,15 @@
     height: 2px;
     width: 60px;
     margin: var(--q-space-md) auto;
+}
+
+/* 中式灯笼装饰（装饰性） */
+.lantern-decoration {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--q-radius-round);
+    background: var(--q-color-seal);
+    box-shadow: 0 0 8px rgba(196, 26, 26, 0.3);
+    margin: 0 var(--q-space-xs);
 }

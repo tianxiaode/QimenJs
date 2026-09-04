@@ -16,6 +16,9 @@ const LoadingComponentDefs: Definitions = {
     targetToOptions: {
         text: { target: 'text', to: 'text' },
     },
+    options: {
+        persistent: true,
+    },
 };
 
 LoadingComponent.define(LoadingComponentDefs);

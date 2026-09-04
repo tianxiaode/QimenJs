@@ -50,6 +50,7 @@ export const ComponentDefs: Definitions = {
         transform: null,
         /** 权限配置 — 控制组件的访问权限 */
         permission: null,
+        cssPrefix: null,
     },
 
     fields: {

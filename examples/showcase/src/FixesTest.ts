@@ -54,18 +54,9 @@ export class OverlayTest extends Component {
                             },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'loadingBtn',
                             options: { text: 'Click me (loading 2s)' },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #6366f1',
-                                background: '#eef2ff',
-                                color: '#4338ca',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                            },
                         },
                         {
                             type: 'button',
@@ -111,8 +102,9 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipTop',
                             options: {
+                                iconCls: 'fa fa-gear',
                                 color: 'success',
-                                text: 'top',
+                                text: '顶部',
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
                         },

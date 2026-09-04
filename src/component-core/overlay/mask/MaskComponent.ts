@@ -31,6 +31,14 @@ export class MaskComponent {
         this.el.style.setProperty('--mask-height', `${rect.height}px`);
     }
 
+    show(): void {
+        this.el.style.display = '';
+    }
+
+    hide(): void {
+        this.el.style.display = 'none';
+    }
+
     mount(): void {
         OverlayRoot.getInstance().mountOverlay(this.el);
     }

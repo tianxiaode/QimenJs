@@ -39,8 +39,7 @@ export {
     type ButtonGroupProps,
 } from './button-group/ButtonGroupComponent';
 export { buttonGroupCSS } from './button-group/button-group.css';
-export { AlertComponent, type AlertType, type AlertProps } from './alert/AlertComponent';
-export { alertCSS } from './alert/alert.css';
+export { AlertComponent } from './alert/AlertComponent';
 export {
     BreadcrumbComponent,
     type BreadcrumbItem,

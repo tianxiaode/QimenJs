@@ -46,7 +46,7 @@ export const MSGBOX_TPL: TemplateDecl = {
                     tag: 'button',
                     name: 'confirm',
                     options: { action: 'confirm' },
-                    classes: 'q-button q-button--primary q-size--md',
+                    classes: 'q-button q-button--success q-size--md',
                 },
             ],
         },

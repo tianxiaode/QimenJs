@@ -1,0 +1,181 @@
+/* ========================================
+   📐 尺寸系统 - 基于 rem
+   配合中国风主题使用
+   ======================================== */
+
+:root {
+    /* 尺寸变量（基于字体大小自动计算） */
+    --q-size-xs: calc(var(--q-font-size-xs) * 2.4 + 0.25rem);
+    --q-size-sm: calc(var(--q-font-size-sm) * 2.4 + 0.25rem);
+    --q-size-md: calc(var(--q-font-size-md) * 2.4 + 0.25rem);
+    --q-size-lg: calc(var(--q-font-size-lg) * 2.4 + 0.25rem);
+    --q-size-xl: calc(var(--q-font-size-xl) * 2.4 + 0.25rem);
+    --q-size-2xl: calc(var(--q-font-size-2xl) * 2.4 + 0.25rem);
+
+    /* 图标尺寸 */
+    --q-icon-size-xs: calc(var(--q-font-size-xs) * 1.2);
+    --q-icon-size-sm: calc(var(--q-font-size-sm) * 1.2);
+    --q-icon-size-md: calc(var(--q-font-size-md) * 1.2);
+    --q-icon-size-lg: calc(var(--q-font-size-lg) * 1.2);
+    --q-icon-size-xl: calc(var(--q-font-size-xl) * 1.2);
+
+    /* 控件最小触控区域（移动端友好） */
+    --q-touch-target-min: 2.75rem;
+    /* 44px */
+}
+
+/* -------- 尺寸类 -------- */
+.q-size--xs,
+.q-size--sm,
+.q-size--md,
+.q-size--lg,
+.q-size--xl,
+.q-size--2xl {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--q-transition-fast);
+    font-weight: var(--q-font-weight-medium);
+    line-height: 1;
+    text-decoration: none;
+    min-height: var(--q-touch-target-min);
+}
+
+/* -------- 各尺寸定义 -------- */
+.q-size--xs {
+    height: var(--q-size-xs);
+    min-height: var(--q-size-xs);
+    padding: 0 var(--q-space-sm);
+    font-size: var(--q-font-size-xs);
+    border-radius: var(--q-radius-sm);
+    gap: var(--q-space-xs);
+}
+
+.q-size--sm {
+    height: var(--q-size-sm);
+    min-height: var(--q-size-sm);
+    padding: 0 var(--q-space-sm);
+    font-size: var(--q-font-size-sm);
+    border-radius: var(--q-radius-sm);
+    gap: var(--q-space-xs);
+}
+
+.q-size--md {
+    height: var(--q-size-md);
+    min-height: var(--q-size-md);
+    padding: 0 var(--q-space-md);
+    font-size: var(--q-font-size-md);
+    border-radius: var(--q-radius-md);
+    gap: var(--q-space-sm);
+}
+
+.q-size--lg {
+    height: var(--q-size-lg);
+    min-height: var(--q-size-lg);
+    padding: 0 var(--q-space-md);
+    font-size: var(--q-font-size-lg);
+    border-radius: var(--q-radius-lg);
+    gap: var(--q-space-sm);
+}
+
+.q-size--xl {
+    height: var(--q-size-xl);
+    min-height: var(--q-size-xl);
+    padding: 0 var(--q-space-lg);
+    font-size: var(--q-font-size-xl);
+    border-radius: var(--q-radius-xl);
+    gap: var(--q-space-md);
+}
+
+.q-size--2xl {
+    height: var(--q-size-2xl);
+    min-height: var(--q-size-2xl);
+    padding: 0 var(--q-space-xl);
+    font-size: var(--q-font-size-2xl);
+    border-radius: var(--q-radius-xl);
+    gap: var(--q-space-md);
+}
+
+/* -------- 图标跟随尺寸 -------- */
+.q-size--xs .q-icon {
+    font-size: var(--q-icon-size-xs);
+    width: var(--q-icon-size-xs);
+    height: var(--q-icon-size-xs);
+}
+
+.q-size--sm .q-icon {
+    font-size: var(--q-icon-size-sm);
+    width: var(--q-icon-size-sm);
+    height: var(--q-icon-size-sm);
+}
+
+.q-size--md .q-icon {
+    font-size: var(--q-icon-size-md);
+    width: var(--q-icon-size-md);
+    height: var(--q-icon-size-md);
+}
+
+.q-size--lg .q-icon {
+    font-size: var(--q-icon-size-lg);
+    width: var(--q-icon-size-lg);
+    height: var(--q-icon-size-lg);
+}
+
+.q-size--xl .q-icon {
+    font-size: var(--q-icon-size-xl);
+    width: var(--q-icon-size-xl);
+    height: var(--q-icon-size-xl);
+}
+
+.q-size--2xl .q-icon {
+    font-size: calc(var(--q-icon-size-xl) * 1.2);
+    width: calc(var(--q-icon-size-xl) * 1.2);
+    height: calc(var(--q-icon-size-xl) * 1.2);
+}
+
+/* -------- 全宽 -------- */
+.q-size--full {
+    width: 100%;
+}
+
+/* -------- 圆形按钮（图标按钮） -------- */
+.q-size--xs.q-shape--circle {
+    width: var(--q-size-xs);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}
+
+.q-size--sm.q-shape--circle {
+    width: var(--q-size-sm);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}
+
+.q-size--md.q-shape--circle {
+    width: var(--q-size-md);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}
+
+.q-size--lg.q-shape--circle {
+    width: var(--q-size-lg);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}
+
+.q-size--xl.q-shape--circle {
+    width: var(--q-size-xl);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}
+
+.q-size--2xl.q-shape--circle {
+    width: var(--q-size-2xl);
+    padding: 0;
+    border-radius: var(--q-radius-round);
+}

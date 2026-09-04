@@ -60,10 +60,3 @@
     padding: 12px 20px;
     border-top: 1px solid var(--q-color-border);
 }
-
-.q-msgbox-mask {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-}

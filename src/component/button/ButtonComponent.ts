@@ -103,5 +103,3 @@ ButtonComponent.define(ButtonComponentDefs);
 ButtonComponent.use(SizeAbility);
 
 export { ButtonComponent };
-/** 按钮实例类型 */
-//export type ButtonComponentInstance = InstanceType<typeof ButtonComponent>;

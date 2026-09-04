@@ -3,6 +3,15 @@
    灵感：青花瓷、山水画、天青色等烟雨
    ======================================== */
 
+/* ==========================================
+   注册自定义属性（支持颜色动画）
+   ========================================== */
+@property --q-color-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: hsl(205, 45%, 40%);
+}
+
 :root,
 [data-theme="light"] {
     /* ==========================================
@@ -45,7 +54,6 @@
             var(--q-color-primary-s),
             var(--q-color-primary-l));
 
-    /* Hover：稍微提亮（青花瓷的光泽感） */
     --q-color-primary-hover: hsl(var(--q-color-primary-h),
             calc(var(--q-color-primary-s) + 5%),
             calc(var(--q-color-primary-l) + 8%));
@@ -58,10 +66,18 @@
             calc(var(--q-color-primary-s) - 20%),
             calc(var(--q-color-primary-l) + 35%));
 
-    /* 主色上的文字 */
+    --q-color-primary-light: hsl(var(--q-color-primary-h),
+            calc(var(--q-color-primary-s) - 10%),
+            calc(var(--q-color-primary-l) + 35%));
+
+    --q-color-primary-dark: hsl(var(--q-color-primary-h),
+            var(--q-color-primary-s),
+            calc(var(--q-color-primary-l) - 20%));
+
     --q-color-on-primary: #ffffff;
     --q-color-on-primary-hover: #ffffff;
     --q-color-on-primary-active: #ffffff;
+    --q-color-on-primary-disabled: rgba(255, 255, 255, 0.6);
 
     /* -------- 辅助色系列（宣纸暖灰） -------- */
     --q-color-secondary: hsl(var(--q-color-secondary-h),
@@ -76,11 +92,16 @@
             var(--q-color-secondary-s),
             calc(var(--q-color-secondary-l) - 16%));
 
+    --q-color-secondary-disabled: hsl(var(--q-color-secondary-h),
+            calc(var(--q-color-secondary-s) - 10%),
+            calc(var(--q-color-secondary-l) + 15%));
+
     --q-color-on-secondary: #302a23;
     --q-color-on-secondary-hover: #302a23;
     --q-color-on-secondary-active: #302a23;
+    --q-color-on-secondary-disabled: rgba(48, 42, 35, 0.4);
 
-    /* -------- 语义色 -------- */
+    /* -------- 语义色：成功 -------- */
     --q-color-success: hsl(var(--q-color-success-h),
             var(--q-color-success-s),
             var(--q-color-success-l));
@@ -90,8 +111,13 @@
     --q-color-success-active: hsl(var(--q-color-success-h),
             var(--q-color-success-s),
             calc(var(--q-color-success-l) - 10%));
+    --q-color-success-disabled: hsl(var(--q-color-success-h),
+            calc(var(--q-color-success-s) - 20%),
+            calc(var(--q-color-success-l) + 35%));
     --q-color-on-success: #ffffff;
+    --q-color-on-success-disabled: rgba(255, 255, 255, 0.6);
 
+    /* -------- 语义色：警告 -------- */
     --q-color-warning: hsl(var(--q-color-warning-h),
             var(--q-color-warning-s),
             var(--q-color-warning-l));
@@ -101,8 +127,13 @@
     --q-color-warning-active: hsl(var(--q-color-warning-h),
             var(--q-color-warning-s),
             calc(var(--q-color-warning-l) - 10%));
+    --q-color-warning-disabled: hsl(var(--q-color-warning-h),
+            calc(var(--q-color-warning-s) - 20%),
+            calc(var(--q-color-warning-l) + 30%));
     --q-color-on-warning: #302a23;
+    --q-color-on-warning-disabled: rgba(48, 42, 35, 0.4);
 
+    /* -------- 语义色：错误 -------- */
     --q-color-error: hsl(var(--q-color-error-h),
             var(--q-color-error-s),
             var(--q-color-error-l));
@@ -112,8 +143,13 @@
     --q-color-error-active: hsl(var(--q-color-error-h),
             var(--q-color-error-s),
             calc(var(--q-color-error-l) - 10%));
+    --q-color-error-disabled: hsl(var(--q-color-error-h),
+            calc(var(--q-color-error-s) - 20%),
+            calc(var(--q-color-error-l) + 35%));
     --q-color-on-error: #ffffff;
+    --q-color-on-error-disabled: rgba(255, 255, 255, 0.6);
 
+    /* -------- 语义色：信息 -------- */
     --q-color-info: hsl(var(--q-color-info-h),
             var(--q-color-info-s),
             var(--q-color-info-l));
@@ -123,7 +159,11 @@
     --q-color-info-active: hsl(var(--q-color-info-h),
             var(--q-color-info-s),
             calc(var(--q-color-info-l) - 10%));
+    --q-color-info-disabled: hsl(var(--q-color-info-h),
+            calc(var(--q-color-info-s) - 20%),
+            calc(var(--q-color-info-l) + 35%));
     --q-color-on-info: #ffffff;
+    --q-color-on-info-disabled: rgba(255, 255, 255, 0.6);
 
     /* ==========================================
      3. 灰度/中性色（宣纸×墨色）
@@ -131,68 +171,68 @@
 
     /* -------- 背景色（宣纸系） -------- */
     --q-color-bg: #f7f2e8;
-    /* 宣纸白 */
     --q-color-bg-secondary: #f0eadc;
-    /* 旧宣纸 */
     --q-color-bg-tertiary: #e8e0d0;
-    /* 深宣纸 */
     --q-color-bg-elevated: #fcf8f0;
-    /* 亮宣纸 */
     --q-color-bg-inverse: #1a1613;
-    /* 墨色 */
+    --q-color-bg-overlay: rgba(247, 242, 232, 0.85);
 
     /* -------- 文本色（墨色系） -------- */
     --q-color-text: #1a1613;
-    /* 浓墨 */
     --q-color-text-secondary: #6b5f52;
-    /* 淡墨 */
     --q-color-text-tertiary: #a09282;
-    /* 更淡墨 */
     --q-color-text-inverse: #f7f2e8;
-    /* 宣纸白 */
     --q-color-text-disabled: #c8bdb0;
-    /* 极淡墨 */
+    --q-color-text-placeholder: #b5a692;
 
     /* -------- 边框色（青花线条） -------- */
     --q-color-border: #c8bdb0;
-    /* 淡墨边框 */
     --q-color-border-light: #e8e0d0;
-    /* 极淡边框 */
     --q-color-border-dark: #8a7a66;
-    /* 深墨边框 */
+    --q-color-border-disabled: #ddd5c8;
+
+    /* -------- 分隔线 -------- */
+    --q-color-divider: #e8e0d0;
+    --q-color-divider-strong: #d9ccb8;
+
+    /* -------- 骨架屏 -------- */
+    --q-color-skeleton: #e8e0d0;
+    --q-color-skeleton-shine: #f5efe0;
+
+    /* -------- 链接 -------- */
+    --q-color-link: var(--q-color-primary);
+    --q-color-link-hover: var(--q-color-primary-hover);
+    --q-color-link-visited: hsl(260, 30%, 45%);
+
+    /* -------- 列表标记 -------- */
+    --q-color-list-marker: var(--q-color-primary);
+
+    /* -------- 标签/徽章 -------- */
+    --q-color-tag: var(--q-color-bg-tertiary);
+    --q-color-tag-text: var(--q-color-text-secondary);
 
     /* ==========================================
      4. 中国风专属色彩
      ========================================== */
 
     --q-color-gold: #c4a87a;
-    /* 金色（点缀） */
     --q-color-gold-light: #e0d0b8;
-    /* 淡金 */
     --q-color-gold-hover: #b8965a;
-    /* 深金 */
+    --q-color-gold-disabled: #d9ccb8;
 
     --q-color-seal: #b22222;
-    /* 印章红 */
     --q-color-seal-hover: #8a1a1a;
-    /* 深印章红 */
+    --q-color-seal-light: #d94a4a;
 
     --q-color-ink: #1a1613;
-    /* 墨色 */
     --q-color-ink-light: #4a4038;
-    /* 淡墨 */
     --q-color-ink-lighter: #8a7a66;
-    /* 更淡墨 */
 
     --q-color-xuan-paper: #f7f2e8;
-    /* 宣纸色 */
     --q-color-xuan-paper-dark: #e8ddc8;
-    /* 旧宣纸 */
 
     --q-color-celadon: #8ab5b0;
-    /* 青瓷色（点缀） */
     --q-color-celadon-light: #c5ddd8;
-    /* 淡青瓷 */
 
     /* ==========================================
      5. 叠加层（青蓝调子）
@@ -208,7 +248,49 @@
     --q-overlay-light-active: rgba(255, 255, 255, 0.18);
 
     /* ==========================================
-     6. 阴影（青蓝调子）
+     6. Mask / 遮罩颜色
+     ========================================== */
+
+    /* -------- 基础遮罩 -------- */
+    --q-mask-color: rgba(26, 22, 19, 0.45);
+    --q-mask-color-light: rgba(26, 22, 19, 0.20);
+    --q-mask-color-heavy: rgba(26, 22, 19, 0.70);
+
+    /* -------- 主色遮罩 -------- */
+    --q-mask-primary: rgba(42, 95, 115, 0.15);
+    --q-mask-primary-heavy: rgba(42, 95, 115, 0.40);
+
+    /* -------- 毛玻璃 -------- */
+    --q-glass-bg: rgba(247, 242, 232, 0.70);
+    --q-glass-border: rgba(200, 189, 176, 0.30);
+    --q-glass-shadow: rgba(42, 95, 115, 0.08);
+    --q-glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.50);
+
+    /* -------- 渐变遮罩 -------- */
+    --q-mask-gradient-top: linear-gradient(to bottom,
+            rgba(26, 22, 19, 0.80) 0%,
+            transparent 100%);
+    --q-mask-gradient-bottom: linear-gradient(to top,
+            rgba(26, 22, 19, 0.80) 0%,
+            transparent 100%);
+    --q-mask-gradient-radial: radial-gradient(circle at center,
+            rgba(26, 22, 19, 0) 0%,
+            rgba(26, 22, 19, 0.60) 100%);
+
+    /* -------- 图片遮罩 -------- */
+    --q-mask-image-overlay: rgba(42, 95, 115, 0.20);
+    --q-mask-image-overlay-heavy: rgba(42, 95, 115, 0.50);
+
+    /* -------- 滚动渐隐 -------- */
+    --q-mask-scroll-top: linear-gradient(to bottom,
+            var(--q-color-bg) 0%,
+            transparent 100%);
+    --q-mask-scroll-bottom: linear-gradient(to top,
+            var(--q-color-bg) 0%,
+            transparent 100%);
+
+    /* ==========================================
+     7. 阴影（青蓝调子）
      ========================================== */
 
     --q-shadow-sm: 0 1px 2px rgba(42, 95, 115, 0.08);
@@ -220,46 +302,77 @@
     --q-shadow-chinese: 0 4px 20px rgba(26, 22, 19, 0.12);
     --q-shadow-chinese-lg: 0 8px 40px rgba(26, 22, 19, 0.18);
 
+    --q-shadow-inset: inset 0 1px 3px rgba(26, 22, 19, 0.06);
+    --q-shadow-elevated: 0 8px 24px rgba(42, 95, 115, 0.10);
+
     /* ==========================================
-     7. 间距（保持不变）
+     8. 间距
      ========================================== */
 
-    --q-space-xs: 4px;
-    --q-space-sm: 8px;
-    --q-space-md: 16px;
-    --q-space-lg: 24px;
-    --q-space-xl: 32px;
-    --q-space-2xl: 48px;
-    --q-space-3xl: 64px;
+    --q-space-xs: 0.25rem;
+    /* 4px */
+    --q-space-sm: 0.5rem;
+    /* 8px */
+    --q-space-md: 1rem;
+    /* 16px */
+    --q-space-lg: 1.5rem;
+    /* 24px */
+    --q-space-xl: 2rem;
+    /* 32px */
+    --q-space-2xl: 3rem;
+    /* 48px */
+    --q-space-3xl: 4rem;
+    /* 64px */
+    --q-space-4xl: 6rem;
+    /* 96px */
 
     /* ==========================================
-     8. 圆角（保持不变）
+     9. 圆角
      ========================================== */
 
     --q-radius-none: 0;
-    --q-radius-xs: 1px;
-    --q-radius-sm: 2px;
-    --q-radius-md: 4px;
-    --q-radius-lg: 8px;
-    --q-radius-xl: 12px;
+    --q-radius-xs: 0.0625rem;
+    /* 1px */
+    --q-radius-sm: 0.125rem;
+    /* 2px */
+    --q-radius-md: 0.25rem;
+    /* 4px */
+    --q-radius-lg: 0.5rem;
+    /* 8px */
+    --q-radius-xl: 0.75rem;
+    /* 12px */
+    --q-radius-2xl: 1rem;
+    /* 16px */
     --q-radius-round: 9999px;
 
     /* ==========================================
-     9. 字体
+     10. 字体
      ========================================== */
 
     --q-font-family-base: "Noto Serif SC", "Source Han Serif SC", "华文楷体", "KaiTi", serif;
-    --q-font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --q-font-family-mono: "SF Mono", "Fira Code", monospace;
+    --q-font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --q-font-family-mono: "SF Mono", "Fira Code", "Consolas", monospace;
 
-    --q-font-size-xs: 12px;
-    --q-font-size-sm: 13px;
-    --q-font-size-md: 14px;
-    --q-font-size-lg: 16px;
-    --q-font-size-xl: 18px;
-    --q-font-size-2xl: 20px;
-    --q-font-size-3xl: 24px;
-    --q-font-size-4xl: 30px;
+    --q-font-size-xs: 0.75rem;
+    /* 12px */
+    --q-font-size-sm: 0.8125rem;
+    /* 13px */
+    --q-font-size-md: 0.875rem;
+    /* 14px */
+    --q-font-size-lg: 1rem;
+    /* 16px */
+    --q-font-size-xl: 1.125rem;
+    /* 18px */
+    --q-font-size-2xl: 1.25rem;
+    /* 20px */
+    --q-font-size-3xl: 1.5rem;
+    /* 24px */
+    --q-font-size-4xl: 1.875rem;
+    /* 30px */
+    --q-font-size-5xl: 2.25rem;
+    /* 36px */
+    --q-font-size-6xl: 3rem;
+    /* 48px */
 
     --q-font-weight-normal: 400;
     --q-font-weight-medium: 500;
@@ -268,19 +381,25 @@
 
     --q-line-height-tight: 1.25;
     --q-line-height-normal: 1.5;
+    --q-line-height-relaxed: 1.75;
     --q-line-height-loose: 2;
 
+    --q-letter-spacing-tight: -0.02em;
+    --q-letter-spacing-normal: 0;
+    --q-letter-spacing-wide: 0.05em;
+
     /* ==========================================
-     10. 过渡动画
+     11. 过渡动画
      ========================================== */
 
     --q-transition-fast: 150ms ease;
     --q-transition-normal: 250ms ease;
     --q-transition-slow: 350ms ease;
+    --q-transition-slower: 500ms ease;
     --q-transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
     /* ==========================================
-     11. 层级
+     12. 层级
      ========================================== */
 
     --q-z-dropdown: 1000;
@@ -293,7 +412,7 @@
     --q-z-toast: 1080;
 
     /* ==========================================
-     12. 其他
+     13. 其他
      ========================================== */
 
     --q-opacity-disabled: 0.38;
@@ -311,4 +430,49 @@
     --q-cursor-not-allowed: not-allowed;
     --q-cursor-grab: grab;
     --q-cursor-grabbing: grabbing;
+
+    --q-focus-outline: 2px solid var(--q-color-primary);
+    --q-focus-outline-offset: 2px;
+
+    /* ==========================================
+     14. 亮色模式专属优化
+     ========================================== */
+
+    /* 滚动条 */
+    scrollbar-color: var(--q-color-border) var(--q-color-bg-secondary);
+    scrollbar-width: thin;
+
+    /* 选中文本 */
+    ::selection {
+        background: var(--q-color-primary);
+        color: var(--q-color-on-primary);
+    }
+
+    /* 焦点可见性 */
+    :focus-visible {
+        outline: var(--q-focus-outline);
+        outline-offset: var(--q-focus-outline-offset);
+    }
+}
+
+/* ==========================================
+   滚动条样式（WebKit）
+   ========================================== */
+[data-theme="light"]::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+[data-theme="light"]::-webkit-scrollbar-track {
+    background: var(--q-color-bg-secondary);
+    border-radius: var(--q-radius-round);
+}
+
+[data-theme="light"]::-webkit-scrollbar-thumb {
+    background: var(--q-color-border);
+    border-radius: var(--q-radius-round);
+}
+
+[data-theme="light"]::-webkit-scrollbar-thumb:hover {
+    background: var(--q-color-border-dark);
 }

@@ -1,36 +1,131 @@
+/* ========================================
+   🦴 骨架屏 - 加载占位
+   支持亮色/暗色主题自动适配
+   ======================================== */
+
 /* Shimmer 动画 */
 @keyframes q-skeleton-shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* 核心：任意元素加 .q-skeleton 即生效 */
 .q-skeleton {
     color: transparent !important;
-    background: linear-gradient(
-        90deg,
-        var(--q-color-border, #e8e8e8) 25%,
-        var(--q-color-border-light, #f0f0f0) 37%,
-        var(--q-color-border, #e8e8e8) 63%
-    );
+    background: linear-gradient(90deg,
+            var(--q-color-skeleton) 25%,
+            var(--q-color-skeleton-shine) 37%,
+            var(--q-color-skeleton) 63%);
     background-size: 200% 100%;
-    animation: q-skeleton-shimmer 1.5s ease infinite;
-    border-radius: 0;
+    animation: q-skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--q-radius-sm);
     position: relative;
+    pointer-events: none;
+    user-select: none;
 }
 
 /* 图片/替换元素 */
 .q-skeleton img,
-.q-skeleton svg { visibility: hidden; }
+.q-skeleton svg,
+.q-skeleton video {
+    visibility: hidden;
+    opacity: 0;
+}
 
 /* 子元素文字也透明 */
-.q-skeleton * { color: transparent !important; }
+.q-skeleton * {
+    color: transparent !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
 
+/* ===== 形状变体 ===== */
 /* 圆形骨架（头像等） */
-.q-skeleton--circle { border-radius: 50% !important; }
+.q-skeleton--circle {
+    border-radius: 50% !important;
+}
 
-/* 禁用动画 */
+/* 矩形骨架（卡片/图片） */
+.q-skeleton--rect {
+    border-radius: var(--q-radius-md) !important;
+}
+
+/* 文本行骨架 */
+.q-skeleton--text {
+    height: 1em;
+    border-radius: var(--q-radius-xs);
+    margin-bottom: var(--q-space-xs);
+}
+
+.q-skeleton--text:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== 宽度变体 ===== */
+.q-skeleton--w-full {
+    width: 100%;
+}
+
+.q-skeleton--w-75 {
+    width: 75%;
+}
+
+.q-skeleton--w-50 {
+    width: 50%;
+}
+
+.q-skeleton--w-25 {
+    width: 25%;
+}
+
+/* ===== 禁用动画 ===== */
 .q-skeleton--no-animate {
     animation: none;
-    background: var(--q-color-border, #e8e8e8);
+    background: var(--q-color-skeleton);
 }
+
+/* ===== 自定义颜色（覆盖主题） ===== */
+.q-skeleton--gold {
+    background: linear-gradient(90deg,
+            var(--q-color-gold-disabled) 25%,
+            var(--q-color-gold-light) 37%,
+            var(--q-color-gold-disabled) 63%);
+}
+
+/* ===== 多个骨架组合（典型布局） ===== */
+.q-skeleton-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--q-space-md);
+}
+
+.q-skeleton-group .q-skeleton {
+    margin: 0;
+}
+
+/* Avatar + Text 组合 */
+.q-skeleton-avatar-text {
+    display: flex;
+    align-items: center;
+    gap: var(--q-space-md);
+}
+
+.q-skeleton-avatar-text .q-skeleton--circle {
+    width: 3rem;
+    height: 3rem;
+}
+
+.q-skeleton-avatar-text .q-skeleton-text-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--q-space-xs);
+}
+
+/* ===== 暗色模式适配（自动通过变量） ===== */
+/* 不需要额外代码，因为使用了主题变量 */
