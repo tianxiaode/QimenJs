@@ -91,7 +91,7 @@ npm start
 | `@qimen-lab/component` | UI 组件实现，Icon/Button/Toggle/Tabs/Card/Menu/Nav/Panel 等 |
 | `@qimen-lab/component-advanced` | 高级UI组件，Step/Timeline/Rating/PropertyGrid/OneTimePassword 等 |
 | `@qimen-lab/layout` | JSON 驱动的布局定义系统 |
-| `@qimen-lab/theme` | 主题系统，CSS 变量 + 原子 CSS + 7 个中国传统色主题 |
+| `src/theme` | 主题资源（纯 CSS 文件），亮暗色 + 10 个中国风预设 + 用户自定义 |
 | `@qimen-lab/icon` | 中国风图标库，102 个 SVG + 字体图标 |
 | `@qimen-lab/imperative` | 命令式 API，toast/msgbox |
 

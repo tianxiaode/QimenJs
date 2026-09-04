@@ -1,0 +1,29 @@
+/* ========================================
+   🎨 用户自定义主题
+   通过 JS 动态注入或用户手动覆盖
+   ======================================== */
+
+[data-theme-custom] {
+    /* 用户只需修改这 3 个值即可自定义主色 */
+    --q-color-primary-h: 340;
+    /* 0-360，色相 */
+    --q-color-primary-s: 70%;
+    /* 0%-100%，饱和度 */
+    --q-color-primary-l: 45%;
+    /* 0%-100%，明度 */
+
+    /* 可选：同时自定义辅助色 */
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 20%;
+    --q-color-secondary-l: 70%;
+
+    /* 如果主色较深，可以调整文字颜色 */
+    --q-color-on-primary: #ffffff;
+}
+
+/* 用户也可以直接用 hex 值覆盖（如果不想用 HSL） */
+[data-theme-custom-hex] {
+    --q-color-primary: #e74c3c;
+    --q-color-primary-hover: #c0392b;
+    --q-color-primary-active: #a93226;
+}

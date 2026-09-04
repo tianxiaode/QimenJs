@@ -5,16 +5,16 @@
 .pointer-events-none { pointer-events: none !important; }
 
 /* ===== 边框 ===== */
-.border { border: var(--q-border-normal); }
-.border-0 { border: var(--q-border-none); }
-.border-t { border-top: var(--q-border-normal); }
-.border-r { border-right: var(--q-border-normal); }
-.border-b { border-bottom: var(--q-border-normal); }
-.border-l { border-left: var(--q-border-normal); }
-.border-t-0 { border-top: var(--q-border-none); }
-.border-r-0 { border-right: var(--q-border-none); }
-.border-b-0 { border-bottom: var(--q-border-none); }
-.border-l-0 { border-left: var(--q-border-none); }
+.border { border: 1px solid var(--q-color-border); }
+.border-0 { border: none; }
+.border-t { border-top: 1px solid var(--q-color-border); }
+.border-r { border-right: 1px solid var(--q-color-border); }
+.border-b { border-bottom: 1px solid var(--q-color-border); }
+.border-l { border-left: 1px solid var(--q-color-border); }
+.border-t-0 { border-top: none; }
+.border-r-0 { border-right: none; }
+.border-b-0 { border-bottom: none; }
+.border-l-0 { border-left: none; }
 
 /* ===== 圆角 ===== */
 .rounded { border-radius: var(--q-radius-md); }
@@ -28,13 +28,13 @@
 .rounded-l { border-top-left-radius: var(--q-radius-md); border-bottom-left-radius: var(--q-radius-md); }
 
 /* ===== 层级 ===== */
-.z-dropdown { z-index: var(--q-z-index-dropdown); }
-.z-sticky { z-index: var(--q-z-index-sticky); }
-.z-fixed { z-index: var(--q-z-index-fixed); }
-.z-modal-backdrop { z-index: var(--q-z-index-modal-backdrop); }
-.z-modal { z-index: var(--q-z-index-modal); }
-.z-popover { z-index: var(--q-z-index-popover); }
-.z-tooltip { z-index: var(--q-z-index-tooltip); }
+.z-dropdown { z-index: var(--q-z-dropdown); }
+.z-sticky { z-index: var(--q-z-sticky); }
+.z-fixed { z-index: var(--q-z-fixed); }
+.z-modal-backdrop { z-index: var(--q-z-modal-backdrop); }
+.z-modal { z-index: var(--q-z-modal); }
+.z-popover { z-index: var(--q-z-popover); }
+.z-tooltip { z-index: var(--q-z-tooltip); }
 
 /* ===== 透明度 ===== */
 .opacity-disabled { opacity: var(--q-opacity-disabled); }
@@ -46,9 +46,9 @@
 .opacity-drag { opacity: var(--q-opacity-drag); }
 
 /* ===== 动画 ===== */
-.animate-fast { animation-duration: var(--q-animation-fast); }
-.animate-normal { animation-duration: var(--q-animation-normal); }
-.animate-slow { animation-duration: var(--q-animation-slow); }
+.animate-fast { animation-duration: var(--q-transition-fast); }
+.animate-normal { animation-duration: var(--q-transition-normal); }
+.animate-slow { animation-duration: var(--q-transition-slow); }
 
 /* ===== 光标 ===== */
 .cursor-default { cursor: var(--q-cursor-default); }
@@ -60,7 +60,7 @@
 .cursor-grabbing { cursor: var(--q-cursor-grabbing); }
 
 /* ===== 溢出 ===== */
-.overflow-visible { overflow: var(--q-overflow-visible); }
-.overflow-hidden { overflow: var(--q-overflow-hidden); }
-.overflow-scroll { overflow: var(--q-overflow-scroll); }
-.overflow-auto { overflow: var(--q-overflow-auto); }
+.overflow-visible { overflow: visible; }
+.overflow-hidden { overflow: hidden; }
+.overflow-scroll { overflow: scroll; }
+.overflow-auto { overflow: auto; }

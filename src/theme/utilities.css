@@ -1,0 +1,96 @@
+/* ========================================
+   🔧 工具类 - 开箱即用
+   ======================================== */
+
+/* -------- 颜色工具 -------- */
+.text-primary {
+    color: var(--q-color-primary);
+}
+
+.text-primary-hover:hover {
+    color: var(--q-color-primary-hover);
+}
+
+.text-secondary {
+    color: var(--q-color-text-secondary);
+}
+
+.text-inverse {
+    color: var(--q-color-text-inverse);
+}
+
+.text-disabled {
+    color: var(--q-color-text-disabled);
+}
+
+.bg-primary {
+    background: var(--q-color-primary);
+}
+
+.bg-primary-hover:hover {
+    background: var(--q-color-primary-hover);
+}
+
+.bg-secondary {
+    background: var(--q-color-bg-secondary);
+}
+
+.bg-inverse {
+    background: var(--q-color-bg-inverse);
+}
+
+.border-primary {
+    border-color: var(--q-color-primary);
+}
+
+.border-light {
+    border-color: var(--q-color-border-light);
+}
+
+/* -------- 交互状态 -------- */
+.hover-overlay {
+    position: relative;
+    transition: background 0.2s;
+}
+
+.hover-overlay:hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--q-overlay-hover);
+    border-radius: inherit;
+}
+
+/* -------- 间距工具 -------- */
+.m-0 {
+    margin: 0;
+}
+
+.p-0 {
+    padding: 0;
+}
+
+.m-xs {
+    margin: var(--q-space-xs);
+}
+
+.p-sm {
+    padding: var(--q-space-sm);
+}
+
+.gap-md {
+    gap: var(--q-space-md);
+}
+
+/* -------- 响应式 -------- */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .hide-desktop {
+        display: none;
+    }
+}

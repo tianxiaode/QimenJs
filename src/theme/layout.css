@@ -31,17 +31,17 @@
 .flex-auto { flex: auto; }
 .flex-none { flex: none; }
 
-/* ===== Gap 间距（引用主题 spacing token） ===== */
+/* ===== Gap 间距（引用主题 space token） ===== */
 .gap-0 { gap: 0; }
-.gap-xs { gap: var(--q-spacing-xs); }
-.gap-sm { gap: var(--q-spacing-sm); }
-.gap-md { gap: var(--q-spacing-md); }
-.gap-lg { gap: var(--q-spacing-lg); }
-.gap-xl { gap: var(--q-spacing-xl); }
+.gap-xs { gap: var(--q-space-xs); }
+.gap-sm { gap: var(--q-space-sm); }
+.gap-md { gap: var(--q-space-md); }
+.gap-lg { gap: var(--q-space-lg); }
+.gap-xl { gap: var(--q-space-xl); }
 
 /* 行/列独立间距 */
-.gap-x-sm { column-gap: var(--q-spacing-sm); }
-.gap-y-sm { row-gap: var(--q-spacing-sm); }
+.gap-x-sm { column-gap: var(--q-space-sm); }
+.gap-y-sm { row-gap: var(--q-space-sm); }
 
 /* ===== Grid 布局 ===== */
 .grid { display: grid; }
@@ -57,6 +57,8 @@
 .h-screen { height: 100vh; }
 
 /* 组件尺寸分档（由 SizeAbility 自动添加到组件根元素） */
-.q-size--sm { height: 28px; padding: 0 12px; font-size: 12px; }
-.q-size--md { height: 36px; padding: 0 16px; font-size: 14px; }
-.q-size--lg { height: 44px; padding: 0 20px; font-size: 16px; }
+.q-size--xs { height: 22px; padding: 0 8px; font-size: 11px; border-radius: var(--q-radius-xs); }
+.q-size--sm { height: 28px; padding: 0 12px; font-size: 12px; border-radius: var(--q-radius-sm); }
+.q-size--md { height: 36px; padding: 0 16px; font-size: 14px; border-radius: var(--q-radius-md); }
+.q-size--lg { height: 44px; padding: 0 20px; font-size: 16px; border-radius: var(--q-radius-lg); }
+.q-size--xl { height: 52px; padding: 0 24px; font-size: 18px; border-radius: var(--q-radius-xl); }

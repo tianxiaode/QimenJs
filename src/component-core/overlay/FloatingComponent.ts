@@ -82,34 +82,33 @@ export class FloatingComponent extends Component {
         if (this._handlersBound) return;
         this._handlersBound = true;
 
-        this.bind(document, 'press');
-        this.bind(document, 'keydown');
-
-        const offPress = this.on('dom:press', (ctx: any) => {
+        const overlayRoot = OverlayRoot.getInstance();
+        const callback = (event: Event) => {
             if (!this._overlayOpen) return;
-            const event = ctx?.data?.originalEvent as MouseEvent;
             const el = this.el;
             const anchor = this._anchor;
-            if (
-                el &&
-                anchor &&
-                event &&
-                !el.contains(event.target as Node) &&
-                !anchor.contains(event.target as Node)
-            ) {
-                this.hide();
-            }
-        });
-        this.onCleanup(offPress);
 
-        const offKeydown = this.on('dom:keydown', (ctx: any) => {
-            if (!this._overlayOpen) return;
-            const event = ctx?.data?.originalEvent as KeyboardEvent;
-            if (event && event.key === 'Escape') {
-                this.hide();
+            if (event instanceof KeyboardEvent) {
+                if (event.key === 'Escape') {
+                    this.hide();
+                }
+                return;
             }
-        });
-        this.onCleanup(offKeydown);
+
+            if (event instanceof MouseEvent) {
+                if (
+                    el &&
+                    anchor &&
+                    !el.contains(event.target as Node) &&
+                    !anchor.contains(event.target as Node)
+                ) {
+                    this.hide();
+                }
+            }
+        };
+
+        overlayRoot.registerOverlay(callback);
+        this.onCleanup(() => overlayRoot.unregisterOverlay(callback));
     }
 
     reposition(anchor: HTMLElement, placement?: Placement, offset?: number): void {

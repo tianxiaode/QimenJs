@@ -405,6 +405,9 @@ export class DomEventsEngine {
         const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
         if (!eventType) return;
 
+        const targetComponent = DomEventsEngine._findComponentByEl(instance, target);
+        if (!targetComponent) return;
+
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
             instance._domEventDispatchers;
 
@@ -413,6 +416,8 @@ export class DomEventsEngine {
 
             const matched = DomEventsEngine._matchPath(instance, rule.componentPath, target);
             if (!matched) continue;
+
+            if (targetComponent.disable) continue;
 
             const actionMatched = DomEventsEngine._matchAction(
                 matched,
@@ -433,6 +438,27 @@ export class DomEventsEngine {
             }
             return;
         }
+    }
+
+    /**
+     * 通过 el.contains(target) 递归定位 target 所属的最深层组件实例
+     *
+     * 从当前组件开始，获取这一层的子组件实例，找到 el 包含 target 的子组件后递归下钻，
+     * 直到没有更深层子组件包含 target，此时当前组件即为 target 所属组件。
+     *
+     * 用于判断 disable 状态等组件级属性，比路径匹配更可靠。
+     */
+    private static _findComponentByEl(component: any, target: Element): any | null {
+        if (!component?.el || !component.el.contains(target)) return null;
+
+        const children = DomEventsEngine._getChildren(component);
+        for (const child of children) {
+            if (!child?.el || !child.el.contains(target)) continue;
+            const deeper = DomEventsEngine._findComponentByEl(child, target);
+            return deeper ?? child;
+        }
+
+        return component;
     }
 
     /**

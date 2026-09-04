@@ -394,16 +394,12 @@ LayoutNode.ts, layout-keys.ts, validator.ts, types/ (空), index.ts
 ```
 JSON 驱动的布局定义系统。`LayoutNode` 核心类型（type, id, children, handlers, extraFns, abilities, stateTriggers, entity, permission, position/style/tooltip/animation/accessibility props）。`layout-keys.ts` 定义布局属性键常量。
 
-#### `src/theme/` — 主题系统 `@qimenjs/theme`
+#### `src/theme/` — 主题资源（纯 CSS，非独立包）
 ```
-utils.ts, skeleton.css.ts
-presets/light.ts, presets/dark.ts, presets/atomic-rules.ts, presets/shared.ts, presets/index.ts
-presets/celadon.ts, presets/cinnabar.ts, presets/indigo.ts, presets/yellow.ts, presets/rosewood.ts, presets/ink.ts, presets/dai.ts, presets/huaqing.ts
-types/, index.ts
+theme.css, light.css, dark.css, utilities.css, preset.css, custom.css
+skeleton.css, layout.css, utility.css
 ```
-CSS 变量驱动的主题系统，零运行时依赖。主题文件导出 `ThemeDefinition` 和 CSS 变量字符串（通过 `tokensToCSSVariables` 生成）。构建工具自动收集被 import 的 `.css.ts` 文件并打包。Design Tokens 类型：ColorTokens, SpacingTokens, RadiusTokens, FontTokens, ShadowTokens, TransitionTokens, BreakpointTokens。
-
-8 个中国传统色主题（青瓷/朱砂/靛蓝/鹅黄/紫檀/墨色/黛色/华清）按需 import 使用。`skeleton.css.ts` 提供框架运行时必须的骨架屏样式。
+纯 CSS 变量驱动的主题方案，无 TS 编译、零 JS 开销。亮/暗色由根元素 `data-theme` 属性切换，中国风预设（10 个：朱砂红/黛蓝/松花绿/琥珀黄/胭脂粉/竹青/缃色/藕荷紫/藏青/秋香绿）由 `data-theme-preset` 切换，用户自定义由 `data-theme-custom` 覆盖。主色采用 HSL 三段式存储（`--q-color-primary-h/s/l`），hover/active/disabled 状态色由明度自动派生。`theme.css` 为统一 `@import` 入口，应用只需引入一次。
 
 #### `src/icon/` — 中国风图标库 `@qimenjs/icon`
 ```

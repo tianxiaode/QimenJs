@@ -98,9 +98,6 @@
             "@qimenjs/types": [
                 "../../src/types"
             ],
-            "@qimenjs/theme": [
-                "../../src/theme"
-            ],
             "@qimenjs/component-abilities": [
                 "../../src/component-abilities"
             ],

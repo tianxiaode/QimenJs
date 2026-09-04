@@ -22,7 +22,7 @@
 ┌──────────────────────┼──────────────────────────┐
 │                  服务层                          │
 │  @qimen-lab/renderer  @qimen-lab/layout          │
-│  @qimen-lab/theme     @qimen-lab/component       │
+│  src/theme(纯CSS)    @qimen-lab/component       │
 └──────────────────────┼──────────────────────────┘
                        │
 ┌──────────────────────┼──────────────────────────┐
@@ -202,7 +202,7 @@ Schema（数据结构）  +  Layout（布局描述）  +  Theme（视觉风格�
 
 - **Schema** — 描述"有什么字段"，复用 `@qimen-lab/schema`
 - **Layout** — 描述"怎么放"，新增 `@qimen-lab/layout`
-- **Theme** — 描述"长什么样"，新增 `@qimen-lab/theme`
+- **Theme** — 描述"长什么样"，纯 CSS 主题资源（`src/theme`）
 
 ### 5.2 Layout Schema
 
@@ -925,18 +925,18 @@ updateRows(changes: { key: any; data: any }[]) {
 不引入 UnoCSS 依赖，自研轻量原子化 CSS 按需生成。核心逻辑：**token → class → CSS 规则**。
 
 ```typescript
-// @qimen-lab/theme/atomic.ts
+// 原子化工具类现由 src/theme/utilities.css、utility.css 手写维护
 
 /** 原子化 CSS 规则映射 */
 const atomicRules: Record<string, (value: string) => string> = {
     // spacing
-    'p-{size}': (v) => `padding: var(--q-spacing-${v});`,
-    'px-{size}': (v) => `padding-left: var(--q-spacing-${v}); padding-right: var(--q-spacing-${v});`,
-    'py-{size}': (v) => `padding-top: var(--q-spacing-${v}); padding-bottom: var(--q-spacing-${v});`,
-    'm-{size}': (v) => `margin: var(--q-spacing-${v});`,
-    'mx-{size}': (v) => `margin-left: var(--q-spacing-${v}); margin-right: var(--q-spacing-${v});`,
-    'my-{size}': (v) => `margin-top: var(--q-spacing-${v}); margin-bottom: var(--q-spacing-${v});`,
-    'gap-{size}': (v) => `gap: var(--q-spacing-${v});`,
+    'p-{size}': (v) => `padding: var(--q-space-${v});`,
+    'px-{size}': (v) => `padding-left: var(--q-space-${v}); padding-right: var(--q-space-${v});`,
+    'py-{size}': (v) => `padding-top: var(--q-space-${v}); padding-bottom: var(--q-space-${v});`,
+    'm-{size}': (v) => `margin: var(--q-space-${v});`,
+    'mx-{size}': (v) => `margin-left: var(--q-space-${v}); margin-right: var(--q-space-${v});`,
+    'my-{size}': (v) => `margin-top: var(--q-space-${v}); margin-bottom: var(--q-space-${v});`,
+    'gap-{size}': (v) => `gap: var(--q-space-${v});`,
 
     // colors
     'bg-{color}': (v) => `background: var(--q-color-${v});`,
@@ -1001,162 +1001,46 @@ this.el.className = 'q-flex q-items-center q-gap-sm q-px-md q-py-sm q-bg-primary
 // 只有实际用到的 class 才会生成，不是预生成全量
 ```
 
-### 7.3 Theme 定义
+### 7.3 主题资源（纯 CSS）
 
-```typescript
-// @qimen-lab/theme
-interface ThemeDefinition {
-    name: string;
-    tokens: DesignTokens;
+主题系统已改为**纯 CSS 变量方案**（详见 [主题系统](./theme-system.md)），不再有 TS 类型定义：
+
+- 变量由 `src/theme/light.css` 在 `:root` 定义，暗色/预设/自定义按选择器覆盖
+- 主色 HSL 三段式存储（`--q-color-primary-h/s/l`），状态色（hover/active/disabled）由明度自动派生
+- 开关主题只操作根元素上的 `data-*` 属性，无 JS 运行逻辑
+
+```css
+/* 亮色默认值（light.css） */
+:root {
+    --q-color-primary-h: 195;
+    --q-color-primary-s: 47%;
+    --q-color-primary-l: 31%;
 }
 
-interface DesignTokens {
-    colors: {
-        primary: string;
-        secondary: string;
-        success: string;
-        warning: string;
-        error: string;
-        info: string;
-        bg: string;
-        'bg-secondary': string;
-        text: string;
-        'text-secondary': string;
-        border: string;
-        [key: string]: string;
-    };
-    spacing: {
-        xs: number;   // 4px
-        sm: number;   // 8px
-        md: number;   // 16px
-        lg: number;   // 24px
-        xl: number;   // 32px
-    };
-    radius: {
-        none: number;
-        sm: number;
-        md: number;
-        lg: number;
-        round: string;  // '50%' or '9999px'
-    };
-    font: {
-        family: string;
-        size: { xs: number; sm: number; md: number; lg: number; xl: number; xxl: number };
-        weight: { normal: number; medium: number; bold: number };
-        lineHeight: { tight: number; normal: number; loose: number };
-    };
-    shadow: {
-        none: string;
-        sm: string;
-        md: string;
-        lg: string;
-    };
-    transition: {
-        fast: string;   // '150ms ease'
-        normal: string; // '250ms ease'
-        slow: string;   // '350ms ease'
-    };
-    breakpoint: {
-        sm: number;  // 640
-        md: number;  // 768
-        lg: number;  // 1024
-        xl: number;  // 1280
-    };
+/* 暗色覆盖（dark.css） */
+[data-theme="dark"] {
+    --q-color-primary: hsl(var(--q-color-primary-h),
+            var(--q-color-primary-s),
+            calc(var(--q-color-primary-l) + 8%));
 }
 ```
 
 ### 7.4 内置主题
 
-**亮色主题 (Light)**：
+内置主题即 `src/theme/` 下的 CSS 文件。`preset.css` 提供 10 个中国风预设（朱砂红/黛蓝/松花绿/琥珀黄/胭脂粉/竹青/缃色/藕荷紫/藏青/秋香绿），`light.css`/`dark.css` 提供亮暗基础主题。
 
-```json
-{
-    "name": "light",
-    "tokens": {
-        "colors": {
-            "primary": "#1890ff",
-            "success": "#52c41a",
-            "warning": "#faad14",
-            "error": "#ff4d4f",
-            "bg": "#ffffff",
-            "bg-secondary": "#f5f5f5",
-            "text": "#333333",
-            "text-secondary": "#999999",
-            "border": "#d9d9d9"
-        },
-        "spacing": { "xs": 4, "sm": 8, "md": 16, "lg": 24, "xl": 32 },
-        "radius": { "none": 0, "sm": 2, "md": 4, "lg": 8, "round": "50%" },
-        "font": {
-            "family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            "size": { "xs": 12, "sm": 13, "md": 14, "lg": 16, "xl": 18, "xxl": 22 }
-        }
-    }
-}
+### 7.5 主题切换
+
+通过根元素上的 `data-*` 属性切换，零 JS 逻辑：
+
+```html
+<html data-theme="dark">            <!-- 暗色 -->
+<html data-theme-preset="cinnabar"> <!-- 中国风预设 -->
+<html data-theme-custom>            <!-- 用户自定义 -->
 ```
-
-**暗色主题 (Dark)**：
-
-```json
-{
-    "name": "dark",
-    "tokens": {
-        "colors": {
-            "primary": "#177ddc",
-            "success": "#49aa19",
-            "warning": "#d89614",
-            "error": "#d32029",
-            "bg": "#141414",
-            "bg-secondary": "#1f1f1f",
-            "text": "#ffffffd9",
-            "text-secondary": "#ffffff73",
-            "border": "#434343"
-        }
-    }
-}
-```
-
-### 7.5 ThemeManager
 
 ```typescript
-// @qimen-lab/theme
-class ThemeManager {
-    /** 当前主题名 */
-    current: string;
-
-    /** 注册主题 */
-    register(theme: ThemeDefinition): void;
-
-    /** 切换主题 — 更新 CSS 变量 */
-    apply(name: string): void;
-
-    /** 获取令牌值 */
-    getToken(path: string): string | number;
-
-    /** 生成 CSS 变量样式文本 */
-    toCSSVariables(): string;
-
-    /** 监听主题变更 */
-    onThemeChange(handler: (theme: string) => void): () => void;
-}
-```
-
-切换主题的实现：
-
-```typescript
-apply(name: string): void {
-    const theme = this.themes.get(name);
-    if (!theme) return;
-
-    // 更新 :root 上的 CSS 变量
-    const root = document.documentElement;
-    const tokens = theme.tokens;
-    flattenTokens(tokens).forEach(([key, value]) => {
-        root.style.setProperty(`--q-${key}`, String(value));
-    });
-
-    this.current = name;
-    this.emit('theme:change', { name });
-}
+document.documentElement.setAttribute('data-theme', 'dark');
 ```
 
 ### 7.6 组件样式
@@ -1169,7 +1053,7 @@ apply(name: string): void {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--q-spacing-xs) var(--q-spacing-md);
+    padding: var(--q-space-xs) var(--q-space-md);
     font-size: var(--q-font-size-md);
     border-radius: var(--q-radius-md);
     border: 1px solid var(--q-color-primary);
@@ -1181,8 +1065,8 @@ apply(name: string): void {
 
 .q-button:hover { opacity: 0.85; }
 .q-button--disabled { opacity: 0.5; cursor: not-allowed; }
-.q-button--sm { padding: var(--q-spacing-xs) var(--q-spacing-sm); font-size: var(--q-font-size-sm); }
-.q-button--lg { padding: var(--q-spacing-sm) var(--q-spacing-lg); font-size: var(--q-font-size-lg); }
+.q-button--sm { padding: var(--q-space-xs) var(--q-space-sm); font-size: var(--q-font-size-sm); }
+.q-button--lg { padding: var(--q-space-sm) var(--q-space-lg); font-size: var(--q-font-size-lg); }
 ```
 
 ## 八、HTML 模板注册表
@@ -1733,8 +1617,8 @@ table.mount('#user-table');
 
 | 包 | 层级 | 依赖 | 说明 |
 |---|------|------|------|
-| `@qimen-lab/theme` | Layer 1 | error, logger, events | Design Tokens + CSS 变量 + 原子化 CSS + 主题切换 |
-| `@qimen-lab/component` | Layer 2 | composable, theme, registry, event-dom | ComponentBase + UI 能力 + 组件注册 + 模板注册表 + OverlayRoot + z-index + 动画 |
+| `src/theme`（纯CSS） | Layer 1 | 无 | 主题 CSS 变量 + 亮暗/预设/自定义切换 |
+| `@qimen-lab/component` | Layer 2 | composable, registry, event-dom | ComponentBase + UI 能力 + 组件注册 + 模板注册表 + OverlayRoot + z-index + 动画 |
 | `@qimen-lab/layout` | Layer 3 | schema, registry | JSON Layout Schema 定义 + 解析 + 验证 |
 | `@qimen-lab/renderer` | Layer 3 | layout, component, theme, pipeline, registry | 渲染 Pipeline + RenderContext + RenderRegistrar |
 
@@ -3352,7 +3236,7 @@ TemplateRegistry.extend 的扩展方式：
 ### Phase 1：基础
 
 - `@qimenjs/context` — EventContext + EventContextBuilder + EventType 枚举 + 预定义 data 结构类型 + EventChainLink
-- `@qimen-lab/theme` — DesignTokens 类型定义 + ThemeManager + CSS 变量生成 + 原子化 CSS 生成器 + 亮/暗主题
+- `src/theme` — 主题资源（纯 CSS 变量文件，theme.css 统一 @import；亮/暗色 + 10 个中国风预设 + 用户自定义）
 - `@qimen-lab/component` — ComponentBase + TemplateRegistry + OverlayRoot + z-index 管理 + 基础能力（ThemeAbility, StyleAbility, VisibleAbility, DisableAbility, EventBindingAbility, HandlerAbility, AnimationAbility, markDirty）+ bridges 绑定 + EventFlowRegistrar + 翻译表达式解析
 
 ### Phase 2：核心组件

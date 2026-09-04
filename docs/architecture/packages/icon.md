@@ -223,7 +223,7 @@ node scripts/build-icon-font.js
 ## 设计决策
 
 - **字体图标方案**：使用 `@font-face` + Unicode 私用区（E900-E99F），参考 FontAwesome 规范
-- **CSS 变量集成**：尺寸和边框色使用 `var(--q-icon-size-*)` 和 `var(--q-colors-border)`，与主题系统联动
+- **CSS 变量集成**：尺寸和边框色使用 `var(--q-icon-size-*)` 和 `var(--q-color-border)`，与主题系统联动
 - **BEM 命名**：图标类 `q-icon-{name}`，修饰类 `q-icon--{modifier}`
 - **currentColor**：SVG 源文件使用 `stroke="currentColor"` / `fill="currentColor"`，图标颜色跟随 CSS `color` 属性
 - **中国风寓意**：每个图标都有中国风寓意命名（如"保存"对应"玉玺"），体现文化特色

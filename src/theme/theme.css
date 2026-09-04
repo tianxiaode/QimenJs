@@ -1,5 +1,18 @@
 @import './light.css';
 @import './dark.css';
+@import './preset.css';
+@import './custom.css';
+@import './utilities.css';
 @import './skeleton.css';
 @import './layout.css';
 @import './utility.css';
+
+[data-no-radius] {
+    --q-radius-none: 0;
+    --q-radius-xs: 0;
+    --q-radius-sm: 0;
+    --q-radius-md: 0;
+    --q-radius-lg: 0;
+    --q-radius-xl: 0;
+    --q-radius-round: 0;
+}

@@ -30,6 +30,8 @@ export const ComponentDefs: Definitions = {
         attributes: null,
         /** 组件鼠标样式 — 控制组件的鼠标样式 */
         cursor: null,
+        /** 组件圆角 — 档位名(none/xs/sm/md/lg/xl/round)或直接CSS值(如4px)，null跟随全局 */
+        radius: null,
         /** 是否浮动组件 — 浮动组件初始化时不播放进入动画 */
         isFloat: false,
         /** 定位样式 */

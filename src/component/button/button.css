@@ -13,92 +13,104 @@
     justify-content: center;
     gap: 6px;
     padding: 0 16px;
-    border: 2px solid var(--q-colors-border, #dcdfe6);
-    border-radius: 0;
+    border: 2px solid var(--q-color-border, #dcdfe6);
     font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--q-font-size-md);
+    font-weight: var(--q-font-weight-semibold);
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    transition: background var(--q-transition-fast), border-color var(--q-transition-fast), color var(--q-transition-fast);
     box-sizing: border-box;
     outline: none;
     user-select: none;
-    background: var(--q-colors-bg, #fff);
-    color: var(--q-colors-text, #1a1a1a);
+    background: var(--q-color-bg, #fff);
+    color: var(--q-color-text, #1a1a1a);
 }
 
 /* 类型：默认 */
 .q-button--default {
-    background: var(--q-colors-bg, #fff);
-    border-color: var(--q-colors-border, #dcdfe6);
-    color: var(--q-colors-text, #1a1a1a);
+    background: var(--q-color-bg, #fff);
+    border-color: var(--q-color-bg, #dcdfe6);
+    color: var(--q-color-text, #1a1a1a);
 }
 
 .q-button--default:hover {
-    border-color: var(--q-colors-text-secondary, #666);
+    background: var(--q-color-bg-hover, #f0f0f0);
 }
 
 /* 类型：主要 */
 .q-button--primary {
-    background: var(--q-colors-primary, #0078d4);
-    border-color: var(--q-colors-primary, #0078d4);
-    color: var(--q-colors-on-primary, #fff);
+    background: var(--q-color-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+    color: var(--q-color-on-primary, #fff);
 }
 
 .q-button--primary:hover {
-    background: var(--q-colors-primary-hover, #106ebe);
-    border-color: var(--q-colors-primary-hover, #106ebe);
+    background: var(--q-color-primary-hover, #106ebe);
+    border-color: var(--q-color-primary-hover, #106ebe);
 }
 
 .q-button--primary:active {
-    background: var(--q-colors-primary-active, #005a9e);
-    border-color: var(--q-colors-primary-active, #005a9e);
+    background: var(--q-color-primary-active, #005a9e);
+    border-color: var(--q-color-primary-active, #005a9e);
 }
 
 /* 类型：成功 */
 .q-button--success {
-    background: var(--q-colors-success, #107c10);
-    border-color: var(--q-colors-success, #107c10);
-    color: var(--q-colors-on-success, #fff);
+    background: var(--q-color-success, #107c10);
+    border-color: var(--q-color-success, #107c10);
+    color: var(--q-color-on-success, #fff);
 }
 
 .q-button--success:hover {
-    background: #0e6b0e;
-    border-color: #0e6b0e;
+    background: var(--q-color-success-hover, #0e6b0e);
+    border-color: var(--q-color-success-hover, #0e6b0e);
 }
 
 /* 类型：警告 */
 .q-button--warning {
-    background: var(--q-colors-warning, #ca5010);
-    border-color: var(--q-colors-warning, #ca5010);
-    color: var(--q-colors-on-warning, #fff);
+    background: var(--q-color-warning, #ca5010);
+    border-color: var(--q-color-warning, #ca5010);
+    color: var(--q-color-on-warning, #fff);
 }
 
 .q-button--warning:hover {
-    background: #b3450e;
-    border-color: #b3450e;
+    background: var(--q-color-warning-hover, #b3450e);
+    border-color: var(--q-color-warning-hover, #b3450e);
 }
 
 /* 类型：危险 */
-.q-button--danger {
-    background: var(--q-colors-error, #d13438);
-    border-color: var(--q-colors-error, #d13438);
-    color: var(--q-colors-on-error, #fff);
+.q-button--error {
+    background: var(--q-color-error, #d13438);
+    border-color: var(--q-color-error, #d13438);
+    color: var(--q-color-on-error, #fff);
 }
 
-.q-button--danger:hover {
-    background: #b22c2f;
-    border-color: #b22c2f;
+.q-button--error:hover {
+    background: var(--q-color-error-hover, #b22c2f);
+    border-color: var(--q-color-error-hover, #b22c2f);
 }
+
+.q-button--info {
+    background: var(--q-color-info, #d13438);
+    border-color: var(--q-color-info, #d13438);
+    color: var(--q-color-on-info, #fff);
+}
+
+.q-button--info:hover {
+    background: var(--q-color-info-hover, #d13438);
+    border-color: var(--q-color-info-hover, #d13438);
+    color: var(--q-color-on-info-hover, #fff);
+}
+
 
 /* 尺寸由全局 q-size--sm/md/lg 提供（SizeAbility 自动添加），此处无需组件特定定义 */
 
 /* 禁用状态 */
 .q-button--disabled {
     cursor: not-allowed;
-    opacity: 0.4;
+    opacity: var(--q-opacity-disabled, 0.4);
 }
 
 /* 内容容器（icon + text） */
@@ -107,6 +119,16 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+}
+
+/* 当 .content 内没有 .icon 且没有可见 loading 时，去掉间隔 */
+.q-button__content:not(:has(.q-button__icon)):not(:has(.q-button__loading:not(.hidden))) {
+    gap: 0;
+}
+
+/* 当 .content 内没有 .text 时，去掉间隔 */
+.q-button__content:not(:has(.q-button__text)) {
+    gap: 0;
 }
 
 /* 图标 */
@@ -118,6 +140,27 @@
     line-height: 1;
 }
 
+/* 加载状态旋转圈 */
+.q-button__loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    line-height: 1;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: var(--q-radius-round, 9999px);
+    animation: q-button-spin 0.6s linear infinite;
+}
+
+@keyframes q-button-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* 内容文本 */
 .q-button__text {
     display: inline-flex;
@@ -126,7 +169,7 @@
 }
 
 /* 布局：默认（icon 左，text 右） */
-.q-button-layout--default .q-button__content {
+.q-button-layout--icon-left .q-button__content {
     flex-direction: row;
 }
 
@@ -163,22 +206,22 @@
 }
 
 .q-button--ghost:hover {
-    background: var(--q-colors-ghost-hover, rgba(128, 128, 128, 0.1));
+    background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
     border-color: transparent;
 }
 
 .q-button--ghost:active {
-    background: var(--q-colors-ghost-active, rgba(128, 128, 128, 0.15));
+    background: var(--q-overlay-active, rgba(128, 128, 128, 0.15));
 }
 
 /* 幽灵模式 — 主要色 */
 .q-button--ghost.q-button--primary {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
     background: transparent;
     border-color: transparent;
 }
 
 .q-button--ghost.q-button--primary:hover {
-    background: var(--q-colors-primary-hover, rgba(0, 120, 212, 0.1));
+    background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.1));
     border-color: transparent;
 }

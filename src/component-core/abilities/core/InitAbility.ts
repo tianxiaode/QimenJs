@@ -131,7 +131,6 @@ export const InitAbility = {
         this._initListensEvents();
         this._initDomEvents();
         this._initTooltip();
-        this._initDialog();
         this._initPopover();
         this._initIndicator();
         this._initLoading();

@@ -3,8 +3,8 @@
     min-width: 240px;
     max-width: 400px;
     padding: 12px 20px;
-    background: var(--q-colors-text);
-    color: var(--q-colors-on-primary);
+    background: var(--q-color-text);
+    color: var(--q-color-on-primary);
     border-radius: var(--q-radius-lg, 8px);
     font-size: 14px;
     box-shadow: var(--q-shadow-md);
@@ -15,10 +15,10 @@
     text-align: left;
 }
 
-.q-toast--info { background: var(--q-colors-info); }
-.q-toast--success { background: var(--q-colors-success); }
-.q-toast--warning { background: var(--q-colors-warning); }
-.q-toast--error { background: var(--q-colors-error); }
+.q-toast--info { background: var(--q-color-info); }
+.q-toast--success { background: var(--q-color-success); }
+.q-toast--warning { background: var(--q-color-warning); }
+.q-toast--error { background: var(--q-color-error); }
 
 .q-toast__body {
     flex: 1;

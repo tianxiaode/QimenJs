@@ -30,8 +30,8 @@ import type { AbilityDefinition } from '@/composable';
 
 export const SizeAbility = {
     _onSizeOptionChange(value: string, old: string) {
-        const oldCls = this._composeStateCls('size', old, false);
-        const cls = this._composeStateCls('size', value, false);
-        this._applyNewCls(cls, oldCls); // 移除旧类，添加新类
+        const prefix = 'q-size--';
+        if (value) this.addCls(prefix + value);
+        if (old) this.removeCls(prefix + old);
     },
 } satisfies AbilityDefinition;

@@ -5,43 +5,44 @@
 
 ## 核心原理
 
-QimenJS 主题系统基于 **CSS 变量 + Design Tokens** 双层架构：
+QimenJS 主题系统基于**纯 CSS 变量**：
 
-- **CSS 变量层**：所有组件通过 CSS 变量引用主题色，切换主题时自动生效，无需组件配合
-- **JS 感知层**：通过 `getComputedStyle` 读取当前 CSS 变量值
+- **CSS 变量层**：所有组件通过 CSS 变量引用主题色（`--q-color-*`），切换主题只需切换根元素上的 `data-*` 属性，自动生效，无需组件配合
+- **JS 感知层**：仅当组件需要读取颜色值（如图表）时，通过 `getComputedStyle` 读取
 
 ## 1. 主题切换
 
-```typescript
-// 方式一：CSS 类切换（手动）
-document.documentElement.classList.add('dark');    // 切换到暗色
-document.documentElement.classList.remove('dark'); // 切换到亮色
+```html
+<!-- 根元素上设置 data-theme -->
+<html data-theme="dark">
+```
 
-// 方式二：媒体查询（自动跟随系统）
-window.matchMedia('(prefers-color-scheme: dark)').matches; // true/false
+```javascript
+// 切换亮/暗色
+document.documentElement.setAttribute('data-theme', 'dark');
+document.documentElement.setAttribute('data-theme', 'light');
 
-// 方式三：组合使用（推荐）
-const savedTheme = localStorage.getItem('qimenjs-theme');
-if (savedTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-} else if (savedTheme === 'light') {
-    document.documentElement.classList.remove('dark');
-} else {
-    // 跟随系统主题
-    document.documentElement.classList.toggle('dark',
-        window.matchMedia('(prefers-color-scheme: dark)').matches
-    );
+// 中国风预设
+document.documentElement.setAttribute('data-theme-preset', 'cinnabar');
+
+// 跟随系统偏好
+const mql = window.matchMedia('(prefers-color-scheme: dark)');
+function applySystemTheme() {
+    if (!localStorage.getItem('qimenjs-theme')) {
+        document.documentElement.setAttribute('data-theme', mql.matches ? 'dark' : 'light');
+    }
 }
+mql.addEventListener('change', applySystemTheme);
 
 // 保存用户偏好
-function setTheme(theme: 'light' | 'dark') {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('qimenjs-theme', theme);
 }
 ```
 
 **要点**：
-- 切换主题只需操作 `document.documentElement.classList`
+- 切换主题只需操作根元素上的 `data-*` 属性
 - CSS 变量自动生效，组件无需任何代码
 - 建议结合 localStorage 保存用户偏好
 - 支持跟随系统主题偏好
@@ -52,14 +53,14 @@ function setTheme(theme: 'light' | 'dark') {
 // 读取 CSS 变量值
 const root = document.documentElement;
 const primaryColor = getComputedStyle(root)
-    .getPropertyValue('--q-colors-primary')
+    .getPropertyValue('--q-color-primary')
     .trim();
 
-// 在组件中使用
+// 在组件中使用（每次渲染时读取，不用初始化时缓存）
 class ChartComponent extends Component {
     render() {
         const primaryColor = getComputedStyle(document.documentElement)
-            .getPropertyValue('--q-colors-primary')
+            .getPropertyValue('--q-color-primary')
             .trim();
         this.chart.setOption({
             color: [primaryColor],
@@ -77,10 +78,10 @@ class ChartComponent extends Component {
 
 ```css
 .my-button {
-    background: var(--q-colors-primary);
-    color: var(--q-colors-on-primary);
+    background: var(--q-color-primary);
+    color: var(--q-color-on-primary);
     border-radius: var(--q-radius-md);
-    padding: var(--q-spacing-sm) var(--q-spacing-md);
+    padding: var(--q-space-sm) var(--q-space-md);
     box-shadow: var(--q-shadow-sm);
     transition: all var(--q-transition-fast);
 }
@@ -90,65 +91,57 @@ class ChartComponent extends Component {
 
 | Token 类别 | 前缀 | 示例 |
 |-----------|------|------|
-| ColorTokens | `--q-colors-` | `--q-colors-primary`, `--q-colors-on-primary` |
-| SpacingTokens | `--q-spacing-` | `--q-spacing-xs`, `--q-spacing-sm` |
-| RadiusTokens | `--q-radius-` | `--q-radius-sm`, `--q-radius-md` |
-| FontTokens | `--q-font-` | `--q-font-size-sm`, `--q-font-weight-bold` |
-| ShadowTokens | `--q-shadow-` | `--q-shadow-sm`, `--q-shadow-md` |
-| TransitionTokens | `--q-transition-` | `--q-transition-fast`, `--q-transition-normal` |
-| BreakpointTokens | `--q-breakpoint-` | `--q-breakpoint-sm`, `--q-breakpoint-md` |
+| 颜色 | `--q-color-` | `--q-color-primary`, `--q-color-on-primary`, `--q-color-primary-hover` |
+| 叠加层 | `--q-overlay-` | `--q-overlay-hover`, `--q-overlay-active` |
+| 阴影 | `--q-shadow-` | `--q-shadow-sm`, `--q-shadow-md` |
+| 间距 | `--q-space-` | `--q-space-xs`, `--q-space-sm` |
+| 圆角 | `--q-radius-` | `--q-radius-sm`, `--q-radius-md` |
+| 字体 | `--q-font-` | `--q-font-size-sm`, `--q-font-weight-bold` |
+| 过渡 | `--q-transition-` | `--q-transition-fast`, `--q-transition-normal` |
 
 ## 4. 自定义主题
 
-```typescript
-import { tokensToCSSVariables } from '@qimenjs/theme';
+主题变量在 `light.css` 的 `:root` 中定义，业务侧覆盖即可：
 
-const myTheme = {
-    name: 'my-brand',
-    tokens: {
-        colors: {
-            primary: '#ff6600',
-            'on-primary': '#ffffff',
-            secondary: '#336699',
-            // ... 其他颜色
-        },
-        spacing: {
-            xs: '2px',
-            sm: '4px',
-            // ... 其他间距
-        },
-        // ... 其他 tokens
-    },
-};
+```css
+/* 方式一：在业务 CSS 中直接覆盖（推荐，不影响框架文件） */
+:root {
+    --q-color-primary-h: 25;   /* 色相 0-360 */
+    --q-color-primary-s: 80%;  /* 饱和度 0%-100% */
+    --q-color-primary-l: 45%;  /* 明度 0%-100% */
+}
 
-const myThemeCSS = tokensToCSSVariables(myTheme.tokens);
-console.log(myThemeCSS);
-// 输出：
-// :root {
-//   --q-colors-primary: #ff6600;
-//   --q-colors-on-primary: #ffffff;
-//   --q-colors-secondary: #336699;
-//   ...
-// }
-```
+/* 方式二：直接覆盖具体颜色值 */
+:root {
+    --q-color-primary: #ff6600;
+    --q-color-primary-hover: #e65c00;
+    --q-color-primary-active: #cc5200;
+}
 
-## 5. 按需导入主题
-
-```typescript
-// 只导入需要的主题，构建工具只会打包被导入的主题
-import { lightThemeCSS, darkThemeCSS } from '@qimenjs/theme';
-import { celadonThemeCSS } from '@qimenjs/theme';
-
-// 注入 CSS
-const style = document.createElement('style');
-style.textContent = lightThemeCSS;
-document.head.appendChild(style);
+/* 方式三：给根元素加 data-theme-custom，遵循 custom.css 约定 */
+<html data-theme-custom>
 ```
 
 **要点**：
-- 构建工具会自动收集所有被 import 的 `.css.ts` 文件
-- 未 import 的主题不会被打包
-- 支持按需加载，减少包体积
+- 主色采用 HSL 三段式存储，hover/active/disabled 状态色由明度自动派生，大多数场景只需改 `h/s/l` 三个值
+- 深色背景色系适合配置浅色 `--q-color-on-primary`
+
+## 5. 主题文件引入
+
+```css
+/* 统一入口（推荐），应用入口引入一次即可 */
+import '@/theme/theme.css';
+
+/* 按需：只引入某几份文件 */
+import '@/theme/light.css';
+import '@/theme/dark.css';
+import '@/theme/utilities.css';
+```
+
+**要点**：
+- `theme.css` 已通过 `@import` 汇总全部主题文件
+- 纯 CSS 方案由构建工具（Vite）处理，无编译环节
+- 引入顺序：变量定义文件（light/dark/preset/custom）在前，工具类文件（utilities/utility/layout/skeleton）在后
 
 ## 6. 反模式
 
@@ -159,7 +152,7 @@ document.head.appendChild(style);
 .my-button { background: #1890ff; }
 
 /* 正确 — 使用 CSS 变量 */
-.my-button { background: var(--q-colors-primary); }
+.my-button { background: var(--q-color-primary); }
 ```
 
 ### 不要在组件初始化时缓存主题值
@@ -168,7 +161,7 @@ document.head.appendChild(style);
 // 错误 — 初始化时读取主题，后续切换不感知
 class MyComponent extends Component {
     private primaryColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--q-colors-primary')
+        .getPropertyValue('--q-color-primary')
         .trim();
 
     render() {
@@ -181,19 +174,20 @@ class MyComponent extends Component {
 class MyComponent extends Component {
     render() {
         const primaryColor = getComputedStyle(document.documentElement)
-            .getPropertyValue('--q-colors-primary')
+            .getPropertyValue('--q-color-primary')
             .trim();
         this.chart.setOption({ color: [primaryColor] });
     }
 }
 ```
 
-### 不要在 JS 中直接修改 CSS 变量
+### 不要直接修改 CSS 变量实现换肤
 
 ```typescript
 // 错误 — 直接修改 CSS 变量，难以维护
-document.documentElement.style.setProperty('--q-colors-primary', '#ff0000');
+document.documentElement.style.setProperty('--q-color-primary', '#ff0000');
 
-// 正确 — 通过切换 CSS 类或媒体查询
-document.documentElement.classList.add('dark');
+// 正确 — 切换 data-* 属性，由主题文件统一接管
+document.documentElement.setAttribute('data-theme', 'dark');
+document.documentElement.setAttribute('data-theme-preset', 'cinnabar');
 ```

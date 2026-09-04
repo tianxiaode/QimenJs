@@ -14,7 +14,7 @@
 | [验证管道与 Schema](./validation-pipeline.md) | 验证管道模式、7 个验证阶段、ValidatorRegistrar、自定义验证器、Schema 协作、i18n 错误消息 |
 | [实体管理与权限系统](./entity-and-permission.md) | 5 种 EntityManager、实体事件协同、defaultEntityErrorHandler/LoadingHandler、PermissionRegistrar、权限事件驱动、组件自动应用权限 |
 | [i18n 国际化系统](./i18n-system.md) | 零依赖设计、模板节点自动翻译、系统总线语言切换、错误码多语言查找、resolveI18nValue |
-| [主题系统](./theme-system.md) | CSS 变量驱动、tokensToCSSVariables、按需打包、8 个中国传统色主题 |
+| [主题系统](./theme-system.md) | 纯 CSS 变量方案、data-* 属性切换、10 个中国风预设 |
 | [路由系统](./router-system.md) | Hash/History 双模式、RouteEventBus、路径参数匹配、路由守卫 |
 | [任务队列与 Worker](./task-queue-and-worker.md) | GlobalTaskQueue、优先级调度、WorkerManager、HashTask 子系统 |
 | [日志与错误处理](./logger-and-error.md) | Logger 层次、级别过滤、ErrorBase 体系、KernelErrorCode、错误码与 i18n 联动 |
@@ -82,12 +82,11 @@
 ├── @qimenjs/entity
 └── @qimenjs/router
 
-UI 层（8 个，依赖应用层及以下）
+UI 层（7 个，依赖应用层及以下）
 ├── @qimenjs/component-core
 ├── @qimenjs/component-abilities
 ├── @qimenjs/component
 ├── @qimenjs/markdown
-├── @qimenjs/theme
 ├── @qimenjs/icon
 └── @qimenjs/imperative
 ```

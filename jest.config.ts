@@ -51,8 +51,6 @@ const config: Config = {
         '^@qimenjs/events$': '<rootDir>/src/events',
         '^@qimenjs/event-dom$': '<rootDir>/src/event-dom',
         '^@qimenjs/system-abilities$': '<rootDir>/src/system-abilities',
-        '^@qimenjs/theme$': '<rootDir>/src/theme',
-        '^@qimenjs/theme/presets$': '<rootDir>/src/theme/presets',
         '^@qimenjs/component-abilities$': '<rootDir>/src/component-abilities',
         '^@qimenjs/component-abilities/(.*)$': '<rootDir>/src/component-abilities/$1',
         '^@qimenjs/component-core$': '<rootDir>/src/component-core',

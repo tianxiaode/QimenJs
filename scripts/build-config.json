@@ -195,14 +195,6 @@
             "dependencies": ["http", "registry", "events", "cache"],
             "packageName": "@qimen-lab/oauth2"
         },
-        "theme": {
-            "entry": "src/theme/index.ts",
-            "outDir": "dist/theme",
-            "rootDir": "src/theme",
-            "dependencies": [],
-            "packageName": "@qimen-lab/theme"
-        },
-
         "component-core": {
             "entry": "src/component-core/index.ts",
             "outDir": "dist/component-core",
@@ -212,8 +204,7 @@
                 "utils",
                 "system-abilities",
                 "registry",
-                "events",
-                "theme"
+                "events"
             ],
             "packageName": "@qimen-lab/component-core"
         },
@@ -233,8 +224,7 @@
                 "component-abilities",
                 "events",
                 "context",
-                "pipeline",
-                "theme"
+                "pipeline"
             ],
             "packageName": "@qimen-lab/component"
         },
@@ -247,8 +237,7 @@
                 "component-abilities",
                 "events",
                 "context",
-                "pipeline",
-                "theme"
+                "pipeline"
             ],
             "packageName": "@qimen-lab/component-advanced"
         },

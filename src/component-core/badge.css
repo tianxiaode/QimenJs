@@ -2,9 +2,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 9999px;
-    background-color: var(--q-colors-error, #ef4444);
-    color: var(--q-colors-bg, #fff);
+    border-radius: var(--q-radius-round);
+    background-color: var(--q-color-error, #ef4444);
+    color: var(--q-color-bg, #fff);
     font-weight: 600;
     line-height: 1;
     white-space: nowrap;

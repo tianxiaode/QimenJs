@@ -9,3 +9,4 @@ export * from './arrow';
 export * from './badge';
 export * from './indicator';
 export * from './option';
+export * from './radius';

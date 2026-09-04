@@ -115,6 +115,11 @@ export class ListensEngine {
         nodeName?: string
     ): (...args: any[]) => void {
         return (...args: any[]) => {
+            const sourceComp = nodeName
+                ? instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName]
+                : null;
+            if (sourceComp?.disable) return;
+
             const data = args[0];
 
             // 1. 本地 handler 处理

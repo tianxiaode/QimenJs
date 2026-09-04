@@ -43,7 +43,6 @@
         "@qimenjs/schema": "file:../../src/schema",
         "@qimenjs/system-abilities": "file:../../src/system-abilities",
         "@qimenjs/task": "file:../../src/task",
-        "@qimenjs/theme": "file:../../src/theme",
         "@qimenjs/types": "file:../../src/types",
         "@qimenjs/utils": "file:../../src/utils",
         "@qimenjs/validation": "file:../../src/validation"

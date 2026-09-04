@@ -17,25 +17,25 @@ export const uploadButtonCSS = `
     justify-content: center;
     height: 36px;
     padding: 0 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--q-colors-text-on-primary, #fff);
-    background: var(--q-colors-primary, #0078d4);
-    border: 2px solid var(--q-colors-primary, #0078d4);
-    border-radius: 0;
+    font-size: var(--q-font-size-md, 14px);
+    font-weight: var(--q-font-weight-semibold, 600);
+    color: var(--q-color-text-on-primary, #fff);
+    background: var(--q-color-primary, #0078d4);
+    border: 2px solid var(--q-color-primary, #0078d4);
+    border-radius: var(--q-radius-md, 4px);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
 .q-upload-btn__btn:hover {
-    background: var(--q-colors-primary-hover, #106ebe);
-    border-color: var(--q-colors-primary-hover, #106ebe);
+    background: var(--q-color-primary-hover, #106ebe);
+    border-color: var(--q-color-primary-hover, #106ebe);
 }
 
 .q-upload-btn__btn:active {
-    background: var(--q-colors-primary-active, #005a9e);
-    border-color: var(--q-colors-primary-active, #005a9e);
+    background: var(--q-color-primary-active, #005a9e);
+    border-color: var(--q-color-primary-active, #005a9e);
 }
 
 .q-upload-btn--disabled .q-upload-btn__btn {

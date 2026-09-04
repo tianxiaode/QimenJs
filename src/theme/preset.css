@@ -1,0 +1,297 @@
+/* ========================================
+   🎨 中国风预设主题
+   灵感来源于中国传统色（中国传统色色谱）
+   ======================================== */
+
+/* -------- 主题 1：朱砂红（故宫红） -------- */
+[data-theme-preset="cinnabar"] {
+    --q-color-primary-h: 4;
+    --q-color-primary-s: 78%;
+    --q-color-primary-l: 47%;
+
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 25%;
+    --q-color-secondary-l: 60%;
+
+    --q-color-on-primary: #ffffff;
+
+    /* 中国风专属 - 金色点缀 */
+    --q-color-accent-gold: #c9a96e;
+    --q-color-accent-gold-light: #e8d5b5;
+}
+
+/* -------- 主题 2：黛蓝（水墨蓝） -------- */
+[data-theme-preset="indigo"] {
+    --q-color-primary-h: 215;
+    --q-color-primary-s: 45%;
+    --q-color-primary-l: 35%;
+
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 20%;
+    --q-color-secondary-l: 65%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #b8a58a;
+    --q-color-accent-gold-light: #ddd2c0;
+}
+
+/* -------- 主题 3：松花绿（青绿山水） -------- */
+[data-theme-preset="pine"] {
+    --q-color-primary-h: 145;
+    --q-color-primary-s: 35%;
+    --q-color-primary-l: 32%;
+
+    --q-color-secondary-h: 35;
+    --q-color-secondary-s: 25%;
+    --q-color-secondary-l: 60%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #c4a87a;
+    --q-color-accent-gold-light: #e0d0b8;
+}
+
+/* -------- 主题 4：琥珀黄（宫廷黄） -------- */
+[data-theme-preset="amber"] {
+    --q-color-primary-h: 38;
+    --q-color-primary-s: 70%;
+    --q-color-primary-l: 45%;
+
+    --q-color-secondary-h: 20;
+    --q-color-secondary-s: 30%;
+    --q-color-secondary-l: 55%;
+
+    --q-color-on-primary: #302a23;
+
+    --q-color-accent-gold: #d4a84a;
+    --q-color-accent-gold-light: #ecd8b5;
+}
+
+/* -------- 主题 5：胭脂粉（唐风） -------- */
+[data-theme-preset="rouge"] {
+    --q-color-primary-h: 340;
+    --q-color-primary-s: 55%;
+    --q-color-primary-l: 50%;
+
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 30%;
+    --q-color-secondary-l: 65%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #c9a87a;
+    --q-color-accent-gold-light: #e5d5c0;
+}
+
+/* -------- 主题 6：竹青（文人墨客） -------- */
+[data-theme-preset="bamboo"] {
+    --q-color-primary-h: 120;
+    --q-color-primary-s: 25%;
+    --q-color-primary-l: 35%;
+
+    --q-color-secondary-h: 35;
+    --q-color-secondary-s: 20%;
+    --q-color-secondary-l: 60%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #b8a88a;
+    --q-color-accent-gold-light: #d5caba;
+}
+
+/* -------- 主题 7：缃色（秋色） -------- */
+[data-theme-preset="sienna"] {
+    --q-color-primary-h: 25;
+    --q-color-primary-s: 60%;
+    --q-color-primary-l: 40%;
+
+    --q-color-secondary-h: 40;
+    --q-color-secondary-s: 30%;
+    --q-color-secondary-l: 55%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #c9a06a;
+    --q-color-accent-gold-light: #e0ceb5;
+}
+
+/* -------- 主题 8：藕荷紫（雅致） -------- */
+[data-theme-preset="lotus"] {
+    --q-color-primary-h: 300;
+    --q-color-primary-s: 20%;
+    --q-color-primary-l: 45%;
+
+    --q-color-secondary-h: 35;
+    --q-color-secondary-s: 25%;
+    --q-color-secondary-l: 65%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #b8a88a;
+    --q-color-accent-gold-light: #d5caba;
+}
+
+/* -------- 主题 9：藏青（沉稳） -------- */
+[data-theme-preset="navy"] {
+    --q-color-primary-h: 225;
+    --q-color-primary-s: 40%;
+    --q-color-primary-l: 30%;
+
+    --q-color-secondary-h: 30;
+    --q-color-secondary-s: 20%;
+    --q-color-secondary-l: 55%;
+
+    --q-color-on-primary: #ffffff;
+
+    --q-color-accent-gold: #b0a080;
+    --q-color-accent-gold-light: #d0c4b0;
+}
+
+/* -------- 主题 10：秋香绿（田园） -------- */
+[data-theme-preset="chartreuse"] {
+    --q-color-primary-h: 80;
+    --q-color-primary-s: 30%;
+    --q-color-primary-l: 40%;
+
+    --q-color-secondary-h: 35;
+    --q-color-secondary-s: 25%;
+    --q-color-secondary-l: 60%;
+
+    --q-color-on-primary: #302a23;
+
+    --q-color-accent-gold: #c4a87a;
+    --q-color-accent-gold-light: #ddd0b8;
+}
+
+/* ========================================
+   🏮 中国风专用扩展变量
+   预设主题通用装饰元素
+   ======================================== */
+
+[data-theme-preset] {
+    /* -------- 中国风纹理背景（可选） -------- */
+    --q-bg-pattern: none;
+
+    /* -------- 中国风边框装饰 -------- */
+    --q-border-style-chinese: solid;
+    --q-border-width-chinese: 2px;
+
+    /* -------- 中国风字体 -------- */
+    --q-font-family-chinese: "Noto Serif SC", "华文楷体", "KaiTi", "楷体", serif;
+
+    /* -------- 金色系（中国风标志色） -------- */
+    --q-color-gold: var(--q-color-accent-gold);
+    --q-color-gold-light: var(--q-color-accent-gold-light);
+    --q-color-gold-hover: hsl(38, 50%, 55%);
+
+    /* -------- 印章红 -------- */
+    --q-color-seal: #c41a1a;
+    --q-color-seal-hover: #a01515;
+
+    /* -------- 墨色系 -------- */
+    --q-color-ink: #1a1613;
+    --q-color-ink-light: #4a4038;
+    --q-color-ink-lighter: #8a7a66;
+
+    /* -------- 宣纸色 -------- */
+    --q-color-xuan-paper: #f5efe0;
+    --q-color-xuan-paper-dark: #e8ddc8;
+
+    /* -------- 中国风阴影（偏暖） -------- */
+    --q-shadow-chinese: 0 4px 20px rgba(48, 42, 35, 0.15);
+    --q-shadow-chinese-lg: 0 8px 40px rgba(48, 42, 35, 0.20);
+}
+
+/* ========================================
+   🎋 中国风暗色主题适配
+   ======================================== */
+
+[data-theme="dark"][data-theme-preset] {
+    /* -------- 暗色模式宣纸变深色 -------- */
+    --q-color-xuan-paper: #2d2721;
+    --q-color-xuan-paper-dark: #221e19;
+
+    /* -------- 暗色模式金色微调 -------- */
+    --q-color-gold: hsl(38, 45%, 55%);
+    --q-color-gold-light: hsl(38, 30%, 45%);
+
+    /* -------- 暗色模式墨色反转 -------- */
+    --q-color-ink: #f0ebe3;
+    --q-color-ink-light: #b5a692;
+
+    /* -------- 中国风阴影（暗色更重） -------- */
+    --q-shadow-chinese: 0 4px 20px rgba(0, 0, 0, 0.50);
+    --q-shadow-chinese-lg: 0 8px 40px rgba(0, 0, 0, 0.60);
+}
+
+/* ========================================
+   🖌️ 中国风工具类（可选）
+   ======================================== */
+
+/* 印章效果 */
+.chinese-seal {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 2px solid var(--q-color-seal);
+    color: var(--q-color-seal);
+    font-family: var(--q-font-family-chinese);
+    font-size: var(--q-font-size-sm);
+    transform: rotate(-2deg);
+    background: transparent;
+    transition: all var(--q-transition-fast);
+}
+
+.chinese-seal:hover {
+    background: var(--q-color-seal);
+    color: #ffffff;
+    transform: rotate(0deg);
+}
+
+/* 水墨渐变 */
+.ink-wash {
+    background: linear-gradient(135deg,
+            var(--q-color-ink) 0%,
+            var(--q-color-ink-light) 50%,
+            transparent 100%);
+    opacity: 0.8;
+}
+
+/* 宣纸纹理背景 */
+.xuan-paper {
+    background-color: var(--q-color-xuan-paper);
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 119, 90, 0.05) 2px,
+            rgba(139, 119, 90, 0.05) 4px);
+}
+
+/* 中国风边框 */
+.border-chinese {
+    border: var(--q-border-width-chinese) var(--q-border-style-chinese) var(--q-color-gold);
+    position: relative;
+}
+
+.border-chinese::before {
+    content: '◆';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--q-color-bg);
+    padding: 0 8px;
+    color: var(--q-color-gold);
+    font-size: var(--q-font-size-xs);
+}
+
+/* 金色点缀 */
+.gold-accent {
+    background: linear-gradient(to bottom,
+            var(--q-color-gold-light),
+            var(--q-color-gold));
+    height: 2px;
+    width: 60px;
+    margin: var(--q-space-md) auto;
+}

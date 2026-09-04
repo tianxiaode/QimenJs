@@ -13,12 +13,15 @@ export const BUTTON_TPL: TemplateDecl = {
                 {
                     tag: 'i',
                     name: 'icon',
-                    classes: 'q-button__icon hidden',
+                },
+                {
+                    tag: 'i',
+                    name: 'loading',
+                    classes: 'q-button__loading hidden',
                 },
                 {
                     tag: 'span',
                     name: 'text',
-                    classes: 'q-button__text',
                 },
             ],
         },

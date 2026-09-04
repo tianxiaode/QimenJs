@@ -94,7 +94,6 @@ export default defineConfig({
             },
             { find: '@qimenjs/oauth2', replacement: resolve(__dirname, '../../src/oauth2') },
             { find: '@qimenjs/types', replacement: resolve(__dirname, '../../src/types') },
-            { find: '@qimenjs/theme', replacement: resolve(__dirname, '../../src/theme') },
             {
                 find: '@qimenjs/component-abilities',
                 replacement: resolve(__dirname, '../../src/component-abilities'),

@@ -41,9 +41,10 @@ const ButtonComponentDefs: Definitions = {
     options: {
         size: 'md', // 默认尺寸,
         ghost: false, // 无边框
-        iconAlign: 'default', // 布局
-        buttonType: 'default', // 按钮类型
+        iconAlign: 'left', // 布局
+        color: 'default', // 按钮类型
         iconCls: null, // 图标内容
+        busy: false, // 加载状态
     },
 } as const;
 
@@ -53,26 +54,48 @@ class ButtonComponent extends Component {
         return BUTTON_TPL;
     }
 
-    _onIconOptionChange(value: string, old: string) {
-        value ? this.removeCls('hidden') : this.addCls('hidden');
-        this.removeCls(old);
-        this.addCls(value);
+    _onTextOptionChange(value: string, _old: string) {
+        const nodeName = 'text';
+        value
+            ? this.addCls('q-button__text', nodeName)
+            : this.removeCls('q-button__text', nodeName);
     }
 
-    _onButtonTypeOptionChange(value: string, old: string) {
-        this._applyNewCls(this._composeStateCls('', value), this._composeStateCls('', old));
+    _onIconClsOptionChange(value: string, old: string) {
+        const nodeName = 'icon';
+        value
+            ? this.addCls('q-button__icon', nodeName)
+            : this.removeCls('q-button__icon', nodeName);
+        if (old) this.removeCls(old, nodeName);
+        if (value) this.addCls(value, nodeName);
+    }
+
+    _onColorOptionChange(value: string, old: string) {
+        this._toggleOptionCls('q-button--', value, old);
     }
 
     _onGhostOptionChange(value: boolean) {
-        const cls = this._composeStateCls('', 'ghost');
-        value ? this.addCls(cls) : this.removeCls(cls);
+        value ? this.addCls('q-button--ghost') : this.removeCls('q-button--ghost');
     }
 
-    _onLayoutOptionChange(value: string, old: string) {
-        this._applyNewCls(
-            this._composeStateCls('layout', value),
-            this._composeStateCls('layout', old)
-        );
+    _onIconAlignOptionChange(value: string, old: string) {
+        this._toggleOptionCls('q-button-layout--icon-', value, old, 'content');
+    }
+
+    _onBusyOptionChange(value: boolean) {
+        const iconNode = 'icon';
+        const loadingNode = 'loading';
+        if (value) {
+            this.addCls('q-button--loading');
+            this.addCls('hidden', iconNode);
+            this.removeCls('hidden', loadingNode);
+            this.disable = true;
+        } else {
+            this.removeCls('q-button--loading');
+            this.removeCls('hidden', iconNode);
+            this.addCls('hidden', loadingNode);
+            this.disable = false;
+        }
     }
 }
 

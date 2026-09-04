@@ -7,15 +7,26 @@
  *
  * 同时提供 mountOverlay / unmountOverlay 便捷方法，
  * 用于将组件挂载到浮层根容器（替代已移除的 HiddenRoot）。
+ *
+ * 统一监听 document press/keydown 事件，通过 registerOverlay 将原生 event
+ * 转发给所有注册的浮层条目，由各浮层自行判断是否处理。
  */
 
-export class OverlayRoot {
+import { ComposableBase } from '@/composable';
+import { EventsAbility, DomEventsAbility } from '@/system-abilities/system';
+
+type OverlayCallback = (event: Event) => void;
+
+export class OverlayRoot extends ComposableBase {
+    /** 运行时由 use([EventsAbility, DomEventsAbility]) 注入 */
+    declare bind: (target: EventTarget, semantic: string, options?: any) => () => void;
+    declare on: (event: string, handler: (ctx: any) => void) => () => void;
+
     private static instance: OverlayRoot;
     private root: HTMLElement | null = null;
+    private entries: OverlayCallback[] = [];
+    private handlersBound = false;
 
-    /**
-     * 获取单例实例
-     */
     static getInstance(): OverlayRoot {
         if (!OverlayRoot.instance) {
             OverlayRoot.instance = new OverlayRoot();
@@ -23,11 +34,6 @@ export class OverlayRoot {
         return OverlayRoot.instance;
     }
 
-    /**
-     * 获取浮层根容器
-     *
-     * 懒创建 #q-overlay-root 容器挂到 <body> 下
-     */
     getRoot(): HTMLElement {
         if (this.root) return this.root;
 
@@ -52,31 +58,63 @@ export class OverlayRoot {
         return this.root;
     }
 
-    /**
-     * 将组件挂载到浮层根容器
-     *
-     * @param el - 要挂载的组件根元素
-     */
+    registerOverlay(callback: OverlayCallback): void {
+        this.entries.push(callback);
+        this._ensureHandlers();
+    }
+
+    unregisterOverlay(callback: OverlayCallback): void {
+        const idx = this.entries.indexOf(callback);
+        if (idx >= 0) {
+            this.entries.splice(idx, 1);
+        }
+    }
+
+    private _ensureHandlers(): void {
+        if (this.handlersBound) return;
+        this.handlersBound = true;
+
+        const offPress = this.bind(document, 'press');
+        const offKeydown = this.bind(document, 'keydown');
+        this.onCleanup(offPress);
+        this.onCleanup(offKeydown);
+
+        this.onCleanup(
+            this.on('dom:press', (ctx: any) => {
+                const event = ctx?.data?.originalEvent as Event;
+                if (event) {
+                    for (const cb of [...this.entries]) {
+                        cb(event);
+                    }
+                }
+            })
+        );
+
+        this.onCleanup(
+            this.on('dom:keydown', (ctx: any) => {
+                const event = ctx?.data?.originalEvent as Event;
+                if (event) {
+                    for (const cb of [...this.entries]) {
+                        cb(event);
+                    }
+                }
+            })
+        );
+    }
+
     mountOverlay(el: HTMLElement): void {
         const root = this.getRoot();
         root.appendChild(el);
     }
 
-    /**
-     * 从浮层根容器卸载组件
-     *
-     * @param el - 要卸载的组件根元素
-     */
     unmountOverlay(el: HTMLElement): void {
         if (el.parentNode) {
             el.parentNode.removeChild(el);
         }
     }
 
-    /**
-     * 销毁浮层根容器
-     */
     destroy(): void {
+        this.dispose();
         if (this.root && this.root.parentNode) {
             this.root.parentNode.removeChild(this.root);
         }
@@ -84,3 +122,5 @@ export class OverlayRoot {
         OverlayRoot.instance = undefined as any;
     }
 }
+
+OverlayRoot.use([EventsAbility, DomEventsAbility]);

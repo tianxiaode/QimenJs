@@ -483,27 +483,19 @@
 | errors/index.ts | 错误导出 |
 | index.ts | 统一导出 |
 
-## src/theme — 主题系统（20文件）
+## src/theme — 主题资源（纯 CSS，9文件）
 
 | 文件 | 用途 |
 |------|------|
-| utils.ts | 工具函数（flattenTokens, tokensToCSSVariables） |
-| skeleton.css.ts | 骨架屏样式（框架必须） |
-| presets/light.ts | 亮色主题（宣纸） |
-| presets/dark.ts | 暗色主题（玄色） |
-| presets/celadon.ts | 青瓷主题 |
-| presets/cinnabar.ts | 朱砂主题 |
-| presets/indigo.ts | 靛蓝主题 |
-| presets/yellow.ts | 鹅黄主题 |
-| presets/rosewood.ts | 紫檀主题 |
-| presets/ink.ts | 墨色主题 |
-| presets/dai.ts | 黛色主题 |
-| presets/huaqing.ts | 华清主题 |
-| presets/shared.ts | 共享常量 |
-| presets/atomic-rules.ts | 原子CSS规则（~185条） |
-| presets/index.ts | 预设导出 |
-| types/ | 类型定义 |
-| index.ts | 统一导出 |
+| theme.css | 统一入口（@import 全部主题文件） |
+| light.css | 亮色主题（:root 定义全部变量） |
+| dark.css | 暗色主题（[data-theme="dark"] 覆盖） |
+| utilities.css | 颜色/按钮/间距/响应式工具类 |
+| preset.css | 10 个中国风预设（[data-theme-preset]） |
+| custom.css | 用户自定义（[data-theme-custom]） |
+| skeleton.css | 骨架屏 shimmer 动画 |
+| layout.css | Flex/Grid/尺寸工具类 |
+| utility.css | 显示/边框/圆角/层级/透明度工具类 |
 
 ## src/types — 公共类型定义（2文件）
 

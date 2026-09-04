@@ -53,6 +53,10 @@ export class Component extends ComposableBase implements IComponentCore {
         if (loading) Component.prototype.defaultEntityLoadingHandler = loading;
     }
 
+    static useRadius(enabled: boolean): void {
+        document.documentElement.toggleAttribute('data-no-radius', !enabled);
+    }
+
     /**
      * 组件模板 — getter 方式
      *

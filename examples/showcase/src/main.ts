@@ -1,9 +1,6 @@
 import { ShowcaseApp } from './ShowcaseApp';
 import './register';
-import '@/theme/light.css';
-import '@/theme/skeleton.css';
-import '@/theme/layout.css';
-import '@/theme/utility.css';
+import '@/theme/theme.css';
 import './showcase.css';
 const app = document.getElementById('app')!;
 const shell = new ShowcaseApp();

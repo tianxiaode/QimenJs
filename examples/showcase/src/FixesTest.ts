@@ -68,32 +68,18 @@ export class OverlayTest extends Component {
                             },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'toastBtn',
-                            options: { text: 'Toast success' },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #f59e0b',
-                                background: '#fffbeb',
-                                color: '#b45309',
-                                cursor: 'pointer',
-                                fontSize: '14px',
+                            options: {
+                                color: 'success', // Tooltip auto flip is not supported in QimenJS
+                                disable: true, // Tooltip auto flip is not supported in QimenJS
+                                text: 'Toast success',
                             },
                         },
                         {
-                            tag: 'button',
+                            type: 'button',
                             name: 'msgboxBtn',
                             options: { text: 'Msgbox alert' },
-                            style: {
-                                padding: '8px 16px',
-                                borderRadius: '6px',
-                                border: '1px solid #ef4444',
-                                background: '#fef2f2',
-                                color: '#b91c1c',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                            },
                         },
                         {
                             tag: 'button',
@@ -125,7 +111,7 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipTop',
                             options: {
-                                buttonType: 'success',
+                                color: 'success',
                                 text: 'top',
                                 tooltip: { content: 'Tooltip Top', placement: 'top' },
                             },
@@ -135,7 +121,7 @@ export class OverlayTest extends Component {
                             name: 'tooltipBottom',
                             options: {
                                 text: 'bottom',
-                                buttonType: 'warning',
+                                color: 'warning',
                                 tooltip: { content: 'Tooltip Bottom', placement: 'bottom' },
                             },
                         },
@@ -143,7 +129,7 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipLeft',
                             options: {
-                                buttonType: 'danger',
+                                color: 'error',
                                 text: 'left',
                                 tooltip: { content: 'Tooltip Left', placement: 'left' },
                             },
@@ -152,6 +138,8 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipRight',
                             options: {
+                                color: 'info',
+                                disable: true, // Tooltip auto flip is not supported in QimenJS
                                 text: 'right',
                                 tooltip: { content: 'Tooltip Right', placement: 'right' },
                             },
@@ -160,10 +148,15 @@ export class OverlayTest extends Component {
                             type: 'button',
                             name: 'tooltipRightAutoFlip',
                             options: {
+                                ghost: true,
                                 text: 'right auto flip',
                                 tooltip: { content: 'Tooltip Right Auto Flip', placement: 'right' },
                             },
-                            style: { flex: '1', minWidth: '200px' },
+                            style: {
+                                flex: '1',
+                                minWidth: '200px',
+                                color: 'var(--q-color-primary)',
+                            },
                         },
                     ],
                 },

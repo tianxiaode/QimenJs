@@ -7,6 +7,7 @@
  */
 
 import { HIDDEN_MODE_CSS_MAP } from '@/component-core/constants';
+import { RADIUS_MAP } from '@/component-core/constants';
 import { TARGET_TO_OPTION_MAP, type AbilityDefinition } from '@/composable';
 import { t } from '@/i18n';
 
@@ -37,8 +38,17 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     _onDisableOptionChange(_value: any, _old: any) {
-        const cls = this._composeStateCls('disabled');
+        const cls = this._composeStateCls(null, 'disabled');
         this.disable ? this.addCls(cls) : this.removeCls(cls);
+    },
+
+    _onRadiusOptionChange(value: any, _old: any) {
+        if (!value) {
+            this.el?.style.removeProperty('border-radius');
+            return;
+        }
+        const resolved = RADIUS_MAP[value] ?? value;
+        this.el?.style.setProperty('border-radius', resolved);
     },
 
     _onHintOptionChange(_value: any, _old: any) {
@@ -87,16 +97,15 @@ export const OptionAbility: AbilityDefinition = {
      * @returns 合成后的样式类名
      */
     _composeStateCls(key: string, value?: string, useType: boolean = true): string {
-        let cls = 'q';
-        if (useType) cls += '-' + this.type.toLowerCase();
-        if (key) cls += `-${key}`;
+        let cls = useType ? `q-${this.type.toLowerCase()}` : 'q-';
+        if (key) cls += `${key}`;
         if (value) cls += `--${value}`;
         return cls;
     },
 
-    _applyNewCls(cls: string, oldCls?: string) {
-        if (oldCls) this.removeCls(oldCls); // 移除旧样式类
-        this.addCls(cls);
+    _toggleOptionCls(prefix: string, value: string, old: string, nodeName: string = 'root') {
+        if (value) this.addCls(prefix + value, nodeName);
+        if (old) this.removeCls(prefix + old, nodeName);
     },
 
     _applyOptions(options?: Record<string, any>) {

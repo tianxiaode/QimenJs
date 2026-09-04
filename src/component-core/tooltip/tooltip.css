@@ -7,10 +7,10 @@
     line-height: 1.4;
     white-space: nowrap;
     padding: 6px 12px;
-    border-radius: 0;
-    background: var(--q-colors-text, #1a1a1a);
-    color: var(--q-colors-bg, #fff);
-    border: 1px solid var(--q-colors-border, #d9ccb8);
+    border-radius: var(--q-radius-none);
+    background: var(--q-color-text, #1a1a1a);
+    color: var(--q-color-bg, #fff);
+    border: 1px solid var(--q-color-border, #d9ccb8);
     max-width: 200px;
 }
 
@@ -32,26 +32,26 @@
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent transparent var(--q-colors-text, #1a1a1a) transparent;
+    border-color: transparent transparent var(--q-color-text, #1a1a1a) transparent;
 }
 .q-tooltip .q-arrow--bottom {
     bottom: calc(var(--q-arrow-size, 6px) * -2);
     left: 50%;
     transform: translateX(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: var(--q-colors-text, #1a1a1a) transparent transparent transparent;
+    border-color: var(--q-color-text, #1a1a1a) transparent transparent transparent;
 }
 .q-tooltip .q-arrow--left {
     left: calc(var(--q-arrow-size, 6px) * -2);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent var(--q-colors-text, #1a1a1a) transparent transparent;
+    border-color: transparent var(--q-color-text, #1a1a1a) transparent transparent;
 }
 .q-tooltip .q-arrow--right {
     right: calc(var(--q-arrow-size, 6px) * -2);
     top: 50%;
     transform: translateY(-50%);
     border-width: var(--q-arrow-size, 6px);
-    border-color: transparent transparent transparent var(--q-colors-text, #1a1a1a);
+    border-color: transparent transparent transparent var(--q-color-text, #1a1a1a);
 }

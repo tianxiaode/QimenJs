@@ -9,9 +9,9 @@
     color: transparent !important;
     background: linear-gradient(
         90deg,
-        var(--q-colors-border, #e8e8e8) 25%,
-        var(--q-colors-border-light, #f0f0f0) 37%,
-        var(--q-colors-border, #e8e8e8) 63%
+        var(--q-color-border, #e8e8e8) 25%,
+        var(--q-color-border-light, #f0f0f0) 37%,
+        var(--q-color-border, #e8e8e8) 63%
     );
     background-size: 200% 100%;
     animation: q-skeleton-shimmer 1.5s ease infinite;
@@ -32,5 +32,5 @@
 /* 禁用动画 */
 .q-skeleton--no-animate {
     animation: none;
-    background: var(--q-colors-border, #e8e8e8);
+    background: var(--q-color-border, #e8e8e8);
 }

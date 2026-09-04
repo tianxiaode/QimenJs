@@ -5,17 +5,17 @@
     justify-content: center;
     gap: 12px;
     padding: 24px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: var(--q-color-bg, #fff);
+    border-radius: var(--q-radius-lg, 8px);
+    box-shadow: var(--q-shadow-md);
     z-index: 10000;
 }
 
 .q-loading-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid #e2e8f0;
-    border-top-color: #3b82f6;
+    border: 3px solid var(--q-color-border, #e2e8f0);
+    border-top-color: var(--q-color-primary, #3b82f6);
     border-radius: 50%;
     animation: q-spin 0.8s linear infinite;
 }
@@ -26,5 +26,5 @@
 
 .q-loading-text {
     font-size: 14px;
-    color: #64748b;
+    color: var(--q-color-text-secondary, #64748b);
 }
