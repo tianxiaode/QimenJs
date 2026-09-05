@@ -17,18 +17,18 @@ interface DialogActionDef {
 }
 
 const DIALOG_ACTION_DEFS: Record<DialogActionKey, DialogActionDef> = {
-    cancel: { text: 'i18n:dialog.cancel', action: 'cancel', order: 100 },
-    reset: { text: 'i18n:dialog.reset', action: 'reset', order: 150 },
-    apply: { text: 'i18n:dialog.apply', action: 'apply', order: 180 },
-    ok: { text: 'i18n:dialog.ok', action: 'ok', order: 200, cls: 'q-button--primary' },
+    cancel: { text: '@dialog.cancel', action: 'cancel', order: 100 },
+    reset: { text: '@dialog.reset', action: 'reset', order: 150 },
+    apply: { text: '@dialog.apply', action: 'apply', order: 180 },
+    ok: { text: '@dialog.ok', action: 'ok', order: 200, cls: 'q-button--primary' },
     confirm: {
-        text: 'i18n:dialog.confirm',
+        text: '@dialog.confirm',
         action: 'confirm',
         order: 200,
         cls: 'q-button--primary',
     },
-    save: { text: 'i18n:dialog.save', action: 'save', order: 200, cls: 'q-button--primary' },
-    close: { text: 'i18n:dialog.close', action: 'close', order: 300 },
+    save: { text: '@dialog.save', action: 'save', order: 200, cls: 'q-button--primary' },
+    close: { text: '@dialog.close', action: 'close', order: 300 },
 };
 
 export interface DialogProps {

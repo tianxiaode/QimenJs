@@ -44,7 +44,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 200,
         iconCls: 'q-toolbar-btn-create',
-        hint: 'i18n:toolbar.create',
+        hint: '@toolbar.create',
         variant: 'primary',
     },
     edit: {
@@ -52,7 +52,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 210,
         iconCls: 'q-toolbar-btn-edit',
-        hint: 'i18n:toolbar.edit',
+        hint: '@toolbar.edit',
         variant: 'default',
     },
     delete: {
@@ -60,7 +60,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 220,
         iconCls: 'q-toolbar-btn-delete',
-        hint: 'i18n:toolbar.delete',
+        hint: '@toolbar.delete',
         variant: 'warning',
     },
     refresh: {
@@ -68,7 +68,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 230,
         iconCls: 'q-toolbar-btn-refresh',
-        hint: 'i18n:toolbar.refresh',
+        hint: '@toolbar.refresh',
         variant: 'default',
     },
     save: {
@@ -76,7 +76,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 240,
         iconCls: 'q-toolbar-btn-save',
-        hint: 'i18n:toolbar.save',
+        hint: '@toolbar.save',
         variant: 'primary',
     },
     import: {
@@ -84,7 +84,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 250,
         iconCls: 'q-toolbar-btn-import',
-        hint: 'i18n:toolbar.import',
+        hint: '@toolbar.import',
         variant: 'default',
     },
     export: {
@@ -92,7 +92,7 @@ const CRUD_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 260,
         iconCls: 'q-toolbar-btn-export',
-        hint: 'i18n:toolbar.export',
+        hint: '@toolbar.export',
         variant: 'default',
     },
 };

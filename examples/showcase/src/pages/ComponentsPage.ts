@@ -73,7 +73,7 @@ const COMPONENTS_TPL: TplNode = {
                     cls: 'q-components-page__alert',
                     initConfig: {
                         type: 'info',
-                        text: 'i18n:componentsPage.hint',
+                        text: '@componentsPage.hint',
                     },
                 },
                 {

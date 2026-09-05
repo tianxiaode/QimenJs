@@ -56,7 +56,7 @@ class SliderComponent extends FormFieldComponent {
     }
 
     _onDisableOptionChange(value: boolean): void {
-        const cls = this._composeStateCls(null, 'disabled');
+        const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
         const bodyCmp = this.getComponent('fieldBody') as any;
         if (bodyCmp) bodyCmp.disable = value;

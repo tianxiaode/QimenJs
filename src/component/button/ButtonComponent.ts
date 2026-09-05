@@ -7,7 +7,7 @@
  * - dropIcon — 下拉箭头图标（DOM 节点），默认隐藏
  *
  * 属性（由 applyConfig 自动应用，i18n 由框架自动刷新）：
- * - hint — 悬停提示，设置 el.title，支持 i18n:xxx 格式（框架自动处理）
+ * - hint — 悬停提示，设置 el.title，支持 @xxx 格式（框架自动处理）
  * - icon — 图标内容
  * - text — 按钮文字
  * - size — 尺寸 sm/md/lg

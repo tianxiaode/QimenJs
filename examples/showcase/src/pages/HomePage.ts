@@ -37,7 +37,7 @@ const FEATURES = [
     },
     {
         title: '国际化',
-        desc: 'I18nManager 内置多语言支持，i18n: 前缀自动翻译，事件驱动的语言切换',
+        desc: 'I18nManager 内置多语言支持，@ 前缀自动翻译，事件驱动的语言切换',
         tags: ['i18n', 'locale'],
     },
 ];
@@ -52,10 +52,10 @@ const HOME_TPL: TplNode = {
             name: 'hero',
             type: HeroComponent,
             cls: 'q-home-page__hero',
-            title: 'i18n:hero.title',
-            subtitle: 'i18n:hero.subtitle',
-            desc: 'i18n:hero.desc',
-            actionText: 'i18n:hero.action',
+            title: '@hero.title',
+            subtitle: '@hero.subtitle',
+            desc: '@hero.desc',
+            actionText: '@hero.action',
         },
         {
             tag: 'section',

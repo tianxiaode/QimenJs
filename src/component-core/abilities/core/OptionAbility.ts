@@ -3,10 +3,11 @@
  *
  * 负责组件选项（option）变化时的响应式处理：
  * - text / hint / hidden / hiddenMode / disable 等选项变化时自动更新 DOM 或样式
- * - 提供合成 disable、size 等状态样式类的方法 _composeStateCls
+ * - 提供 _cssPrefix getter 获取组件 CSS �@ 前缀
  */
 
-import { GLOBAL_STYLE_KEYS, HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
+import { HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
+import { i18nTextRegistry } from '@/component-core/engine';
 import { type AbilityDefinition } from '@/composable';
 import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
 
@@ -37,8 +38,9 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     _onDisableOptionChange(_value: any, _old: any) {
-        const cls = this._composeStateCls(null, 'disabled');
-        this.disable ? this.addCls(cls) : this.removeCls(cls);
+        this.disable
+            ? this.addCls(`${this._cssPrefix}--disabled`)
+            : this.removeCls(`${this._cssPrefix}--disabled`);
     },
 
     _onRadiusOptionChange(value: any, _old: any) {
@@ -52,33 +54,15 @@ export const OptionAbility: AbilityDefinition = {
 
     _onHintOptionChange(value: any, _old: any) {
         if (value) {
-            this.el?.setAttribute('title', resolveI18nValue(String(value)));
+            this._setNodeAttr('root', 'title', String(value));
         } else {
             this.el?.removeAttribute('title');
+            this._unregisterI18nNode('root', 'title');
         }
     },
 
-    /**
-     * 合成 disable、size 等状态样式
-     *
-     * 格式：`q-{type-}{key}`，有 value 时追加 `--{value}`。
-     *
-     * @example
-     * _composeStateCls('disabled')                    // 'q-button-disabled'
-     * _composeStateCls('disabled', '', false)         // 'q-disabled'
-     * _composeStateCls('size', 'md', false)           // 'q-size--md'
-     * _composeStateCls('size', 'lg', false)           // 'q-size--lg'
-     *
-     * @param key - 选项名，如 'disabled'、'size'
-     * @param value - 选项值，如尺寸 'md'/'lg'，无值时不拼接
-     * @param useType - 是否包含组件类型前缀，默认 true
-     * @returns 合成后的样式类名
-     */
-    _composeStateCls(key: string, value?: string, useType: boolean = true): string {
-        let cls = useType ? `q-${this.type.toLowerCase()}` : 'q-';
-        if (key) cls += `${key}`;
-        if (value) cls += `--${value}`;
-        return cls;
+    get _cssPrefix(): string {
+        return `q-${this.type.toLowerCase()}`;
     },
 
     _toggleOptionCls(prefix: string, value: string, old: string, nodeName: string = 'root') {
@@ -86,38 +70,40 @@ export const OptionAbility: AbilityDefinition = {
         if (old) this.removeCls(prefix + old, nodeName);
     },
 
-    /**
-     * 组合样式类名：白名单内走全局原子化层 `q-{key}--{value}`，否则走组件 BEM 层 `q-{type}--{value}`
-     *
-     * @param key - 选项名（如 size/shape 走全局，disabled/color 走组件）
-     * @param value - 组合值（如 md/circle/primary）
-     */
-    _composeStyleCls(key: string, value: string): string {
-        return GLOBAL_STYLE_KEYS.has(key)
-            ? `q-${key}--${value}`
-            : `q-${this.type.toLowerCase()}--${value}`;
-    },
-
-    /** 将文本写入指定节点的 textContent，值以 `i18n:` 开头时自动翻译并注册 i18n 刷新依赖 */
+    /** 将文本写入指定节点的 textContent，值以 `@` 开头时自动翻译并注册 i18n 刷新依赖 */
     _setNodeText(nodeName: string, text: string): void {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
         (el as HTMLElement).textContent = resolveI18nValue(text ?? '');
         if (text && text.startsWith(I18N_PREFIX)) {
-            this._i18nTextNodes.set(nodeName, text);
+            this._registerI18nNode(nodeName, 'textContent', text);
         } else {
-            this._i18nTextNodes.delete(nodeName);
+            this._unregisterI18nNode(nodeName, 'textContent');
         }
     },
 
-    get _i18nTextNodes(): Map<string, string> {
-        return this.abilityState('OptionAbility:i18nTextNodes', () => new Map());
-    },
-
-    /** 向指定节点设置属性 */
+    /** 向指定节点设置属性，值以 `@` 开头时自动翻译并注册 i18n 刷新依赖 */
     _setNodeAttr(nodeName: string, key: string, value: string): void {
         const el = this.getNodeEl(nodeName);
-        if (el) (el as HTMLElement).setAttribute(key, value);
+        if (!el) return;
+        (el as HTMLElement).setAttribute(key, resolveI18nValue(value));
+        if (value && value.startsWith(I18N_PREFIX)) {
+            this._registerI18nNode(nodeName, key, value);
+        } else {
+            this._unregisterI18nNode(nodeName, key);
+        }
+    },
+
+    _registerI18nNode(nodeName: string, prop: string, text: string): void {
+        if (!this.abilityState('OptionAbility:i18nCleanupRegistered')) {
+            this.setAbilityState('OptionAbility:i18nCleanupRegistered', true);
+            this.onCleanup(() => i18nTextRegistry.unregisterAll(this));
+        }
+        i18nTextRegistry.register(this, nodeName, prop, text);
+    },
+
+    _unregisterI18nNode(nodeName: string, prop: string): void {
+        i18nTextRegistry.unregister(this, nodeName, prop);
     },
 
     /** 将 HTML 写入指定节点的 innerHTML */

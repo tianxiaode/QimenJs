@@ -51,7 +51,7 @@ class RadioGroupComponent extends FormFieldComponent {
     }
 
     _onDisableOptionChange(value: boolean): void {
-        const cls = this._composeStateCls(null, 'disabled');
+        const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
         this._renderOptions();
     }

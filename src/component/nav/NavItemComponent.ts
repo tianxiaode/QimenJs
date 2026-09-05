@@ -83,7 +83,7 @@ class NavItemComponent extends Component {
     }
 
     _onDisableOptionChange(value: boolean): void {
-        const cls = this._composeStateCls(null, 'disabled');
+        const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
         if (value) this.setAttributes({ 'aria-disabled': 'true' });
         else this.removeAttributes(['aria-disabled']);

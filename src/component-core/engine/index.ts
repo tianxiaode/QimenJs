@@ -6,3 +6,4 @@ export * from './StyleHelper';
 export * from './TemplateManager';
 export * from './ZIndexManager';
 export * from './DragStateManager';
+export * from './I18nTextRegistry';

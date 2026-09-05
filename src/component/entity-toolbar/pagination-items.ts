@@ -42,7 +42,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 100,
         iconCls: 'q-toolbar-btn-first-page',
-        hint: 'i18n:toolbar.firstPage',
+        hint: '@toolbar.firstPage',
         variant: 'default',
     },
     prevPage: {
@@ -50,7 +50,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 110,
         iconCls: 'q-toolbar-btn-prev-page',
-        hint: 'i18n:toolbar.prevPage',
+        hint: '@toolbar.prevPage',
         variant: 'default',
     },
     pageNum: {
@@ -74,7 +74,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 140,
         iconCls: 'q-toolbar-btn-next-page',
-        hint: 'i18n:toolbar.nextPage',
+        hint: '@toolbar.nextPage',
         variant: 'default',
     },
     lastPage: {
@@ -82,7 +82,7 @@ const PAGINATION_DEFS: Record<string, BuiltinItemDef> = {
         type: ButtonComponent,
         order: 150,
         iconCls: 'q-toolbar-btn-last-page',
-        hint: 'i18n:toolbar.lastPage',
+        hint: '@toolbar.lastPage',
         variant: 'default',
     },
     pageSize: {

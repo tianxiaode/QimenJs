@@ -91,7 +91,7 @@ class PropertyFieldComponent extends Component {
     private _applyLabel(): void {
         const def = this._fieldDef;
         const labelKey = def.labelKey ?? def.key;
-        const labelText = def.i18n !== false ? resolveI18nValue(`i18n:${labelKey}`) : labelKey;
+        const labelText = def.i18n !== false ? resolveI18nValue(`@${labelKey}`) : labelKey;
         this.setNodeProp('text', labelText, 'label');
     }
 
@@ -143,10 +143,10 @@ class PropertyFieldComponent extends Component {
         if (def.enums) {
             const mapped = def.enums[result] ?? def.enums[String(raw)];
             if (mapped !== undefined) {
-                result = def.i18n ? resolveI18nValue(`i18n:${mapped}`) : mapped;
+                result = def.i18n ? resolveI18nValue(`@${mapped}`) : mapped;
             }
         } else if (def.i18n && type === 'text') {
-            result = resolveI18nValue(`i18n:${result}`);
+            result = resolveI18nValue(`@${result}`);
         }
 
         if (def.transform) {
@@ -189,10 +189,10 @@ class PropertyFieldComponent extends Component {
             if (def.enums) {
                 const mapped = def.enums[text];
                 if (mapped !== undefined) {
-                    text = def.i18n ? resolveI18nValue(`i18n:${mapped}`) : mapped;
+                    text = def.i18n ? resolveI18nValue(`@${mapped}`) : mapped;
                 }
             } else if (def.i18n) {
-                text = resolveI18nValue(`i18n:${text}`);
+                text = resolveI18nValue(`@${text}`);
             }
 
             chip.textContent = text;

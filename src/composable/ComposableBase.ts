@@ -18,12 +18,7 @@
 
 import { ILogger, Logger } from '@/logger';
 import { DATA_MAP_SYMBOL, DATA_SYMBOL, withAbilities, withDefinitions } from './forge';
-import type {
-    AbilityDefinition,
-    DataMap,
-    Definitions,
-    IComposableBase,
-} from './types';
+import type { AbilityDefinition, DataMap, Definitions, IComposableBase } from './types';
 import { string } from '@/utils';
 
 export class ComposableBase implements IComposableBase {
@@ -153,11 +148,7 @@ export class ComposableBase implements IComposableBase {
         return undefined;
     }
 
-    _onOptionChange(
-        _key: string,
-        _value: any,
-        _old: any,
-    ): void {}
+    _onOptionChange(_key: string, _value: any, _old: any): void {}
 
     /**
      * 获取能力状态，不存在时可用 creator 惰性创建

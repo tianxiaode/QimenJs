@@ -2,7 +2,8 @@
  * 全局样式键白名单（走 `q-{key}--{value}` 组合类）
  *
  * 白名单内的 key，样式由 theme 侧统一提供全局类（`q-{key}--{value}`），
- * 组件通过 `_composeStyleCls` 生成；白名单外的 key 走组件 BEM 层（`q-{type}--{value}`）。
+ * 由各 Ability（如 SizeAbility）直接拼接；白名单外的 key 走组件 BEM 层（`q-{type}--{value}`），
+ * 组件通过 `_cssPrefix` getter 获取前缀后自行拼接。
  *
  * 判定标准：跨组件语义和值完全一致才进全局，名字相同但各组件样式不同（如
  * disabled/error/loading/focused/color/variant）留在组件 BEM 层。
