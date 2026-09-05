@@ -1,9 +1,8 @@
-export { InputComponent, type InputType, type InputProps } from './InputComponent';
+export { InputComponent, type InputType } from './InputComponent';
 export { InputFieldBodyComponent } from './InputFieldBodyComponent';
 export {
     PasswordInputComponent,
     type PasswordStrength,
-    type PasswordInputProps,
 } from './PasswordInputComponent';
 export {
     PasswordStrengthComponent,
@@ -16,36 +15,32 @@ export {
     type FormFieldComponentInstance,
     type LabelPosition,
     type ValidateTrigger,
-    type FormFieldProps,
 } from './FormFieldComponent';
 export {
     FormComponent,
     type FormAction,
     type FormFieldConfig,
-    type FormProps,
 } from './FormComponent';
 export { formCSS } from './form.css';
 export { TextareaFieldBodyComponent } from './TextareaFieldBodyComponent';
-export { TextareaComponent, type TextareaProps } from './TextareaComponent';
-export { NumberInputComponent, type NumberInputProps } from './NumberInputComponent';
+export { TextareaComponent } from './TextareaComponent';
+export { NumberInputComponent } from './NumberInputComponent';
 export { numberInputCSS } from './number-input.css';
-export { SelectComponent, type SelectOption, type SelectProps } from './SelectComponent';
+export { SelectComponent, type SelectOption } from './SelectComponent';
 export { selectCSS } from './select.css';
 export { SwitchFieldBodyComponent } from './SwitchFieldBodyComponent';
-export { SwitchComponent, type SwitchProps } from './SwitchComponent';
+export { SwitchComponent } from './SwitchComponent';
 export { CheckboxGroupFieldBodyComponent } from './CheckboxGroupFieldBodyComponent';
 export {
     CheckboxGroupComponent,
     type CheckboxOption,
-    type CheckboxGroupProps,
 } from './CheckboxGroupComponent';
 export { RadioGroupFieldBodyComponent } from './RadioGroupFieldBodyComponent';
-export { RadioGroupComponent, type RadioOption, type RadioGroupProps } from './RadioGroupComponent';
-export { DatePickerComponent, type DatePickerProps } from './DatePickerComponent';
+export { RadioGroupComponent, type RadioOption } from './RadioGroupComponent';
+export { DatePickerComponent } from './DatePickerComponent';
 export { datepickerCSS } from './datepicker.css';
 export {
     MarkdownEditorComponent,
-    type MarkdownEditorProps,
     type MarkdownEditMode,
 } from '../../markdown/MarkdownEditorComponent';
 export { MarkdownEditorFieldBodyComponent } from '../../markdown/MarkdownEditorFieldBodyComponent';

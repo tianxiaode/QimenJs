@@ -1,2 +1,2 @@
-export { ToolbarComponent, type ToolbarProps } from './ToolbarComponent';
+export { ToolbarComponent } from './ToolbarComponent';
 export { toolbarCSS } from './toolbar.css';

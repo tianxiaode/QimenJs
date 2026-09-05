@@ -1,16 +1,7 @@
-import { InputComponent, type InputProps } from './InputComponent';
+import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { TextComponent } from '../text/TextComponent';
 import './numberinput.css';
-
-export interface NumberInputProps extends Omit<InputProps, 'value'> {
-    value?: number;
-    min?: number;
-    max?: number;
-    step?: number;
-    precision?: number;
-    controls?: boolean;
-}
 
 const STEP_UP_ORDER = 20;
 const STEP_DOWN_ORDER = 21;

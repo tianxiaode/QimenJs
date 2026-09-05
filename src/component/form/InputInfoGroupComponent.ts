@@ -21,7 +21,7 @@
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { TextComponent } from '../text/TextComponent';
-import './inputinfogroup.css.ts';
+import './inputinfogroup.css';
 
 const ERROR_ORDER = 0;
 const HELP_ORDER = 10;

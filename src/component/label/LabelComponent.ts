@@ -19,16 +19,6 @@ import { LABEL_TPL } from './label-tpl';
 import { Definitions } from '@/composable';
 import './label.css';
 
-/** 标签属性接口 */
-export interface LabelProps {
-    text?: string;
-    required?: boolean;
-    requiredMark?: string;
-    requiredMarkPosition?: 'before' | 'after';
-    tag?: string;
-    role?: string;
-}
-
 const LabelComponentDefs: Definitions = {
     options: {
         text: null,

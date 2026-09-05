@@ -126,7 +126,6 @@ export const InitAbility = {
     _continueInit(childReady?: () => void) {
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
         this._initBadge();
-        this._initI18n();
         this._initPermission();
         this._initListensEvents();
         this._initDomEvents();

@@ -20,25 +20,12 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
-import './nav.css.ts';
+import './nav.css';
 
-/** 导航项组属性接口 */
-export interface NavItemGroupProps extends ItemGroupProps {
-    activeIndex?: number;
-    mode?: 'expanded' | 'collapsed';
-    maxDepth?: number;
-    overlayOptions?: NavOverlayOptions;
-    overlayComponent?: any;
-    pathIndex?: Record<string, number>;
-    indexPath?: string[];
-}
-
-/** 导航组件 */
 class NavComponent extends ItemGroupPooledComponent {
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
@@ -124,7 +111,7 @@ class NavComponent extends ItemGroupPooledComponent {
         if (index !== undefined) this.selectAt(index);
     }
 
-    onAfterInit(props?: NavItemGroupProps & Record<string, any>): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit({ defaultItemType: 'NavItem', ...props });
 
         this.addCls('q-nav');

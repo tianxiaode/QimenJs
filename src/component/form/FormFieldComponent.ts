@@ -12,21 +12,6 @@ import { validate as doValidate } from '@qimenjs/validation';
 export type LabelPosition = 'top' | 'left' | 'right';
 export type ValidateTrigger = 'blur' | 'change' | 'input';
 
-export interface FormFieldProps {
-    label?: string;
-    i18nLabel?: string;
-    labelPosition?: LabelPosition;
-    labelWidth?: string;
-    required?: boolean;
-    requiredMark?: string;
-    requiredMarkPosition?: 'before' | 'after';
-    size?: 'sm' | 'md' | 'lg';
-    fieldName?: string;
-    validation?: boolean | ValidationRule | ValidationRule[];
-    validateTrigger?: ValidateTrigger;
-    colSpan?: number;
-}
-
 const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
     top: 'q-formfield--top',
     left: 'q-formfield--left',

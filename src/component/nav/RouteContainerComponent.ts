@@ -3,11 +3,6 @@ import type { TemplateDecl } from '@/component-core';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
 import './routecontainer.css';
 
-export interface RouteContainerProps {
-    routeMap?: Record<string, new (props?: Record<string, any>) => any>;
-    defaultComponent?: new (props?: Record<string, any>) => any;
-}
-
 class RouteContainerComponent extends Component {
     static type = 'route-container';
     get tpl(): TemplateDecl {

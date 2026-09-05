@@ -4,18 +4,6 @@ import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
 import './tree-nav-item.css';
 
-export interface TreeNavItemProps {
-    text?: string;
-    icon?: string;
-    path?: string;
-    active?: boolean;
-    disabled?: boolean;
-    expanded?: boolean;
-    depth?: number;
-    maxDepth?: number;
-    children?: Record<string, any>[];
-}
-
 const TreeNavItemComponentDefs: Definitions = {
     options: {
         text: null,

@@ -7,14 +7,6 @@ import './tag.css';
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
-export interface TagProps {
-    text?: string;
-    tagType?: TagType;
-    iconCls?: string;
-    closable?: boolean;
-    size?: 'sm' | 'md' | 'lg';
-}
-
 const TagComponentDefs: Definitions = {
     options: {
         text: null,

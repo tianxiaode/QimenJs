@@ -27,8 +27,8 @@
  * ```
  */
 
-import { InputComponent, type InputProps } from './InputComponent';
-import './select.css.ts';
+import { InputComponent } from './InputComponent';
+import './select.css';
 
 export interface SelectOption {
     label: string;
@@ -37,14 +37,6 @@ export interface SelectOption {
     group?: string;
 }
 
-export interface SelectProps extends Omit<InputProps, 'value'> {
-    options?: SelectOption[];
-    value?: string | number | (string | number)[];
-    multiple?: boolean;
-    filterable?: boolean;
-    placeholder?: string;
-    clearable?: boolean;
-}
 
 class SelectComponent extends InputComponent {
     _options: SelectOption[] = [];
@@ -56,7 +48,7 @@ class SelectComponent extends InputComponent {
     _panelEl: HTMLElement | null = null;
     _offOverlay: (() => void) | null = null;
 
-    onAfterInit(props?: SelectProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit(props);
         this.addCls('q-select');
 
@@ -289,7 +281,7 @@ class SelectComponent extends InputComponent {
         this.error = '';
     }
 
-    update(props?: Partial<SelectProps>): void {
+    update(props?: Record<string, any>): void {
         super.update(props);
 
         if (props?.options !== undefined) this.options = props.options;

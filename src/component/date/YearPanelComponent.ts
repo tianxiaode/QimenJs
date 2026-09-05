@@ -15,7 +15,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
-import './yearpanel.css.ts';
+import './yearpanel.css';
 import {
     createDateTimeValue,
     generateYearDigits,
@@ -24,14 +24,6 @@ import {
 } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './date-panel.css';
-
-/** 年份面板属性接口 */
-export interface YearPanelProps {
-    value: DateTimeValue;
-    previewData?: PanelPreviewData;
-    showPrevField?: boolean;
-    showNextField?: boolean;
-}
 
 type DigitPosition = 'thousands' | 'hundreds' | 'tens' | 'ones';
 
@@ -52,17 +44,17 @@ class YearPanelComponent extends Component {
         ones: -1,
     };
 
-    onAfterInit(props?: YearPanelProps): void {
-        this._value = props?.value ?? createDateTimeValue();
-        this._previewData = props?.previewData ?? null;
+    onAfterInit(): void {
+        this._value = this.options.value ?? createDateTimeValue();
+        this._previewData = this.options.previewData ?? null;
         const [th, h, t, o] = splitToDigits(this._value.year);
         this._digits = { thousands: th, hundreds: h, tens: t, ones: o };
         this._currentPosition = 'thousands';
 
-        if (!props?.showPrevField) {
+        if (!this.options.showPrevField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!props?.showNextField) {
+        if (!this.options.showNextField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 

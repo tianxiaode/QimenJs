@@ -17,14 +17,6 @@ import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
 import './date-panel.css';
 
-/** 日网格属性接口 */
-export interface DayGridProps {
-    year: number;
-    month: number;
-    selectedDay?: number;
-    startDayOfWeek?: number;
-}
-
 const TOTAL_WEEKDAYS = 7;
 const TOTAL_DAY_CELLS = 42;
 const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
@@ -42,11 +34,11 @@ class DayGridComponent extends Component {
     _weekdayCells: HTMLElement[] = [];
     _dayCells: HTMLElement[] = [];
 
-    onAfterInit(props?: DayGridProps): void {
-        this._year = props?.year ?? 2026;
-        this._month = props?.month ?? 1;
-        this._selectedDay = props?.selectedDay;
-        this._startDayOfWeek = props?.startDayOfWeek ?? this._getWeekStart();
+    onAfterInit(): void {
+        this._year = this.options.year ?? 2026;
+        this._month = this.options.month ?? 1;
+        this._selectedDay = this.options.selectedDay;
+        this._startDayOfWeek = this.options.startDayOfWeek ?? this._getWeekStart();
         this._createCells();
         this._applyWeekdays();
         this._applyGrid();
@@ -145,7 +137,7 @@ class DayGridComponent extends Component {
         }
     }
 
-    update(props?: Partial<DayGridProps>): void {
+    update(props?: Record<string, any>): void {
         let needWeekdayRefresh = false;
 
         if (props?.startDayOfWeek !== undefined && props.startDayOfWeek !== this._startDayOfWeek) {

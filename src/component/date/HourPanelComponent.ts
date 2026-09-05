@@ -14,16 +14,8 @@ import type { TplNode } from '@qimenjs/component-core';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
-import './hourpanel.css.ts';
+import './hourpanel.css';
 import './date-panel.css';
-
-/** 小时面板属性接口 */
-export interface HourPanelProps {
-    value: DateTimeValue;
-    previewData?: PanelPreviewData;
-    showPrevField?: boolean;
-    showNextField?: boolean;
-}
 
 class HourPanelComponent extends Component {
     get tpl(): TplNode {
@@ -33,14 +25,14 @@ class HourPanelComponent extends Component {
     _value: DateTimeValue = createDateTimeValue();
     _previewData: PanelPreviewData | null = null;
 
-    onAfterInit(props?: HourPanelProps): void {
-        this._value = props?.value ?? createDateTimeValue();
-        this._previewData = props?.previewData ?? null;
+    onAfterInit(): void {
+        this._value = this.options.value ?? createDateTimeValue();
+        this._previewData = this.options.previewData ?? null;
 
-        if (!props?.showPrevField) {
+        if (!this.options.showPrevField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!props?.showNextField) {
+        if (!this.options.showNextField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 

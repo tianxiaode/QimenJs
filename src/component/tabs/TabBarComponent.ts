@@ -21,19 +21,12 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TabComponent } from './TabComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
-import './tabbar.css.ts';
+import './tabbar.css';
 
 /** 标签栏位置 */
 export type TabBarPosition = 'top' | 'bottom' | 'left' | 'right';
-
-/** 标签栏属性接口 */
-export interface TabBarProps extends ItemGroupProps {
-    selectedIndex?: number;
-    position?: TabBarPosition;
-}
 
 class TabBarComponent extends ItemGroupPooledComponent {
     _selectedIndex: number = -1;
@@ -64,7 +57,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
         // close 事件由 domEvents emits 自动触发，包含 index 等数据
     }
 
-    onAfterInit(props?: TabBarProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this.addCls('q-tab-bar');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-tab-bar__items');

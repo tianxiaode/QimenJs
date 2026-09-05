@@ -35,22 +35,6 @@ import {
 import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { UPLOAD_BUTTON_TPL } from './upload-button-tpl';
 
-/** 上传按钮属性接口 */
-export interface UploadButtonProps {
-    text?: string;
-    /** 文件通道标识（必填），多个组件共享同一 fileKey 可观察同一队列 */
-    fileKey: string;
-    /** 组件事件 key，设置后反馈事件经 componentEmit 转发到 ComponentEventBus */
-    eventKey?: string;
-    transport?: FileTransportConfig;
-    accept?: string;
-    multiple?: boolean;
-    maxSize?: number;
-    disabled?: boolean;
-    autoUpload?: boolean;
-    size?: 'sm' | 'md' | 'lg';
-}
-
 /** 反馈事件 → 组件 emit 事件名 映射 */
 const FEEDBACK_TO_EMIT: Record<string, string> = {
     [FILE_FEEDBACK_EVENTS.SELECTED]: 'select',
@@ -78,7 +62,7 @@ class UploadButtonComponent extends Component {
     _listClickBound: boolean = false;
     _boundListClick: ((e: Event) => void) | null = null;
 
-    onAfterInit(props?: UploadButtonProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this.initSize();
         this._initUploadButton(props);
     }
@@ -329,7 +313,7 @@ class UploadButtonComponent extends Component {
         this._renderList();
     }
 
-    update(props?: Partial<UploadButtonProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.text !== undefined) {
             this.text = props.text;
         }

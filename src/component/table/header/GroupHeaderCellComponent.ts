@@ -25,14 +25,7 @@ import type { ColumnAlign } from '../column-types';
 import type { TplNode, DragOptions } from '@qimenjs/component-core';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
-import './groupheadercell.css.ts';
-
-/** 分组表头单元格属性接口 */
-export interface GroupHeaderCellProps extends BaseHeaderCellProps {
-    resizable?: boolean;
-    childNames: string[];
-    childConfigs: GroupChildConfig[];
-}
+import './groupheadercell.css';
 
 /** 分组表头子项配置 */
 export interface GroupChildConfig {
@@ -62,7 +55,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     _resizable: boolean = true;
     _resizeStartWidth: number = 0;
 
-    onAfterInit(props?: GroupHeaderCellProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit(props);
         this.addCls('q-header-cell--group');
         this.removeCls('q-header-cell--leaf');

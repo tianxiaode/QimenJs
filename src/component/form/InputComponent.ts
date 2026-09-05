@@ -1,6 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
-import type { FormFieldProps } from './FormFieldComponent';
 import { Definitions } from '@/composable';
 import type { ValidationRule } from '@qimenjs/schema';
 import { TextComponent } from '../text/TextComponent';
@@ -8,16 +7,6 @@ import { FORMFIELD_TPL } from './formfield-tpl';
 import './input.css';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
-
-export interface InputProps extends FormFieldProps {
-    value?: string;
-    placeholder?: string;
-    type?: InputType;
-    disable?: boolean;
-    readonly?: boolean;
-    maxLength?: number;
-    clearable?: boolean;
-}
 
 const CLEAR_BTN_ORDER = 0;
 

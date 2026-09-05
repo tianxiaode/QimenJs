@@ -23,7 +23,6 @@
  */
 
 import { ButtonComponent } from '../button/ButtonComponent';
-import type { ButtonProps } from '../button/ButtonComponent';
 import type { FloatDecl } from '@qimenjs/component-core';
 import './dropdown.css';
 
@@ -31,12 +30,6 @@ const DEFAULT_POPOVER_FLOAT = {
     trigger: 'click' as const,
     placement: 'bottom' as const,
 };
-
-/** 下拉菜单属性接口 */
-export interface DropdownProps extends ButtonProps {
-    /** dropIcon 弹出浮层配置，与默认值合并（默认 trigger='click', placement='bottom'） */
-    popover?: Partial<FloatDecl>;
-}
 
 class DropdownComponent extends ButtonComponent {
     onAfterInit(): void {

@@ -1,3 +1,3 @@
-export { TreeNavComponent, type TreeNavProps } from './TreeNavComponent';
-export { TreeNavItemComponent, type TreeNavItemProps } from './TreeNavItemComponent';
+export { TreeNavComponent } from './TreeNavComponent';
+export { TreeNavItemComponent } from './TreeNavItemComponent';
 export { treeNavCSS } from './tree-nav.css';

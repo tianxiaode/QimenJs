@@ -1,13 +1,8 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
-import './toolbar.css.ts';
+import './toolbar.css';
 
-/** 工具栏属性接口 */
-export interface ToolbarProps extends ItemGroupProps {}
-
-/** 工具栏组件 */
 class ToolbarComponent extends ItemGroupStaticComponent {
-    onAfterInit(props?: ToolbarProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this.addCls('q-toolbar');
         (this as any).itemContainer?.el?.classList.add('q-toolbar__items');
 

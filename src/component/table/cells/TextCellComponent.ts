@@ -22,18 +22,12 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { BaseCellProps } from './BaseCellComponent';
 import type { ColumnFormat, TextCellData } from '../column-types';
-
-/** 文本单元格属性接口 */
-export interface TextCellProps extends BaseCellProps {
-    format?: ColumnFormat;
-}
 
 class TextCellComponent extends BaseCellComponent {
     _format: ColumnFormat | undefined = undefined;
 
-    onAfterInit(props?: TextCellProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit(props);
         if (props?.format) this._format = props.format;
     }

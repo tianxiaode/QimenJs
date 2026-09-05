@@ -27,10 +27,9 @@
 import { Component } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
-import type { TabProps as TabItemProps } from './TabComponent';
 import type { TplNode } from '@qimenjs/component-core';
 import { TABS_TPL } from './tabs-tpl';
-import './tabs.css.ts';
+import './tabs.css';
 
 /** 标签页项 */
 export interface TabPaneItem {
@@ -40,13 +39,6 @@ export interface TabPaneItem {
     content?: string | (new (props?: Record<string, any>) => any);
     closable?: boolean;
     disabled?: boolean;
-}
-
-/** 标签页集属性接口 */
-export interface TabsProps {
-    items?: TabPaneItem[];
-    selectedIndex?: number;
-    position?: TabBarPosition;
 }
 
 class TabsComponent extends Component {
@@ -59,7 +51,7 @@ class TabsComponent extends Component {
     private _position: TabBarPosition = 'top';
     private _contentInstances: any[] = [];
 
-    onAfterInit(props?: TabsProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this._items = props?.items ?? [];
         this._selectedIndex = props?.selectedIndex ?? 0;
         this._position = props?.position ?? 'top';
@@ -211,7 +203,7 @@ class TabsComponent extends Component {
         return this._items;
     }
 
-    update(props?: Partial<TabsProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.items !== undefined) {
             this._items = props.items;
             this._tabBar?.update({

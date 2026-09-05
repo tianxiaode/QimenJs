@@ -36,14 +36,13 @@
  */
 
 import { ToolbarComponent } from '../toolbar/ToolbarComponent';
-import type { ToolbarProps } from '../toolbar/ToolbarComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { CRUD_EVENTS, PAGINATION_EVENTS } from '../../events/component-events';
 import { DomainAbility } from '../../system-abilities/system/DomainAbility';
 import { PAGINATION_ITEM_NAMES, createPaginationItems } from './pagination-items';
 import { CRUD_ITEM_NAMES, createCrudItems } from './crud-items';
 import type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
-import './entitytoolbar.css.ts';
+import './entitytoolbar.css';
 
 // ══════════════════════════════════════════════════════════════
 // 常量（兜底默认值，与 DomainPagingAbility 对齐）
@@ -55,28 +54,6 @@ const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
 // ══════════════════════════════════════════════════════════════
 // 类型定义
 // ══════════════════════════════════════════════════════════════
-
-/** 实体工具栏属性接口 */
-export interface EntityToolbarProps extends Omit<ToolbarProps, 'items'> {
-    /** 工具栏子项数组（与 pagination/crud 合并使用） */
-    items?: Record<string, any>[];
-
-    /**
-     * 声明式分页按钮配置。
-     * true/false：使用/跳过默认项；对象：覆盖属性；不传：全部默认启用。
-     * pageSize/pageSizes 自动从 this.pageSize / this.pageSizes 取（domainConfig 兜底）。
-     */
-    pagination?: Record<string, boolean | EntityToolbarItemDef>;
-
-    /** 声明式 CRUD 按钮配置。 */
-    crud?: Record<string, boolean | EntityToolbarItemDef>;
-
-    /** domain 名（DomainAbility 取域配置用） */
-    domain?: string;
-
-    /** 实体键：绑定后自动监听实体事件（list:loading/list:success/listed）同步按钮状态与分页 */
-    entityKey?: string;
-}
 
 export type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
 
@@ -130,7 +107,7 @@ class EntityToolbarComponent extends ToolbarComponent {
         },
     ];
 
-    onAfterInit(props?: EntityToolbarProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         const self = this as any;
         self.addCls('q-entity-toolbar');
         if (self.itemContainer) self.itemContainer.addCls('q-entity-toolbar__items');
@@ -509,7 +486,7 @@ class EntityToolbarComponent extends ToolbarComponent {
     // 组件 update（props 变更，重写基类）
     // ══════════════════════════════════════════════════════════════
 
-    update(props?: Partial<EntityToolbarProps>): void {
+    update(props?: Record<string, any>): void {
         const self = this as any;
         super.update(props);
 

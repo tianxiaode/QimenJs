@@ -36,10 +36,9 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { EntityEventBus, ENTITY_CRUD_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
-import './form.css.ts';
+import './form.css';
 
 export type FormAction = 'create' | 'update';
 
@@ -49,13 +48,6 @@ export interface FormFieldConfig {
     required?: boolean;
     defaultValue?: any;
     validation?: any;
-}
-
-export interface FormProps extends ItemGroupProps {
-    entityKey?: string;
-    action?: FormAction;
-    fields?: FormFieldConfig[];
-    editId?: string | number;
 }
 
 interface FieldEntry {
@@ -77,7 +69,7 @@ class FormComponent extends ItemGroupStaticComponent {
     _entityUnsubs: (() => void)[] = [];
     _submitting: boolean = false;
 
-    onAfterInit(props?: FormProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit({
             direction: 'vertical',
             gap: '16px',

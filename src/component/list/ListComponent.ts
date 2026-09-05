@@ -18,20 +18,14 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
-import './list.css.ts';
+import './list.css';
 
-export type { ListStatus, MarkForm, ListItemProps } from './ListItemComponent';
+export type { ListStatus, MarkForm } from './ListItemComponent';
 /** 列表项 */
-export type ListItem = import('./ListItemComponent').ListItemProps;
-
-/** 列表属性接口 */
-export interface ListProps extends ItemGroupProps {
-    items?: ListItem[];
-}
+export type ListItem = Record<string, any>;
 
 class ListComponent extends ItemGroupPooledComponent {
-    onAfterInit(props?: ListProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this.addCls('q-list');
         (this as any).itemContainer?.el?.classList.add('q-list__items');
 
@@ -56,7 +50,7 @@ class ListComponent extends ItemGroupPooledComponent {
         };
     }
 
-    update(props?: Partial<ListProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.items !== undefined) this.setItems(props.items);
         super.update(props);
     }

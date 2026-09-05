@@ -9,16 +9,9 @@
  */
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
-import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
 import type { TplNode, DragOptions } from '@qimenjs/component-core';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
-
-/** 叶子表头单元格属性接口 */
-export interface LeafHeaderCellProps extends BaseHeaderCellProps {
-    sortable?: boolean;
-    resizable?: boolean;
-}
 
 type SortState = 'none' | 'asc' | 'desc';
 
@@ -38,7 +31,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
 
-    onAfterInit(props?: LeafHeaderCellProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit(props);
         if (props?.sortable !== undefined) this._sortable = props.sortable;
         if (props?.resizable !== undefined) this._resizable = props.resizable;

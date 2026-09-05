@@ -6,7 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import './password-strength.css.ts';
+import './password-strength.css';
 
 /** 密码强度类型 */
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;

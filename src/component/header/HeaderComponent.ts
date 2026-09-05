@@ -4,15 +4,6 @@ import { Definitions } from '@/composable';
 import { HEADER_TPL } from './header-tpl';
 import './header.css';
 
-export interface HeaderProps {
-    icon?: string;
-    title?: string;
-    subtitle?: string;
-    toolsLeft?: Record<string, any>;
-    toolsRight?: Record<string, any>;
-    action?: Record<string, any>;
-}
-
 const HeaderComponentDefs: Definitions = {
     options: {
         title: null,

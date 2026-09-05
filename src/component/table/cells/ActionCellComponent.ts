@@ -17,13 +17,9 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { BaseCellProps } from './BaseCellComponent';
 import type { ActionCellData } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
 import { ACTION_CELL_TPL } from './action-cell-tpl';
-
-/** 操作单元格属性接口 */
-export type ActionCellProps = BaseCellProps;
 
 class ActionCellComponent extends BaseCellComponent {
     get tpl(): TplNode {

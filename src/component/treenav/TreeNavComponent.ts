@@ -19,20 +19,12 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
-import './treenav.css.ts';
-
-/** 树导航属性接口 */
-export interface TreeNavProps extends ItemGroupProps {
-    activeIndex?: number;
-    maxDepth?: number;
-    pathIndex?: Record<string, number>;
-}
+import './treenav.css';
 
 class TreeNavComponent extends ItemGroupStaticComponent {
     _activeIndex: number = -1;
@@ -146,7 +138,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         return null;
     }
 
-    onAfterInit(props?: TreeNavProps & Record<string, any>): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit({ defaultItemType: 'TreeNavItem', direction: 'vertical', ...props });
 
         this.addCls('q-tree-nav');

@@ -30,26 +30,13 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { TagComponent } from '../tag/TagComponent';
-import type { TagType, TagProps, TagComponentInstance } from '../tag/TagComponent';
+import type { TagType, TagComponentInstance } from '../tag/TagComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
-import './tags.css.ts';
-
-/** 标签集属性接口 */
-export interface TagsProps extends ItemGroupProps {
-    /** 最大显示数量，超出折叠为 "+N" tag；0 表示不限制 */
-    maxCount?: number;
-    /** "+N" 折叠 tag 的类型色，默认 'info' */
-    overflowTagType?: TagType;
-    /** 批量 closable 下发到每个 tag（单个 tag 可覆盖） */
-    closable?: boolean;
-    /** maxCount 生效时是否折叠，默认 true */
-    collapsed?: boolean;
-}
+import './tags.css';
 
 class TagsComponent extends ItemGroupPooledComponent {
-    _allTags: TagProps[] = [];
+    _allTags: Record<string, any>[] = [];
     _maxCount: number = 0;
     _collapsed: boolean = true;
     _overflowTagType: TagType = 'info';
@@ -64,7 +51,7 @@ class TagsComponent extends ItemGroupPooledComponent {
         },
     };
 
-    onAfterInit(props?: TagsProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         this.addCls('q-tags');
         (this as any).itemContainer?.el?.classList.add('q-tags__items');
 
@@ -81,7 +68,7 @@ class TagsComponent extends ItemGroupPooledComponent {
             gap: rest.gap ?? '4px',
         });
 
-        if (items && items.length > 0) this.setTags(items as TagProps[]);
+        if (items && items.length > 0) this.setTags(items as Record<string, any>[]);
     }
 
     /**
@@ -107,7 +94,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     /**
      * 全量替换并重渲染
      */
-    setTags(tags: TagProps[]): void {
+    setTags(tags: Record<string, any>[]): void {
         this._allTags = tags;
         this._render();
     }
@@ -115,7 +102,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     /**
      * 末尾追加一个 tag
      */
-    addTag(tag: TagProps): void {
+    addTag(tag: Record<string, any>): void {
         this._allTags.push(tag);
         this._render();
     }
@@ -123,7 +110,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     /**
      * 在指定位置插入一个 tag
      */
-    insertTag(index: number, tag: TagProps): void {
+    insertTag(index: number, tag: Record<string, any>): void {
         const clamped = Math.min(Math.max(0, index), this._allTags.length);
         this._allTags.splice(clamped, 0, tag);
         this._render();
@@ -141,7 +128,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     /**
      * 获取全量 tag 数据
      */
-    getTags(): readonly TagProps[] {
+    getTags(): readonly Record<string, any>[] {
         return this._allTags;
     }
 
@@ -195,8 +182,8 @@ class TagsComponent extends ItemGroupPooledComponent {
         };
     }
 
-    update(props?: Partial<TagsProps>): void {
-        if (props?.items !== undefined) this.setTags(props.items as TagProps[]);
+    update(props?: Record<string, any>): void {
+        if (props?.items !== undefined) this.setTags(props.items as Record<string, any>[]);
         if (props?.maxCount !== undefined) this.maxCount = props.maxCount;
         if (props?.overflowTagType !== undefined) {
             this._overflowTagType = props.overflowTagType;
@@ -226,7 +213,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     // ============================================
 
     /** 计算当前可见的 tag 子集（折叠时截断，留一位给 +N） */
-    _getVisibleTags(): TagProps[] {
+    _getVisibleTags(): Record<string, any>[] {
         if (this._maxCount > 0 && this._collapsed && this._allTags.length > this._maxCount) {
             return this._allTags.slice(0, this._maxCount - 1);
         }
@@ -234,7 +221,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     }
 
     /** 计算被折叠隐藏的 tag */
-    _getHiddenTags(): TagProps[] {
+    _getHiddenTags(): Record<string, any>[] {
         if (this._maxCount > 0 && this._collapsed && this._allTags.length > this._maxCount) {
             return this._allTags.slice(this._maxCount - 1);
         }
@@ -242,7 +229,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     }
 
     /** 注入 closable 批量下发 + 固化 type */
-    _decorateTag(tag: TagProps): Record<string, any> {
+    _decorateTag(tag: Record<string, any>): Record<string, any> {
         return {
             ...tag,
             type: 'Tag',

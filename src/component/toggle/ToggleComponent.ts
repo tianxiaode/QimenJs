@@ -26,16 +26,6 @@ import { TOGGLE_TPL } from './toggle-tpl';
 import { Definitions } from '@/composable';
 import './toggle.css';
 
-/** 切换属性接口 */
-export interface ToggleProps {
-    text?: string;
-    iconCls?: string;
-    pressed?: boolean;
-    disabled?: boolean;
-    size?: 'sm' | 'md' | 'lg';
-    value?: any;
-}
-
 const ToggleComponentDefs: Definitions = {
     options: {
         text: null,

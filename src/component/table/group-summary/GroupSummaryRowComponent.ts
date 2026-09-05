@@ -17,7 +17,7 @@
 
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
-import './groupsummaryrow.css.ts';
+import './groupsummaryrow.css';
 
 export class GroupSummaryRowComponent extends Component {
     _columnMetas: ColumnMeta[] = [];

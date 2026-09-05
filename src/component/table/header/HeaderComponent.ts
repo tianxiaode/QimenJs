@@ -18,7 +18,7 @@
 
 import { Component } from '../../../component-core/Component';
 import type { HeaderCellConfigOrGroup } from '../column-types';
-import './header.css.ts';
+import './header.css';
 
 export class HeaderComponent extends Component {
     _headerConfigs: HeaderCellConfigOrGroup[] = [];

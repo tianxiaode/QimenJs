@@ -26,23 +26,13 @@
  * ```
  */
 
-import { FormFieldComponent, type FormFieldProps } from '../component/form/FormFieldComponent';
+import { FormFieldComponent } from '../component/form/FormFieldComponent';
 import { MarkdownEngine } from './engine';
 import { MARKDOWN_EDITOR_TPL } from './markdown-editor-tpl';
 import './MarkdownEditorFieldBodyComponent';
 import './markdown-editor.css';
 
 export type MarkdownEditMode = 'edit' | 'preview' | 'split';
-
-export interface MarkdownEditorProps extends FormFieldProps {
-    value?: string;
-    placeholder?: string;
-    disabled?: boolean;
-    readonly?: boolean;
-    mode?: MarkdownEditMode;
-    rows?: number;
-    autoSize?: boolean | { minRows?: number; maxRows?: number };
-}
 
 export interface MarkdownShortcutAction {
     key: string;

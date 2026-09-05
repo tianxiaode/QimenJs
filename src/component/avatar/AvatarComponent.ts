@@ -7,13 +7,6 @@ import './avatar.css';
 
 export type AvatarMode = 'src' | 'text' | 'icon';
 
-export interface AvatarProps {
-    src?: string;
-    text?: string;
-    icon?: string;
-    size?: 'sm' | 'md' | 'lg';
-}
-
 const AvatarComponentDefs: Definitions = {
     options: {
         src: null,

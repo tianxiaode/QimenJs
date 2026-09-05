@@ -27,20 +27,6 @@ export interface NavOverlayOptions {
     animationDuration?: number;
 }
 
-export interface NavItemProps {
-    text?: string;
-    icon?: string;
-    path?: string;
-    active?: boolean;
-    disable?: boolean;
-    mode?: 'expanded' | 'collapsed';
-    children?: Record<string, any>[];
-    overlayOptions?: NavOverlayOptions;
-    overlayComponent?: any;
-    depth?: number;
-    maxDepth?: number;
-}
-
 const NavItemComponentDefs: Definitions = {
     options: {
         text: null,

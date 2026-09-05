@@ -24,14 +24,6 @@ import './progress.css';
 /** 进度条类型 */
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 
-/** 进度条属性接口 */
-export interface ProgressProps {
-    percent?: number;
-    progressType?: ProgressType;
-    striped?: boolean;
-    showText?: boolean;
-}
-
 const ProgressComponentDefs: Definitions = {
     options: {
         percent: 0,

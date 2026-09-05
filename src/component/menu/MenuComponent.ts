@@ -10,17 +10,9 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import { DomEventsMap } from '@qimenjs/component-core';
-import './menu.css.ts';
-
-/** 菜单属性接口 */
-export interface MenuProps extends ItemGroupProps {
-    anchor?: HTMLElement;
-    placement?: string;
-    offset?: number;
-}
+import './menu.css';
 
 class MenuComponent extends ItemGroupStaticComponent {
     _anchor: HTMLElement | null = null;
@@ -90,7 +82,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
     }
 
-    onAfterInit(props?: MenuProps & Record<string, any>): void {
+    onAfterInit(props?: Record<string, any>): void {
         const self = this as any;
         if (props?.anchor) self._anchor = props.anchor;
 

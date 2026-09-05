@@ -22,19 +22,11 @@
  */
 
 import { ItemGroupPooledComponent } from '@qimenjs/component';
-import type { ItemGroupProps } from '@qimenjs/component';
 import './timeline.css.ts';
 
 export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';
 /** 时间线项 */
 export type TimelineItem = import('./TimelineItemComponent').TimelineItemProps;
-
-/** 时间线属性接口 */
-export interface TimelineProps extends ItemGroupProps {
-    items?: TimelineItem[];
-    /** 末项 pending 态（容器类驱动，最后一个 tail 显示虚线） */
-    pending?: boolean;
-}
 
 class TimelineComponent extends ItemGroupPooledComponent {
     _pending: boolean = false;

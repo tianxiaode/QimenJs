@@ -8,7 +8,6 @@ export type {
     DefaultItemDef,
     DefaultItemConfig,
     ItemGroupConfig,
-    ItemGroupProps,
 } from './ItemGroupBaseComponent';
 
 // 导出具体组件

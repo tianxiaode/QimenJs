@@ -6,18 +6,6 @@ import './menuitem.css';
 
 export type MenuItemGroupMode = 'radio' | 'checkbox';
 
-export interface MenuItemProps {
-    text?: string;
-    icon?: string;
-    shortcut?: string;
-    disabled?: boolean;
-    hasSubmenu?: boolean;
-    group?: string;
-    groupMode?: MenuItemGroupMode;
-    checked?: boolean;
-    submenuProps?: Record<string, any>;
-}
-
 const MenuItemComponentDefs: Definitions = {
     options: {
         text: null,

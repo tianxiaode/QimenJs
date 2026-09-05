@@ -1,2 +1,2 @@
-export { TagsComponent, type TagsComponentInstance, type TagsProps } from './TagsComponent';
+export { TagsComponent, type TagsComponentInstance } from './TagsComponent';
 export { tagsCSS } from './tags.css';

@@ -1,17 +1,9 @@
-import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import { SLIDER_TPL } from './slider-tpl';
 import './slider.css';
 
-export interface SliderProps extends FormFieldProps {
-    value?: number;
-    min?: number;
-    max?: number;
-    step?: number;
-    showValue?: boolean;
-    disable?: boolean;
-}
 
 const SliderComponentDefs: Definitions = {
     options: {

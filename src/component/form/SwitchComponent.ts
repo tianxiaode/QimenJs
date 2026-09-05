@@ -1,16 +1,8 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
-import type { FormFieldProps } from './FormFieldComponent';
 import { Definitions } from '@/composable';
 import { SWITCH_TPL } from './switch-tpl';
 import './switch.css';
-
-export interface SwitchProps extends FormFieldProps {
-    checked?: boolean;
-    disable?: boolean;
-    activeText?: string;
-    inactiveText?: string;
-}
 
 const SwitchComponentDefs: Definitions = {
     options: {

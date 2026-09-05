@@ -23,7 +23,6 @@
  */
 
 import { ItemGroupPooledComponent } from '@qimenjs/component';
-import type { ItemGroupProps } from '@qimenjs/component';
 import type { StepItemComponent } from './StepItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import './step.css.ts';
@@ -31,11 +30,6 @@ import './step.css.ts';
 export type { StepStatus } from './StepItemComponent';
 export type { StepItemProps } from './StepItemComponent';
 
-/** 步骤条属性接口 */
-export interface StepProps extends ItemGroupProps {
-    activeIndex?: number;
-    direction?: 'horizontal' | 'vertical';
-}
 
 class StepComponent extends ItemGroupPooledComponent {
     _activeIndex: number = 0;

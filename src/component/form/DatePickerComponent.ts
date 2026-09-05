@@ -20,14 +20,14 @@
  * ```
  */
 
-import { InputComponent, type InputProps } from './InputComponent';
+import { InputComponent } from './InputComponent';
 import { YearPanelComponent } from '../date/YearPanelComponent';
 import { MonthPanelComponent } from '../date/MonthPanelComponent';
 import { DatePanelComponent } from '../date/DatePanelComponent';
 import { HourPanelComponent } from '../date/HourPanelComponent';
 import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
-import './datepicker.css.ts';
+import './datepicker.css';
 import {
     createDateTimeValue,
     dateTimeValueToDate,
@@ -40,12 +40,6 @@ import {
 } from '@/utils/date';
 import type { PanelPreviewData } from '../date/panel-preview';
 import './datepicker.css';
-
-export interface DatePickerProps extends Omit<InputProps, 'value' | 'type'> {
-    value?: Date;
-    showSeconds?: boolean;
-    startDayOfWeek?: number;
-}
 
 const FIELD_ORDER: DateTimeField[] = ['year', 'month', 'day', 'hour', 'minute', 'second'];
 
@@ -60,7 +54,7 @@ class DatePickerComponent extends InputComponent {
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
 
-    onAfterInit(props?: DatePickerProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         super.onAfterInit(props);
         this.addCls('q-datepicker');
 
@@ -350,7 +344,7 @@ class DatePickerComponent extends InputComponent {
         this.error = '';
     }
 
-    update(props?: Partial<DatePickerProps>): void {
+    update(props?: Record<string, any>): void {
         super.update(props);
 
         if (props?.value !== undefined) this.dateValue = props.value;

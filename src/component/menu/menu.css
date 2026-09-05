@@ -1,0 +1,15 @@
+.q-menu {
+    position: absolute;
+    z-index: var(--q-z-index-menu, 2000);
+    min-width: 120px;
+    padding: 4px 0;
+    background: var(--q-colors-bg, #fff);
+    border: 2px solid var(--q-colors-border, #e0e0e0);
+    border-radius: var(--q-radius-md, 0);
+    box-shadow: none;
+}
+
+.q-menu__content {
+    display: flex;
+    flex-direction: column;
+}

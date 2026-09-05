@@ -28,11 +28,6 @@ import type { ColumnAlign } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
 import { BASE_CELL_TPL } from './base-cell-tpl';
 
-/** 基础单元格属性接口 */
-export interface BaseCellProps {
-    align?: ColumnAlign;
-}
-
 class BaseCellComponent extends Component {
     get tpl(): TplNode {
         return BASE_CELL_TPL;
@@ -40,7 +35,7 @@ class BaseCellComponent extends Component {
 
     _align: ColumnAlign = 'left';
 
-    onAfterInit(props?: BaseCellProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         if (props?.align) this._align = props.align;
         this._applyAlign();
     }

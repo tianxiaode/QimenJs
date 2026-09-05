@@ -1,15 +1,10 @@
-import { InputComponent, type InputProps } from './InputComponent';
+import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
 import { PasswordStrengthComponent } from './PasswordStrengthComponent';
 import './passwordinput.css';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
-
-export interface PasswordInputProps extends InputProps {
-    visible?: boolean;
-    onStrengthChange?: (strength: PasswordStrength) => void;
-}
 
 function calculateStrength(password: string): PasswordStrength {
     if (!password) return 0;

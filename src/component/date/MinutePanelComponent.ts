@@ -16,16 +16,8 @@ import type { TplNode } from '@qimenjs/component-core';
 import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
-import './minutepanel.css.ts';
+import './minutepanel.css';
 import './date-panel.css';
-
-/** 分钟面板属性接口 */
-export interface MinutePanelProps {
-    value: DateTimeValue;
-    previewData?: PanelPreviewData;
-    showPrevField?: boolean;
-    showNextField?: boolean;
-}
 
 type DigitPart = 'tens' | 'ones';
 
@@ -40,17 +32,17 @@ class MinutePanelComponent extends Component {
     _onesSelected: number = -1;
     _selectingTens: boolean = true;
 
-    onAfterInit(props?: MinutePanelProps): void {
-        this._value = props?.value ?? createDateTimeValue();
-        this._previewData = props?.previewData ?? null;
+    onAfterInit(): void {
+        this._value = this.options.value ?? createDateTimeValue();
+        this._previewData = this.options.previewData ?? null;
         this._tensSelected = Math.floor(this._value.minute / 10);
         this._onesSelected = this._value.minute % 10;
         this._selectingTens = true;
 
-        if (!props?.showPrevField) {
+        if (!this.options.showPrevField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!props?.showNextField) {
+        if (!this.options.showNextField) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 

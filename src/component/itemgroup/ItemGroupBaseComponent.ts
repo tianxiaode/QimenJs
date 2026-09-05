@@ -21,11 +21,6 @@ export interface ItemGroupConfig {
     indicator?: any;
 }
 
-export interface ItemGroupProps extends ItemGroupConfig {
-    cls?: string;
-    itemsCls?: string;
-}
-
 const ItemGroupBaseComponentDefs: Definitions = {
     options: {
         direction: 'horizontal',

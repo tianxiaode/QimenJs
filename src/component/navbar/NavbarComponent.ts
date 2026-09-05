@@ -18,20 +18,10 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import type { ItemGroupProps } from '../itemgroup/ItemGroupBaseComponent';
-import './navbar.css.ts';
+import './navbar.css';
 
-/** 导航栏属性接口 */
-export interface NavbarProps extends ItemGroupProps {
-    /** 公司名称（默认 companyName 项的 text） */
-    companyName?: string;
-    /** Logo 图标（默认 logo 项的 icon，如 '🏢' 或 URL） */
-    logo?: string;
-}
-
-/** 导航栏组件 */
 class NavbarComponent extends ItemGroupStaticComponent {
-    onAfterInit(props?: NavbarProps): void {
+    onAfterInit(props?: Record<string, any>): void {
         console.log(
             '[Navbar] onAfterInit props:',
             JSON.stringify({

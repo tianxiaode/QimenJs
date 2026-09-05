@@ -31,25 +31,6 @@ const DIALOG_ACTION_DEFS: Record<DialogActionKey, DialogActionDef> = {
     close: { text: '@dialog.close', action: 'close', order: 300 },
 };
 
-export interface DialogProps {
-    title?: string;
-    icon?: string;
-    subtitle?: string;
-    toolsLeft?: Record<string, any>;
-    toolsRight?: Record<string, any>;
-    confirm?: boolean | { order?: number; text?: string };
-    cancel?: boolean | { order?: number; text?: string };
-    ok?: boolean | { order?: number; text?: string };
-    save?: boolean | { order?: number; text?: string };
-    close?: boolean | { order?: number; text?: string };
-    apply?: boolean | { order?: number; text?: string };
-    reset?: boolean | { order?: number; text?: string };
-    footerItems?: Record<string, any>[];
-    width?: string;
-    resizable?: boolean;
-    anchor?: HTMLElement;
-}
-
 const DialogComponentDefs: Definitions = {
     options: {
         title: null,

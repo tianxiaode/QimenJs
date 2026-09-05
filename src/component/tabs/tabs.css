@@ -1,0 +1,128 @@
+.q-tab-bar {
+    display: flex;
+    border-bottom: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
+.q-tab-bar__items {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+.q-tab-bar--top {
+    border-bottom: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
+.q-tab-bar--bottom {
+    border-bottom: none;
+    border-top: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
+.q-tab-bar--bottom .q-tab {
+    border-bottom: none;
+    border-top: 2px solid transparent;
+    margin-bottom: 0;
+    margin-top: -2px;
+}
+
+.q-tab-bar--bottom .q-tab--pressed {
+    border-top-color: var(--q-colors-primary, #0078d4);
+}
+
+.q-tab-bar--left {
+    flex-direction: column;
+    border-bottom: none;
+    border-right: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
+.q-tab-bar--left .q-tab {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+    margin-bottom: 0;
+    margin-right: -2px;
+    justify-content: flex-start;
+}
+
+.q-tab-bar--left .q-tab--pressed {
+    border-right-color: var(--q-colors-primary, #0078d4);
+}
+
+.q-tab-bar--right {
+    flex-direction: column;
+    border-bottom: none;
+    border-left: 2px solid var(--q-colors-border, #dcdfe6);
+}
+
+.q-tab-bar--right .q-tab {
+    border-bottom: none;
+    border-left: 2px solid transparent;
+    margin-bottom: 0;
+    margin-left: -2px;
+    justify-content: flex-start;
+}
+
+.q-tab-bar--right .q-tab--pressed {
+    border-left-color: var(--q-colors-primary, #0078d4);
+}
+
+.q-tabs {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.q-tabs__bar {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.q-tabs__content {
+    flex: 1;
+    padding: 12px 0;
+    overflow: auto;
+}
+
+.q-tabs__pane {
+    display: block;
+}
+
+.q-tabs__pane--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.q-tabs--top {
+    flex-direction: column;
+}
+
+.q-tabs--bottom {
+    flex-direction: column-reverse;
+}
+
+.q-tabs--bottom .q-tabs__content {
+    padding: 0 0 12px 0;
+}
+
+.q-tabs--left {
+    flex-direction: row;
+}
+
+.q-tabs--left .q-tabs__bar {
+    min-width: 120px;
+}
+
+.q-tabs--left .q-tabs__content {
+    padding: 0 0 0 16px;
+}
+
+.q-tabs--right {
+    flex-direction: row-reverse;
+}
+
+.q-tabs--right .q-tabs__bar {
+    min-width: 120px;
+}
+
+.q-tabs--right .q-tabs__content {
+    padding: 0 16px 0 0;
+}

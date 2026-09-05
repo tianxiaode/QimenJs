@@ -14,14 +14,10 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { BaseCellProps } from './BaseCellComponent';
 import type { TreeCellData } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
 import { TREE_CELL_TPL } from './tree-cell-tpl';
-import './treecell.css.ts';
-
-/** 树形单元格属性接口 */
-export type TreeCellProps = BaseCellProps;
+import './treecell.css';
 
 const INDENT_UNIT = 20;
 

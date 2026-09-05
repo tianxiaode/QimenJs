@@ -27,11 +27,6 @@ import {
 } from '@/utils/date';
 import './date-panel.css';
 
-/** 日期面板属性接口 */
-export interface DatePanelProps {
-    value: DateTimeValue;
-}
-
 class DatePanelComponent extends Component {
     get tpl(): TplNode {
         return DATE_PANEL_TPL;
@@ -41,8 +36,8 @@ class DatePanelComponent extends Component {
     _viewYear: number = 2026;
     _viewMonth: number = 1;
 
-    onAfterInit(props?: DatePanelProps): void {
-        this._value = props?.value ?? createDateTimeValue();
+    onAfterInit(): void {
+        this._value = this.options.value ?? createDateTimeValue();
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
 

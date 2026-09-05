@@ -1,5 +1,5 @@
 import { TextComponent } from '../text/TextComponent';
-import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
@@ -10,13 +10,6 @@ export interface CheckboxOption {
     label: string;
     value: string | number;
     disabled?: boolean;
-}
-
-export interface CheckboxGroupProps extends FormFieldProps {
-    items?: CheckboxOption[];
-    value?: (string | number)[];
-    direction?: 'vertical' | 'horizontal';
-    disable?: boolean;
 }
 
 const CheckboxGroupComponentDefs: Definitions = {

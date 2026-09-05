@@ -63,7 +63,6 @@ export { DialogComponent } from './dialog/DialogComponent';
 
 // 项组组件
 export { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
-export type { ItemGroupProps } from './itemgroup/ItemGroupBaseComponent';
 export { ItemGroupStaticComponent } from './itemgroup/ItemGroupStaticComponent';
 
 // 工具栏组件
@@ -72,7 +71,6 @@ export { ToolbarComponent } from './toolbar/ToolbarComponent';
 // 实体工具栏组件（从 ToolbarComponent 派生，声明式 pagination/crud + 实体事件监听）
 export {
     EntityToolbarComponent,
-    type EntityToolbarProps,
     type EntityToolbarItemDef,
     type EntityToolbarState,
     type EntityToolbarItemState,

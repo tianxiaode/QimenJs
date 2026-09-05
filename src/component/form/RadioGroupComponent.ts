@@ -1,4 +1,4 @@
-import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import { RADIO_GROUP_TPL } from './radio-group-tpl';
@@ -9,13 +9,6 @@ export interface RadioOption {
     label: string;
     value: string | number;
     disabled?: boolean;
-}
-
-export interface RadioGroupProps extends FormFieldProps {
-    items?: RadioOption[];
-    value?: string | number;
-    direction?: 'vertical' | 'horizontal';
-    disable?: boolean;
 }
 
 const RadioGroupComponentDefs: Definitions = {

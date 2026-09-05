@@ -7,13 +7,6 @@ import './list-item.css';
 export type ListStatus = 'default' | 'primary' | 'success' | 'warning' | 'error';
 export type MarkForm = 'dot' | 'dash' | 'ring';
 
-export interface ListItemProps {
-    label?: string;
-    description?: string;
-    status?: ListStatus;
-    markForm?: MarkForm;
-}
-
 const ListItemComponentDefs: Definitions = {
     options: {
         label: null,

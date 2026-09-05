@@ -35,16 +35,6 @@ export interface ToolGroupConfig {
     defaultItem?: Record<string, any>;
 }
 
-/** 面板属性接口 */
-export interface PanelProps {
-    title?: string;
-    expandable?: boolean;
-    closable?: boolean;
-    resizable?: boolean;
-    toolsLeft?: ToolGroupConfig;
-    toolsRight?: ToolGroupConfig;
-}
-
 const PanelComponentDefs: Definitions = {
     options: {
         title: null,

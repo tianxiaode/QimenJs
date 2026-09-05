@@ -4,14 +4,6 @@ import { TAB_TPL } from './tab-tpl';
 import { Definitions } from '@/composable';
 import './tab.css';
 
-export interface TabProps {
-    label?: string;
-    icon?: string;
-    closable?: boolean;
-    disabled?: boolean;
-    index?: number;
-}
-
 const TabComponentDefs: Definitions = {
     options: {
         label: null,

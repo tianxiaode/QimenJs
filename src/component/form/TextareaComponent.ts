@@ -1,19 +1,8 @@
-import { FormFieldComponent, type FormFieldProps } from './FormFieldComponent';
+import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import { TEXTAREA_TPL } from './textarea-tpl';
 import './textarea.css';
-
-export interface TextareaProps extends FormFieldProps {
-    value?: string;
-    placeholder?: string;
-    disable?: boolean;
-    readonly?: boolean;
-    rows?: number;
-    autoSize?: boolean | { minRows?: number; maxRows?: number };
-    maxLength?: number;
-    resize?: 'none' | 'both' | 'horizontal' | 'vertical';
-}
 
 const TextareaComponentDefs: Definitions = {
     options: {
