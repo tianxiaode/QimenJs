@@ -46,10 +46,8 @@ export interface PanelProps {
 }
 
 const PanelComponentDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'title', to: 'text' },
-    },
     options: {
+        title: null,
         expandable: false,
         closable: false,
         resizable: false,
@@ -72,6 +70,7 @@ class PanelComponent extends Component {
     };
 
     _onTitleOptionChange(value: string, _old: string): void {
+        this._setNodeText('title', value);
         this._setNodeHidden(!value, 'title');
     }
 

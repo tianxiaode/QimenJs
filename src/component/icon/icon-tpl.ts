@@ -7,7 +7,7 @@ export const ICON_TPL: TemplateDecl = {
     children: [
         {
             tag: 'i',
-            name: 'content',
+            name: 'icon',
             classes: 'q-icon',
         },
     ],

@@ -106,12 +106,6 @@ class TextareaComponent extends FormFieldComponent {
         }
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        super._onSizeOptionChange(value, old);
-        if (value) this.addCls(`q-textarea--${value}`);
-        if (old) this.removeCls(`q-textarea--${old}`);
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-textarea');

@@ -2,6 +2,7 @@ import { MSGBOX_TPL } from './msgbox-tpl';
 import { FloatingComponent } from '../overlay';
 import type { TemplateDecl, ViewportPosition } from '../types';
 import type { Definitions } from '@/composable';
+import { t } from '@/i18n';
 import './msgbox.css';
 
 export class Msgbox extends FloatingComponent {
@@ -71,6 +72,9 @@ export class Msgbox extends FloatingComponent {
         }
 
         this.setViewportPosition('center' as ViewportPosition);
+
+        if (this.confirmText == null) this._onConfirmTextOptionChange(null);
+        if (this.cancelText == null) this._onCancelTextOptionChange(null);
     }
 
     show(): void {
@@ -89,6 +93,26 @@ export class Msgbox extends FloatingComponent {
 
     _onCancelClick(): void {
         this.close('cancel');
+    }
+
+    _onTitleOptionChange(value: string): void {
+        this._setNodeText('title', value);
+    }
+
+    _onContentOptionChange(value: string): void {
+        this._setNodeHtml('content', value);
+    }
+
+    _onConfirmTextOptionChange(value: string | null): void {
+        this._setNodeText('confirm', value ?? t('common:confirm'));
+    }
+
+    _onCancelTextOptionChange(value: string | null): void {
+        this._setNodeText('cancel', value ?? t('common:cancel'));
+    }
+
+    _onValueOptionChange(value: string): void {
+        this._setNodeAttr('field', 'value', value ?? '');
     }
 
     async close(action: 'confirm' | 'cancel' = 'cancel'): Promise<void> {
@@ -124,14 +148,12 @@ export class Msgbox extends FloatingComponent {
 // ─── Definitions ────────────────────────────────────────────
 
 const MsgboxDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'title', to: 'text' },
-        content: { target: 'content', to: 'html' },
-        confirmText: { target: 'confirm', to: 'text', default: '@common:confirm' },
-        cancelText: { target: 'cancel', to: 'text', default: '@common:cancel' },
-        value: { target: 'field', to: 'value' },
-    },
     options: {
+        title: null,
+        content: null,
+        confirmText: null,
+        cancelText: null,
+        value: null,
         msgboxType: 'alert',
     },
     fields: {

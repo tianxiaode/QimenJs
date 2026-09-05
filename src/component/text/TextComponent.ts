@@ -5,10 +5,8 @@ import { Definitions } from '@/composable';
 import './text.css';
 
 const TextComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'root', to: 'text' },
-    },
     options: {
+        text: null,
         tag: null,
     },
 } as const;
@@ -17,6 +15,10 @@ class TextComponent extends Component {
     static type = 'text';
     get tpl(): TemplateDecl {
         return TEXT_TPL;
+    }
+
+    _onTextOptionChange(value: string) {
+        this._setNodeText('root', value);
     }
 
     _onTagOptionChange(value: string) {

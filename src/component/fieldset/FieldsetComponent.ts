@@ -5,10 +5,8 @@ import { Definitions } from '@/composable';
 import './fieldset.css';
 
 const FieldsetComponentDefs: Definitions = {
-    targetToOptions: {
-        legend: { target: 'legendText', to: 'text' },
-    },
     options: {
+        legend: null,
         collapsible: false,
         collapsed: false,
     },
@@ -28,6 +26,10 @@ class FieldsetComponent extends Component {
             },
         },
     };
+
+    _onLegendOptionChange(value: string): void {
+        this._setNodeText('legendText', value);
+    }
 
     _onCollapsibleOptionChange(value: boolean): void {
         value ? this.removeCls('hidden', 'toggleIcon') : this.addCls('hidden', 'toggleIcon');

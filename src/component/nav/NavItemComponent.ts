@@ -42,10 +42,8 @@ export interface NavItemProps {
 }
 
 const NavItemComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         icon: null,
         active: false,
         mode: 'expanded',
@@ -68,6 +66,10 @@ class NavItemComponent extends Component {
     }
 
     _overlayOpen: boolean = false;
+
+    _onTextOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
 
     _onIconOptionChange(value: string): void {
         const el = this.getNodeEl('icon');

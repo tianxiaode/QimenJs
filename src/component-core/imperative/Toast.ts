@@ -73,6 +73,14 @@ export class Toast extends FloatingComponent {
         this.close();
     }
 
+    _onTitleOptionChange(value: string): void {
+        this._setNodeHtml('text', value);
+    }
+
+    _onMessageOptionChange(value: string): void {
+        this._setNodeHtml('message', value);
+    }
+
     async close(): Promise<void> {
         if (this._closed) return;
         this._closed = true;
@@ -104,11 +112,9 @@ export class Toast extends FloatingComponent {
 }
 
 const ToastDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'text', to: 'html' },
-        message: { target: 'message', to: 'html' },
-    },
     options: {
+        title: null,
+        message: null,
         toastType: 'info',
         duration: 3000,
         alignment: 'top-right',

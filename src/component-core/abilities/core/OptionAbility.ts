@@ -6,10 +6,9 @@
  * - 提供合成 disable、size 等状态样式类的方法 _composeStateCls
  */
 
-import { HIDDEN_MODE_CSS_MAP } from '@/component-core/constants';
-import { RADIUS_MAP } from '@/component-core/constants';
-import { TARGET_TO_OPTION_MAP, type AbilityDefinition } from '@/composable';
-import { t } from '@/i18n';
+import { GLOBAL_STYLE_KEYS, HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
+import { type AbilityDefinition } from '@/composable';
+import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
 
 /** 组件选项能力，选项变化时自动同步到 DOM / 样式 */
 export const OptionAbility: AbilityDefinition = {
@@ -51,32 +50,11 @@ export const OptionAbility: AbilityDefinition = {
         this.el?.style.setProperty('border-radius', resolved);
     },
 
-    _onHintOptionChange(_value: any, _old: any) {
-        this._applyContentToElement('hint');
-        return;
-    },
-
-    _applyContentToElement(key: string): void {
-        let text = String(this.getData(key));
-        if (!text) return;
-        const def = this.getTargetToDef(key);
-        if (!def) {
-            this.logger.warn(`${key} def not found`, key, this);
-            return;
-        }
-        const target = def.target ?? 'root';
-        const el = this.getNodeEl(target);
-        if (!el) {
-            this.logger.warn(` ${target} el not found`, this);
-            return;
-        }
-        if (text.startsWith('@') && !text.startsWith('@@')) {
-            text = t(text.slice(1)); // 去除 @ 符号
-        }
-        const toMap = TARGET_TO_OPTION_MAP as any;
-        const to = def.to; // 目标属性，如 'textContent'、'src'、'innerHTML' 等
-        if (to && to in toMap) {
-            el[toMap[to]] = text;
+    _onHintOptionChange(value: any, _old: any) {
+        if (value) {
+            this.el?.setAttribute('title', resolveI18nValue(String(value)));
+        } else {
+            this.el?.removeAttribute('title');
         }
     },
 
@@ -106,6 +84,46 @@ export const OptionAbility: AbilityDefinition = {
     _toggleOptionCls(prefix: string, value: string, old: string, nodeName: string = 'root') {
         if (value) this.addCls(prefix + value, nodeName);
         if (old) this.removeCls(prefix + old, nodeName);
+    },
+
+    /**
+     * 组合样式类名：白名单内走全局原子化层 `q-{key}--{value}`，否则走组件 BEM 层 `q-{type}--{value}`
+     *
+     * @param key - 选项名（如 size/shape 走全局，disabled/color 走组件）
+     * @param value - 组合值（如 md/circle/primary）
+     */
+    _composeStyleCls(key: string, value: string): string {
+        return GLOBAL_STYLE_KEYS.has(key)
+            ? `q-${key}--${value}`
+            : `q-${this.type.toLowerCase()}--${value}`;
+    },
+
+    /** 将文本写入指定节点的 textContent，值以 `i18n:` 开头时自动翻译并注册 i18n 刷新依赖 */
+    _setNodeText(nodeName: string, text: string): void {
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+        (el as HTMLElement).textContent = resolveI18nValue(text ?? '');
+        if (text && text.startsWith(I18N_PREFIX)) {
+            this._i18nTextNodes.set(nodeName, text);
+        } else {
+            this._i18nTextNodes.delete(nodeName);
+        }
+    },
+
+    get _i18nTextNodes(): Map<string, string> {
+        return this.abilityState('OptionAbility:i18nTextNodes', () => new Map());
+    },
+
+    /** 向指定节点设置属性 */
+    _setNodeAttr(nodeName: string, key: string, value: string): void {
+        const el = this.getNodeEl(nodeName);
+        if (el) (el as HTMLElement).setAttribute(key, value);
+    },
+
+    /** 将 HTML 写入指定节点的 innerHTML */
+    _setNodeHtml(nodeName: string, html: string): void {
+        const el = this.getNodeEl(nodeName);
+        if (el) (el as HTMLElement).innerHTML = html ?? '';
     },
 
     _applyOptions(options?: Record<string, any>) {

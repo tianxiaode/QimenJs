@@ -23,7 +23,6 @@ import type {
     DataMap,
     Definitions,
     IComposableBase,
-    TargetToOptionDefinition,
 } from './types';
 import { string } from '@/utils';
 
@@ -49,7 +48,6 @@ export class ComposableBase implements IComposableBase {
         const data = this._getData();
         const old = this.getData(key);
         if (old === value) return;
-        //如果value以@开头，表示i18n，value为i18n的key，否则value为i18n的value,@@为转义字符，不作为i18n的key
         data[key] = value;
         const changeKey = `_on${string.capitalize(key)}OptionChange`;
         if (typeof self[changeKey] === 'function') {
@@ -57,18 +55,6 @@ export class ComposableBase implements IComposableBase {
         }
 
         self._onOptionChange(key, value, old);
-    }
-
-    getTargetToDef(key: string): TargetToOptionDefinition | undefined {
-        return this.targetToMap.get(key);
-    }
-
-    get targetToMap(): Map<string, TargetToOptionDefinition> {
-        return this.getDataMap().targetToMap;
-    }
-
-    get i18nOptions(): string[] {
-        return [...this.getDataMap().i18nOptions];
     }
 
     get optionsKeys(): Set<string> {
@@ -171,7 +157,6 @@ export class ComposableBase implements IComposableBase {
         _key: string,
         _value: any,
         _old: any,
-        _definition: TargetToOptionDefinition | undefined
     ): void {}
 
     /**

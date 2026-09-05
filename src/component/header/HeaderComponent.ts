@@ -14,10 +14,8 @@ export interface HeaderProps {
 }
 
 const HeaderComponentDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'title', to: 'text' },
-    },
     options: {
+        title: null,
         icon: null,
         subtitle: null,
         toolsLeft: null,
@@ -31,6 +29,10 @@ class HeaderComponent extends Component {
 
     get tpl(): TemplateDecl {
         return HEADER_TPL;
+    }
+
+    _onTitleOptionChange(value: string): void {
+        this._setNodeText('title', value);
     }
 
     _onIconOptionChange(value: string): void {

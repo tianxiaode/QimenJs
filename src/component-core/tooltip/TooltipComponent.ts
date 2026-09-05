@@ -34,6 +34,10 @@ export class TooltipComponent extends FloatingComponent {
         this._overlayOpen = false;
     }
 
+    _onTooltipOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
+
     _inferArrowPlacement(
         placement: 'top' | 'bottom' | 'left' | 'right'
     ): 'top' | 'bottom' | 'left' | 'right' {
@@ -49,8 +53,8 @@ export class TooltipComponent extends FloatingComponent {
 }
 
 const TooltipComponentDefs: Definitions = {
-    targetToOptions: {
-        tooltip: { target: 'text', to: 'text' },
+    options: {
+        tooltip: null,
     },
 };
 

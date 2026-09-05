@@ -70,19 +70,19 @@
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
-.q-textarea--sm {
+.q-size--sm.q-textarea {
     --q-textarea-field-min-height: 60px;
     --q-textarea-field-padding: var(--q-space-xs) var(--q-space-sm);
     --q-textarea-field-font-size: var(--q-font-size-sm);
 }
 
-.q-textarea--md {
+.q-size--md.q-textarea {
     --q-textarea-field-min-height: 80px;
     --q-textarea-field-padding: var(--q-space-sm) 12px;
     --q-textarea-field-font-size: var(--q-font-size-md);
 }
 
-.q-textarea--lg {
+.q-size--lg.q-textarea {
     --q-textarea-field-min-height: 100px;
     --q-textarea-field-padding: 12px var(--q-space-lg);
     --q-textarea-field-font-size: var(--q-font-size-lg);

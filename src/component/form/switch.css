@@ -86,19 +86,19 @@
     border: 2px solid var(--q-color-error);
 }
 
-.q-switch--sm {
+.q-size--sm.q-switch {
     --q-switch-width: 36px;
     --q-switch-height: 18px;
     --q-switch-thumb-size: 14px;
 }
 
-.q-switch--md {
+.q-size--md.q-switch {
     --q-switch-width: 44px;
     --q-switch-height: 22px;
     --q-switch-thumb-size: 18px;
 }
 
-.q-switch--lg {
+.q-size--lg.q-switch {
     --q-switch-width: 52px;
     --q-switch-height: 26px;
     --q-switch-thumb-size: 22px;

@@ -16,10 +16,8 @@ export interface TagProps {
 }
 
 const TagComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         tagType: 'default',
         iconCls: null,
         closable: false,
@@ -31,6 +29,10 @@ class TagComponent extends Component {
     static type = 'tag';
     get tpl(): TemplateDecl {
         return TAG_TPL;
+    }
+
+    _onTextOptionChange(value: string) {
+        this._setNodeText('text', value);
     }
 
     _onTagTypeOptionChange(value: string, old: string) {

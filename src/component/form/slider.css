@@ -95,17 +95,17 @@
     border-color: var(--q-color-error);
 }
 
-.q-slider--sm {
+.q-size--sm.q-slider {
     --q-slider-track-height: 3px;
     --q-slider-thumb-size: 12px;
 }
 
-.q-slider--md {
+.q-size--md.q-slider {
     --q-slider-track-height: 4px;
     --q-slider-thumb-size: 16px;
 }
 
-.q-slider--lg {
+.q-size--lg.q-slider {
     --q-slider-track-height: 6px;
     --q-slider-thumb-size: 20px;
 }

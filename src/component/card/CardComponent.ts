@@ -25,10 +25,8 @@ import { Definitions } from '@/composable';
 import './card.css';
 
 const CardComponentDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'headerTitle', to: 'text' },
-    },
     options: {
+        title: null,
         icon: null,
         action: null,
     },
@@ -41,6 +39,7 @@ class CardComponent extends Component {
     }
 
     _onTitleOptionChange(value: string, _old: string) {
+        this._setNodeText('headerTitle', value);
         this._setNodeHidden(!value, 'headerTitle');
     }
 

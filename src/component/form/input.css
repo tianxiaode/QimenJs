@@ -150,19 +150,19 @@
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
-.q-input--sm {
+.q-size--sm.q-input {
     --q-input-field-height: 28px;
     --q-input-field-padding: 0 var(--q-space-sm);
     --q-input-field-font-size: var(--q-font-size-sm);
 }
 
-.q-input--md {
+.q-size--md.q-input {
     --q-input-field-height: 36px;
     --q-input-field-padding: 0 12px;
     --q-input-field-font-size: var(--q-font-size-md);
 }
 
-.q-input--lg {
+.q-size--lg.q-input {
     --q-input-field-height: 44px;
     --q-input-field-padding: 0 var(--q-space-lg);
     --q-input-field-font-size: var(--q-font-size-lg);

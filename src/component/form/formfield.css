@@ -175,35 +175,35 @@
     color: var(--q-color-error);
 }
 
-.q-formfield--sm {
+.q-size--sm.q-formfield {
     --q-formfield-label-font-size: 12px;
     --q-formfield-info-font-size: 11px;
 }
 
-.q-formfield--sm.q-formfield--left,
-.q-formfield--sm.q-formfield--right {
+.q-size--sm.q-formfield.q-formfield--left,
+.q-size--sm.q-formfield.q-formfield--right {
     --q-formfield-label-width: 64px;
 }
 
-.q-formfield--sm .q-formfield__label-group {
+.q-size--sm.q-formfield .q-formfield__label-group {
     padding-top: 4px;
 }
 
-.q-formfield--md {
+.q-size--md.q-formfield {
     --q-formfield-label-font-size: 14px;
     --q-formfield-info-font-size: 12px;
 }
 
-.q-formfield--lg {
+.q-size--lg.q-formfield {
     --q-formfield-label-font-size: 16px;
     --q-formfield-info-font-size: 14px;
 }
 
-.q-formfield--lg.q-formfield--left,
-.q-formfield--lg.q-formfield--right {
+.q-size--lg.q-formfield.q-formfield--left,
+.q-size--lg.q-formfield.q-formfield--right {
     --q-formfield-label-width: 96px;
 }
 
-.q-formfield--lg .q-formfield__label-group {
+.q-size--lg.q-formfield .q-formfield__label-group {
     padding-top: 12px;
 }

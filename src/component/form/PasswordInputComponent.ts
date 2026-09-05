@@ -57,7 +57,7 @@ class PasswordInputComponent extends InputComponent {
         }
         const eyeCmp = this._eyeBtnItem?.component;
         if (eyeCmp && typeof eyeCmp.update === 'function') {
-            eyeCmp.update({ content: value ? 'eye-off' : 'eye' });
+            eyeCmp.update({ iconCls: value ? 'eye-off' : 'eye' });
         }
     }
 
@@ -89,7 +89,7 @@ class PasswordInputComponent extends InputComponent {
     _mountEyeToggle(): void {
         this.addAction({
             type: IconComponent,
-            content: this.visible ? 'eye-off' : 'eye',
+            iconCls: this.visible ? 'eye-off' : 'eye',
             cls: 'q-password-toggle',
             order: EYE_BTN_ORDER,
         });

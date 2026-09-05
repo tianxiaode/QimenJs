@@ -19,11 +19,9 @@ export interface MenuItemProps {
 }
 
 const MenuItemComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-        shortcut: { target: 'shortcut', to: 'text' },
-    },
     options: {
+        text: null,
+        shortcut: null,
         icon: null,
         hasSubmenu: false,
         group: null,
@@ -39,6 +37,14 @@ class MenuItemComponent extends Component {
     static type = 'menu-item';
     get tpl(): TemplateDecl {
         return MENU_ITEM_TPL;
+    }
+
+    _onTextOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
+
+    _onShortcutOptionChange(value: string): void {
+        this._setNodeText('shortcut', value);
     }
 
     _onHasSubmenuOptionChange(value: boolean): void {

@@ -103,12 +103,6 @@ class InputComponent extends FormFieldComponent {
         }
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        super._onSizeOptionChange(value, old);
-        if (value) this.addCls(`q-input--${value}`);
-        if (old) this.removeCls(`q-input--${old}`);
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input');

@@ -22,10 +22,8 @@ import { Definitions } from '@/composable';
 import './divider.css';
 
 const DividerComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         vertical: false,
         dashed: false,
     },
@@ -39,6 +37,7 @@ class DividerComponent extends Component {
 
     _onTextOptionChange(value: string, _old: string): void {
         this._setNodeHidden(!value, 'text');
+        if (value) this._setNodeText('text', value);
     }
 
     _onVerticalOptionChange(value: boolean): void {

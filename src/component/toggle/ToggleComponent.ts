@@ -37,10 +37,8 @@ export interface ToggleProps {
 }
 
 const ToggleComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         pressed: false,
         iconCls: null,
         size: 'md',
@@ -56,6 +54,10 @@ class ToggleComponent extends Component {
     domEvents?: DomEventsMap | undefined = {
         click: { handler: true },
     };
+
+    _onTextOptionChange(value: string) {
+        this._setNodeText('text', value);
+    }
 
     _onPressedOptionChange(value: boolean): void {
         this.toggleCls('q-toggle--pressed', value);

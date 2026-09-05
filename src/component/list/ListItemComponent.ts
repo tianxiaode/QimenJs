@@ -15,10 +15,8 @@ export interface ListItemProps {
 }
 
 const ListItemComponentDefs: Definitions = {
-    targetToOptions: {
-        label: { target: 'label', to: 'text' },
-    },
     options: {
+        label: null,
         status: 'default',
         markForm: 'dot',
         description: null,
@@ -29,6 +27,10 @@ class ListItemComponent extends Component {
     static type = 'list-item';
     get tpl(): TemplateDecl {
         return LIST_ITEM_TPL;
+    }
+
+    _onLabelOptionChange(value: string): void {
+        this._setNodeText('label', value);
     }
 
     _onStatusOptionChange(value: string, old: string): void {

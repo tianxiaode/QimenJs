@@ -62,12 +62,6 @@ class SliderComponent extends FormFieldComponent {
         if (bodyCmp) bodyCmp.disable = value;
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        super._onSizeOptionChange(value, old);
-        if (value) this.addCls(`q-slider--${value}`);
-        if (old) this.removeCls(`q-slider--${old}`);
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-slider');

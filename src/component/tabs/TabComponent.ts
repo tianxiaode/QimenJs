@@ -13,10 +13,8 @@ export interface TabProps {
 }
 
 const TabComponentDefs: Definitions = {
-    targetToOptions: {
-        label: { target: 'label', to: 'text' },
-    },
     options: {
+        label: null,
         icon: null,
         closable: false,
         pressed: false,
@@ -37,6 +35,10 @@ class TabComponent extends Component {
             close: { handler: '_onCloseClick', emits: ['close'] },
         },
     };
+
+    _onLabelOptionChange(value: string): void {
+        this._setNodeText('label', value);
+    }
 
     _onIconOptionChange(value: string): void {
         const el = this.getNodeEl('icon');

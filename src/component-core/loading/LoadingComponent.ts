@@ -10,13 +10,15 @@ class LoadingComponent extends FloatingComponent {
     get tpl(): TemplateDecl {
         return LOADING_TPL;
     }
+
+    _onTextOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
 }
 
 const LoadingComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         persistent: true,
     },
 };

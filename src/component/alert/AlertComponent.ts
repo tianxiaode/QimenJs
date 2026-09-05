@@ -51,11 +51,9 @@ const ALERT_TPL: TemplateDecl = {
 
 /** 警告提示属性接口 */
 const AlertComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-        title: { target: 'title', to: 'text' },
-    },
     options: {
+        text: null,
+        title: null,
         alertType: 'info',
         closable: true,
     },
@@ -74,12 +72,17 @@ class AlertComponent extends Component {
         this._initAlert();
     }
 
+    _onTextOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
+
     _onAlertTypeOptionChange(value: AlertType, old: AlertType): void {
         if (value) this.addCls(`q-alert--${value}`);
         if (old) this.removeCls(`q-alert--${old}`);
     }
 
     _onTitleOptionChange(value: string, _old: string): void {
+        this._setNodeText('title', value);
         value ? this.removeCls('hidden', 'title') : this.addCls('hidden', 'title');
     }
 

@@ -8,10 +8,8 @@ import './statistic.css';
 export type StatisticTrend = 'up' | 'down' | 'flat';
 
 const StatisticComponentDefs: Definitions = {
-    targetToOptions: {
-        title: { target: 'title', to: 'text' },
-    },
     options: {
+        title: null,
         value: null,
         prefix: null,
         suffix: null,
@@ -27,6 +25,10 @@ class StatisticComponent extends Component {
     static type = 'statistic';
     get tpl(): TemplateDecl {
         return STATISTIC_TPL;
+    }
+
+    _onTitleOptionChange(value: string): void {
+        this._setNodeText('title', value);
     }
 
     _onValueOptionChange(_value: any): void {

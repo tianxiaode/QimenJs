@@ -156,24 +156,6 @@ export const ComponentDefs: Definitions = {
                 this.setAttributes({ [key]: value });
                 return;
             }
-
-            const def = this.getTargetToDef(key); // 获取目标到选项映射
-
-            if (def) {
-                if (def.to === 'class' && value) {
-                    this.addCls(value);
-                    return;
-                }
-                if (def.to === 'style' && value) {
-                    this.setStyles({ [key]: value });
-                    return;
-                }
-                if (def.to === 'attribute' && value) {
-                    this.setAttributes({ [key]: value });
-                    return;
-                }
-                this._applyContentToElement(key);
-            }
         },
     },
 };

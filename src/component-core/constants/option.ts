@@ -18,7 +18,7 @@ export const OPTION_STYLE_PROPS = new Set([
 ]);
 
 /** 需要走 setAttribute 的选项属性 */
-export const OPTION_ATTRIBUTE_PROPS = new Set(['role', 'hint']);
+export const OPTION_ATTRIBUTE_PROPS = new Set(['role']);
 
 /** 需要走 addCls 的选项属性 */
 export const OPTION_CLS_PROPS = ['cls'] as const;

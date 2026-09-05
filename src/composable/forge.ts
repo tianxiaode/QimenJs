@@ -17,8 +17,6 @@ const BUILTIN_KEYS = new Set([
     'constructor',
     'getData',
     'setData',
-    'targetToOptionMap',
-    'i18nOptions',
     'optionsKeys',
     'propertyKeys',
     'getDataMap',
@@ -124,24 +122,6 @@ export function withDefinitions(target: any, definitions: Definitions): void {
     // 1. 处理 options → 生成 getter/setter
     // ============================================================
 
-    if (definitions.targetToOptions) {
-        for (const [key, def] of Object.entries(definitions.targetToOptions)) {
-            if (BUILTIN_KEYS.has(key)) continue;
-
-            dataMap.optionsKeys.add(key);
-            dataMap.targetToMap.set(key, def);
-            const defaultValue = def.default;
-            if (defaultValue) {
-                dataMap.defaultValues[key] = defaultValue;
-                if (defaultValue.startsWith('@') && !defaultValue.startsWith('@@')) {
-                    dataMap.i18nOptions.push(key);
-                }
-            }
-
-            defineGetterSetter(proto, key);
-        }
-    }
-
     if (definitions.options) {
         for (const [key, value] of Object.entries(definitions.options)) {
             if (BUILTIN_KEYS.has(key)) continue;
@@ -227,18 +207,14 @@ function initConstructorProperties(proto: any) {
     const parent = Object.getPrototypeOf(ctor);
     const parentData = parent[DATA_MAP_SYMBOL] ?? {
         defaultValues: {},
-        targetToMap: new Map(),
-        i18nOptions: [],
         optionsKeys: new Set<string>(),
         propertyKeys: new Set<string>(),
         propertyClearKeys: [],
     };
     ctor[DATA_MAP_SYMBOL] = {
         defaultValues: { ...parentData.defaultValues },
-        targetToMap: new Map<string, any>(parentData.targetToMap),
-        i18nOptions: [],
         optionsKeys: new Set<string>(parentData.optionsKeys),
-        propertyKeys: new Set<string>(parentData.propertyKeys), // 3. 添加到 propertyKeys
+        propertyKeys: new Set<string>(parentData.propertyKeys),
         propertyClearKeys: [...parentData.propertyClearKeys],
     };
     return ctor[DATA_MAP_SYMBOL]; // 4. 返回 dataMap

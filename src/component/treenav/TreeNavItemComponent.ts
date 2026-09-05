@@ -17,10 +17,8 @@ export interface TreeNavItemProps {
 }
 
 const TreeNavItemComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         icon: null,
         active: false,
         expanded: false,
@@ -40,6 +38,10 @@ class TreeNavItemComponent extends Component {
     }
 
     _childInstances: TreeNavItemComponent[] = [];
+
+    _onTextOptionChange(value: string): void {
+        this._setNodeText('text', value);
+    }
 
     _onIconOptionChange(value: string): void {
         const el = this.getNodeEl('icon');

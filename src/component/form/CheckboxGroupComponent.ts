@@ -57,12 +57,6 @@ class CheckboxGroupComponent extends FormFieldComponent {
         this._renderOptions();
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        super._onSizeOptionChange(value, old);
-        if (value) this.addCls(`q-checkbox-group--${value}`);
-        if (old) this.removeCls(`q-checkbox-group--${old}`);
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-checkbox-group');

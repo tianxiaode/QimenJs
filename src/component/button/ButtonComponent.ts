@@ -35,10 +35,8 @@ import { SizeAbility } from '@/component-abilities';
 import './button.css';
 
 const ButtonComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'text', to: 'text' },
-    },
     options: {
+        text: null,
         size: 'md', // 默认尺寸,
         ghost: false, // 无边框
         iconAlign: 'left', // 布局
@@ -55,6 +53,7 @@ class ButtonComponent extends Component {
     }
 
     _onTextOptionChange(value: string, _old: string) {
+        this._setNodeText('text', value);
         const nodeName = 'text';
         value
             ? this.addCls('q-button__text', nodeName)

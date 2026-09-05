@@ -7,11 +7,9 @@ import './href.css';
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';
 
 const HrefComponentDefs: Definitions = {
-    targetToOptions: {
-        text: { target: 'root', to: 'text' },
-        href: { target: 'root', to: 'href' },
-    },
     options: {
+        text: null,
+        href: null,
         target: null,
     },
 } as const;
@@ -33,6 +31,14 @@ class HrefComponent extends Component {
             },
         },
     };
+
+    _onTextOptionChange(value: string) {
+        this._setNodeText('root', value);
+    }
+
+    _onHrefOptionChange(value: string) {
+        this._setNodeAttr('root', 'href', value ?? '');
+    }
 
     _onTargetOptionChange(value: string) {
         if (value && value !== '_self') {

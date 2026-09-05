@@ -56,12 +56,6 @@ class SwitchComponent extends FormFieldComponent {
         this._updateText();
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        super._onSizeOptionChange(value, old);
-        if (value) this.addCls(`q-switch--${value}`);
-        if (old) this.removeCls(`q-switch--${old}`);
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-switch');

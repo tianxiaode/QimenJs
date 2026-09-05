@@ -115,11 +115,6 @@ class FormFieldComponent extends Component {
         this._applyRequiredConfig();
     }
 
-    _onSizeOptionChange(value: string, old: string): void {
-        if (value) this.addCls(`q-formfield--${value}`);
-        if (old) this.removeCls(`q-formfield--${old}`);
-    }
-
     _onColSpanOptionChange(value: number): void {
         this.el!.style.gridColumn = value > 1 ? `span ${value}` : '';
     }
