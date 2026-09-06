@@ -16,27 +16,23 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { ONE_TIME_PASSWORD_TPL } from './one-time-password-tpl';
 import './one-time-password.css';
 
-/** 一次性密码属性接口 */
-export interface OneTimePasswordProps {
-    value?: string;
-    length?: number;
-    type?: 'text' | 'number';
-    disabled?: boolean;
-    readonly?: boolean;
-    autoFocus?: boolean;
-}
-
 const MAX_INPUTS = 8;
 
-class OneTimePasswordComponent extends Component {
-    _length: number = 6;
-    _otpType: 'text' | 'number' = 'number';
-    _otpDisabled: boolean = false;
-    _otpReadonly: boolean = false;
+const OneTimePasswordComponentDefs: Definitions = {
+    options: {
+        length: 6,
+        type: 'number',
+        disabled: false,
+        readonly: false,
+        autoFocus: false,
+    },
+} as const;
 
+class OneTimePasswordComponent extends Component {
     domEvents?: DomEventsMap = {
         input: { handler: '_onInput' },
         keydown: { handler: '_onKeydown' },
@@ -44,27 +40,36 @@ class OneTimePasswordComponent extends Component {
         focusin: { handler: '_onFocus' },
     };
 
-    onAfterInit(props?: OneTimePasswordProps): void {
-        if (props?.length !== undefined) this._length = props.length;
-        if (props?.type !== undefined) this._otpType = props.type;
-        if (props?.disabled) this._otpDisabled = true;
-        if (props?.readonly) this._otpReadonly = true;
-
+    _onLengthOptionChange(): void {
         this._applyOTPState();
+    }
 
-        if (props?.value !== undefined) {
-            this.value = props.value;
-        }
+    _onTypeOptionChange(): void {
+        this._applyOTPState();
+    }
 
-        if (props?.autoFocus) {
+    _onDisabledOptionChange(): void {
+        this._applyOTPState();
+    }
+
+    _onReadonlyOptionChange(): void {
+        this._applyOTPState();
+    }
+
+    _onAutoFocusOptionChange(value: boolean): void {
+        if (value) {
             const inputs = this._getInputs();
             inputs[0]?.focus();
         }
     }
 
+    onAfterInit(): void {
+        this._applyOTPState();
+    }
+
     private _getInputs(): HTMLInputElement[] {
         const inputs: HTMLInputElement[] = [];
-        for (let i = 0; i < this._length; i++) {
+        for (let i = 0; i < this.length; i++) {
             const el = this.nodeMap?.[`input${i}`]?.el as HTMLInputElement | undefined;
             if (el) {
                 inputs.push(el);
@@ -78,7 +83,7 @@ class OneTimePasswordComponent extends Component {
         if (!target?.classList.contains('q-otp__input')) return;
 
         const value = target.value;
-        if (this._otpType === 'number' && value && !/^\d$/.test(value)) {
+        if (this.type === 'number' && value && !/^\d$/.test(value)) {
             target.value = '';
             return;
         }
@@ -118,10 +123,10 @@ class OneTimePasswordComponent extends Component {
         domEvt.preventDefault();
         const text = domEvt.clipboardData?.getData('text') ?? '';
         const inputs = this._getInputs();
-        const chars = text.replace(/\s/g, '').slice(0, this._length);
+        const chars = text.replace(/\s/g, '').slice(0, this.length);
 
         for (let i = 0; i < chars.length && i < inputs.length; i++) {
-            if (this._otpType === 'number' && !/^\d$/.test(chars[i])) continue;
+            if (this.type === 'number' && !/^\d$/.test(chars[i])) continue;
             inputs[i].value = chars[i];
         }
 
@@ -141,7 +146,7 @@ class OneTimePasswordComponent extends Component {
         const inputs = this._getInputs();
         const value = inputs.map(i => i.value).join('');
 
-        if (value.length === this._length) {
+        if (value.length === this.length) {
             this.emit('complete', { value });
         } else {
             this.emit('input', { value, index: -1 });
@@ -149,25 +154,25 @@ class OneTimePasswordComponent extends Component {
     }
 
     private _applyOTPState(): void {
-        this.toggleCls('q-otp--disabled', this._otpDisabled);
-        this.toggleCls('q-otp--readonly', this._otpReadonly);
+        this.toggleCls('q-otp--disabled', this.disabled);
+        this.toggleCls('q-otp--readonly', this.readonly);
 
         for (let i = 0; i < MAX_INPUTS; i++) {
             const nodeName = `input${i}`;
-            const isVisible = i < this._length;
+            const isVisible = i < this.length;
             this.setNodeHidden(!isVisible, nodeName);
 
             if (isVisible) {
-                const inputType = this._otpType === 'number' ? 'tel' : 'text';
+                const inputType = this.type === 'number' ? 'tel' : 'text';
                 this.setAttr('type', inputType, nodeName);
 
-                if (this._otpDisabled) {
+                if (this.disabled) {
                     this.setNodeDisabled(true, nodeName);
                 } else {
                     this.setNodeDisabled(false, nodeName);
                 }
 
-                if (this._otpReadonly) {
+                if (this.readonly) {
                     this.setAttr('readonly', 'true', nodeName);
                 } else {
                     this.removeAttr('readonly', nodeName);
@@ -190,7 +195,7 @@ class OneTimePasswordComponent extends Component {
     }
 
     get otpLength(): number {
-        return this._length;
+        return this.length;
     }
 
     getFormValue(): any {
@@ -205,21 +210,13 @@ class OneTimePasswordComponent extends Component {
         this.value = defaultValue ?? '';
     }
 
-    update(props?: Partial<OneTimePasswordProps>): void {
+    update(props?: Record<string, any>): void {
         super.update(props);
 
-        if (props?.length !== undefined) {
-            this._length = props.length;
-        }
-        if (props?.type !== undefined) {
-            this._otpType = props.type;
-        }
-        if (props?.disabled !== undefined) {
-            this._otpDisabled = props.disabled;
-        }
-        if (props?.readonly !== undefined) {
-            this._otpReadonly = props.readonly;
-        }
+        if (props?.length !== undefined) this.length = props.length;
+        if (props?.type !== undefined) this.type = props.type;
+        if (props?.disabled !== undefined) this.disabled = props.disabled;
+        if (props?.readonly !== undefined) this.readonly = props.readonly;
 
         this._applyOTPState();
 
@@ -230,6 +227,7 @@ class OneTimePasswordComponent extends Component {
 }
 
 OneTimePasswordComponent.useTemplate(ONE_TIME_PASSWORD_TPL);
+OneTimePasswordComponent.define(OneTimePasswordComponentDefs);
 
 export { OneTimePasswordComponent };
 /** 一次性密码实例类型 */

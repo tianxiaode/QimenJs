@@ -17,6 +17,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { PROPERTY_FIELD_TPL } from './property-field-tpl';
 import { formatNumber } from '@/utils/number';
 import { formatDate } from '@/utils/date';
@@ -40,14 +41,21 @@ export interface PropertyField {
     cls?: string;
 }
 
+const PropertyFieldComponentDefs: Definitions = {
+    options: {
+        field: null,
+        data: null,
+    },
+} as const;
+
 class PropertyFieldComponent extends Component {
     _fieldDef: PropertyField = { key: '' };
     _data: Record<string, any> = {};
     _nestedGrid: any = null;
 
-    onAfterInit(props?: { field: PropertyField; data: Record<string, any> }): void {
-        if (props?.field) this._fieldDef = props.field;
-        if (props?.data) this._data = props.data;
+    onAfterInit(): void {
+        if (this.getData('field')) this._fieldDef = this.getData('field');
+        if (this.getData('data')) this._data = this.getData('data');
         this._applyField();
     }
 
@@ -62,7 +70,7 @@ class PropertyFieldComponent extends Component {
         }
     }
 
-    update(props?: { field?: PropertyField; data?: Record<string, any> }): void {
+    update(props?: Record<string, any>): void {
         if (props?.field) this._fieldDef = props.field;
         if (props?.data) this._data = props.data;
         this._applyField();
@@ -218,6 +226,7 @@ class PropertyFieldComponent extends Component {
 }
 
 PropertyFieldComponent.useTemplate(PROPERTY_FIELD_TPL);
+PropertyFieldComponent.define(PropertyFieldComponentDefs);
 export { PropertyFieldComponent };
 /** 属性字段实例类型 */
 export type PropertyFieldComponentInstance = InstanceType<typeof PropertyFieldComponent>;

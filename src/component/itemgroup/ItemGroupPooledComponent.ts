@@ -5,6 +5,7 @@
 
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 import type { TplEventAction } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 
 /** 辅助池角色-分组 */
 export const AUX_ROLE_GROUP = 'group';
@@ -42,6 +43,19 @@ interface AuxPool {
     offset: number;
 }
 
+const ItemGroupPooledComponentDefs: Definitions = {
+    options: {
+        groupRowType: null,
+        expandRowType: null,
+        groupSummaryType: null,
+        tableSummaryType: null,
+        groupItems: null,
+        expandItems: null,
+        groupSummaryItems: null,
+        tableSummaryItems: null,
+    },
+} as const;
+
 /** 池化项组组件 */
 class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     _hiddenItems: Array<{
@@ -57,40 +71,44 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         return this._hiddenItems.length;
     }
 
-    onAfterInit(props?: any): void {
-        this._initItemGroupComponent(props);
+    onAfterInit(): void {
+        super.onAfterInit();
 
-        if (props?.groupRowType) {
+        this._initAuxPools();
+    }
+
+    _initAuxPools(): void {
+        if (this.getData('groupRowType')) {
             this.registerAuxPool(AUX_ROLE_GROUP, {
-                itemType: props.groupRowType,
+                itemType: this.getData('groupRowType'),
                 offset: ROLE_OFFSETS[AUX_ROLE_GROUP],
             });
         }
-        if (props?.expandRowType) {
+        if (this.getData('expandRowType')) {
             this.registerAuxPool(AUX_ROLE_EXPAND, {
-                itemType: props.expandRowType,
+                itemType: this.getData('expandRowType'),
                 offset: ROLE_OFFSETS[AUX_ROLE_EXPAND],
             });
         }
-        if (props?.groupSummaryType) {
+        if (this.getData('groupSummaryType')) {
             this.registerAuxPool(AUX_ROLE_GROUP_SUMMARY, {
-                itemType: props.groupSummaryType,
+                itemType: this.getData('groupSummaryType'),
                 offset: ROLE_OFFSETS[AUX_ROLE_GROUP_SUMMARY],
             });
         }
-        if (props?.tableSummaryType) {
+        if (this.getData('tableSummaryType')) {
             this.registerAuxPool(AUX_ROLE_TABLE_SUMMARY, {
-                itemType: props.tableSummaryType,
+                itemType: this.getData('tableSummaryType'),
                 offset: ROLE_OFFSETS[AUX_ROLE_TABLE_SUMMARY],
             });
         }
 
-        if (props?.groupItems) this.setAuxItems(AUX_ROLE_GROUP, props.groupItems);
-        if (props?.expandItems) this.setAuxItems(AUX_ROLE_EXPAND, props.expandItems);
-        if (props?.groupSummaryItems)
-            this.setAuxItems(AUX_ROLE_GROUP_SUMMARY, props.groupSummaryItems);
-        if (props?.tableSummaryItems)
-            this.setAuxItems(AUX_ROLE_TABLE_SUMMARY, props.tableSummaryItems);
+        if (this.getData('groupItems')) this.setAuxItems(AUX_ROLE_GROUP, this.getData('groupItems'));
+        if (this.getData('expandItems')) this.setAuxItems(AUX_ROLE_EXPAND, this.getData('expandItems'));
+        if (this.getData('groupSummaryItems'))
+            this.setAuxItems(AUX_ROLE_GROUP_SUMMARY, this.getData('groupSummaryItems'));
+        if (this.getData('tableSummaryItems'))
+            this.setAuxItems(AUX_ROLE_TABLE_SUMMARY, this.getData('tableSummaryItems'));
     }
 
     setItems(datas: Record<string, any>[]): void {
@@ -425,6 +443,8 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         return null;
     }
 }
+
+ItemGroupPooledComponent.define(ItemGroupPooledComponentDefs);
 
 export { ItemGroupPooledComponent };
 /** 池化项组实例类型 */

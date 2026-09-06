@@ -42,6 +42,7 @@ import { DomainAbility } from '../../system-abilities/system/DomainAbility';
 import { PAGINATION_ITEM_NAMES, createPaginationItems } from './pagination-items';
 import { CRUD_ITEM_NAMES, createCrudItems } from './crud-items';
 import type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
+import { Definitions } from '@/composable';
 import './entitytoolbar.css';
 
 // ══════════════════════════════════════════════════════════════
@@ -58,11 +59,25 @@ const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
 export type { EntityToolbarItemDef, EntityToolbarState, EntityToolbarItemState } from './types';
 
 // ══════════════════════════════════════════════════════════════
+// defs 定义
+// ══════════════════════════════════════════════════════════════
+
+const EntityToolbarComponentDefs: Definitions = {
+    options: {
+        domain: null,
+        pagination: null,
+        crud: null,
+        entityKey: null,
+    },
+} as const;
+
+// ══════════════════════════════════════════════════════════════
 // EntityToolbarComponent
 // ══════════════════════════════════════════════════════════════
 
 class EntityToolbarComponent extends ToolbarComponent {
-    _domain: string = '';
+    defaultItemType = 'Button';
+
     _currentPage: number = 1;
     _totalPages: number = 0;
     _totalRecords: number = 0;
@@ -107,25 +122,18 @@ class EntityToolbarComponent extends ToolbarComponent {
         },
     ];
 
-    onAfterInit(props?: Record<string, any>): void {
+    onAfterInit(): void {
         const self = this as any;
         self.addCls('q-entity-toolbar');
         if (self.itemContainer) self.itemContainer.addCls('q-entity-toolbar__items');
 
-        if (props?.domain) self._domain = props.domain;
+        super.onAfterInit();
 
-        // 调 super 前把 pagination/crud + items 合并 → 父类只 setItems 一次
-        const mergedItems = this._resolveMergedItems(props);
+        // 合并声明式 pagination/crud 展开项与 items 自定义项，重新 setItems
+        const mergedItems = this._resolveMergedItems();
+        if (mergedItems.length > 0) self.setItems(mergedItems);
 
-        super.onAfterInit({
-            direction: 'horizontal',
-            defaultItemType: 'Button',
-            gap: '4px',
-            ...props,
-            items: mergedItems.length > 0 ? mergedItems : undefined,
-        } as any);
-
-        this._initEntityToolbar(props);
+        this._initEntityToolbar();
     }
 
     /**
@@ -133,40 +141,34 @@ class EntityToolbarComponent extends ToolbarComponent {
      * 顺序：pagination（order 100-170）→ 自定义 items → crud（order 200-260）。
      * 最终位置由各 item 的 order 字段经 CSS flex order 决定。
      */
-    _resolveMergedItems(props?: EntityToolbarProps): Record<string, any>[] {
+    _resolveMergedItems(): Record<string, any>[] {
         const self = this as any;
         const merged: Record<string, any>[] = [];
 
         merged.push(
-            ...createPaginationItems(props?.pagination, {
+            ...createPaginationItems(self.getData('pagination'), {
                 defaultPageSize: self.pageSize,
                 pageSizes: self.pageSizes,
             })
         );
 
-        if (props?.items && props.items.length > 0) merged.push(...props.items);
+        const items = self.getData('items');
+        if (items && items.length > 0) merged.push(...items);
 
-        merged.push(...createCrudItems(props?.crud));
+        merged.push(...createCrudItems(self.getData('crud')));
 
         return merged;
     }
 
-    _initEntityToolbar(props?: EntityToolbarProps): void {
+    _initEntityToolbar(): void {
         const self = this as any;
         self._setupFormEvents();
         self._syncPageBtnStates();
     }
 
     // ══════════════════════════════════════════════════════════════
-    // domain / pageSize / pageSizes（domainConfig 兜底，首次读时固化）
+    // pageSize / pageSizes（domainConfig 兜底，首次读时固化）
     // ══════════════════════════════════════════════════════════════
-
-    get domain(): string {
-        return (this as any)._domain;
-    }
-    set domain(v: string) {
-        (this as any)._domain = v ?? '';
-    }
 
     /**
      * 每页条数：优先 domainConfig.pageSize，兜底 20。首次读时固化到实例。
@@ -495,15 +497,10 @@ class EntityToolbarComponent extends ToolbarComponent {
             props?.crud !== undefined ||
             props?.items !== undefined
         ) {
-            const merged = this._resolveMergedItems({
-                ...(self._lastProps || {}),
-                ...(props || {}),
-            } as EntityToolbarProps);
+            const merged = this._resolveMergedItems();
             self.clear();
             if (merged.length > 0) self.setItems(merged);
         }
-        if (props?.domain !== undefined) self._domain = props.domain;
-        if (props?.entityKey !== undefined) self.entityKey = props.entityKey;
         self._lastProps = { ...(self._lastProps || {}), ...(props || {}) };
     }
 }
@@ -511,6 +508,7 @@ class EntityToolbarComponent extends ToolbarComponent {
 // 类级 use() 一次：DomainAbility 提供 this.domainConfig
 // EntityEventBusAbility 由系统自动挂载（COMPONENT_ABILITIES），无需 use
 EntityToolbarComponent.use([DomainAbility]);
+EntityToolbarComponent.define(EntityToolbarComponentDefs);
 
 export { EntityToolbarComponent };
 export type EntityToolbarComponentInstance = InstanceType<typeof EntityToolbarComponent>;

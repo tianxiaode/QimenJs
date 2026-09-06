@@ -26,35 +26,45 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { PROPERTY_GRID_TPL } from './property-grid-tpl';
 import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';
-import './propertygrid.css.ts';
+import './propertygrid.css';
 
 export type { PropertyField, PropertyFieldType };
 
-/** 属性网格属性接口 */
-export interface PropertyGridProps {
-    fields: PropertyField[];
-    data?: Record<string, any>;
-    cols?: number;
-    gap?: string;
-}
+const PropertyGridComponentDefs: Definitions = {
+    options: {
+        cols: 2,
+        gap: '8px 16px',
+        fields: null,
+        data: null,
+    },
+} as const;
 
 class PropertyGridComponent extends Component {
-    _fields: PropertyField[] = [];
-    _data: Record<string, any> = {};
-    _cols: number = 2;
-    _gap: string = '8px 16px';
     _fieldComponents: any[] = [];
 
-    onAfterInit(props?: PropertyGridProps): void {
+    _onColsOptionChange(): void {
+        this._applyGrid();
+    }
+
+    _onGapOptionChange(): void {
+        this._applyGrid();
+    }
+
+    _onFieldsOptionChange(value: PropertyField[]): void {
+        if (!value) return;
+        this._rebuildFields();
+    }
+
+    _onDataOptionChange(value: Record<string, any>): void {
+        if (!value) return;
+        this._updateFieldData();
+    }
+
+    onAfterInit(): void {
         this.addCls('q-pgrid');
-
-        if (props?.cols) this._cols = props.cols;
-        if (props?.gap) this._gap = props.gap;
-        if (props?.fields) this._fields = props.fields;
-        if (props?.data) this._data = props.data;
-
         this._applyGrid();
         this._createFields();
     }
@@ -67,62 +77,18 @@ class PropertyGridComponent extends Component {
         }
     }
 
-    get fields(): PropertyField[] {
-        return this._fields;
-    }
-    set fields(value: PropertyField[]) {
-        this._fields = value;
-        this._rebuildFields();
-    }
-
-    get data(): Record<string, any> {
-        return this._data;
-    }
-    set data(value: Record<string, any>) {
-        this._data = value;
-        this._updateFieldData();
-    }
-
-    get cols(): number {
-        return this._cols;
-    }
-    set cols(value: number) {
-        this._cols = value;
-        this._applyGrid();
-    }
-
-    get gap(): string {
-        return this._gap;
-    }
-    set gap(value: string) {
-        this._gap = value;
-        this._applyGrid();
-    }
-
-    update(props?: Partial<PropertyGridProps>): void {
-        if (props?.fields !== undefined) {
-            this._fields = props.fields;
-            this._rebuildFields();
-        }
-        if (props?.data !== undefined) {
-            this._data = props.data;
-            this._updateFieldData();
-        }
-        if (props?.cols !== undefined) {
-            this._cols = props.cols;
-            this._applyGrid();
-        }
-        if (props?.gap !== undefined) {
-            this._gap = props.gap;
-            this._applyGrid();
-        }
+    update(props?: Record<string, any>): void {
+        if (props?.fields !== undefined) this.fields = props.fields;
+        if (props?.data !== undefined) this.data = props.data;
+        if (props?.cols !== undefined) this.cols = props.cols;
+        if (props?.gap !== undefined) this.gap = props.gap;
     }
 
     private _applyGrid(): void {
         const gridEl = this._resolveNodeEl('grid');
         if (!gridEl) return;
-        gridEl.style.setProperty('--q-pgrid-cols', String(this._cols * 2));
-        gridEl.style.gap = this._gap;
+        gridEl.style.setProperty('--q-pgrid-cols', String(this.cols * 2));
+        gridEl.style.gap = this.gap;
     }
 
     private _createFields(): void {
@@ -136,10 +102,13 @@ class PropertyGridComponent extends Component {
 
         this._fieldComponents = [];
 
-        for (const field of this._fields) {
+        const fields = this.fields;
+        if (!fields) return;
+
+        for (const field of fields) {
             const fc = new PropertyFieldComponent({
                 field,
-                data: this._data,
+                data: this.data,
             });
             gridEl.appendChild(fc.el);
             this._fieldComponents.push(fc);
@@ -158,7 +127,7 @@ class PropertyGridComponent extends Component {
 
     private _updateFieldData(): void {
         for (const fc of this._fieldComponents) {
-            fc.update({ data: this._data });
+            fc.update({ data: this.data });
         }
     }
 
@@ -171,6 +140,7 @@ class PropertyGridComponent extends Component {
 }
 
 PropertyGridComponent.useTemplate(PROPERTY_GRID_TPL);
+PropertyGridComponent.define(PropertyGridComponentDefs);
 export { PropertyGridComponent };
 /** 属性网格实例类型 */
 export type PropertyGridComponentInstance = InstanceType<typeof PropertyGridComponent>;

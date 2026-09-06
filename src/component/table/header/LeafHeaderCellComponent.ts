@@ -11,9 +11,17 @@
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
 import type { TplNode, DragOptions } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
 
 type SortState = 'none' | 'asc' | 'desc';
+
+const LeafHeaderCellComponentDefs: Definitions = {
+    options: {
+        sortable: false,
+        resizable: true,
+    },
+} as const;
 
 class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     get tpl(): TplNode {
@@ -26,16 +34,20 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         handle: 'resizeHandle',
     };
 
-    _sortable: boolean = false;
-    _resizable: boolean = true;
     _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
-        if (props?.sortable !== undefined) this._sortable = props.sortable;
-        if (props?.resizable !== undefined) this._resizable = props.resizable;
+    onAfterInit(): void {
+        super.onAfterInit();
         this._applySortIcon();
+        this._applyResizable();
+    }
+
+    _onSortableOptionChange(_value: boolean): void {
+        this._applySortIcon();
+    }
+
+    _onResizableOptionChange(_value: boolean): void {
         this._applyResizable();
     }
 
@@ -48,7 +60,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     }
 
     _applySortIcon(): void {
-        if (!this._sortable) {
+        if (!this.sortable) {
             this.setNodeStyle({ display: 'none' }, 'sortIcon');
             return;
         }
@@ -57,23 +69,23 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     }
 
     _applyResizable(): void {
-        this.setNodeStyle({ display: this._resizable ? '' : 'none' }, 'resizeHandle');
+        this.setNodeStyle({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     _onSortClick(): void {
-        if (!this._sortable) return;
+        if (!this.sortable) return;
         const next: SortState =
             this._sortState === 'none' ? 'asc' : this._sortState === 'asc' ? 'desc' : 'none';
         this.sortState = next;
 
         if (next !== 'none') {
-            this.entityEmit('sort', { direction: next as SortDirection }, { source: this._colName });
+            this.entityEmit('sort', { direction: next as SortDirection }, { source: this.colName });
         } else {
-            this.entityEmit('sort', { direction: null }, { source: this._colName });
+            this.entityEmit('sort', { direction: null }, { source: this.colName });
         }
 
         this.emit('sortChange', {
-            colName: this._colName,
+            colName: this.colName,
             direction: next === 'none' ? null : next,
         });
     }
@@ -84,7 +96,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         el: HTMLElement;
         originalEvent: Event;
     }): void {
-        if (!this._resizable) return;
+        if (!this.resizable) return;
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
@@ -94,10 +106,10 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         el: HTMLElement;
         originalEvent: Event;
     }): void {
-        if (!this._resizable) return;
-        const newWidth = Math.max(this._minWidth, this._resizeStartWidth + ctx.dx);
+        if (!this.resizable) return;
+        const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
         this.emit('resize', {
-            colName: this._colName,
+            colName: this.colName,
             width: newWidth,
         });
     }
@@ -113,6 +125,8 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         }
     }
 }
+
+LeafHeaderCellComponent.define(LeafHeaderCellComponentDefs);
 
 export { LeafHeaderCellComponent };
 /** 叶子表头单元格实例类型 */

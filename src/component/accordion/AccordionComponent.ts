@@ -1,11 +1,21 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './accordion.css';
 
 /** 手风琴模式类型 */
 export type AccordionMode = 'single' | 'multiple';
 
+const AccordionComponentDefs: Definitions = {
+    options: {
+        mode: 'single',
+        expandedIndex: null,
+        expandedIndices: null,
+    },
+} as const;
+
 class AccordionComponent extends ItemGroupPooledComponent {
+    defaultItemType = 'Panel';
     _mode: AccordionMode = 'single';
     _expandedIndex: number = -1;
 
@@ -44,26 +54,30 @@ class AccordionComponent extends ItemGroupPooledComponent {
         }
     }
 
-    onAfterInit(props?: Record<string, any>): void {
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical', gap: '0' };
+    }
+
+    onAfterInit(): void {
         const self = this as any;
-        self._mode = props?.mode ?? 'single';
+        self._mode = this.getData('mode') ?? 'single';
 
         this.toggleCls('q-accordion--multiple', self._mode === 'multiple');
         this.addCls('q-accordion');
         this.addCls('q-accordion__items', 'itemContainer');
 
-        super.onAfterInit({
-            ...props,
-            direction: props?.direction ?? 'vertical',
-            gap: props?.gap ?? '0',
-            defaultItemType: 'Panel',
-        });
+        super.onAfterInit();
 
-        if (self._mode === 'single' && props?.expandedIndex !== undefined) {
-            self.expandAt(props.expandedIndex, true);
-        }
-        if (self._mode === 'multiple' && props?.expandedIndices?.length) {
-            for (const idx of props.expandedIndices) self.expandAt(idx, true);
+        if (self._mode === 'single') {
+            const expandedIndex = this.getData('expandedIndex');
+            if (expandedIndex !== undefined) {
+                self.expandAt(expandedIndex, true);
+            }
+        } else {
+            const expandedIndices = this.getData('expandedIndices');
+            if (expandedIndices?.length) {
+                for (const idx of expandedIndices) self.expandAt(idx, true);
+            }
         }
     }
 
@@ -152,6 +166,8 @@ class AccordionComponent extends ItemGroupPooledComponent {
         if (props?.expandedIndex !== undefined) self.expandAt(props.expandedIndex);
     }
 }
+
+AccordionComponent.define(AccordionComponentDefs);
 
 export { AccordionComponent };
 /** 手风琴实例类型 */

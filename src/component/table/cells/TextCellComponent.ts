@@ -23,20 +23,17 @@
 
 import { BaseCellComponent } from './BaseCellComponent';
 import type { ColumnFormat, TextCellData } from '../column-types';
+import { Definitions } from '@/composable';
+
+const TextCellComponentDefs: Definitions = {
+    options: {
+        format: null,
+    },
+} as const;
 
 class TextCellComponent extends BaseCellComponent {
-    _format: ColumnFormat | undefined = undefined;
-
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
-        if (props?.format) this._format = props.format;
-    }
-
-    get format(): ColumnFormat | undefined {
-        return this._format;
-    }
-    set format(v: ColumnFormat | undefined) {
-        this._format = v;
+    onAfterInit(): void {
+        super.onAfterInit();
     }
 
     update(data: TextCellData): void {
@@ -46,9 +43,9 @@ class TextCellComponent extends BaseCellComponent {
     }
 
     _formatValue(value: any): string {
-        if (this._format === undefined) return String(value ?? '');
-        if (typeof this._format === 'function') return this._format(value, undefined);
-        return this._applyFormatPreset(value, this._format);
+        if (this.format === undefined || this.format === null) return String(value ?? '');
+        if (typeof this.format === 'function') return this.format(value, undefined);
+        return this._applyFormatPreset(value, this.format);
     }
 
     _applyFormatPreset(value: any, preset: string): string {
@@ -72,6 +69,8 @@ class TextCellComponent extends BaseCellComponent {
         }
     }
 }
+
+TextCellComponent.define(TextCellComponentDefs);
 
 export { TextCellComponent };
 /** 文本单元格实例类型 */

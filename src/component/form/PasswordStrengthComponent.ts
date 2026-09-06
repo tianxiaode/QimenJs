@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './password-strength.css';
 
 /** 密码强度类型 */
@@ -20,22 +21,24 @@ const STRENGTH_LABELS: Record<PasswordStrength, string> = {
     4: '极强',
 };
 
-class PasswordStrengthComponent extends Component {
-    _strength: PasswordStrength = 0;
-    _password: string = '';
+const PasswordStrengthComponentDefs: Definitions = {
+    options: {
+        strength: 0,
+        password: '',
+    },
+} as const;
 
-    onAfterInit(props?: { strength?: PasswordStrength; password?: string }): void {
-        this._strength = props?.strength ?? 0;
-        this._password = props?.password ?? '';
+class PasswordStrengthComponent extends Component {
+    onAfterInit(): void {
         this._updateUI();
     }
 
-    update(props: { strength?: PasswordStrength; password?: string }): void {
+    update(props: Record<string, any>): void {
         if (props.strength !== undefined) {
-            this._strength = props.strength;
+            this.strength = props.strength;
         }
         if (props.password !== undefined) {
-            this._password = props.password;
+            this.password = props.password;
         }
         this._updateUI();
     }
@@ -45,15 +48,17 @@ class PasswordStrengthComponent extends Component {
         const labelEl = this.el.querySelector('.q-password-strength__label') as HTMLElement;
 
         if (barEl) {
-            barEl.className = `q-password-strength__fill q-password-strength__fill--${this._strength}`;
+            barEl.className = `q-password-strength__fill q-password-strength__fill--${this.strength}`;
         }
 
         if (labelEl) {
-            labelEl.textContent = STRENGTH_LABELS[this._strength];
-            labelEl.className = `q-password-strength__label q-password-strength__label--${this._strength}`;
+            labelEl.textContent = STRENGTH_LABELS[this.strength as PasswordStrength];
+            labelEl.className = `q-password-strength__label q-password-strength__label--${this.strength}`;
         }
     }
 }
+
+PasswordStrengthComponent.define(PasswordStrengthComponentDefs);
 
 export { PasswordStrengthComponent };
 export type PasswordStrengthComponentInstance = InstanceType<typeof PasswordStrengthComponent>;

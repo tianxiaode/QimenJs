@@ -25,14 +25,19 @@
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import type { StepItemComponent } from './StepItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
-import './step.css.ts';
+import { Definitions } from '@/composable';
+import './step.css';
 
 export type { StepStatus } from './StepItemComponent';
-export type { StepItemProps } from './StepItemComponent';
 
+const StepComponentDefs: Definitions = {
+    options: {
+        activeIndex: 0,
+    },
+} as const;
 
 class StepComponent extends ItemGroupPooledComponent {
-    _activeIndex: number = 0;
+    defaultItemType = 'StepItem';
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -51,20 +56,21 @@ class StepComponent extends ItemGroupPooledComponent {
         this.emit('stepClick', { index: item.index, status: item.status });
     }
 
-    onAfterInit(props?: StepProps): void {
+    _onActiveIndexOptionChange(value: number, old: number): void {
+        if (this._items.length > 0) {
+            this._syncStepStatus();
+            if (old !== value) {
+                this.emit('select', { index: value, prevIndex: old });
+            }
+        }
+    }
+
+    onAfterInit(): void {
         this.addCls('q-step');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-step__items');
 
-        super.onAfterInit({
-            defaultItemType: 'StepItem',
-            direction: props?.direction ?? 'horizontal',
-            ...props,
-        });
-
-        if (props?.activeIndex !== undefined) {
-            this._activeIndex = props.activeIndex;
-        }
+        super.onAfterInit();
 
         this._syncStepStatus();
     }
@@ -72,19 +78,7 @@ class StepComponent extends ItemGroupPooledComponent {
     private _syncStepStatus(): void {
         for (let i = 0; i < this.count; i++) {
             const item = this.getAt(i) as StepItemComponent;
-            item.setActiveIndex(i, this._activeIndex);
-        }
-    }
-
-    get activeIndex(): number {
-        return this._activeIndex;
-    }
-    set activeIndex(v: number) {
-        const prevIndex = this._activeIndex;
-        this._activeIndex = v;
-        this._syncStepStatus();
-        if (prevIndex !== v) {
-            this.emit('select', { index: v, prevIndex });
+            item.setActiveIndex(i, this.activeIndex);
         }
     }
 
@@ -100,12 +94,12 @@ class StepComponent extends ItemGroupPooledComponent {
     get defaultEventData(): Record<string, any> {
         return {
             ...super.defaultEventData,
-            activeIndex: this._activeIndex,
+            activeIndex: this.activeIndex,
             stepCount: this.count,
         };
     }
 
-    update(props?: Partial<StepProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.items !== undefined) {
             super.update({ items: props.items });
             this._syncStepStatus();
@@ -116,6 +110,8 @@ class StepComponent extends ItemGroupPooledComponent {
         }
     }
 }
+
+StepComponent.define(StepComponentDefs);
 
 export { StepComponent };
 /** 步骤条实例类型 */

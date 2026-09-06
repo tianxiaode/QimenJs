@@ -22,26 +22,35 @@
  */
 
 import { ItemGroupPooledComponent } from '@qimenjs/component';
-import './timeline.css.ts';
+import { Definitions } from '@/composable';
+import './timeline.css';
 
-export type { TimelineColor, TimelineItemProps } from './TimelineItemComponent';
+export type { TimelineColor } from './TimelineItemComponent';
 /** 时间线项 */
-export type TimelineItem = import('./TimelineItemComponent').TimelineItemProps;
+export type TimelineItem = Record<string, any>;
+
+const TimelineComponentDefs: Definitions = {
+    options: {
+        pending: false,
+    },
+} as const;
 
 class TimelineComponent extends ItemGroupPooledComponent {
-    _pending: boolean = false;
+    defaultItemType = 'TimelineItem';
 
-    onAfterInit(props?: TimelineProps): void {
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical' };
+    }
+
+    _onPendingOptionChange(value: boolean): void {
+        this.toggleCls('q-timeline--pending', value);
+    }
+
+    onAfterInit(): void {
         this.addCls('q-timeline');
         (this as any).itemContainer?.el?.classList.add('q-timeline__list');
 
-        super.onAfterInit({
-            ...props,
-            defaultItemType: 'TimelineItem',
-            direction: 'vertical',
-        });
-
-        if (props?.pending !== undefined) this.pending = props.pending;
+        super.onAfterInit();
     }
 
     get items(): TimelineItem[] {
@@ -51,28 +60,22 @@ class TimelineComponent extends ItemGroupPooledComponent {
         this.setItems(value);
     }
 
-    get pending(): boolean {
-        return this._pending;
-    }
-    set pending(value: boolean) {
-        this._pending = value;
-        this.toggleCls('q-timeline--pending', value);
-    }
-
     get defaultEventData(): Record<string, any> {
         return {
             ...super.defaultEventData,
-            pending: this._pending,
+            pending: this.pending,
             itemCount: this.count,
         };
     }
 
-    update(props?: Partial<TimelineProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.items !== undefined) this.setItems(props.items);
         if (props?.pending !== undefined) this.pending = props.pending;
         super.update(props);
     }
 }
+
+TimelineComponent.define(TimelineComponentDefs);
 
 export { TimelineComponent };
 /** 时间线实例类型 */

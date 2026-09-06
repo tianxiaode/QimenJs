@@ -1,7 +1,15 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
+import { Definitions } from '@/composable';
 import { ROUTE_CONTAINER_TPL } from './route-container-tpl';
 import './routecontainer.css';
+
+const RouteContainerComponentDefs: Definitions = {
+    fields: {
+        routeMap: {},
+        defaultComponent: undefined,
+    },
+} as const;
 
 class RouteContainerComponent extends Component {
     static type = 'route-container';
@@ -11,22 +19,17 @@ class RouteContainerComponent extends Component {
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
-    _routeMap: Record<string, new (props?: Record<string, any>) => any> = {};
-    _defaultComponent: (new (props?: Record<string, any>) => any) | null = null;
     _currentInstance: any = null;
 
-    onAfterInit(props?: Record<string, any>): void {
-        if (props?.routeMap) this._routeMap = props.routeMap;
-        if (props?.defaultComponent) this._defaultComponent = props.defaultComponent;
-
-        if (this._defaultComponent) {
-            this._mountComponent(this._defaultComponent);
+    onAfterInit(): void {
+        if (this.defaultComponent) {
+            this._mountComponent(this.defaultComponent);
         }
     }
 
     onRouteChange(event: any): void {
         const path = event?.path;
-        const PageClass = this._routeMap[path] || this._defaultComponent;
+        const PageClass = this.routeMap[path] || this.defaultComponent;
         if (PageClass) {
             this._mountComponent(PageClass);
         }
@@ -49,6 +52,8 @@ class RouteContainerComponent extends Component {
         super.onBeforeDispose();
     }
 }
+
+RouteContainerComponent.define(RouteContainerComponentDefs);
 
 export { RouteContainerComponent };
 export type RouteContainerComponentInstance = InstanceType<typeof RouteContainerComponent>;

@@ -31,6 +31,7 @@ import {
     type FileTransportConfig,
     type FileItem,
 } from '@/file';
+import { Definitions } from '@/composable';
 
 import { FILE_ACTIONS, FILE_FEEDBACK_EVENTS } from '@/events';
 import { UPLOAD_BUTTON_TPL } from './upload-button-tpl';
@@ -45,26 +46,31 @@ const FEEDBACK_TO_EMIT: Record<string, string> = {
     [FILE_FEEDBACK_EVENTS.REMOVED]: 'remove',
 };
 
+const UploadButtonComponentDefs: Definitions = {
+    options: {
+        fileKey: '',
+        transport: null,
+        accept: '',
+        multiple: false,
+        maxSize: 0,
+        disabled: false,
+        autoUpload: true,
+    },
+} as const;
+
 class UploadButtonComponent extends Component {
     get tpl(): TplNode {
         return UPLOAD_BUTTON_TPL;
     }
 
-    _fileKey: string = '';
-    _transport: FileTransportConfig | null = null;
-    _accept: string = '';
-    _multiple: boolean = false;
-    _maxSize: number = 0;
-    _fileDisabled: boolean = false;
-    _autoUpload: boolean = true;
     _inputEl: HTMLInputElement | null = null;
     _itemsMap: Map<string, FileItem> | null = null;
     _listClickBound: boolean = false;
     _boundListClick: ((e: Event) => void) | null = null;
 
-    onAfterInit(props?: Record<string, any>): void {
+    onAfterInit(): void {
         this.initSize();
-        this._initUploadButton(props);
+        this._initUploadButton();
     }
 
     onBeforeDispose(): void {
@@ -75,33 +81,24 @@ class UploadButtonComponent extends Component {
             this._listClickBound = false;
         }
 
-        if (this._fileKey) {
-            fileDispatchCenter.disconnect(this._fileKey);
+        if (this.fileKey) {
+            fileDispatchCenter.disconnect(this.fileKey);
         }
     }
 
-    _initUploadButton(props?: UploadButtonProps): void {
-        if (props?.fileKey) this._fileKey = props.fileKey;
-        if (props?.eventKey) this.eventKey = props.eventKey;
-        if (props?.transport) this._transport = props.transport;
-        if (props?.accept) this._accept = props.accept;
-        if (props?.multiple) this._multiple = true;
-        if (props?.maxSize) this._maxSize = props.maxSize;
-        if (props?.disabled) this._fileDisabled = true;
-        if (props?.autoUpload !== undefined) this._autoUpload = props.autoUpload;
-
+    _initUploadButton(): void {
         this._createFileInput();
 
         this._itemsMap = new Map();
 
-        fileDispatchCenter.createChannel(this._fileKey, {
-            transport: this._transport ?? undefined,
-            accept: this._accept || undefined,
-            multiple: this._multiple,
-            maxSize: this._maxSize || undefined,
-            autoUpload: this._autoUpload,
+        fileDispatchCenter.createChannel(this.fileKey, {
+            transport: this.transport ?? undefined,
+            accept: this.accept || undefined,
+            multiple: this.multiple,
+            maxSize: this.maxSize || undefined,
+            autoUpload: this.autoUpload,
         });
-        fileDispatchCenter.connect(this._fileKey);
+        fileDispatchCenter.connect(this.fileKey);
 
         this._subscribeFeedback();
 
@@ -120,9 +117,9 @@ class UploadButtonComponent extends Component {
         const input = document.createElement('input');
         input.type = 'file';
         input.style.display = 'none';
-        if (this._accept) input.accept = this._accept;
-        if (this._multiple) input.multiple = true;
-        if (this._fileDisabled) input.disabled = true;
+        if (this.accept) input.accept = this.accept;
+        if (this.multiple) input.multiple = true;
+        if (this.disabled) input.disabled = true;
         this._inputEl = input;
         this.el.appendChild(input);
 
@@ -135,22 +132,22 @@ class UploadButtonComponent extends Component {
     }
 
     onBtnClick(): void {
-        if (this._fileDisabled) return;
+        if (this.disabled) return;
         this._inputEl?.click();
     }
 
     /** 构建并发送文件命令事件（经 EventsAbility） */
     _fileCmd(action: string, data: any): void {
-        this.fileEmit(`file:${this._fileKey}:${action}`, data, {
+        this.fileEmit(`file:${this.fileKey}:${action}`, data, {
             type: action,
-            source: this._fileKey,
+            source: this.fileKey,
             sourceType: 'UploadButton',
         });
     }
 
     /** 订阅 FileEventBus 反馈事件（经 EventsAbility，onCleanup 自动清理） */
     _subscribeFeedback(): void {
-        const key = this._fileKey;
+        const key = this.fileKey;
         const events = [
             FILE_FEEDBACK_EVENTS.SELECTED,
             FILE_FEEDBACK_EVENTS.HASH_START,
@@ -263,7 +260,20 @@ class UploadButtonComponent extends Component {
     }
 
     _applyFileState(): void {
-        this.toggleCls('q-upload-btn--disabled', this._fileDisabled);
+        this.toggleCls('q-upload-btn--disabled', this.disabled);
+    }
+
+    _onDisabledOptionChange(_value: boolean): void {
+        this._applyFileState();
+        if (this._inputEl) this._inputEl.disabled = this.disabled;
+    }
+
+    _onAcceptOptionChange(value: string): void {
+        if (this._inputEl) this._inputEl.accept = value;
+    }
+
+    _onMultipleOptionChange(value: boolean): void {
+        if (this._inputEl) this._inputEl.multiple = value;
     }
 
     get files(): FileItem[] {
@@ -314,42 +324,24 @@ class UploadButtonComponent extends Component {
     }
 
     update(props?: Record<string, any>): void {
-        if (props?.text !== undefined) {
-            this.text = props.text;
-        }
-        this.size = props?.size || 'md';
+        super.update(props);
 
-        if (props?.accept !== undefined) {
-            this._accept = props.accept;
-            if (this._inputEl) this._inputEl.accept = props.accept;
-        }
-        if (props?.multiple !== undefined) {
-            this._multiple = props.multiple;
-            if (this._inputEl) this._inputEl.multiple = props.multiple;
-        }
-        if (props?.disabled !== undefined) {
-            this._fileDisabled = props.disabled;
-            this._applyFileState();
-            if (this._inputEl) this._inputEl.disabled = props.disabled;
-        }
-        if (props?.maxSize !== undefined) this._maxSize = props.maxSize;
-        if (props?.autoUpload !== undefined) this._autoUpload = props.autoUpload;
-        if (props?.transport !== undefined) this._transport = props.transport;
-        if (props?.eventKey !== undefined) this.eventKey = props.eventKey;
+        if (props?.transport !== undefined) this.transport = props.transport;
 
-        if (this._fileKey) {
-            fileDispatchCenter.createChannel(this._fileKey, {
-                transport: this._transport ?? undefined,
-                accept: this._accept || undefined,
-                multiple: this._multiple,
-                maxSize: this._maxSize || undefined,
-                autoUpload: this._autoUpload,
+        if (this.fileKey) {
+            fileDispatchCenter.createChannel(this.fileKey, {
+                transport: this.transport ?? undefined,
+                accept: this.accept || undefined,
+                multiple: this.multiple,
+                maxSize: this.maxSize || undefined,
+                autoUpload: this.autoUpload,
             });
         }
     }
 }
 
 UploadButtonComponent.use(SizeAbility);
+UploadButtonComponent.define(UploadButtonComponentDefs);
 
 export { UploadButtonComponent };
 /** 上传按钮实例类型 */

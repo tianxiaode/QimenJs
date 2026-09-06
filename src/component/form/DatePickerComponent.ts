@@ -27,6 +27,7 @@ import { DatePanelComponent } from '../date/DatePanelComponent';
 import { HourPanelComponent } from '../date/HourPanelComponent';
 import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
+import { Definitions } from '@/composable';
 import './datepicker.css';
 import {
     createDateTimeValue,
@@ -39,23 +40,27 @@ import {
     type DateTimeValue,
 } from '@/utils/date';
 import type { PanelPreviewData } from '../date/panel-preview';
-import './datepicker.css';
 
 const FIELD_ORDER: DateTimeField[] = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+
+const DatePickerComponentDefs: Definitions = {
+    options: {
+        showSeconds: true,
+        startDayOfWeek: 0,
+    },
+} as const;
 
 class DatePickerComponent extends InputComponent {
     _dateValue: DateTimeValue | null = null;
     _originalValue: DateTimeValue | null = null;
-    _showSeconds: boolean = true;
-    _startDayOfWeek: number = 0;
     _dropdownOpen: boolean = false;
     _currentField: DateTimeField | null = null;
     _flowQueue: DateTimeField[] = [];
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-datepicker');
 
         const fieldEl = this.field;
@@ -65,16 +70,17 @@ class DatePickerComponent extends InputComponent {
             fieldEl.removeAttribute('type');
         }
 
-        this._showSeconds = props?.showSeconds ?? true;
-        this._startDayOfWeek = props?.startDayOfWeek ?? 0;
-
-        const date = props?.value ?? new Date();
+        const date = this.value ? new Date(this.value) : new Date();
         this._dateValue = createDateTimeValue(date);
         this._originalValue = { ...this._dateValue };
 
         this._mountDropdownIcon();
         this._syncDisplayValue();
         this._applyState();
+    }
+
+    _onShowSecondsOptionChange(_value: boolean): void {
+        this._syncDisplayValue();
     }
 
     onBeforeDispose(): void {
@@ -112,7 +118,7 @@ class DatePickerComponent extends InputComponent {
         this._originalValue = { ...this._dateValue! };
         this.toggleCls('q-datepicker--open', true);
 
-        this._flowQueue = getFlowFromEntry(entryField, this._showSeconds);
+        this._flowQueue = getFlowFromEntry(entryField, this.showSeconds);
         this._currentField = entryField;
 
         this._renderPanel();
@@ -139,7 +145,7 @@ class DatePickerComponent extends InputComponent {
     }
 
     _switchPanel(field: DateTimeField): void {
-        this._flowQueue = getFlowFromEntry(field, this._showSeconds);
+        this._flowQueue = getFlowFromEntry(field, this.showSeconds);
         this._currentField = field;
         this._renderPanel();
     }
@@ -148,7 +154,7 @@ class DatePickerComponent extends InputComponent {
         return {
             value: this._dateValue!,
             activeField: this._currentField!,
-            showSeconds: this._showSeconds,
+            showSeconds: this.showSeconds,
         };
     }
 
@@ -254,7 +260,7 @@ class DatePickerComponent extends InputComponent {
         this._dateValue = fixed;
         this._syncDisplayValue();
 
-        const nextField = getNextField(this._currentField!, this._showSeconds);
+        const nextField = getNextField(this._currentField!, this.showSeconds);
         if (nextField) {
             this._currentField = nextField;
             this._renderPanel();
@@ -296,7 +302,7 @@ class DatePickerComponent extends InputComponent {
     _syncDisplayValue(): void {
         const fieldEl = this.field;
         if (!fieldEl) return;
-        const text = formatPreview(this._dateValue!, this._showSeconds);
+        const text = formatPreview(this._dateValue!, this.showSeconds);
         fieldEl.value = text;
         this._value = text;
     }
@@ -314,14 +320,6 @@ class DatePickerComponent extends InputComponent {
         } else {
             this._dateValue = null;
         }
-        this._syncDisplayValue();
-    }
-
-    get showSeconds(): boolean {
-        return this._showSeconds;
-    }
-    set showSeconds(v: boolean) {
-        this._showSeconds = v;
         this._syncDisplayValue();
     }
 
@@ -348,9 +346,10 @@ class DatePickerComponent extends InputComponent {
         super.update(props);
 
         if (props?.value !== undefined) this.dateValue = props.value;
-        if (props?.showSeconds !== undefined) this.showSeconds = props.showSeconds;
     }
 }
+
+DatePickerComponent.define(DatePickerComponentDefs);
 
 export { DatePickerComponent };
 export type DatePickerComponentInstance = InstanceType<typeof DatePickerComponent>;

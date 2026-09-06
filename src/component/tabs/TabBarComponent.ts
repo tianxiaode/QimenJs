@@ -23,12 +23,21 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { TabComponent } from './TabComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './tabbar.css';
 
 /** 标签栏位置 */
 export type TabBarPosition = 'top' | 'bottom' | 'left' | 'right';
 
+const TabBarComponentDefs: Definitions = {
+    options: {
+        position: 'top',
+        selectedIndex: null,
+    },
+} as const;
+
 class TabBarComponent extends ItemGroupPooledComponent {
+    defaultItemType = 'Tab';
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
 
@@ -54,24 +63,21 @@ class TabBarComponent extends ItemGroupPooledComponent {
         if (!target) return;
 
         const item = target.component as TabComponent;
-        // close 事件由 domEvents emits 自动触发，包含 index 等数据
     }
 
-    onAfterInit(props?: Record<string, any>): void {
+    onAfterInit(): void {
         this.addCls('q-tab-bar');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-tab-bar__items');
 
-        super.onAfterInit({
-            defaultItemType: 'Tab',
-            ...props,
-        });
+        super.onAfterInit();
 
-        this._position = props?.position ?? 'top';
+        this._position = this.getData('position') ?? 'top';
         this._applyPosition();
 
-        if (props?.selectedIndex !== undefined && props.selectedIndex >= 0) {
-            this._selectedIndex = props.selectedIndex;
+        const selectedIndex = this.getData('selectedIndex');
+        if (selectedIndex !== undefined && selectedIndex >= 0) {
+            this._selectedIndex = selectedIndex;
             this._applySelection();
         }
     }
@@ -134,6 +140,8 @@ class TabBarComponent extends ItemGroupPooledComponent {
         }
     }
 }
+
+TabBarComponent.define(TabBarComponentDefs);
 
 export { TabBarComponent };
 /** 标签栏实例类型 */

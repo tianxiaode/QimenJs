@@ -12,7 +12,14 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './menu.css';
+
+const MenuComponentDefs: Definitions = {
+    options: {
+        anchor: null,
+    },
+} as const;
 
 class MenuComponent extends ItemGroupStaticComponent {
     _anchor: HTMLElement | null = null;
@@ -82,11 +89,12 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
     }
 
-    onAfterInit(props?: Record<string, any>): void {
+    onAfterInit(): void {
         const self = this as any;
-        if (props?.anchor) self._anchor = props.anchor;
+        const anchor = this.getData('anchor');
+        if (anchor) self._anchor = anchor;
 
-        super.onAfterInit(props);
+        super.onAfterInit();
 
         self.initGroupSelect({ defaultMode: 'radio' });
         self.registerGroupItems([...self.items]);
@@ -123,6 +131,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 }
 
 MenuComponent.use(GroupSelectAbility);
+MenuComponent.define(MenuComponentDefs);
 
 export { MenuComponent };
 /** 菜单实例类型 */

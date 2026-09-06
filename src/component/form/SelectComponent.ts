@@ -28,6 +28,7 @@
  */
 
 import { InputComponent } from './InputComponent';
+import { Definitions } from '@/composable';
 import './select.css';
 
 export interface SelectOption {
@@ -37,19 +38,23 @@ export interface SelectOption {
     group?: string;
 }
 
+const SelectComponentDefs: Definitions = {
+    options: {
+        options: [],
+        multiple: false,
+        filterable: false,
+    },
+} as const;
 
 class SelectComponent extends InputComponent {
-    _options: SelectOption[] = [];
     _selectedValue: string | number | (string | number)[] | undefined = undefined;
-    _multiple: boolean = false;
-    _filterable: boolean = false;
     _dropdownOpen: boolean = false;
     _dropdownIconItem: any = null;
     _panelEl: HTMLElement | null = null;
     _offOverlay: (() => void) | null = null;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-select');
 
         const fieldEl = this.field;
@@ -59,22 +64,28 @@ class SelectComponent extends InputComponent {
             fieldEl.removeAttribute('type');
         }
 
-        this._options = props?.options ?? [];
-        this._multiple = props?.multiple ?? false;
-        this._filterable = props?.filterable ?? false;
-
-        if (this._filterable && fieldEl) {
+        if (this.filterable && fieldEl) {
             fieldEl.removeAttribute('readonly');
         }
 
         this._mountDropdownIcon();
 
-        if (props?.value !== undefined) {
-            this._selectedValue = props.value;
-            this._syncDisplayValue();
-        }
-
         this._applyState();
+    }
+
+    _onOptionsOptionChange(_value: SelectOption[]): void {
+        if (this._dropdownOpen) this._renderPanel();
+    }
+
+    _onFilterableOptionChange(value: boolean): void {
+        const fieldEl = this.field;
+        if (fieldEl) {
+            if (value) {
+                fieldEl.removeAttribute('readonly');
+            } else {
+                fieldEl.setAttribute('readonly', 'true');
+            }
+        }
     }
 
     onBeforeDispose(): void {
@@ -183,22 +194,22 @@ class SelectComponent extends InputComponent {
     }
 
     _getFilteredOptions(): SelectOption[] {
-        if (!this._filterable || !this._value) return this._options;
+        if (!this.filterable || !this._value) return this.options;
         const query = this._value.toLowerCase();
-        return (this._options as SelectOption[]).filter((opt: SelectOption) =>
+        return (this.options as SelectOption[]).filter((opt: SelectOption) =>
             opt.label.toLowerCase().includes(query)
         );
     }
 
     _isSelected(value: string | number): boolean {
-        if (this._multiple && Array.isArray(this._selectedValue)) {
+        if (this.multiple && Array.isArray(this._selectedValue)) {
             return this._selectedValue.includes(value);
         }
         return this._selectedValue === value;
     }
 
     _onOptionClick(opt: SelectOption): void {
-        if (this._multiple) {
+        if (this.multiple) {
             const arr = Array.isArray(this._selectedValue)
                 ? [...this._selectedValue]
                 : this._selectedValue !== undefined
@@ -225,10 +236,10 @@ class SelectComponent extends InputComponent {
         const fieldEl = this.field;
         if (!fieldEl) return;
 
-        if (this._multiple && Array.isArray(this._selectedValue)) {
+        if (this.multiple && Array.isArray(this._selectedValue)) {
             const labels = (this._selectedValue as (string | number)[]).map(
                 (v: string | number) => {
-                    const opt = (this._options as SelectOption[]).find(
+                    const opt = (this.options as SelectOption[]).find(
                         (o: SelectOption) => o.value === v
                     );
                     return opt?.label ?? String(v);
@@ -236,7 +247,7 @@ class SelectComponent extends InputComponent {
             );
             fieldEl.value = labels.join(', ');
         } else if (this._selectedValue !== undefined) {
-            const opt = (this._options as SelectOption[]).find(
+            const opt = (this.options as SelectOption[]).find(
                 (o: SelectOption) => o.value === this._selectedValue
             );
             fieldEl.value = opt?.label ?? String(this._selectedValue);
@@ -258,14 +269,6 @@ class SelectComponent extends InputComponent {
         this._syncDisplayValue();
     }
 
-    get options(): SelectOption[] {
-        return this._options;
-    }
-    set options(v: SelectOption[]) {
-        this._options = v;
-        if (this._dropdownOpen) this._renderPanel();
-    }
-
     getFormValue(): any {
         return this._selectedValue;
     }
@@ -284,22 +287,11 @@ class SelectComponent extends InputComponent {
     update(props?: Record<string, any>): void {
         super.update(props);
 
-        if (props?.options !== undefined) this.options = props.options;
         if (props?.value !== undefined) this.selectedValue = props.value;
-        if (props?.multiple !== undefined) this._multiple = props.multiple;
-        if (props?.filterable !== undefined) {
-            this._filterable = props.filterable;
-            const fieldEl = this.field;
-            if (fieldEl) {
-                if (props.filterable) {
-                    fieldEl.removeAttribute('readonly');
-                } else {
-                    fieldEl.setAttribute('readonly', 'true');
-                }
-            }
-        }
     }
 }
+
+SelectComponent.define(SelectComponentDefs);
 
 export { SelectComponent };
 export type SelectComponentInstance = InstanceType<typeof SelectComponent>;

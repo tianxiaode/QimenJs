@@ -33,9 +33,20 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import { TagComponent } from '../tag/TagComponent';
 import type { TagType, TagComponentInstance } from '../tag/TagComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './tags.css';
 
+const TagsComponentDefs: Definitions = {
+    options: {
+        maxCount: 0,
+        collapsed: true,
+        overflowTagType: 'info',
+        closable: false,
+    },
+} as const;
+
 class TagsComponent extends ItemGroupPooledComponent {
+    defaultItemType = 'Tag';
     _allTags: Record<string, any>[] = [];
     _maxCount: number = 0;
     _collapsed: boolean = true;
@@ -51,24 +62,20 @@ class TagsComponent extends ItemGroupPooledComponent {
         },
     };
 
-    onAfterInit(props?: Record<string, any>): void {
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'horizontal', gap: '4px' };
+    }
+
+    onAfterInit(): void {
         this.addCls('q-tags');
         (this as any).itemContainer?.el?.classList.add('q-tags__items');
 
-        this._maxCount = props?.maxCount ?? 0;
-        this._collapsed = props?.collapsed ?? true;
-        this._overflowTagType = props?.overflowTagType ?? 'info';
-        this._closable = props?.closable ?? false;
+        this._maxCount = this.getData('maxCount') ?? 0;
+        this._collapsed = this.getData('collapsed') ?? true;
+        this._overflowTagType = this.getData('overflowTagType') ?? 'info';
+        this._closable = this.getData('closable') ?? false;
 
-        const { items, ...rest } = props ?? {};
-        super.onAfterInit({
-            ...rest,
-            defaultItemType: 'Tag',
-            direction: rest.direction ?? 'horizontal',
-            gap: rest.gap ?? '4px',
-        });
-
-        if (items && items.length > 0) this.setTags(items as Record<string, any>[]);
+        super.onAfterInit();
     }
 
     /**
@@ -284,6 +291,8 @@ class TagsComponent extends ItemGroupPooledComponent {
         }
     }
 }
+
+TagsComponent.define(TagsComponentDefs);
 
 export { TagsComponent };
 /** 标签集实例类型 */

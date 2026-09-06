@@ -15,40 +15,47 @@
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
+
+const BaseHeaderCellComponentDefs: Definitions = {
+    options: {
+        colName: '',
+        align: 'left',
+        minWidth: 50,
+        title: null,
+    },
+} as const;
 
 class BaseHeaderCellComponent extends Component {
     get tpl(): TplNode {
         return BASE_HEADER_CELL_TPL;
     }
 
-    _colName: string = '';
-    _align: ColumnAlign = 'left';
-    _minWidth: number = 50;
-
-    onAfterInit(props?: Record<string, any>): void {
-        if (props?.colName) this._colName = props.colName;
-        if (props?.title) this.setNodeProp('text', props.title, 'title');
-        if (props?.align) this._align = props.align;
-        if (props?.minWidth !== undefined) this._minWidth = props.minWidth;
+    onAfterInit(): void {
+        if (this.title) this.setNodeProp('text', this.title, 'title');
         this._applyWidth();
         this._applyAlign();
     }
 
+    _onAlignOptionChange(_value: string): void {
+        this._applyAlign();
+    }
+
     _applyWidth(): void {
-        if (!this._colName) return;
+        if (!this.colName) return;
         this.setNodeStyle({
-            width: `var(--q-table-col-${this._colName}-width)`,
-            minWidth: `var(--q-table-col-${this._colName}-min-width, ${this._minWidth}px)`,
+            width: `var(--q-table-col-${this.colName}-width)`,
+            minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
             flexShrink: '0',
         });
     }
 
     _applyAlign(): void {
         const justifyContent =
-            this._align === 'center'
+            this.align === 'center'
                 ? 'center'
-                : this._align === 'right'
+                : this.align === 'right'
                   ? 'flex-end'
                   : 'flex-start';
         this.setNodeStyle({ justifyContent }, 'content');
@@ -60,6 +67,8 @@ class BaseHeaderCellComponent extends Component {
         }
     }
 }
+
+BaseHeaderCellComponent.define(BaseHeaderCellComponentDefs);
 
 export { BaseHeaderCellComponent };
 /** 基础表头单元格实例类型 */

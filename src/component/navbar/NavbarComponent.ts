@@ -18,50 +18,46 @@
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { Definitions } from '@/composable';
 import './navbar.css';
 
+const NavbarComponentDefs: Definitions = {
+    options: {
+        companyName: null,
+        logo: null,
+    },
+} as const;
+
 class NavbarComponent extends ItemGroupStaticComponent {
-    onAfterInit(props?: Record<string, any>): void {
-        console.log(
-            '[Navbar] onAfterInit props:',
-            JSON.stringify({
-                hasItems: !!props?.items,
-                itemsLen: props?.items?.length,
-                companyName: props?.companyName,
-                logo: props?.logo,
-            })
-        );
-        // 1. 基础外观（横向、间距）
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'horizontal', gap: '16px' };
+    }
+
+    onAfterInit(): void {
         this.addCls('q-navbar');
         (this as any).itemContainer?.el?.classList.add('q-navbar__items');
 
-        // 2. 默认内置项（如果用户未显式提供 items，则注入默认项）
-        const hasUserItems = props?.items && props.items.length > 0;
+        const hasUserItems = this.getData('items') && this.getData('items').length > 0;
         if (!hasUserItems) {
-            // companyName（order=0，最左）
             this.add({
                 type: 'Text',
                 order: 0,
                 cls: 'q-navbar__company',
-                text: props?.companyName ?? '公司名称',
+                text: this.getData('companyName') ?? '公司名称',
             });
-            // logo（order=10，紧挨公司名右侧；后续可自定义替换）
             this.add({
                 type: 'Icon',
                 order: 10,
                 cls: 'q-navbar__logo',
-                icon: props?.logo ?? '🏢',
+                icon: this.getData('logo') ?? '🏢',
             });
         }
 
-        // 3. 交给基类处理（direction/gap/items/overflow…）
-        super.onAfterInit({
-            ...props,
-            direction: props?.direction ?? 'horizontal',
-            gap: props?.gap ?? '16px',
-        });
+        super.onAfterInit();
     }
 }
+
+NavbarComponent.define(NavbarComponentDefs);
 
 export { NavbarComponent };
 /** 导航栏实例类型 */

@@ -28,6 +28,7 @@ import { Component } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { TABS_TPL } from './tabs-tpl';
 import './tabs.css';
 
@@ -41,30 +42,43 @@ export interface TabPaneItem {
     disabled?: boolean;
 }
 
+const TabsComponentDefs: Definitions = {
+    options: {
+        selectedIndex: 0,
+        position: 'top',
+    },
+    fields: {
+        items: [],
+    },
+} as const;
+
 class TabsComponent extends Component {
     get tpl(): TplNode {
         return TABS_TPL;
     }
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
-    private _items: TabPaneItem[] = [];
-    private _selectedIndex: number = 0;
-    private _position: TabBarPosition = 'top';
     private _contentInstances: any[] = [];
 
-    onAfterInit(props?: Record<string, any>): void {
-        this._items = props?.items ?? [];
-        this._selectedIndex = props?.selectedIndex ?? 0;
-        this._position = props?.position ?? 'top';
-
+    onAfterInit(): void {
         this._applyPosition();
         this._createTabBar();
         this._renderContent();
         this._applyActive();
     }
 
+    _onSelectedIndexOptionChange(value: number): void {
+        this._tabBar?.selectAt(value);
+        this._applyActive();
+    }
+
+    _onPositionOptionChange(_value: TabBarPosition): void {
+        this._applyPosition();
+        this._tabBar?.update({ position: this.position });
+    }
+
     private _applyPosition(): void {
         this.removeCls('q-tabs--top q-tabs--bottom q-tabs--left q-tabs--right');
-        this.addCls(`q-tabs--${this._position}`);
+        this.addCls(`q-tabs--${this.position}`);
     }
 
     private _createTabBar(): void {
@@ -72,23 +86,22 @@ class TabsComponent extends Component {
         if (!barEl) return;
 
         this._tabBar = new TabBarComponent({
-            items: this._items.map(item => ({
+            items: this.items.map(item => ({
                 label: item.label,
                 icon: item.icon,
                 closable: item.closable,
                 disabled: item.disabled,
             })),
-            selectedIndex: this._selectedIndex,
-            position: this._position,
+            selectedIndex: this.selectedIndex,
+            position: this.position,
         });
 
         barEl.appendChild(this._tabBar.el);
 
         // 监听 TabBar 事件
         this._tabBar.on('select', ({ index }: any) => {
-            this._selectedIndex = index;
-            this._applyActive();
-            this.emit('change', { index, item: this._items[index] });
+            this.selectedIndex = index;
+            this.emit('change', { index, item: this.items[index] });
         });
 
         this._tabBar.on('close', ({ index }: any) => {
@@ -97,9 +110,9 @@ class TabsComponent extends Component {
     }
 
     private _closeTab(index: number): void {
-        if (index < 0 || index >= this._items.length) return;
+        if (index < 0 || index >= this.items.length) return;
 
-        const item = this._items[index];
+        const item = this.items[index];
         this.emit('close', { index, item });
 
         // 销毁内容实例
@@ -108,12 +121,12 @@ class TabsComponent extends Component {
             contentInstance.dispose();
         }
 
-        this._items.splice(index, 1);
+        this.items.splice(index, 1);
         this._contentInstances.splice(index, 1);
 
         // 更新 TabBar
         this._tabBar?.update({
-            items: this._items.map(i => ({
+            items: this.items.map(i => ({
                 label: i.label,
                 icon: i.icon,
                 closable: i.closable,
@@ -122,10 +135,10 @@ class TabsComponent extends Component {
         });
 
         // 调整 selectedIndex
-        if (this._selectedIndex >= this._items.length) {
-            this._selectedIndex = Math.max(0, this._items.length - 1);
-        } else if (index < this._selectedIndex && this._selectedIndex > 0) {
-            this._selectedIndex--;
+        if (this.selectedIndex >= this.items.length) {
+            this.selectedIndex = Math.max(0, this.items.length - 1);
+        } else if (index < this.selectedIndex && this.selectedIndex > 0) {
+            this.selectedIndex--;
         }
 
         this._renderContent();
@@ -139,8 +152,8 @@ class TabsComponent extends Component {
         contentEl.innerHTML = '';
         this._contentInstances = [];
 
-        for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
+        for (let i = 0; i < this.items.length; i++) {
+            const item = this.items[i];
             const pane = document.createElement('div');
             pane.className = 'q-tabs__pane';
             pane.hidden = true;
@@ -172,42 +185,19 @@ class TabsComponent extends Component {
 
         const panes = contentEl.children;
         for (let i = 0; i < panes.length; i++) {
-            (panes[i] as HTMLElement).hidden = i !== this._selectedIndex;
+            (panes[i] as HTMLElement).hidden = i !== this.selectedIndex;
         }
-    }
-
-    get selectedIndex(): number {
-        return this._selectedIndex;
-    }
-    set selectedIndex(v: number) {
-        if (this._items[v]?.disabled) return;
-        this._selectedIndex = v;
-        this._tabBar?.selectAt(v);
-        this._applyActive();
-    }
-
-    get position(): TabBarPosition {
-        return this._position;
-    }
-    set position(v: TabBarPosition) {
-        this._position = v;
-        this._applyPosition();
-        this._tabBar?.update({ position: v });
     }
 
     get tabBar(): InstanceType<typeof TabBarComponent> | null {
         return this._tabBar;
     }
 
-    get items(): readonly TabPaneItem[] {
-        return this._items;
-    }
-
     update(props?: Record<string, any>): void {
         if (props?.items !== undefined) {
-            this._items = props.items;
+            this.items = props.items;
             this._tabBar?.update({
-                items: this._items.map(i => ({
+                items: this.items.map(i => ({
                     label: i.label,
                     icon: i.icon,
                     closable: i.closable,
@@ -234,6 +224,8 @@ class TabsComponent extends Component {
         this._tabBar?.dispose?.();
     }
 }
+
+TabsComponent.define(TabsComponentDefs);
 
 export { TabsComponent };
 /** 标签页集实例类型 */

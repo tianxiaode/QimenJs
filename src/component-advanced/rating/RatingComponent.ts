@@ -17,40 +17,53 @@
  */
 
 import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { RATING_TPL } from './rating-tpl';
-import './rating.css.ts';
+import './rating.css';
 
-/** 评分属性接口 */
-export interface RatingProps {
-    value?: number;
-    max?: number;
-    allowHalf?: boolean;
-    readonly?: boolean;
-    disabled?: boolean;
-    cls?: string;
-}
+const RatingComponentDefs: Definitions = {
+    options: {
+        value: 0,
+        max: 5,
+        allowHalf: false,
+        readonly: false,
+        disabled: false,
+    },
+} as const;
 
 class RatingComponent extends Component {
-    _value = 0;
-    _max = 5;
-    _allowHalf = false;
-    _readonly = false;
-    _disabled = false;
     _hoverValue = -1;
 
-    onAfterInit(props?: RatingProps): void {
-        this._initRating(props);
+    _onValueOptionChange(value: number): void {
+        this._applyVisual(value);
+        this.setAttr('aria-valuenow', String(value));
     }
 
-    _initRating(props?: RatingProps): void {
-        if (props?.max) this._max = props.max;
-        if (props?.allowHalf) this._allowHalf = true;
-        if (props?.readonly) this._readonly = true;
-        if (props?.disabled) this._disabled = true;
-        if (props?.cls) this.addCls(props.cls);
-
+    _onMaxOptionChange(): void {
         this._renderStars();
-        if (props?.value !== undefined) this._applyValue(props.value);
+        this._applyVisual(this.value);
+        this.setAttr('aria-valuemin', '0');
+        this.setAttr('aria-valuemax', String(this.max));
+    }
+
+    _onAllowHalfOptionChange(): void {
+        this._renderStars();
+        this._applyVisual(this.value);
+    }
+
+    _onReadonlyOptionChange(): void {
+        this._applyState();
+    }
+
+    _onDisabledOptionChange(): void {
+        this._applyState();
+    }
+
+    onAfterInit(): void {
+        this.setAttr('aria-valuemin', '0');
+        this.setAttr('aria-valuemax', String(this.max));
+        this._renderStars();
+        this._applyVisual(this.value);
         this._applyState();
         this._bindEvents();
     }
@@ -60,12 +73,12 @@ class RatingComponent extends Component {
         const container = this._resolveNodeEl('stars');
         if (!container) return;
 
-        for (let i = 1; i <= this._max; i++) {
+        for (let i = 1; i <= this.max; i++) {
             const star = document.createElement('span');
             star.className = 'q-rating__star';
             star.dataset.index = String(i);
 
-            if (this._allowHalf) {
+            if (this.allowHalf) {
                 const left = document.createElement('span');
                 left.className = 'q-rating__star-left';
                 left.dataset.index = String(i);
@@ -86,10 +99,10 @@ class RatingComponent extends Component {
 
     _bindEvents(): void {
         const container = this._resolveNodeEl('stars');
-        if (!container || this._readonly) return;
+        if (!container || this.readonly) return;
 
         container.addEventListener('mousemove', (e: MouseEvent) => {
-            if (this._disabled) return;
+            if (this.disabled) return;
             const target = e.target as HTMLElement;
             const value = this._getValueFromEvent(target);
             if (value >= 0) {
@@ -99,25 +112,24 @@ class RatingComponent extends Component {
         });
 
         container.addEventListener('mouseleave', () => {
-            if (this._disabled) return;
+            if (this.disabled) return;
             this._hoverValue = -1;
-            this._applyVisual(this._value);
+            this._applyVisual(this.value);
         });
 
         container.addEventListener('click', (e: MouseEvent) => {
-            if (this._disabled || this._readonly) return;
+            if (this.disabled || this.readonly) return;
             const target = e.target as HTMLElement;
             const value = this._getValueFromEvent(target);
             if (value >= 0) {
-                this._value = value;
-                this._applyValue(value);
-                this.emit('change', { value: this._value });
+                this.value = value;
+                this.emit('change', { value: this.value });
             }
         });
     }
 
     _getValueFromEvent(target: HTMLElement): number {
-        if (this._allowHalf) {
+        if (this.allowHalf) {
             const half = target.dataset.half;
             const index = target.dataset.index || target.parentElement?.dataset.index;
             if (!index) return -1;
@@ -129,14 +141,6 @@ class RatingComponent extends Component {
         const index = target.dataset.index;
         if (!index) return -1;
         return Number(index);
-    }
-
-    _applyValue(value: number): void {
-        this._value = value;
-        this._applyVisual(value);
-        this.setAttr('aria-valuenow', String(value));
-        this.setAttr('aria-valuemin', '0');
-        this.setAttr('aria-valuemax', String(this._max));
     }
 
     _applyVisual(value: number): void {
@@ -154,7 +158,7 @@ class RatingComponent extends Component {
 
             if (idx <= Math.floor(value)) {
                 star.classList.add('q-rating__star--full');
-            } else if (this._allowHalf && idx === Math.ceil(value) && value % 1 !== 0) {
+            } else if (this.allowHalf && idx === Math.ceil(value) && value % 1 !== 0) {
                 star.classList.add('q-rating__star--half');
             } else {
                 star.classList.add('q-rating__star--empty');
@@ -163,57 +167,21 @@ class RatingComponent extends Component {
     }
 
     _applyState(): void {
-        this.toggleCls('q-rating--readonly', this._readonly);
-        this.toggleCls('q-rating--disabled', this._disabled);
-        if (this._disabled) {
+        this.toggleCls('q-rating--readonly', this.readonly);
+        this.toggleCls('q-rating--disabled', this.disabled);
+        if (this.disabled) {
             this.setAttr('aria-disabled', 'true');
         }
     }
 
-    get value(): number {
-        return this._value;
-    }
-    set value(v: number) {
-        this._applyValue(v);
-    }
-
-    get max(): number {
-        return this._max;
-    }
-    set max(v: number) {
-        this._max = v;
-        this._renderStars();
-        this._applyVisual(this._value);
-    }
-
-    get readonly(): boolean {
-        return this._readonly;
-    }
-    set readonly(v: boolean) {
-        this._readonly = v;
-        this._applyState();
-    }
-
-    get disabled(): boolean {
-        return this._disabled;
-    }
-    set disabled(v: boolean) {
-        this._disabled = v;
-        this._applyState();
-    }
-
     get defaultEventData(): Record<string, any> {
-        return { ...super.defaultEventData, value: this._value };
+        return { ...super.defaultEventData, value: this.value };
     }
 
-    update(props?: Partial<RatingProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.value !== undefined) this.value = props.value;
         if (props?.max !== undefined) this.max = props.max;
-        if (props?.allowHalf !== undefined) {
-            this._allowHalf = props.allowHalf;
-            this._renderStars();
-            this._applyVisual(this._value);
-        }
+        if (props?.allowHalf !== undefined) this.allowHalf = props.allowHalf;
         if (props?.readonly !== undefined) this.readonly = props.readonly;
         if (props?.disabled !== undefined) this.disabled = props.disabled;
         if (props?.cls !== undefined) this.addCls(props.cls);
@@ -222,6 +190,7 @@ class RatingComponent extends Component {
 
 RatingComponent.use([CommonPropsAbility]);
 RatingComponent.useTemplate(RATING_TPL);
+RatingComponent.define(RatingComponentDefs);
 
 export { RatingComponent };
 /** 评分实例类型 */

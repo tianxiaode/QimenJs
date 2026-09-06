@@ -1,11 +1,3 @@
-/**
- * PropertyGrid 属性网格样式 — Metro 风格
- *
- * CSS Grid 驱动，cols * 2 列（每个字段占 label + value 两列）。
- * span 控制跨列，chip 样式用于数组值，checkbox 用于布尔值。
- */
-
-export const propertyGridCSS = `
 /* PropertyGrid 根元素 */
 .q-pgrid {
     display: block;
@@ -92,4 +84,3 @@ export const propertyGridCSS = `
     padding-left: 12px;
     border-left: 2px solid var(--q-colors-border, #dcdfe6);
 }
-`;

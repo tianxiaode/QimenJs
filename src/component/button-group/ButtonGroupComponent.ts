@@ -1,11 +1,21 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import './buttongroup.css';
 
 /** 按钮组模式类型 */
 export type ButtonGroupMode = 'single' | 'multiple';
 
+const ButtonGroupComponentDefs: Definitions = {
+    options: {
+        mode: 'single',
+        selectedIndex: null,
+        selectedIndices: null,
+    },
+} as const;
+
 class ButtonGroupComponent extends ItemGroupPooledComponent {
+    defaultItemType = 'Toggle';
     _mode: ButtonGroupMode = 'single';
     _lastToggleIndex: number = -1;
 
@@ -47,27 +57,31 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         }
     }
 
-    onAfterInit(props?: Record<string, any>): void {
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'horizontal', gap: '2px' };
+    }
+
+    onAfterInit(): void {
         const self = this as any;
-        self._mode = props?.mode ?? 'single';
+        self._mode = this.getData('mode') ?? 'single';
 
         this.toggleCls('q-button-group--multiple', self._mode === 'multiple');
         this.addCls('q-button-group');
         this.addCls('q-button-group__items', 'itemContainer');
 
-        super.onAfterInit({
-            ...props,
-            defaultItemType: 'Toggle',
-            direction: props?.direction ?? 'horizontal',
-            gap: props?.gap ?? '2px',
-        });
+        super.onAfterInit();
 
-        if (self._mode === 'single' && props?.selectedIndex !== undefined) {
-            self.selectAt(props.selectedIndex, true);
-        }
-        if (self._mode === 'multiple' && props?.selectedIndices?.length) {
-            for (const idx of props.selectedIndices) {
-                self.pressAt(idx, true, true);
+        if (self._mode === 'single') {
+            const selectedIndex = this.getData('selectedIndex');
+            if (selectedIndex !== undefined) {
+                self.selectAt(selectedIndex, true);
+            }
+        } else {
+            const selectedIndices = this.getData('selectedIndices');
+            if (selectedIndices?.length) {
+                for (const idx of selectedIndices) {
+                    self.pressAt(idx, true, true);
+                }
             }
         }
     }
@@ -157,6 +171,8 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         }
     }
 }
+
+ButtonGroupComponent.define(ButtonGroupComponentDefs);
 
 export { ButtonGroupComponent };
 /** 按钮组实例类型 */

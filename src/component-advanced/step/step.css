@@ -1,10 +1,3 @@
-/**
- * Step 步骤条组件样式 — Metro 风格
- *
- * 方角、粗线条、高对比状态色。
- */
-
-export const stepCSS = `
 /* Step 根元素 */
 .q-step {
     display: block;
@@ -159,4 +152,3 @@ export const stepCSS = `
 .q-step__item--error .q-step__title {
     color: var(--q-colors-error, #d13438);
 }
-`;

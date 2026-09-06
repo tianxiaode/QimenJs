@@ -13,11 +13,21 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './minutepanel.css';
 import './date-panel.css';
+
+const MinutePanelComponentDefs: Definitions = {
+    options: {
+        value: null,
+        previewData: null,
+        showPrevField: true,
+        showNextField: true,
+    },
+} as const;
 
 type DigitPart = 'tens' | 'ones';
 
@@ -33,16 +43,16 @@ class MinutePanelComponent extends Component {
     _selectingTens: boolean = true;
 
     onAfterInit(): void {
-        this._value = this.options.value ?? createDateTimeValue();
-        this._previewData = this.options.previewData ?? null;
+        this._value = this.getData('value') ?? createDateTimeValue();
+        this._previewData = this.getData('previewData') ?? null;
         this._tensSelected = Math.floor(this._value.minute / 10);
         this._onesSelected = this._value.minute % 10;
         this._selectingTens = true;
 
-        if (!this.options.showPrevField) {
+        if (!this.getData('showPrevField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!this.options.showNextField) {
+        if (!this.getData('showNextField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
@@ -168,6 +178,8 @@ class MinutePanelComponent extends Component {
         return this._value;
     }
 }
+
+MinutePanelComponent.define(MinutePanelComponentDefs);
 
 export { MinutePanelComponent };
 /** 分钟面板实例类型 */

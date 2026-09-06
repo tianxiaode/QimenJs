@@ -11,11 +11,21 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
 import './hourpanel.css';
 import './date-panel.css';
+
+const HourPanelComponentDefs: Definitions = {
+    options: {
+        value: null,
+        previewData: null,
+        showPrevField: true,
+        showNextField: true,
+    },
+} as const;
 
 class HourPanelComponent extends Component {
     get tpl(): TplNode {
@@ -26,13 +36,13 @@ class HourPanelComponent extends Component {
     _previewData: PanelPreviewData | null = null;
 
     onAfterInit(): void {
-        this._value = this.options.value ?? createDateTimeValue();
-        this._previewData = this.options.previewData ?? null;
+        this._value = this.getData('value') ?? createDateTimeValue();
+        this._previewData = this.getData('previewData') ?? null;
 
-        if (!this.options.showPrevField) {
+        if (!this.getData('showPrevField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!this.options.showNextField) {
+        if (!this.getData('showNextField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
@@ -96,6 +106,8 @@ class HourPanelComponent extends Component {
         return this._value;
     }
 }
+
+HourPanelComponent.define(HourPanelComponentDefs);
 
 export { HourPanelComponent };
 /** 小时面板实例类型 */

@@ -16,20 +16,10 @@
 
 import { Component } from '@qimenjs/component-core';
 import { TIMELINE_ITEM_TPL } from './timeline-item-tpl';
-import './timelineitem.css.ts';
+import './timelineitem.css';
 
 /** 时间线颜色 */
 export type TimelineColor = 'default' | 'primary' | 'success' | 'warning' | 'error';
-
-/** 时间线项属性接口 */
-export interface TimelineItemProps {
-    title?: string;
-    description?: string;
-    timestamp?: string;
-    color?: TimelineColor;
-    /** 自定义节点内容（文本/图标），提供时 dot 切换为自定义样式 */
-    dot?: string;
-}
 
 class TimelineItemComponent extends Component {
     _title: string = '';
@@ -38,11 +28,11 @@ class TimelineItemComponent extends Component {
     _color: TimelineColor = 'default';
     _dot: string = '';
 
-    onAfterInit(props?: TimelineItemProps): void {
-        this.update(props);
+    onAfterInit(): void {
+        this.update(this.options);
     }
 
-    update(props?: Partial<TimelineItemProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.title !== undefined) {
             this._title = props.title;
             this.setNodeProp('text', props.title, 'title');

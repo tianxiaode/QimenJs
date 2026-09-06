@@ -30,12 +30,12 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
     _errorItem: any = null;
     _helpItem: any = null;
 
-    onAfterInit(props?: any): void {
-        super.onAfterInit({
-            direction: 'vertical',
-            gap: '2px',
-            ...props,
-        });
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical', gap: '2px' };
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-input__info');
     }
 

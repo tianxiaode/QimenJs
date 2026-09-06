@@ -26,33 +26,33 @@
 import { Component } from '@qimenjs/component-core';
 import type { ColumnAlign } from '../column-types';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { BASE_CELL_TPL } from './base-cell-tpl';
+
+const BaseCellComponentDefs: Definitions = {
+    options: {
+        align: 'left',
+    },
+} as const;
 
 class BaseCellComponent extends Component {
     get tpl(): TplNode {
         return BASE_CELL_TPL;
     }
 
-    _align: ColumnAlign = 'left';
-
-    onAfterInit(props?: Record<string, any>): void {
-        if (props?.align) this._align = props.align;
+    onAfterInit(): void {
         this._applyAlign();
     }
 
-    get align(): ColumnAlign {
-        return this._align;
-    }
-    set align(v: ColumnAlign) {
-        this._align = v;
+    _onAlignOptionChange(_value: string): void {
         this._applyAlign();
     }
 
     _applyAlign(): void {
-        this.setNodeStyle({ textAlign: this._align });
-        this.toggleCls('q-cell--left', this._align === 'left');
-        this.toggleCls('q-cell--center', this._align === 'center');
-        this.toggleCls('q-cell--right', this._align === 'right');
+        this.setNodeStyle({ textAlign: this.align });
+        this.toggleCls('q-cell--left', this.align === 'left');
+        this.toggleCls('q-cell--center', this.align === 'center');
+        this.toggleCls('q-cell--right', this.align === 'right');
     }
 
     update(data: any): void {
@@ -61,6 +61,8 @@ class BaseCellComponent extends Component {
         }
     }
 }
+
+BaseCellComponent.define(BaseCellComponentDefs);
 
 export { BaseCellComponent };
 /** 基础单元格实例类型 */

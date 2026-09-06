@@ -22,11 +22,21 @@ import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent'
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import type { ForwardRouteKey } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 import './treenav.css';
 
+const TreeNavComponentDefs: Definitions = {
+    options: {
+        maxDepth: 5,
+        activeIndex: null,
+        pathIndex: null,
+    },
+} as const;
+
 class TreeNavComponent extends ItemGroupStaticComponent {
+    defaultItemType = 'TreeNavItem';
     _activeIndex: number = -1;
     _maxDepth: number = 5;
     _selectedItem: TreeNavItemComponent | null = null;
@@ -138,18 +148,24 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         return null;
     }
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit({ defaultItemType: 'TreeNavItem', direction: 'vertical', ...props });
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical' };
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
 
         this.addCls('q-tree-nav');
-        this._maxDepth = props?.maxDepth ?? 5;
+        this._maxDepth = this.getData('maxDepth') ?? 5;
 
-        if (props?.pathIndex) this._pathIndex = props.pathIndex;
+        const pathIndex = this.getData('pathIndex');
+        if (pathIndex) this._pathIndex = pathIndex;
 
         this._syncItemConfig();
 
-        if (props?.activeIndex !== undefined && props.activeIndex >= 0) {
-            this.selectAt(props.activeIndex, true);
+        const activeIndex = this.getData('activeIndex');
+        if (activeIndex !== undefined && activeIndex >= 0) {
+            this.selectAt(activeIndex, true);
         }
     }
 
@@ -208,6 +224,8 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         if (props?.pathIndex !== undefined) this._pathIndex = props.pathIndex;
     }
 }
+
+TreeNavComponent.define(TreeNavComponentDefs);
 
 export { TreeNavComponent };
 /** 树导航实例类型 */

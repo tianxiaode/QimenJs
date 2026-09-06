@@ -20,9 +20,9 @@
  */
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
-import type { BaseHeaderCellProps } from './BaseHeaderCellComponent';
 import type { ColumnAlign } from '../column-types';
 import type { TplNode, DragOptions } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
 import './groupheadercell.css';
@@ -39,6 +39,16 @@ export interface GroupChildConfig {
     children?: GroupChildConfig[];
 }
 
+const GroupHeaderCellComponentDefs: Definitions = {
+    options: {
+        resizable: true,
+    },
+    fields: {
+        childNames: [],
+        childConfigs: undefined,
+    },
+} as const;
+
 class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     get tpl(): TplNode {
         return GROUP_HEADER_CELL_TPL;
@@ -50,26 +60,26 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         handle: 'resizeHandle',
     };
 
-    _childNames: string[] = [];
     _childCells: Array<{ component: any; el: HTMLElement }> = [];
-    _resizable: boolean = true;
     _resizeStartWidth: number = 0;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-header-cell--group');
         this.removeCls('q-header-cell--leaf');
 
-        if (props?.childNames) this._childNames = props.childNames;
-        if (props?.resizable !== undefined) this._resizable = props.resizable;
         this._applyGroupWidth();
         this._applyResizable();
-        if (props?.childConfigs) this._createChildren(props.childConfigs);
+        if (this.childConfigs) this._createChildren(this.childConfigs);
+    }
+
+    _onResizableOptionChange(_value: boolean): void {
+        this._applyResizable();
     }
 
     _applyGroupWidth(): void {
-        if (this._childNames.length === 0) return;
-        const parts = this._childNames.map((n: string) => `var(--q-table-col-${n}-width)`);
+        if (this.childNames.length === 0) return;
+        const parts = this.childNames.map((n: string) => `var(--q-table-col-${n}-width)`);
         this.setNodeStyle({
             width: `calc(${parts.join(' + ')})`,
             flexShrink: '0',
@@ -77,7 +87,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     }
 
     _applyResizable(): void {
-        this.setNodeStyle({ display: this._resizable ? '' : 'none' }, 'resizeHandle');
+        this.setNodeStyle({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     _createChildren(configs: GroupChildConfig[]): void {
@@ -114,7 +124,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         el: HTMLElement;
         originalEvent: Event;
     }): void {
-        if (!this._resizable || this._childNames.length === 0) return;
+        if (!this.resizable || this.childNames.length === 0) return;
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
@@ -124,9 +134,9 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         el: HTMLElement;
         originalEvent: Event;
     }): void {
-        if (!this._resizable || this._childNames.length === 0) return;
-        const targetCol = this._childNames[this._childNames.length - 1];
-        const newWidth = Math.max(this._minWidth, this._resizeStartWidth + ctx.dx);
+        if (!this.resizable || this.childNames.length === 0) return;
+        const targetCol = this.childNames[this.childNames.length - 1];
+        const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
         this.emit('resize', {
             colName: targetCol,
             width: newWidth,
@@ -141,6 +151,8 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         }
     }
 }
+
+GroupHeaderCellComponent.define(GroupHeaderCellComponentDefs);
 
 export { GroupHeaderCellComponent };
 /** 分组表头单元格实例类型 */

@@ -13,6 +13,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
 import './date-panel.css';
@@ -20,6 +21,15 @@ import './date-panel.css';
 const TOTAL_WEEKDAYS = 7;
 const TOTAL_DAY_CELLS = 42;
 const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
+
+const DayGridComponentDefs: Definitions = {
+    options: {
+        year: null,
+        month: null,
+        selectedDay: null,
+        startDayOfWeek: null,
+    },
+} as const;
 
 class DayGridComponent extends Component {
     get tpl(): TplNode {
@@ -35,10 +45,10 @@ class DayGridComponent extends Component {
     _dayCells: HTMLElement[] = [];
 
     onAfterInit(): void {
-        this._year = this.options.year ?? 2026;
-        this._month = this.options.month ?? 1;
-        this._selectedDay = this.options.selectedDay;
-        this._startDayOfWeek = this.options.startDayOfWeek ?? this._getWeekStart();
+        this._year = this.getData('year') ?? 2026;
+        this._month = this.getData('month') ?? 1;
+        this._selectedDay = this.getData('selectedDay') ?? undefined;
+        this._startDayOfWeek = this.getData('startDayOfWeek') ?? this._getWeekStart();
         this._createCells();
         this._applyWeekdays();
         this._applyGrid();
@@ -152,6 +162,8 @@ class DayGridComponent extends Component {
         this._applyGrid();
     }
 }
+
+DayGridComponent.define(DayGridComponentDefs);
 
 export { DayGridComponent };
 /** 日网格实例类型 */

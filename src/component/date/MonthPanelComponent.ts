@@ -12,6 +12,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
@@ -19,6 +20,15 @@ import './monthpanel.css';
 import './date-panel.css';
 
 const TOTAL_MONTHS = 12;
+
+const MonthPanelComponentDefs: Definitions = {
+    options: {
+        value: null,
+        previewData: null,
+        showPrevField: true,
+        showNextField: true,
+    },
+} as const;
 
 class MonthPanelComponent extends Component {
     get tpl(): TplNode {
@@ -30,13 +40,13 @@ class MonthPanelComponent extends Component {
     _cells: HTMLElement[] = [];
 
     onAfterInit(): void {
-        this._value = this.options.value ?? createDateTimeValue();
-        this._previewData = this.options.previewData ?? null;
+        this._value = this.getData('value') ?? createDateTimeValue();
+        this._previewData = this.getData('previewData') ?? null;
 
-        if (!this.options.showPrevField) {
+        if (!this.getData('showPrevField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!this.options.showNextField) {
+        if (!this.getData('showNextField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
@@ -121,6 +131,8 @@ class MonthPanelComponent extends Component {
         return this._value;
     }
 }
+
+MonthPanelComponent.define(MonthPanelComponentDefs);
 
 export { MonthPanelComponent };
 /** 月份面板实例类型 */

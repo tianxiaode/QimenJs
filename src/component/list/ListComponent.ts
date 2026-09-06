@@ -25,15 +25,17 @@ export type { ListStatus, MarkForm } from './ListItemComponent';
 export type ListItem = Record<string, any>;
 
 class ListComponent extends ItemGroupPooledComponent {
-    onAfterInit(props?: Record<string, any>): void {
+    defaultItemType = 'ListItem';
+
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical' };
+    }
+
+    onAfterInit(): void {
         this.addCls('q-list');
         (this as any).itemContainer?.el?.classList.add('q-list__items');
 
-        super.onAfterInit({
-            ...props,
-            defaultItemType: 'ListItem',
-            direction: 'vertical',
-        });
+        super.onAfterInit();
     }
 
     get items(): ListItem[] {

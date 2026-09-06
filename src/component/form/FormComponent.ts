@@ -38,6 +38,7 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { EntityEventBus, ENTITY_CRUD_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { EventContextBuilder } from '@/context';
+import { Definitions } from '@/composable';
 import './form.css';
 
 export type FormAction = 'create' | 'update';
@@ -49,6 +50,15 @@ export interface FormFieldConfig {
     defaultValue?: any;
     validation?: any;
 }
+
+const FormComponentDefs: Definitions = {
+    options: {
+        entityKey: '',
+        action: 'create',
+        editId: null,
+        fields: null,
+    },
+} as const;
 
 interface FieldEntry {
     name: string;
@@ -69,25 +79,25 @@ class FormComponent extends ItemGroupStaticComponent {
     _entityUnsubs: (() => void)[] = [];
     _submitting: boolean = false;
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit({
-            direction: 'vertical',
-            gap: '16px',
-            cols: 1,
-            ...props,
-        });
+    get defaultOptions(): Record<string, any> {
+        return { direction: 'vertical', gap: '16px', cols: 1 };
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
         this.addCls('q-form');
         (this as any).itemContainer?.el?.classList.add('q-form__fields');
 
-        this._entityKey = props?.entityKey ?? '';
-        this._action = props?.action ?? 'create';
-        this._editId = props?.editId ?? null;
+        this._entityKey = this.getData('entityKey') ?? '';
+        this._action = this.getData('action') ?? 'create';
+        this._editId = this.getData('editId') ?? null;
         this.entityKey = this._entityKey;
         this.action = this._action;
 
-        if (props?.fields) {
-            this._fieldOrder = props.fields.map(f => f.name);
-            for (const f of props.fields) {
+        const fields = this.getData('fields');
+        if (fields) {
+            this._fieldOrder = fields.map(f => f.name);
+            for (const f of fields) {
                 this._fieldMap[f.name] = {
                     name: f.name,
                     component: null,
@@ -336,6 +346,8 @@ class FormComponent extends ItemGroupStaticComponent {
         if (props?.editId !== undefined) this._editId = props.editId;
     }
 }
+
+FormComponent.define(FormComponentDefs);
 
 export { FormComponent };
 export type FormComponentInstance = InstanceType<typeof FormComponent>;

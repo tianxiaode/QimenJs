@@ -25,16 +25,6 @@ import { STEP_ITEM_TPL } from './step-item-tpl';
 /** 步骤状态类型 */
 export type StepStatus = 'wait' | 'process' | 'finish' | 'error';
 
-/** 步骤项属性接口 */
-export interface StepItemProps {
-    title?: string;
-    description?: string;
-    icon?: string;
-    status?: StepStatus;
-    /** 步骤索引（由父组件设置，用于计算状态） */
-    index?: number;
-}
-
 class StepItemComponent extends Component {
     _title: string = '';
     _description: string = '';
@@ -42,14 +32,14 @@ class StepItemComponent extends Component {
     _status: StepStatus = 'wait';
     _index: number = 0;
 
-    onAfterInit(props?: StepItemProps): void {
-        this.update(props);
+    onAfterInit(): void {
+        this.update(this.options);
     }
 
     /**
      * 更新步骤项数据
      */
-    update(props?: Partial<StepItemProps>): void {
+    update(props?: Record<string, any>): void {
         if (props?.title !== undefined) {
             this._title = props.title;
             this.text = props.title;

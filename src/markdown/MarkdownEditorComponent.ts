@@ -29,6 +29,7 @@
 import { FormFieldComponent } from '../component/form/FormFieldComponent';
 import { MarkdownEngine } from './engine';
 import { MARKDOWN_EDITOR_TPL } from './markdown-editor-tpl';
+import { Definitions } from '@/composable';
 import './MarkdownEditorFieldBodyComponent';
 import './markdown-editor.css';
 
@@ -53,6 +54,18 @@ const MODE_CLS_MAP: Record<MarkdownEditMode, string> = {
     preview: 'q-md-editor--preview',
     split: 'q-md-editor--split',
 };
+
+const MarkdownEditorComponentDefs: Definitions = {
+    options: {
+        value: '',
+        placeholder: null,
+        rows: null,
+        disabled: false,
+        readonly: false,
+        mode: 'edit',
+        autoSize: false,
+    },
+} as const;
 
 function wrapSelection(
     el: HTMLTextAreaElement,
@@ -164,10 +177,7 @@ const DEFAULT_SHORTCUTS: MarkdownShortcutAction[] = [
 ];
 
 class MarkdownEditorComponent extends FormFieldComponent {
-    _value: string = '';
     _focused: boolean = false;
-    _mode: MarkdownEditMode = 'edit';
-    _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
     _minRows: number = 1;
     _maxRows: number = Infinity;
     _engine: MarkdownEngine = new MarkdownEngine();
@@ -181,13 +191,13 @@ class MarkdownEditorComponent extends FormFieldComponent {
         return this.getNode('preview') as HTMLElement | undefined;
     }
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit(props);
-        this.addCls('q-md-editor q-md-editor--edit');
-        this._initMarkdownEditor(props);
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.addCls('q-md-editor');
+        this._initMarkdownEditor();
     }
 
-    _initMarkdownEditor(props?: Record<string, any>): void {
+    _initMarkdownEditor(): void {
         const editorEl = this.editor;
 
         const fieldBodyCmp = this.nodeMap?.fieldBody?.component;
@@ -199,26 +209,23 @@ class MarkdownEditorComponent extends FormFieldComponent {
             fieldBodyCmp.on('keydown', (data: any) => this.onMdFieldKeydown(data));
         }
 
-        if (props?.value !== undefined) {
-            this._value = props.value;
-            if (editorEl) editorEl.value = props.value;
+        if (this.value && editorEl) {
+            editorEl.value = this.value;
             this._updatePreview();
         }
-        if (props?.placeholder && editorEl) {
-            editorEl.setAttribute('placeholder', props.placeholder);
+        if (this.placeholder && editorEl) {
+            editorEl.setAttribute('placeholder', this.placeholder);
         }
-        if (props?.rows !== undefined && editorEl) {
-            editorEl.setAttribute('rows', String(props.rows));
+        if (this.rows != null && editorEl) {
+            editorEl.setAttribute('rows', String(this.rows));
         }
-        if (props?.disabled) this.disabled = true;
-        if (props?.readonly) this.readonly = true;
-        if (props?.mode) this._applyMode(props.mode);
+        if (this.disabled) this._applyDisabled(true);
+        if (this.readonly) this._applyReadonly(true);
 
-        if (props?.autoSize) {
-            this._autoSize = props.autoSize;
-            if (typeof props.autoSize === 'object') {
-                this._minRows = props.autoSize.minRows ?? 1;
-                this._maxRows = props.autoSize.maxRows ?? Infinity;
+        if (this.autoSize) {
+            if (typeof this.autoSize === 'object') {
+                this._minRows = this.autoSize.minRows ?? 1;
+                this._maxRows = this.autoSize.maxRows ?? Infinity;
             }
             this._autoResize();
         }
@@ -226,25 +233,84 @@ class MarkdownEditorComponent extends FormFieldComponent {
         this._applyState();
     }
 
-    _applyMode(mode: MarkdownEditMode): void {
-        this._mode = mode;
+    _onPlaceholderOptionChange(value: string): void {
+        const editorEl = this.editor;
+        if (editorEl) {
+            if (value) editorEl.setAttribute('placeholder', value);
+            else editorEl.removeAttribute('placeholder');
+        }
+    }
+
+    _onRowsOptionChange(value: number): void {
+        const editorEl = this.editor;
+        if (editorEl && value != null) {
+            editorEl.setAttribute('rows', String(value));
+        }
+    }
+
+    _onValueOptionChange(value: string): void {
+        const editorEl = this.editor;
+        if (editorEl && editorEl.value !== value) {
+            editorEl.value = value;
+        }
+        this._updatePreview();
+        if (this.autoSize) this._autoResize();
+    }
+
+    _onDisabledOptionChange(value: boolean): void {
+        this._applyDisabled(value);
+    }
+
+    _onReadonlyOptionChange(value: boolean): void {
+        this._applyReadonly(value);
+    }
+
+    _onModeOptionChange(value: MarkdownEditMode): void {
         for (const cls of Object.values(MODE_CLS_MAP)) {
             this.toggleCls(cls, false);
         }
-        this.toggleCls(MODE_CLS_MAP[mode], true);
+        this.toggleCls(MODE_CLS_MAP[value], true);
+    }
+
+    _onAutoSizeOptionChange(value: any): void {
+        if (value) {
+            if (typeof value === 'object') {
+                this._minRows = value.minRows ?? 1;
+                this._maxRows = value.maxRows ?? Infinity;
+            }
+            this._autoResize();
+        }
+    }
+
+    _applyDisabled(v: boolean): void {
+        const editorEl = this.editor;
+        if (editorEl) {
+            if (v) editorEl.setAttribute('disabled', 'true');
+            else editorEl.removeAttribute('disabled');
+        }
+        this.toggleCls('q-md-editor--disabled', v);
+    }
+
+    _applyReadonly(v: boolean): void {
+        const editorEl = this.editor;
+        if (editorEl) {
+            if (v) editorEl.setAttribute('readonly', 'true');
+            else editorEl.removeAttribute('readonly');
+        }
+        this.toggleCls('q-md-editor--readonly', v);
     }
 
     _updatePreview(): void {
         const previewEl = this.preview;
         if (previewEl) {
-            previewEl.innerHTML = this._engine.render(this._value);
+            previewEl.innerHTML = this._engine.render(this.value);
         }
     }
 
     onMdFieldInput(): void {
-        this._value = this.editor?.value ?? '';
+        this.value = this.editor?.value ?? '';
         this._updatePreview();
-        if (this._autoSize) this._autoResize();
+        if (this.autoSize) this._autoResize();
         if (this._shouldValidate('input')) this._doValidate();
     }
 
@@ -260,7 +326,7 @@ class MarkdownEditorComponent extends FormFieldComponent {
     }
 
     onMdFieldChange(): void {
-        this._value = this.editor?.value ?? '';
+        this.value = this.editor?.value ?? '';
         if (this._shouldValidate('change')) this._doValidate();
     }
 
@@ -327,7 +393,7 @@ class MarkdownEditorComponent extends FormFieldComponent {
     }
 
     get defaultEventData(): Record<string, any> {
-        return { ...super.defaultEventData, value: this._value };
+        return { ...super.defaultEventData, value: this.value };
     }
 
     _autoResize(): void {
@@ -351,50 +417,6 @@ class MarkdownEditorComponent extends FormFieldComponent {
         editorEl.style.overflow = scrollH > maxH ? 'auto' : 'hidden';
     }
 
-    get value(): string {
-        return this._value;
-    }
-    set value(v: string) {
-        this._value = v;
-        const editorEl = this.editor;
-        if (editorEl && editorEl.value !== v) {
-            editorEl.value = v;
-        }
-        this._updatePreview();
-        if (this._autoSize) this._autoResize();
-    }
-
-    get disabled(): boolean {
-        return this.el.classList.contains('q-md-editor--disabled');
-    }
-    set disabled(v: any) {
-        const editorEl = this.editor;
-        if (editorEl) {
-            if (v) editorEl.setAttribute('disabled', 'true');
-            else editorEl.removeAttribute('disabled');
-        }
-        this.toggleCls('q-md-editor--disabled', v);
-    }
-
-    get readonly(): boolean {
-        return this.el.classList.contains('q-md-editor--readonly');
-    }
-    set readonly(v: any) {
-        const editorEl = this.editor;
-        if (editorEl) {
-            if (v) editorEl.setAttribute('readonly', 'true');
-            else editorEl.removeAttribute('readonly');
-        }
-        this.toggleCls('q-md-editor--readonly', v);
-    }
-
-    get mode(): MarkdownEditMode {
-        return this._mode;
-    }
-    set mode(v: MarkdownEditMode) {
-        this._applyMode(v);
-    }
-
     focus(): void {
         this.editor?.focus();
     }
@@ -409,7 +431,7 @@ class MarkdownEditorComponent extends FormFieldComponent {
     }
 
     getFormValue(): any {
-        return this._value;
+        return this.value;
     }
 
     setFormValue(v: any): void {
@@ -417,7 +439,7 @@ class MarkdownEditorComponent extends FormFieldComponent {
     }
 
     getFormDisplayValue(): any {
-        return this._engine.render(this._value);
+        return this._engine.render(this.value);
     }
 
     formReset(defaultValue?: any): void {
@@ -427,29 +449,10 @@ class MarkdownEditorComponent extends FormFieldComponent {
 
     update(props?: Record<string, any>): void {
         super.update(props);
-        const editorEl = this.editor;
-
-        if (props?.value !== undefined) this.value = props.value;
-        if (props?.placeholder !== undefined && editorEl) {
-            editorEl.setAttribute('placeholder', props.placeholder);
-        }
-        if (props?.rows !== undefined && editorEl) {
-            editorEl.setAttribute('rows', String(props.rows));
-        }
-        if (props?.disabled !== undefined) this.disabled = props.disabled;
-        if (props?.readonly !== undefined) this.readonly = props.readonly;
-        if (props?.mode !== undefined) this._applyMode(props.mode);
-        if (props?.autoSize !== undefined) {
-            this._autoSize = props.autoSize;
-            if (typeof props.autoSize === 'object') {
-                this._minRows = props.autoSize.minRows ?? 1;
-                this._maxRows = props.autoSize.maxRows ?? Infinity;
-            }
-            this._autoResize();
-        }
     }
 }
 
 MarkdownEditorComponent.useTemplate(MARKDOWN_EDITOR_TPL);
+MarkdownEditorComponent.define(MarkdownEditorComponentDefs);
 export { MarkdownEditorComponent };
 export type MarkdownEditorComponentInstance = InstanceType<typeof MarkdownEditorComponent>;

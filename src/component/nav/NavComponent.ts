@@ -22,11 +22,25 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
 import './nav.css';
 
+const NavComponentDefs: Definitions = {
+    options: {
+        mode: 'expanded',
+        maxDepth: 3,
+        activeIndex: null,
+        pathIndex: null,
+        indexPath: null,
+        overlayOptions: null,
+        overlayComponent: null,
+    },
+} as const;
+
 class NavComponent extends ItemGroupPooledComponent {
+    defaultItemType = 'NavItem';
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
     _maxDepth: number = 3;
@@ -111,28 +125,31 @@ class NavComponent extends ItemGroupPooledComponent {
         if (index !== undefined) this.selectAt(index);
     }
 
-    onAfterInit(props?: Record<string, any>): void {
-        super.onAfterInit({ defaultItemType: 'NavItem', ...props });
+    onAfterInit(): void {
+        super.onAfterInit();
 
         this.addCls('q-nav');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-nav__items');
 
-        this._navMode = props?.mode ?? 'expanded';
-        this._maxDepth = props?.maxDepth ?? 3;
-        this._overlayOptions = props?.overlayOptions;
-        this._overlayComponent = props?.overlayComponent;
+        this._navMode = this.getData('mode') ?? 'expanded';
+        this._maxDepth = this.getData('maxDepth') ?? 3;
+        this._overlayOptions = this.getData('overlayOptions');
+        this._overlayComponent = this.getData('overlayComponent');
 
-        if (props?.pathIndex) this._pathIndex = props.pathIndex;
-        else this._buildPathIndex(props?.items);
-        if (props?.indexPath) this._indexPath = props.indexPath;
+        const pathIndex = this.getData('pathIndex');
+        if (pathIndex) this._pathIndex = pathIndex;
+        else this._buildPathIndex(this.getData('items'));
+        const indexPath = this.getData('indexPath');
+        if (indexPath) this._indexPath = indexPath;
 
         this.toggleCls('q-nav--collapsed', this._navMode === 'collapsed');
 
         this._syncItemConfig();
 
-        if (props?.activeIndex !== undefined && props.activeIndex >= 0) {
-            this.selectAt(props.activeIndex, true);
+        const activeIndex = this.getData('activeIndex');
+        if (activeIndex !== undefined && activeIndex >= 0) {
+            this.selectAt(activeIndex, true);
         }
     }
 
@@ -223,6 +240,8 @@ class NavComponent extends ItemGroupPooledComponent {
         if (props?.indexPath !== undefined) this._indexPath = props.indexPath;
     }
 }
+
+NavComponent.define(NavComponentDefs);
 
 export { NavComponent };
 /** 导航实例类型 */

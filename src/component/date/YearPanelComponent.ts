@@ -14,6 +14,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
+import { Definitions } from '@/composable';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
 import './yearpanel.css';
 import {
@@ -28,6 +29,15 @@ import './date-panel.css';
 type DigitPosition = 'thousands' | 'hundreds' | 'tens' | 'ones';
 
 const POSITION_ORDER: DigitPosition[] = ['thousands', 'hundreds', 'tens', 'ones'];
+
+const YearPanelComponentDefs: Definitions = {
+    options: {
+        value: null,
+        previewData: null,
+        showPrevField: true,
+        showNextField: true,
+    },
+} as const;
 
 class YearPanelComponent extends Component {
     get tpl(): TplNode {
@@ -45,16 +55,16 @@ class YearPanelComponent extends Component {
     };
 
     onAfterInit(): void {
-        this._value = this.options.value ?? createDateTimeValue();
-        this._previewData = this.options.previewData ?? null;
+        this._value = this.getData('value') ?? createDateTimeValue();
+        this._previewData = this.getData('previewData') ?? null;
         const [th, h, t, o] = splitToDigits(this._value.year);
         this._digits = { thousands: th, hundreds: h, tens: t, ones: o };
         this._currentPosition = 'thousands';
 
-        if (!this.options.showPrevField) {
+        if (!this.getData('showPrevField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
         }
-        if (!this.options.showNextField) {
+        if (!this.getData('showNextField')) {
             this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
         }
 
@@ -189,6 +199,8 @@ class YearPanelComponent extends Component {
         return this._value;
     }
 }
+
+YearPanelComponent.define(YearPanelComponentDefs);
 
 export { YearPanelComponent };
 /** 年份面板实例类型 */

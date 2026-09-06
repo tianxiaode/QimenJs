@@ -1,10 +1,3 @@
-export { PropertyGridComponent } from './PropertyGridComponent';
-export type {
-    PropertyGridComponentInstance,
-    PropertyGridProps,
-    PropertyField,
-    PropertyFieldType,
-} from './PropertyGridComponent';
-export { PropertyFieldComponent } from './PropertyFieldComponent';
-export type { PropertyFieldComponentInstance } from './PropertyFieldComponent';
-export { propertyGridCSS } from './property-grid.css';
+export { PropertyGridComponent, type PropertyGridComponentInstance } from './PropertyGridComponent';
+export { PropertyFieldComponent, type PropertyFieldComponentInstance } from './PropertyFieldComponent';
+export type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';

@@ -1,10 +1,3 @@
-/**
- * Timeline 时间线组件样式 — Metro 风格
- *
- * 方角节点、粗竖线、紧凑布局。
- */
-
-export const timelineCSS = `
 /* Timeline 根元素 */
 .q-timeline {
     display: block;
@@ -146,4 +139,3 @@ export const timelineCSS = `
 .q-timeline__item--error .q-timeline__tail {
     background: var(--q-colors-error, #d13438);
 }
-`;
