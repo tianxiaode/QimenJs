@@ -62,3 +62,84 @@
     border-top: 2px solid var(--q-color-border, #c8bdb0);
     background: var(--q-color-bg-secondary, #f0eadc);
 }
+
+/* ========================================
+   颜色方案 — 每个只设置局部变量
+   ======================================== */
+
+.q-card--color-primary {
+    --q-card-accent: var(--q-color-primary);
+    --q-card-accent-light: var(--q-color-primary-light);
+    --q-card-accent-dark: var(--q-color-primary-dark);
+    --q-card-on-accent: var(--q-color-on-primary, #fff);
+}
+.q-card--color-secondary {
+    --q-card-accent: var(--q-color-secondary);
+    --q-card-accent-light: hsl(var(--q-color-secondary-h), var(--q-color-secondary-s), calc(var(--q-color-secondary-l) + 40%));
+    --q-card-accent-dark: hsl(var(--q-color-secondary-h), var(--q-color-secondary-s), calc(var(--q-color-secondary-l) - 10%));
+    --q-card-on-accent: var(--q-color-on-secondary, #fff);
+}
+.q-card--color-success {
+    --q-card-accent: var(--q-color-success);
+    --q-card-accent-light: hsl(var(--q-color-success-h), var(--q-color-success-s), calc(var(--q-color-success-l) + 40%));
+    --q-card-accent-dark: hsl(var(--q-color-success-h), var(--q-color-success-s), calc(var(--q-color-success-l) - 10%));
+    --q-card-on-accent: var(--q-color-on-success, #fff);
+}
+.q-card--color-warning {
+    --q-card-accent: var(--q-color-warning);
+    --q-card-accent-light: hsl(var(--q-color-warning-h), var(--q-color-warning-s), calc(var(--q-color-warning-l) + 40%));
+    --q-card-accent-dark: hsl(var(--q-color-warning-h), var(--q-color-warning-s), calc(var(--q-color-warning-l) - 10%));
+    --q-card-on-accent: var(--q-color-on-warning, #fff);
+}
+.q-card--color-error {
+    --q-card-accent: var(--q-color-error);
+    --q-card-accent-light: hsl(var(--q-color-error-h), var(--q-color-error-s), calc(var(--q-color-error-l) + 40%));
+    --q-card-accent-dark: hsl(var(--q-color-error-h), var(--q-color-error-s), calc(var(--q-color-error-l) - 10%));
+    --q-card-on-accent: var(--q-color-on-error, #fff);
+}
+.q-card--color-info {
+    --q-card-accent: var(--q-color-info);
+    --q-card-accent-light: hsl(var(--q-color-info-h), var(--q-color-info-s), calc(var(--q-color-info-l) + 40%));
+    --q-card-accent-dark: hsl(var(--q-color-info-h), var(--q-color-info-s), calc(var(--q-color-info-l) - 10%));
+    --q-card-on-accent: var(--q-color-on-info, #fff);
+}
+
+/* 有颜色时应用样式 */
+.q-card[class*="q-card--color-"] {
+    border-color: var(--q-card-accent);
+}
+.q-card[class*="q-card--color-"] .q-card__header {
+    background: var(--q-card-accent-light);
+    border-bottom-color: var(--q-card-accent);
+}
+.q-card[class*="q-card--color-"] .q-card__footer {
+    background: var(--q-card-accent-light);
+    border-top-color: var(--q-card-accent);
+}
+
+/* ========================================
+   反转模式 — 背景变前景色，前景色变背景色
+   ======================================== */
+
+.q-card[class*="q-card--color-"].q-card--inverted {
+    background: var(--q-card-accent);
+    color: var(--q-card-on-accent);
+    border-color: var(--q-card-accent);
+}
+.q-card[class*="q-card--color-"].q-card--inverted .q-card__header {
+    background: var(--q-card-accent-dark, var(--q-card-accent));
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    color: var(--q-card-on-accent);
+}
+.q-card[class*="q-card--color-"].q-card--inverted .q-card__footer {
+    background: var(--q-card-accent-dark, var(--q-card-accent));
+    border-top-color: rgba(255, 255, 255, 0.2);
+    color: var(--q-card-on-accent);
+}
+.q-card[class*="q-card--color-"].q-card--inverted .q-card__header-action {
+    color: var(--q-card-on-accent);
+}
+.q-card[class*="q-card--color-"].q-card--inverted .q-card__header-action:hover {
+    color: var(--q-card-on-accent);
+    opacity: 0.8;
+}

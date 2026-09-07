@@ -32,6 +32,8 @@ const CardComponentDefs: Definitions = {
         action: null,
         body: null,
         footer: null,
+        color: null,
+        inverted: false,
     },
 } as const;
 
@@ -65,6 +67,15 @@ class CardComponent extends Component {
     _onFooterOptionChange(value: CardContent, _old: CardContent): void {
         this._setNodeHidden(!value, 'footer');
         this._renderSlot('footer', value);
+    }
+
+    _onColorOptionChange(value: string, old: string) {
+        this._toggleOptionCls(`${this._cssPrefix}--color-`, value, old);
+    }
+
+    _onInvertedOptionChange(value: boolean) {
+        if (value) this.addCls(`${this._cssPrefix}--inverted`);
+        else this.removeCls(`${this._cssPrefix}--inverted`);
     }
 }
 
