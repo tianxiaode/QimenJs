@@ -24,33 +24,27 @@ class AvatarComponent extends Component {
 
     _onSrcOptionChange(value: string) {
         const nodeName = 'image';
+        this._setNodeHidden(!value, nodeName);
         if (value) {
             this.setAttributes({ src: value }, nodeName);
-            this.removeCls('hidden', nodeName);
-        } else {
-            this.addCls('hidden', nodeName);
         }
     }
 
     _onTextOptionChange(value: string) {
         const nodeName = 'text';
         const el = this.getNodeEl(nodeName);
+        this._setNodeHidden(!value, nodeName);
         if (value) {
             if (el) el.textContent = value.charAt(0).toUpperCase();
-            this.removeCls('hidden', nodeName);
-        } else {
-            this.addCls('hidden', nodeName);
         }
     }
 
     _onIconOptionChange(value: string) {
         const nodeName = 'icon';
+        this._setNodeHidden(!value, nodeName);
         const el = this.getNodeEl(nodeName);
         if (value) {
             if (el) el.textContent = value;
-            this.removeCls('hidden', nodeName);
-        } else {
-            this.addCls('hidden', nodeName);
         }
     }
 }
@@ -59,4 +53,3 @@ AvatarComponent.define(AvatarComponentDefs);
 AvatarComponent.use(SizeAbility);
 
 export { AvatarComponent };
-export type AvatarComponentInstance = InstanceType<typeof AvatarComponent>;

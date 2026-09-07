@@ -8,7 +8,7 @@
  */
 
 import { CHILDREN_PLACEHOLDER, SKELETON_CLS, VOID_TAGS } from '../constants';
-import { TemplateCache, TemplateDecl, NodeMeta } from '../types';
+import { TemplateCache, TemplateDecl, NodeMeta, ChildComponentEntry } from '../types';
 import { StyleHelper } from './StyleHelper';
 import { string } from '@qimenjs/utils';
 
@@ -46,17 +46,22 @@ export class TemplateManager {
         const name = isRoot ? 'root' : tpl.name;
         const hasChildren = (tpl.children && tpl.children.length > 0) || false;
         const isComponent = !!tpl.type;
+        const meta = this.CreateNodeMeta(tpl);
 
         if (name) {
-            const meta = this.CreateNodeMeta(tpl);
             cache.names.push(name);
             cache.indexs[name] = indexPath;
             cache.nodes[name] = meta;
+        }
 
-            if (isComponent) {
-                cache.childComponents.push(name);
-                return `<div class="${SKELETON_CLS}"></div>`;
-            }
+        if (isComponent) {
+            const entry: ChildComponentEntry = {
+                name: name || undefined,
+                indexPath,
+                nodeMeta: meta,
+            };
+            cache.childComponents.push(entry);
+            return `<div class="${SKELETON_CLS}"></div>`;
         }
 
         let html = this.buildHtml(tpl, tpl.tag || 'div', hasChildren);

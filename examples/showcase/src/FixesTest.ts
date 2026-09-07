@@ -1,18 +1,11 @@
 import { Component, toast, msgbox, TemplateDecl } from '@qimenjs/component-core';
-import { DialogComponent, MenuComponent } from './FloatsTest';
 export class OverlayTest extends Component {
     loading = { text: '加载中...' };
     dialog = { type: 'dialog' };
     override get tpl(): TemplateDecl {
         return {
-            tag: 'div',
+            type: 'card',
             name: 'root',
-            style: {
-                border: '2px solid #22c55e',
-                borderRadius: '8px',
-                padding: '24px',
-                marginTop: '24px',
-            },
             children: [
                 {
                     tag: 'h2',
@@ -63,7 +56,6 @@ export class OverlayTest extends Component {
                             name: 'toastBtn',
                             options: {
                                 color: 'success', // Tooltip auto flip is not supported in QimenJS
-                                disable: true, // Tooltip auto flip is not supported in QimenJS
                                 text: 'Toast success',
                             },
                         },
@@ -89,7 +81,6 @@ export class OverlayTest extends Component {
                         {
                             type: 'button',
                             name: 'popoverBtn',
-                            options: { popover: { type: MenuComponent } },
                         },
                     ],
                 },

@@ -12,11 +12,11 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
-import './date-panel.css';
+//import './date-panel.css';
 
 const TOTAL_WEEKDAYS = 7;
 const TOTAL_DAY_CELLS = 42;
@@ -32,7 +32,7 @@ const DayGridComponentDefs: Definitions = {
 } as const;
 
 class DayGridComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return DAY_GRID_TPL;
     }
 

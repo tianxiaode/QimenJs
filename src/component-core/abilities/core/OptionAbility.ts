@@ -10,6 +10,13 @@ import { HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
 import { i18nTextRegistry } from '@/component-core/engine';
 import { type AbilityDefinition } from '@/composable';
 import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
+import { createSlotComponent } from '../../SlotComponent';
+import type { TemplateDecl } from '@/component-core';
+
+/** 判断是否为 TemplateDecl（模板声明），用于 _renderSlot 三路分发 */
+function isTemplateDecl(value: any): value is TemplateDecl {
+    return !!value && typeof value === 'object' && ('tag' in value || 'children' in value);
+}
 
 /** 组件选项能力，选项变化时自动同步到 DOM / 样式 */
 export const OptionAbility: AbilityDefinition = {
@@ -110,6 +117,43 @@ export const OptionAbility: AbilityDefinition = {
     _setNodeHtml(nodeName: string, html: string): void {
         const el = this.getNodeEl(nodeName);
         if (el) (el as HTMLElement).innerHTML = html ?? '';
+    },
+
+    /**
+     * 渲染内容区（宿主内容类 option 通用，如 Card 的 body/footer）
+     *
+     * - string：HTML 注入 innerHTML
+     * - 组件类：以目标节点作为 container 实例化并自动挂载
+     * - TemplateDecl：以临时插槽组件承载（动态派生子类，走完整组件初始化流程），
+     *   el 即 decl 根节点，无额外包裹层
+     *
+     * 生命周期：
+     * - 换值：先 dispose 旧组件实例再渲染新内容
+     * - 宿主销毁：由 _disposeChildComponents 自动清理（子组件已加入 childComponentList）
+     */
+    _renderSlot(nodeName: string, value: any): void {
+        const self = this as any;
+        const slots = self._slotInstances ?? (self._slotInstances = {});
+
+        const prev = slots[nodeName];
+        if (prev && typeof prev.dispose === 'function') prev.dispose();
+        slots[nodeName] = null;
+
+        const el = this.getNodeEl(nodeName);
+        if (!el) return;
+
+        if (typeof value === 'string') {
+            this._setNodeHtml(nodeName, value);
+        } else if (typeof value === 'function') {
+            const inst = new value({ container: el });
+            slots[nodeName] = inst;
+            this.childComponentList.push(inst);
+        } else if (isTemplateDecl(value)) {
+            const SlotCls = createSlotComponent(value);
+            const inst = new SlotCls({ container: el });
+            slots[nodeName] = inst;
+            this.childComponentList.push(inst);
+        }
     },
 
     _applyOptions(options?: Record<string, any>) {

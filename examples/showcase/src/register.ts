@@ -13,4 +13,7 @@ import '@qimenjs/component-core/register';
 
 // component 包组件按需注册（深路径导入，避免全量打包）
 import { ButtonComponent } from '@qimenjs/component';
+import { CardComponent, AvatarComponent } from '@qimenjs/component';
 ButtonComponent.register();
+CardComponent.register();
+AvatarComponent.register();

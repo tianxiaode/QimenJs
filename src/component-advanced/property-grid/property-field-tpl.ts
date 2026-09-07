@@ -1,11 +1,11 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 属性字段模板定义 */
-export const PROPERTY_FIELD_TPL: TplNode = {
+export const PROPERTY_FIELD_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-pgrid__field',
+    classes: 'q-pgrid__field',
     children: [
-        { tag: 'div', name: 'label', cls: 'q-pgrid__label' },
-        { tag: 'div', name: 'value', cls: 'q-pgrid__value' },
+        { tag: 'div', name: 'label', classes: 'q-pgrid__label' },
+        { tag: 'div', name: 'value', classes: 'q-pgrid__value' },
     ],
 };

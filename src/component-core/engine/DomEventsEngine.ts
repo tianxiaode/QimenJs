@@ -446,6 +446,10 @@ export class DomEventsEngine {
      * 从当前组件开始，获取这一层的子组件实例，找到 el 包含 target 的子组件后递归下钻，
      * 直到没有更深层子组件包含 target，此时当前组件即为 target 所属组件。
      *
+     * isItemContainer 场景：子组件来自 _items，若定位到的 items 子组件已 disable，
+     * 直接返回该组件（不再下钻到其内部更深节点），由 handleDelegatedEvent 的
+     * targetComponent.disable 判断拦截，避免 disable 状态被内部节点绕过。
+     *
      * 用于判断 disable 状态等组件级属性，比路径匹配更可靠。
      */
     private static _findComponentByEl(component: any, target: Element): any | null {
@@ -454,6 +458,8 @@ export class DomEventsEngine {
         const children = DomEventsEngine._getChildren(component);
         for (const child of children) {
             if (!child?.el || !child.el.contains(target)) continue;
+            // 命中 disable 组件即短路返回，防止下钻到内部更深节点导致 disable 判断失效
+            if (child.disable) return child;
             const deeper = DomEventsEngine._findComponentByEl(child, target);
             return deeper ?? child;
         }
@@ -549,7 +555,7 @@ export class DomEventsEngine {
     /**
      * 递归查找容器组件内最深层匹配的子组件
      * - isItemContainer 组件：通过 getTargetItem 在 _items 中查找
-     * - 普通组件：在 nodeMap 中查找
+     * - 普通组件：通过 _getChildren 获取所有子组件（含无名组件）
      */
     private static _findDeepestChild(component: any, target: Element): any {
         if (component.isItemContainer && typeof component.getTargetItem === 'function') {
@@ -561,11 +567,8 @@ export class DomEventsEngine {
             return null;
         }
 
-        const nodeMap = component.nodeMap ?? component.nodeMapMgr?.getAll?.() ?? {};
-        if (!nodeMap) return null;
-
-        for (const node of Object.values(nodeMap)) {
-            const childComponent = (node as any).component ?? node;
+        const children = DomEventsEngine._getChildren(component);
+        for (const childComponent of children) {
             if (!childComponent?.el) continue;
             if (childComponent === component) continue;
             if (childComponent.el.contains(target)) {
@@ -579,11 +582,17 @@ export class DomEventsEngine {
     /**
      * 获取组件的所有子组件
      * - isItemContainer 组件：返回 _items 中的 component
-     * - 普通组件：返回 nodeMap 中的 component
+     * - 普通组件：优先返回 childComponentList（含无名组件），回退到 nodeMap/nodeInstances
      */
     private static _getChildren(component: any): any[] {
         if (component.isItemContainer && Array.isArray(component._items)) {
             return component._items.map((item: any) => item.component);
+        }
+        if (
+            Array.isArray(component.childComponentList) &&
+            component.childComponentList.length > 0
+        ) {
+            return component.childComponentList;
         }
         const nodeMap = component.nodeMap ?? component.nodeMapMgr?.getAll?.() ?? {};
         if (Object.keys(nodeMap).length > 0) {

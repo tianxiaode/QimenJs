@@ -22,6 +22,7 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { CARD_TPL } from './card-tpl';
 import { Definitions } from '@/composable';
+import type { CardContent } from './types';
 import './card.css';
 
 const CardComponentDefs: Definitions = {
@@ -29,6 +30,8 @@ const CardComponentDefs: Definitions = {
         title: null,
         icon: null,
         action: null,
+        body: null,
+        footer: null,
     },
 } as const;
 
@@ -54,9 +57,16 @@ class CardComponent extends Component {
         if (value) this.addCls(value, 'headerAction');
         if (old) this.removeCls(old, 'headerAction');
     }
+
+    _onBodyOptionChange(value: CardContent, _old: CardContent): void {
+        this._renderSlot('body', value);
+    }
+
+    _onFooterOptionChange(value: CardContent, _old: CardContent): void {
+        this._setNodeHidden(!value, 'footer');
+        this._renderSlot('footer', value);
+    }
 }
 
 CardComponent.define(CardComponentDefs);
 export { CardComponent };
-/** 卡片实例类型 */
-export type CardComponentInstance = InstanceType<typeof CardComponent>;

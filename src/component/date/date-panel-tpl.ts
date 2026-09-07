@@ -1,68 +1,69 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { DayGridComponent } from './DayGridComponent';
 
 /** 日期面板模板定义 */
-export const DATE_PANEL_TPL: TplNode = {
+export const DATE_PANEL_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-dtpanel',
+    classes: 'q-dtpanel',
     children: [
         {
             tag: 'div',
             name: 'nav',
-            cls: 'q-dtpanel__nav',
+            classes: 'q-dtpanel__nav',
             children: [
                 {
                     tag: 'button',
                     name: 'prevFieldBtn',
-                    cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
+                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
                 },
                 {
                     tag: 'div',
                     name: 'dateNav',
-                    cls: 'q-dtpanel__date-nav',
+                    classes: 'q-dtpanel__date-nav',
                     children: [
                         {
                             tag: 'button',
                             name: 'prev10y',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
                         },
                         {
                             tag: 'button',
                             name: 'prev1y',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
                         },
                         {
                             tag: 'button',
                             name: 'prev1m',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
                         },
-                        { tag: 'span', name: 'dateLabel', cls: 'q-dtpanel__date-nav-label' },
+                        { tag: 'span', name: 'dateLabel', classes: 'q-dtpanel__date-nav-label' },
                         {
                             tag: 'button',
                             name: 'next1m',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
                         },
                         {
                             tag: 'button',
                             name: 'next1y',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
                         },
                         {
                             tag: 'button',
                             name: 'next10y',
-                            cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next',
+                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next',
                         },
                     ],
                 },
                 {
                     tag: 'button',
                     name: 'confirmBtn',
-                    cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm',
+                    classes:
+                        'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm',
                 },
                 {
                     tag: 'button',
                     name: 'cancelBtn',
-                    cls: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--cancel q-dtpanel__nav-cancel',
+                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--cancel q-dtpanel__nav-cancel',
                 },
             ],
         },
@@ -73,20 +74,18 @@ export const DATE_PANEL_TPL: TplNode = {
         {
             tag: 'div',
             name: 'quickRow',
-            cls: 'q-dtpanel__quick-row',
+            classes: 'q-dtpanel__quick-row',
             children: [
                 {
                     tag: 'button',
                     name: 'yesterdayBtn',
-                    cls: 'q-dtpanel__quick-btn',
-                    i18n: 'yesterday',
+                    classes: 'q-dtpanel__quick-btn',
                 },
-                { tag: 'button', name: 'todayBtn', cls: 'q-dtpanel__quick-btn', i18n: 'today' },
+                { tag: 'button', name: 'todayBtn', classes: 'q-dtpanel__quick-btn' },
                 {
                     tag: 'button',
                     name: 'tomorrowBtn',
-                    cls: 'q-dtpanel__quick-btn',
-                    i18n: 'tomorrow',
+                    classes: 'q-dtpanel__quick-btn',
                 },
             ],
         },

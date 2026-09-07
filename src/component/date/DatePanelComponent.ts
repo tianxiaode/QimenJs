@@ -15,7 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { DATE_PANEL_TPL } from './date-panel-tpl';
 import {
@@ -35,7 +35,7 @@ const DatePanelComponentDefs: Definitions = {
 } as const;
 
 class DatePanelComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return DATE_PANEL_TPL;
     }
 

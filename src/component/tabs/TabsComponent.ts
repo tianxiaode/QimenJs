@@ -27,7 +27,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { TABS_TPL } from './tabs-tpl';
 import './tabs.css';
@@ -53,7 +53,7 @@ const TabsComponentDefs: Definitions = {
 } as const;
 
 class TabsComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return TABS_TPL;
     }
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;

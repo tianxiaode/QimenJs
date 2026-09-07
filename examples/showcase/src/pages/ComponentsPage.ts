@@ -5,7 +5,7 @@
  * 占位页面，后续阶段完善。
  */
 
-import { Component, type TplNode } from '@qimenjs/component-core';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import { AlertComponent } from '@qimenjs/component';
 
 /** 组件分类数据（i18n key + 组件名列表） */
@@ -37,14 +37,14 @@ const CATEGORIES = [
 ];
 
 /** 组件页模板 */
-const COMPONENTS_TPL: TplNode = {
+const COMPONENTS_TPL: TemplateDecl = {
     tag: 'div',
     cls: 'q-components-page',
     flex: { direction: 'row', minHeight: '100%' },
     children: [
         {
             tag: 'aside',
-            cls: 'q-components-page__sidebar',
+            classes: 'q-components-page__sidebar',
             children: CATEGORIES.map(cat => ({
                 tag: 'div',
                 cls: 'q-components-page__category',
@@ -64,22 +64,17 @@ const COMPONENTS_TPL: TplNode = {
         },
         {
             tag: 'main',
-            cls: 'q-components-page__main',
+            classes: 'q-components-page__main',
             flex: { direction: 'column', gap: '24px', flex: 1 },
             children: [
                 {
                     name: 'alert',
                     type: AlertComponent,
-                    cls: 'q-components-page__alert',
-                    initConfig: {
-                        type: 'info',
-                        text: '@componentsPage.hint',
-                    },
+                    classes: 'q-components-page__alert',
                 },
                 {
                     tag: 'div',
-                    cls: 'q-components-page__placeholder',
-                    i18n: 'componentsPage.placeholder',
+                    classes: 'q-components-page__placeholder',
                 },
             ],
         },
@@ -87,7 +82,8 @@ const COMPONENTS_TPL: TplNode = {
 };
 
 /** 组件展示页组件 */
-export class ComponentsPage extends Component {}
+export class ComponentsPage extends Component {
+    get tpl(): TemplateDecl {
+        return COMPONENTS_TPL;
+}
 
-ComponentsPage.useTemplate(COMPONENTS_TPL);
-export type ComponentsPageInstance = InstanceType<typeof ComponentsPage>;

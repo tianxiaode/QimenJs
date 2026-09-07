@@ -31,6 +31,7 @@ export const InitAbility = {
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
         this.nodeInstances = {};
+        this.childComponentList = [];
         const fragment = this._getCache().templateCache!.content.cloneNode(true);
         const el = (fragment.firstElementChild as HTMLElement) ?? document.createElement('div');
         this.el = el;
@@ -78,29 +79,32 @@ export const InitAbility = {
             }, 0);
             return;
         }
-        for (const name of components) {
-            const node = this.getNode(name);
-            if (!node) continue;
-            const options = node.options;
+        for (const entry of components) {
+            const { name, indexPath, nodeMeta } = entry;
             const Ctor =
-                typeof node.type === 'string' ? this.resolveComponent(node.type) : node.type;
+                typeof nodeMeta.type === 'string'
+                    ? this.resolveComponent(nodeMeta.type)
+                    : nodeMeta.type;
             if (!Ctor) {
-                this.logger.warn?.(`[createChildren] 组件类型 "${node.type}" 未注册`);
+                this.logger.warn?.(`[createChildren] 组件类型 "${nodeMeta.type}" 未注册`);
                 continue;
             }
             const child = new (Ctor as any)({
                 hasParent: true,
-                ...options,
-                attributes: node.attributes,
-                style: node.style,
-                classes: node.classes,
+                ...nodeMeta.options,
+                attributes: nodeMeta.attributes,
+                style: nodeMeta.style,
+                classes: nodeMeta.classes,
             });
-            const placeholder = this.getNodeEl(name);
+            const placeholder = this._findByPath(indexPath);
             if (!placeholder) continue;
             placeholder.replaceWith(child.el!);
-            this._setNodeEl(name, child.el!);
-            this._setComponent(name, child);
-            this._onChildMounted(name, child);
+            if (name) {
+                this._setNodeEl(name, child.el!);
+                this._setComponent(name, child);
+            }
+            this.childComponentList.push(child);
+            this._onChildMounted(name || '', child);
         }
         this._emitMounted();
 
@@ -204,5 +208,17 @@ export const InitAbility = {
         if (!node) return;
         node.el = placeholder;
         node.instance = undefined;
+    },
+
+    _disposeChildComponents(): void {
+        const list = this.childComponentList;
+        if (!list || list.length === 0) return;
+        for (let i = list.length - 1; i >= 0; i--) {
+            const child = list[i];
+            if (child && !(child as any)._disposing && typeof child.dispose === 'function') {
+                child.dispose();
+            }
+        }
+        this.childComponentList = [];
     },
 } satisfies AbilityDefinition;

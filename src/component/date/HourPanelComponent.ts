@@ -10,7 +10,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
@@ -28,7 +28,7 @@ const HourPanelComponentDefs: Definitions = {
 } as const;
 
 class HourPanelComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return HOUR_PANEL_TPL;
     }
 

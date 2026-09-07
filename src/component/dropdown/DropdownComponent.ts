@@ -31,7 +31,7 @@ const DEFAULT_POPOVER_FLOAT = {
     placement: 'bottom' as const,
 };
 
-class DropdownComponent extends ButtonComponent {
+export class DropdownComponent extends ButtonComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-dropdown');
@@ -53,7 +53,3 @@ class DropdownComponent extends ButtonComponent {
         super.update(props);
     }
 }
-
-export { DropdownComponent };
-/** 下拉菜单实例类型 */
-export type DropdownComponentInstance = InstanceType<typeof DropdownComponent>;

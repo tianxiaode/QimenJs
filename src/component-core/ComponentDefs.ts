@@ -66,6 +66,8 @@ export const ComponentDefs: Definitions = {
         nodeElements: {},
         /** 子组件实例对象映射表，用于管理子组件的生命周期和状态管理  */
         nodeInstances: {},
+        /** 所有子组件实例数组（含无名组件） */
+        childComponentList: [],
         /** 组件是否为子组件容器 — 控制组件是否可容纳其他组件 */
         isItemContainer: false,
         /** 组件委托事件定义 */

@@ -1,57 +1,65 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 一次性密码模板定义 */
-export const ONE_TIME_PASSWORD_TPL: TplNode = {
+export const ONE_TIME_PASSWORD_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-otp q-otp__container',
+    classes: 'q-otp q-otp__container',
     children: [
         {
             tag: 'input',
             name: 'input0',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 1' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 1' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input1',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 2' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 2' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input2',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 3' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 3' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input3',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 4' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 4' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input4',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 5' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 5' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input5',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 6' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 6' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input6',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 7' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 7' },
+            options: { maxLength: '1' },
         },
         {
             tag: 'input',
             name: 'input7',
-            cls: 'q-otp__input',
-            attrs: { maxLength: '1', 'aria-label': 'Digit 8' },
+            classes: 'q-otp__input',
+            attributes: { 'aria-label': 'Digit 8' },
+            options: { maxLength: '1' },
         },
     ],
 };

@@ -5,14 +5,14 @@
  * 位置通过 position 属性控制（top/bottom/left/right）
  */
 
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 标签页集模板定义 */
-export const TABS_TPL: TplNode = {
+export const TABS_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-tabs',
+    classes: 'q-tabs',
     children: [
-        { tag: 'div', name: 'tabBar', cls: 'q-tabs__bar' },
-        { tag: 'div', name: 'content', cls: 'q-tabs__content' },
+        { tag: 'div', name: 'tabBar', classes: 'q-tabs__bar' },
+        { tag: 'div', name: 'content', classes: 'q-tabs__content' },
     ],
 };

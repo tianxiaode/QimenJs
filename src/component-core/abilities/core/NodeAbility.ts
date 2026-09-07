@@ -78,7 +78,12 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     getChildComponentNames(): string[] {
-        return this._getCache().childComponents || [];
+        const entries = this._getCache().childComponents || [];
+        return entries.map(e => e.name).filter((n): n is string => !!n);
+    },
+
+    getChildComponents(): IComponentCore[] {
+        return this.childComponentList || [];
     },
 
     /**

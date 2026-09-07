@@ -1,7 +1,7 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 步骤项模板定义 */
-export const STEP_ITEM_TPL: TplNode = {
+export const STEP_ITEM_TPL: TemplateDecl = {
     tag: 'div',
     cls: 'q-step__item',
     attrs: { role: 'listitem' },
@@ -9,15 +9,15 @@ export const STEP_ITEM_TPL: TplNode = {
         {
             tag: 'div',
             name: 'head',
-            cls: 'q-step__head',
+            classes: 'q-step__head',
             children: [
                 {
                     tag: 'div',
                     name: 'circle',
-                    cls: 'q-step__circle',
-                    children: [{ tag: 'span', name: 'number', cls: 'q-step__number' }],
+                    classes: 'q-step__circle',
+                    children: [{ tag: 'span', name: 'number', classes: 'q-step__number' }],
                 },
-                { tag: 'div', name: 'tail', cls: 'q-step__tail' },
+                { tag: 'div', name: 'tail', classes: 'q-step__tail' },
             ],
         },
         {
@@ -25,8 +25,8 @@ export const STEP_ITEM_TPL: TplNode = {
             name: 'body',
             cls: 'q-step__body',
             children: [
-                { tag: 'div', name: 'title', cls: 'q-step__title' },
-                { tag: 'div', name: 'desc', cls: 'q-step__description', hidden: true },
+                { tag: 'div', name: 'title', classes: 'q-step__title' },
+                { tag: 'div', name: 'desc', classes: 'q-step__description', hidden: true },
             ],
         },
     ],

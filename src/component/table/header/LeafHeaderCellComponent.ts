@@ -10,7 +10,7 @@
 
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { SortDirection } from '../column-types';
-import type { TplNode, DragOptions } from '@qimenjs/component-core';
+import type { TemplateDecl, DragOptions } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
 
@@ -24,7 +24,7 @@ const LeafHeaderCellComponentDefs: Definitions = {
 } as const;
 
 class LeafHeaderCellComponent extends BaseHeaderCellComponent {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return LEAF_HEADER_CELL_TPL;
     }
 
@@ -90,22 +90,12 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         });
     }
 
-    onDragStart(_ctx: {
-        dx: number;
-        dy: number;
-        el: HTMLElement;
-        originalEvent: Event;
-    }): void {
+    onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable) return;
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
-    onDragMove(ctx: {
-        dx: number;
-        dy: number;
-        el: HTMLElement;
-        originalEvent: Event;
-    }): void {
+    onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable) return;
         const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
         this.emit('resize', {

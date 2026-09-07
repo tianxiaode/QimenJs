@@ -1,24 +1,24 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 上传按钮模板定义 */
-export const UPLOAD_BUTTON_TPL: TplNode = {
+export const UPLOAD_BUTTON_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-button q-upload-btn',
+    classes: 'q-button q-upload-btn',
     children: [
         {
             tag: 'i',
             name: 'icon',
-            cls: 'q-button__icon',
+            classes: 'q-button__icon',
         },
         {
             tag: 'span',
             name: 'text',
-            cls: 'q-button__text',
+            classes: 'q-button__text',
         },
         {
             tag: 'div',
             name: 'list',
-            cls: 'q-upload-btn__list',
+            classes: 'q-upload-btn__list',
         },
     ],
 };

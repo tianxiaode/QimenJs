@@ -1,8 +1,8 @@
-import type { TplNode } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 
 /** 属性网格模板定义 */
-export const PROPERTY_GRID_TPL: TplNode = {
+export const PROPERTY_GRID_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-pgrid',
-    children: [{ tag: 'div', name: 'grid', cls: 'q-pgrid__grid' }],
+    classes: 'q-pgrid',
+    children: [{ tag: 'div', name: 'grid', classes: 'q-pgrid__grid' }],
 };
