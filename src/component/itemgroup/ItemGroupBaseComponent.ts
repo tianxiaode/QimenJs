@@ -9,18 +9,6 @@ export type { OverflowMode } from '@qimenjs/component-abilities';
 export type DefaultItemDef = Record<string, any>;
 export type DefaultItemConfig = DefaultItemDef | Record<string, DefaultItemDef>;
 
-export interface ItemGroupConfig {
-    direction?: 'horizontal' | 'vertical';
-    defaultItemType?: string;
-    items?: Record<string, any>[];
-    gap?: string;
-    cols?: number;
-    defaultItem?: DefaultItemConfig;
-    overflowMode?: import('@qimenjs/component-abilities').OverflowMode;
-    step?: number;
-    indicator?: any;
-}
-
 const ItemGroupBaseComponentDefs: Definitions = {
     options: {
         direction: 'horizontal',
@@ -81,7 +69,7 @@ class ItemGroupBaseComponent extends Component {
         }
     }
 
-    _onOverflowModeOptionChange(value: string): void {
+    _onOverflowModeOptionChange(_value: string): void {
         if (typeof (this as any)._applyOverflowMode === 'function') {
             (this as any)._applyOverflowMode();
         }
@@ -249,16 +237,16 @@ class ItemGroupBaseComponent extends Component {
         container.appendChild(fragment);
     }
 
-    setItems(datas: Record<string, any>[]): void {
+    setItems(_datas: Record<string, any>[]): void {
         throw new Error('setItems must be implemented');
     }
-    add(data: Record<string, any>): any {
+    add(_data: Record<string, any>): any {
         throw new Error('add must be implemented');
     }
-    insert(index: number, data: Record<string, any>): any {
+    insert(_index: number, _data: Record<string, any>): any {
         throw new Error('insert must be implemented');
     }
-    removeAt(index: number): any {
+    removeAt(_index: number): any {
         throw new Error('removeAt must be implemented');
     }
     clear(): void {

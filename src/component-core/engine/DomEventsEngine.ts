@@ -335,14 +335,14 @@ export class DomEventsEngine {
             if (rule.needsBinding) allEventTypes.add(rule.event);
         }
 
-        const dispatchers = new Map<string, (domEvt: any, actualAction?: string) => void>();
+        const dispatchers = new Map<string, (domEvt: any, actualAction?: string, targetComponent?: any) => void>();
 
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
 
             const key = DomEventsEngine._ruleKey(rule);
-            let wrapped = (domEvt: any, actualAction?: string) => {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction);
+            let wrapped = (domEvt: any, actualAction?: string, targetComponent?: any) => {
+                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction, targetComponent);
             };
 
             if (rule.debounce && rule.debounce > 0) {
@@ -354,7 +354,7 @@ export class DomEventsEngine {
             if (rule.once) {
                 let called = false;
                 const original = wrapped;
-                wrapped = (domEvt: any, actualAction?: string) => {
+                wrapped = (domEvt: any, actualAction?: string, targetComponent?: any) => {
                     if (called) return;
                     called = true;
                     return original(domEvt, actualAction);
@@ -432,9 +432,9 @@ export class DomEventsEngine {
 
             const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
             if (dispatch) {
-                dispatch(domEvt, actualAction);
+                dispatch(domEvt, actualAction, targetComponent);
             } else {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction);
+                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction, targetComponent);
             }
             return;
         }
@@ -626,10 +626,11 @@ export class DomEventsEngine {
         instance: any,
         rule: DelegatedEventRule,
         domEvt: any,
-        actualAction?: string
+        actualAction?: string,
+        targetComponent?: any
     ): void {
         if (rule.handler) {
-            DomEventsEngine._invokeHandler(instance, rule, domEvt, actualAction);
+            DomEventsEngine._invokeHandler(instance, rule, domEvt, actualAction, targetComponent);
         }
 
         const extraData = DomEventsEngine._buildPayload(instance, rule, actualAction);
@@ -640,7 +641,8 @@ export class DomEventsEngine {
         instance: any,
         rule: DelegatedEventRule,
         domEvt: any,
-        actualAction?: string
+        actualAction?: string,
+        targetComponent?: any
     ): void {
         let methodName: string;
 
@@ -663,7 +665,7 @@ export class DomEventsEngine {
 
         const method = instance[methodName];
         if (typeof method === 'function') {
-            method.call(instance, domEvt);
+            method.call(instance, domEvt, targetComponent);
         }
     }
 

@@ -1,4 +1,4 @@
-import { Component, TemplateDecl } from '@qimenjs/component-core';
+import { Component, DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
 
 export class ShowcaseApp extends Component {
     get tpl(): TemplateDecl {
@@ -6,7 +6,13 @@ export class ShowcaseApp extends Component {
             tag: 'div',
             name: 'root',
             classes: 'q-showcase',
-            style: { padding: '40px', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', gap: '24px' },
+            style: {
+                padding: '40px',
+                fontFamily: 'sans-serif',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '24px',
+            },
             children: [
                 {
                     type: 'card',
@@ -35,7 +41,10 @@ export class ShowcaseApp extends Component {
                                         {
                                             type: 'button',
                                             name: 'btnCardPrimaryOutline',
-                                            options: { text: 'Primary Outline', color: 'primary-outline' },
+                                            options: {
+                                                text: 'Primary Outline',
+                                                color: 'primary-outline',
+                                            },
                                         },
                                         {
                                             type: 'button',
@@ -45,7 +54,10 @@ export class ShowcaseApp extends Component {
                                         {
                                             type: 'button',
                                             name: 'btnCardWarningOutline',
-                                            options: { text: 'Warning Outline', color: 'warning-outline' },
+                                            options: {
+                                                text: 'Warning Outline',
+                                                color: 'warning-outline',
+                                            },
                                         },
                                         {
                                             type: 'button',
@@ -154,23 +166,14 @@ export class ShowcaseApp extends Component {
         };
     }
 
-    onAfterInit(): void {
-        const card = this.getComponent('colorCard');
-
-        this.bind(this.getComponent('btnCardPrimary'), 'click', () => {
-            card.color = 'primary';
-        });
-        this.bind(this.getComponent('btnCardPrimaryOutline'), 'click', () => {
-            card.color = 'primary-outline';
-        });
-        this.bind(this.getComponent('btnCardWarning'), 'click', () => {
-            card.color = 'warning';
-        });
-        this.bind(this.getComponent('btnCardWarningOutline'), 'click', () => {
-            card.color = 'warning-outline';
-        });
-        this.bind(this.getComponent('btnCardReset'), 'click', () => {
-            card.color = null;
-        });
-    }
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            btnPrimary: { handler: 'handleBtnClick' },
+            btnPrimaryOutline: { handler: 'handleBtnClick' },
+            btnSuccess: { handler: 'handleBtnClick' },
+            btnSuccessOutline: { handler: 'handleBtnClick' },
+            btnError: { handler: 'handleBtnClick' },
+            btnErrorOutline: { handler: 'handleBtnClick' },
+        },
+    };
 }
