@@ -26,13 +26,13 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
 import { string } from '@/utils';
-import { ComponentClass, ComponentCoreOptions, IComponentCore, TemplateDecl } from './types';
+import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 import { ComponentRegistrar } from './ComponentRegistrar';
 import './badge.css';
 import './indicator.css';
 /** 组件基类，所有组件通过 extends 继承，提供能力组合、生命周期管线和 DOM 管理 */
-export class Component extends ComposableBase implements IComponentCore {
+export class Component extends ComposableBase implements IComponent {
     static type = 'component';
     static register() {
         ComponentRegistrar.getInstance().register(this);

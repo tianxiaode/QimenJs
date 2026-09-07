@@ -8,9 +8,8 @@
 
 import { HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
 import { i18nTextRegistry } from '@/component-core/engine';
-import { type AbilityDefinition } from '@/composable';
+import { withDefinitions, type AbilityDefinition, type Definitions } from '@/composable';
 import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
-import { createSlotComponent } from '../../SlotComponent';
 import type { TemplateDecl } from '@/component-core';
 
 /** 判断是否为 TemplateDecl（模板声明），用于 _renderSlot 三路分发 */
@@ -149,11 +148,22 @@ export const OptionAbility: AbilityDefinition = {
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
         } else if (isTemplateDecl(value)) {
-            const SlotCls = createSlotComponent(value);
-            const inst = new SlotCls({ container: el });
+            const inst = this._createSlotComponent(value, el);
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
         }
+    },
+
+    _createSlotComponent(decl: TemplateDecl, container: HTMLElement): any {
+        const BaseCtor = this.constructor as any;
+        const SlotCls = class SlotComponentFactory extends BaseCtor {
+            static type = 'slot';
+            get tpl(): TemplateDecl {
+                return decl;
+            }
+        };
+        withDefinitions(SlotCls, {} as Definitions);
+        return new SlotCls({ container });
     },
 
     _applyOptions(options?: Record<string, any>) {

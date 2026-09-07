@@ -13,13 +13,7 @@ export class ShowcaseApp extends Component {
                 {
                     type: 'card',
                     name: 'avatar',
-                    options: { tile: '头像' },
-                    children: [
-                        {
-                            type: 'avatar',
-                            options: { src: 'https://qimenjs.com/assets/images/avatar.png' },
-                        },
-                    ],
+                    options: { title: '头像', body: {} },
                 },
             ],
         };
