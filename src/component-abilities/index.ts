@@ -19,6 +19,9 @@ export {
 // 尺寸能力
 export { SizeAbility, type SizeConfig } from './size';
 
+// 颜色能力
+export { ColorAbility, type ColorScheme, type ColorValue } from './color';
+
 // 调整大小能力
 export { ResizeAbility, type ResizeConfig, type ResizeEdge } from './resize';
 

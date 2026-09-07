@@ -42,3 +42,64 @@
 .q-avatar__icon .q-icon {
     font-size: inherit;
 }
+
+/* ========================================
+   颜色方案 — color=primary 填充，color=primary-outline 边框
+   ======================================== */
+
+.q-avatar--color-primary {
+    background: var(--q-color-primary, #0078d4);
+    color: var(--q-color-on-primary, #fff);
+}
+.q-avatar--color-secondary {
+    background: var(--q-color-secondary, #607d8b);
+    color: var(--q-color-on-secondary, #fff);
+}
+.q-avatar--color-success {
+    background: var(--q-color-success, #107c10);
+    color: var(--q-color-on-success, #fff);
+}
+.q-avatar--color-warning {
+    background: var(--q-color-warning, #ca5010);
+    color: var(--q-color-on-warning, #fff);
+}
+.q-avatar--color-error {
+    background: var(--q-color-error, #d13438);
+    color: var(--q-color-on-error, #fff);
+}
+.q-avatar--color-info {
+    background: var(--q-color-info, #0078d4);
+    color: var(--q-color-on-info, #fff);
+}
+
+/* 边框模式 */
+.q-avatar--color-primary-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
+}
+.q-avatar--color-secondary-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-secondary, #607d8b);
+    color: var(--q-color-secondary, #607d8b);
+}
+.q-avatar--color-success-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-success, #107c10);
+    color: var(--q-color-success, #107c10);
+}
+.q-avatar--color-warning-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-warning, #ca5010);
+    color: var(--q-color-warning, #ca5010);
+}
+.q-avatar--color-error-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-error, #d13438);
+    color: var(--q-color-error, #d13438);
+}
+.q-avatar--color-info-outline {
+    background: transparent;
+    border: 2px solid var(--q-color-info, #0078d4);
+    color: var(--q-color-info, #0078d4);
+}

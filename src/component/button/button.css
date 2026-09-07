@@ -29,80 +29,113 @@
     overflow: visible;
 }
 
-/* 类型：默认 */
-.q-button--default {
-    background: var(--q-color-bg, #fff);
-    border-color: var(--q-color-bg, #dcdfe6);
-    color: var(--q-color-text, #1a1a1a);
-}
-
-.q-button--default:hover {
-    background: var(--q-color-bg-hover, #f0f0f0);
-}
-
-/* 类型：主要 */
-.q-button--primary {
+/* 类型：主要 — 填充模式 */
+.q-button--color-primary {
     background: var(--q-color-primary, #0078d4);
     border-color: var(--q-color-primary, #0078d4);
     color: var(--q-color-on-primary, #fff);
 }
-
-.q-button--primary:hover {
+.q-button--color-primary:hover {
     background: var(--q-color-primary-hover, #106ebe);
     border-color: var(--q-color-primary-hover, #106ebe);
 }
-
-.q-button--primary:active {
+.q-button--color-primary:active {
     background: var(--q-color-primary-active, #005a9e);
     border-color: var(--q-color-primary-active, #005a9e);
 }
 
-/* 类型：成功 */
-.q-button--success {
+/* 类型：主要 — 边框模式 */
+.q-button--color-primary-outline {
+   8   background: transparent;
+    border-color: var(--q-color-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
+}
+.q-button--color-primary-outline:hover {
+    background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.1));
+}
+
+/* 类型：成功 — 填充模式 */
+.q-button--color-success {
     background: var(--q-color-success, #107c10);
     border-color: var(--q-color-success, #107c10);
     color: var(--q-color-on-success, #fff);
 }
-
-.q-button--success:hover {
+.q-button--color-success:hover {
     background: var(--q-color-success-hover, #0e6b0e);
     border-color: var(--q-color-success-hover, #0e6b0e);
 }
 
-/* 类型：警告 */
-.q-button--warning {
+/* 类型：成功 — 边框模式 */
+.q-button--color-success-outline {
+    background: transparent;
+    border-color: var(--q-color-success, #107c10);
+    color: var(--q-color-success, #107c10);
+}
+.q-button--color-success-outline:hover {
+    background: var(--q-color-success-hover, rgba(16, 124, 16, 0.1));
+}
+
+/* 类型：警告 — 填充模式 */
+.q-button--color-warning {
     background: var(--q-color-warning, #ca5010);
     border-color: var(--q-color-warning, #ca5010);
     color: var(--q-color-on-warning, #fff);
 }
-
-.q-button--warning:hover {
+.q-button--color-warning:hover {
     background: var(--q-color-warning-hover, #b3450e);
     border-color: var(--q-color-warning-hover, #b3450e);
 }
 
-/* 类型：危险 */
-.q-button--error {
+/* 类型：警告 — 边框模式 */
+.q-button--color-warning-outline {
+    background: transparent;
+    border-color: var(--q-color-warning, #ca5010);
+    color: var(--q-color-warning, #ca5010);
+}
+.q-button--color-warning-outline:hover {
+    background: var(--q-color-warning-hover, rgba(202, 80, 16, 0.1));
+}
+
+/* 类型：错误 — 填充模式 */
+.q-button--color-error {
     background: var(--q-color-error, #d13438);
     border-color: var(--q-color-error, #d13438);
     color: var(--q-color-on-error, #fff);
 }
-
-.q-button--error:hover {
+.q-button--color-error:hover {
     background: var(--q-color-error-hover, #b22c2f);
     border-color: var(--q-color-error-hover, #b22c2f);
 }
 
-.q-button--info {
-    background: var(--q-color-info, #d13438);
-    border-color: var(--q-color-info, #d13438);
-    color: var(--q-color-on-info, #fff);
+/* 类型：错误 — 边框模式 */
+.q-button--color-error-outline {
+    background: transparent;
+    border-color: var(--q-color-error, #d13438);
+    color: var(--q-color-error, #d13438);
+}
+.q-button--color-error-outline:hover {
+    background: var(--q-color-error-hover, rgba(209, 52, 56, 0.1));
 }
 
-.q-button--info:hover {
-    background: var(--q-color-info-hover, #d13438);
-    border-color: var(--q-color-info-hover, #d13438);
-    color: var(--q-color-on-info-hover, #fff);
+/* 类型：信息 — 填充模式 */
+.q-button--color-info {
+    background: var(--q-color-info, #0078d4);
+    border-color: var(--q-color-info, #0078d4);
+    color: var(--q-color-on-info, #fff);
+}
+.q-button--color-info:hover {
+    background: var(--q-color-info-hover, #106ebe);
+    border-color: var(--q-color-info-hover, #106ebe);
+}
+
+/* 类型：信息 — 边框模式 */
+.q-button--color-info-outline {
+    background: transparent;
+    border-color: var(--q-color-info, #0078d4);
+    color: var(--q-color-info, #0078d4);
+}
+.q-button--color-info-outline:hover {
+    background: var(--q-color-info-hover, rgba(0, 120, 212, 0.1));
 }
 
 
@@ -226,13 +259,13 @@
 }
 
 /* 幽灵模式 — 主要色 */
-.q-button--ghost.q-button--primary {
+.q-button--ghost.q-button--color-primary {
     color: var(--q-color-primary, #0078d4);
     background: transparent;
     border-color: transparent;
 }
 
-.q-button--ghost.q-button--primary:hover {
+.q-button--ghost.q-button--color-primary:hover {
     background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.1));
     border-color: transparent;
 }

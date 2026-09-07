@@ -31,18 +31,18 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { BUTTON_TPL } from './button-tpl';
 import { Definitions } from '@/composable';
-import { SizeAbility } from '@/component-abilities';
+import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './button.css';
 
 const ButtonComponentDefs: Definitions = {
     options: {
         text: null,
-        size: 'md', // 默认尺寸,
-        ghost: false, // 无边框
-        iconAlign: 'left', // 布局
-        color: 'default', // 按钮类型
-        iconCls: null, // 图标内容
-        busy: false, // 加载状态
+        size: 'md',
+        ghost: false,
+        iconAlign: 'left',
+        color: null,
+        iconCls: null,
+        busy: false,
     },
 } as const;
 
@@ -67,10 +67,6 @@ class ButtonComponent extends Component {
             : this.removeCls('q-button__icon', nodeName);
         if (old) this.removeCls(old, nodeName);
         if (value) this.addCls(value, nodeName);
-    }
-
-    _onColorOptionChange(value: string, old: string) {
-        this._toggleOptionCls('q-button--', value, old);
     }
 
     _onGhostOptionChange(value: boolean) {
@@ -100,5 +96,6 @@ class ButtonComponent extends Component {
 
 ButtonComponent.define(ButtonComponentDefs);
 ButtonComponent.use(SizeAbility);
+ButtonComponent.use(ColorAbility);
 
 export { ButtonComponent };

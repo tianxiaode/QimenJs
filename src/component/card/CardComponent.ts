@@ -22,6 +22,7 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { CARD_TPL } from './card-tpl';
 import { Definitions } from '@/composable';
+import { ColorAbility } from '@/component-abilities';
 import type { CardContent } from './types';
 import './card.css';
 
@@ -33,7 +34,6 @@ const CardComponentDefs: Definitions = {
         body: null,
         footer: null,
         color: null,
-        filled: false,
     },
 } as const;
 
@@ -68,16 +68,9 @@ class CardComponent extends Component {
         this._setNodeHidden(!value, 'footer');
         this._renderSlot('footer', value);
     }
-
-    _onColorOptionChange(value: string, old: string) {
-        this._toggleOptionCls(`${this._cssPrefix}--color-`, value, old);
-    }
-
-    _onFilledOptionChange(value: boolean) {
-        if (value) this.addCls(`${this._cssPrefix}--filled`);
-        else this.removeCls(`${this._cssPrefix}--filled`);
-    }
 }
 
 CardComponent.define(CardComponentDefs);
+CardComponent.use(ColorAbility);
+
 export { CardComponent };
