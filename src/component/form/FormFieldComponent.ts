@@ -53,7 +53,7 @@ class FormFieldComponent extends Component {
             this._labelText = value;
             const el = this.getNodeEl('label');
             if (el) el.textContent = value;
-            this._setNodeHidden(false, 'labelGroup');
+            this.setNodeHidden(false, 'labelGroup');
             this._applyRequiredConfig();
         }
     }
@@ -64,7 +64,7 @@ class FormFieldComponent extends Component {
             this._labelText = text;
             const el = this.getNodeEl('label');
             if (el) el.textContent = text;
-            this._setNodeHidden(false, 'labelGroup');
+            this.setNodeHidden(false, 'labelGroup');
             this._applyRequiredConfig();
         }
     }
@@ -86,9 +86,9 @@ class FormFieldComponent extends Component {
     _onRequiredOptionChange(value: boolean): void {
         if (value && this._labelText) {
             this._applyRequiredConfig();
-            this._setNodeHidden(false, 'requiredMark');
+            this.setNodeHidden(false, 'requiredMark');
         } else {
-            this._setNodeHidden(true, 'requiredMark');
+            this.setNodeHidden(true, 'requiredMark');
         }
     }
 
@@ -120,8 +120,14 @@ class FormFieldComponent extends Component {
         const markEl = this.getNodeEl('requiredMark');
         if (markEl) {
             (markEl as HTMLElement).textContent = mark;
-            (markEl as HTMLElement).classList.toggle('q-formfield__required-mark--before', position === 'before');
-            (markEl as HTMLElement).classList.toggle('q-formfield__required-mark--after', position === 'after');
+            (markEl as HTMLElement).classList.toggle(
+                'q-formfield__required-mark--before',
+                position === 'before'
+            );
+            (markEl as HTMLElement).classList.toggle(
+                'q-formfield__required-mark--after',
+                position === 'after'
+            );
         }
 
         const separatorEl = this.getNodeEl('separator');

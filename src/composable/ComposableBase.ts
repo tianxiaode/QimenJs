@@ -52,6 +52,17 @@ export class ComposableBase implements IComposableBase {
         self._onOptionChange(key, value, old);
     }
 
+    /**
+     * 直接写入 data_map，不触发 _onXxxOptionChange handler
+     *
+     * 用于 option change handler 内部需要替换 option 值的场景
+     * （如 items option 在 setItems 后替换为组件实例数组），
+     * 避免 setData 造成的递归调用。
+     */
+    _setRawData(key: string, value: any): void {
+        this._getData()[key] = value;
+    }
+
     get optionsKeys(): Set<string> {
         return this.getDataMap().optionsKeys;
     }

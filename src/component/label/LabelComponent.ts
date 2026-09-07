@@ -42,7 +42,7 @@ class LabelComponent extends Component {
     }
 
     _onRequiredOptionChange(value: boolean): void {
-        this._setNodeHidden(!value, 'requiredMark');
+        this.setNodeHidden(!value, 'requiredMark');
         if (value) this._applyRequiredMark();
     }
 

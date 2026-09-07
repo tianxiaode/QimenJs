@@ -61,15 +61,15 @@ class PanelComponent extends Component {
 
     _onTitleOptionChange(value: string, _old: string): void {
         this._setNodeText('title', value);
-        this._setNodeHidden(!value, 'title');
+        this.setNodeHidden(!value, 'title');
     }
 
     _onExpandableOptionChange(value: boolean): void {
-        this._setNodeHidden(!value, 'expandAction');
+        this.setNodeHidden(!value, 'expandAction');
     }
 
     _onClosableOptionChange(value: boolean): void {
-        this._setNodeHidden(!value, 'closeAction');
+        this.setNodeHidden(!value, 'closeAction');
     }
 
     _onResizableOptionChange(value: boolean): void {
@@ -85,7 +85,7 @@ class PanelComponent extends Component {
     }
 
     _initTools(nodeName: string, config: ToolGroupConfig | null): void {
-        this._setNodeHidden(!config, nodeName);
+        this.setNodeHidden(!config, nodeName);
         if (!config) return;
         const el = this.getNodeEl(nodeName);
         if (el) el.classList.add('q-panel__tools');
@@ -99,16 +99,16 @@ class PanelComponent extends Component {
         const collapsed = this.hasCls('q-panel--collapsed');
         if (collapsed) {
             this.removeCls('q-panel--collapsed');
-            this._setNodeHidden(false, 'body');
+            this.setNodeHidden(false, 'body');
         } else {
             this.addCls('q-panel--collapsed');
-            this._setNodeHidden(true, 'body');
+            this.setNodeHidden(true, 'body');
         }
     }
 
     onCloseActionClick(): void {
         this.addCls('q-panel--closed');
-        this._setNodeHidden(true, 'body');
+        this.setNodeHidden(true, 'body');
     }
 
     onAfterInit(): void {

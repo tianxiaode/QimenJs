@@ -38,7 +38,11 @@ export class Component extends ComposableBase implements IComponent {
         ComponentRegistrar.getInstance().register(this);
     }
     resolveComponent(type: string): ComponentClass | undefined {
-        return ComponentRegistrar.getInstance().get(type);
+        const cmp = ComponentRegistrar.getInstance().get(type);
+        if (!cmp) {
+            this.logger.error(`Component type ${type} not registered!`); // eslint-disable-line no-console
+        }
+        return cmp;
     }
 
     get type(): string {

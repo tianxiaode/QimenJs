@@ -36,7 +36,7 @@ class DividerComponent extends Component {
     }
 
     _onTextOptionChange(value: string, _old: string): void {
-        this._setNodeHidden(!value, 'text');
+        this.setNodeHidden(!value, 'text');
         if (value) this._setNodeText('text', value);
     }
 

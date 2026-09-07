@@ -85,11 +85,11 @@ export const AttributeAbility: AbilityDefinition = {
      *
      * @example
      * ```ts
-     * this._setNodeHidden(true, 'body');   // 隐藏 body 节点
-     * this._setNodeHidden(false, 'body');  // 显示 body 节点
+     * this.setNodeHidden(true, 'body');   // 隐藏 body 节点
+     * this.setNodeHidden(false, 'body');  // 显示 body 节点
      * ```
      */
-    _setNodeHidden(hidden: boolean, nodeName: string = 'root'): void {
+    setNodeHidden(hidden: boolean, nodeName: string = 'root'): void {
         hidden ? this.addCls('hidden', nodeName) : this.removeCls('hidden', nodeName);
     },
 

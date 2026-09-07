@@ -75,7 +75,7 @@ class NumberInputComponent extends InputComponent {
 
     _mountStepButtons(): void {
         if (this._stepUpItem) return;
-        this._setNodeHidden(false, 'actions');
+        this.setNodeHidden(false, 'actions');
 
         this.addAction({
             type: TextComponent,

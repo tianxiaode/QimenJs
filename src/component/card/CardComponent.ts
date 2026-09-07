@@ -45,17 +45,17 @@ class CardComponent extends Component {
 
     _onTitleOptionChange(value: string, _old: string) {
         this._setNodeText('headerTitle', value);
-        this._setNodeHidden(!value, 'headerTitle');
+        this.setNodeHidden(!value, 'headerTitle');
     }
 
     _onIconOptionChange(value: string, old: string) {
-        this._setNodeHidden(!value, 'headerIcon');
+        this.setNodeHidden(!value, 'headerIcon');
         if (value) this.addCls(value, 'headerIcon');
         if (old) this.removeCls(old, 'headerIcon');
     }
 
     _onActionOptionChange(value: string, old: string) {
-        this._setNodeHidden(!value, 'headerAction');
+        this.setNodeHidden(!value, 'headerAction');
         if (value) this.addCls(value, 'headerAction');
         if (old) this.removeCls(old, 'headerAction');
     }
@@ -65,7 +65,7 @@ class CardComponent extends Component {
     }
 
     _onFooterOptionChange(value: CardContent, _old: CardContent): void {
-        this._setNodeHidden(!value, 'footer');
+        this.setNodeHidden(!value, 'footer');
         this._renderSlot('footer', value);
     }
 }

@@ -335,14 +335,23 @@ export class DomEventsEngine {
             if (rule.needsBinding) allEventTypes.add(rule.event);
         }
 
-        const dispatchers = new Map<string, (domEvt: any, actualAction?: string, targetComponent?: any) => void>();
+        const dispatchers = new Map<
+            string,
+            (domEvt: any, actualAction?: string, targetComponent?: any) => void
+        >();
 
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
 
             const key = DomEventsEngine._ruleKey(rule);
             let wrapped = (domEvt: any, actualAction?: string, targetComponent?: any) => {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction, targetComponent);
+                DomEventsEngine._dispatchRule(
+                    instance,
+                    rule,
+                    domEvt,
+                    actualAction,
+                    targetComponent
+                );
             };
 
             if (rule.debounce && rule.debounce > 0) {
@@ -354,7 +363,7 @@ export class DomEventsEngine {
             if (rule.once) {
                 let called = false;
                 const original = wrapped;
-                wrapped = (domEvt: any, actualAction?: string, targetComponent?: any) => {
+                wrapped = (domEvt: any, actualAction?: string, _targetComponent?: any) => {
                     if (called) return;
                     called = true;
                     return original(domEvt, actualAction);
@@ -434,7 +443,13 @@ export class DomEventsEngine {
             if (dispatch) {
                 dispatch(domEvt, actualAction, targetComponent);
             } else {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, actualAction, targetComponent);
+                DomEventsEngine._dispatchRule(
+                    instance,
+                    rule,
+                    domEvt,
+                    actualAction,
+                    targetComponent
+                );
             }
             return;
         }

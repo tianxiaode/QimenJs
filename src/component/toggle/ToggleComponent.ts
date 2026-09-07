@@ -55,7 +55,7 @@ class ToggleComponent extends Component {
     }
 
     _onIconClsOptionChange(value: string, old: string): void {
-        this._setNodeHidden(!value, 'icon');
+        this.setNodeHidden(!value, 'icon');
         if (value) this.addCls(value, 'icon');
         if (old) this.removeCls(old, 'icon');
     }

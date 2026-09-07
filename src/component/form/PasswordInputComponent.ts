@@ -59,7 +59,7 @@ class PasswordInputComponent extends InputComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input--password');
-        this._setNodeHidden(false, 'suffix');
+        this.setNodeHidden(false, 'suffix');
 
         const fieldEl = this.getNodeEl('field');
         if (fieldEl && this.type === 'text') {

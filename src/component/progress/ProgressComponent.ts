@@ -59,7 +59,7 @@ class ProgressComponent extends Component {
     }
 
     _onShowTextOptionChange(value: boolean): void {
-        this._setNodeHidden(!value, 'text');
+        this.setNodeHidden(!value, 'text');
         if (value) {
             const textEl = this.getNodeEl('text');
             if (textEl) textEl.textContent = `${this.percent}%`;

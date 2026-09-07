@@ -27,7 +27,7 @@ const ItemGroupBaseComponentDefs: Definitions = {
 
 class ItemGroupBaseComponent extends Component {
     static type = 'itemgroup';
-
+    isItemContainer: boolean = true;
     get tpl(): TemplateDecl {
         return ITEMGROUP_BASE_TPL;
     }
@@ -39,56 +39,39 @@ class ItemGroupBaseComponent extends Component {
         events?: Record<string, TplEventAction>;
     }> = [];
 
-    get isItemContainer(): boolean {
-        return true;
-    }
-
     _onDirectionOptionChange(value: string): void {
-        this.el!.classList.remove('q-itemgroup--horizontal', 'q-itemgroup--vertical');
-        this.el!.classList.add(`q-itemgroup--${value}`);
-        if (typeof (this as any)._onOverflowDirectionChange === 'function') {
-            (this as any)._onOverflowDirectionChange();
-        }
+        this.removeCls(['q-itemgroup--horizontal', 'q-itemgroup--vertical']);
+        this.addCls(`q-itemgroup--${value}`);
         this._applyOrders();
     }
 
     _onGapOptionChange(value: string): void {
-        const container = this.getNodeEl('itemContainer');
-        if (container) (container as HTMLElement).style.gap = value || '';
+        this.setStyles({ gap: value || '' }, 'itemContainer');
     }
 
     _onColsOptionChange(value: number): void {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
         if (value > 1) {
-            (container as HTMLElement).style.setProperty('--q-itemgroup-cols', String(value));
-            container.classList.add('q-itemgroup__items--cols');
+            this.setStyles({ '--q-itemgroup-cols': String(value) }, 'itemContainer'); // 设置样式
+            this.addCls('q-itemgroup__items--cols');
         } else {
-            (container as HTMLElement).style.removeProperty('--q-itemgroup-cols');
-            container.classList.remove('q-itemgroup__items--cols');
+            this.removeStyles(['--q-itemgroup-cols']);
+            this.removeCls('q-itemgroup__items--cols');
         }
     }
 
-    _onOverflowModeOptionChange(_value: string): void {
-        if (typeof (this as any)._applyOverflowMode === 'function') {
-            (this as any)._applyOverflowMode();
-        }
-    }
-
-    _onStepOptionChange(value: number): void {
-        if (typeof (this as any)._onOverflowStepChange === 'function') {
-            (this as any)._onOverflowStepChange(value);
-        }
+    _onStepOptionChange(_value: number): void {
         this._applyOrders();
     }
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
+        if (!Array.isArray(this._items)) this._items = [];
         if (value) this.setItems(value);
+        this._setRawData('items', this._items.map(item => item.component));
     }
 
     onAfterInit(): void {
-        this._initItemGroupComponent();
-
         if (typeof (this as any).indicatorFloat === 'object') {
             for (const [key, decl] of Object.entries((this as any).indicatorFloat)) {
                 this.attachFloat(key, decl as FloatDecl);
@@ -96,35 +79,6 @@ class ItemGroupBaseComponent extends Component {
         }
     }
 
-    _initItemGroupComponent(props?: any): void {
-        const data = props ?? {};
-        if (data.direction) this.direction = data.direction;
-        if (data.gap) this.gap = data.gap;
-        if (data.cols) this.cols = data.cols;
-        if (data.defaultItemType) this.defaultItemType = data.defaultItemType;
-        if (data.defaultItem) this.defaultItem = data.defaultItem;
-        if (data.step) this.step = data.step;
-        if (data.indicator && typeof (this as any).initIndicator === 'function') {
-            (this as any).initIndicator(data.indicator);
-        }
-        if (data.cls) this.addCls(data.cls);
-        if (data.items) this.setItems(data.items);
-        this._initOverflow(data);
-    }
-
-    _initOverflow(props?: any): void {
-        if (typeof (this as any).initOverflow === 'function') {
-            (this as any).initOverflow({
-                mode: props?.overflowMode ?? this.overflowMode,
-                direction: this.direction,
-                step: this.step,
-            });
-        }
-    }
-
-    get items(): readonly any[] {
-        return (this._items || []).map((item: any) => item.component);
-    }
     get count(): number {
         return (this._items || []).length;
     }
@@ -188,11 +142,10 @@ class ItemGroupBaseComponent extends Component {
         } else if (typeof itemType === 'string') {
             ItemClass = this.resolveComponent(itemType);
             if (!ItemClass) {
-                console.warn(`[_createItem] type "${itemType}" not found`);
                 return null;
             }
         } else {
-            console.warn(`[_createItem] invalid type: ${itemType}`);
+            this.logger.warn(`[_createItem] invalid type: ${itemType}`);
             return null;
         }
 
@@ -261,9 +214,6 @@ class ItemGroupBaseComponent extends Component {
     }
 
     onBeforeDispose(): void {
-        if (typeof (this as any)._teardownOverflow === 'function') {
-            (this as any)._teardownOverflow();
-        }
         this.clear();
     }
 }

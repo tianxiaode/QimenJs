@@ -28,7 +28,7 @@ class HeaderComponent extends Component {
 
     _onIconOptionChange(value: string): void {
         if (value) {
-            this._setNodeHidden(false, 'icon');
+            this.setNodeHidden(false, 'icon');
             const el = this.getNodeEl('icon');
             if (el) el.innerHTML = value;
         }
@@ -36,7 +36,7 @@ class HeaderComponent extends Component {
 
     _onSubtitleOptionChange(value: string): void {
         if (value) {
-            this._setNodeHidden(false, 'subtitle');
+            this.setNodeHidden(false, 'subtitle');
             const el = this.getNodeEl('subtitle');
             if (el) el.textContent = value;
         }
@@ -44,7 +44,7 @@ class HeaderComponent extends Component {
 
     _onToolsLeftOptionChange(value: Record<string, any>): void {
         if (value) {
-            this._setNodeHidden(false, 'toolsLeft');
+            this.setNodeHidden(false, 'toolsLeft');
             const comp = this.getComponent('toolsLeft');
             if (comp) comp._initItemGroupComponent(value);
         }
@@ -52,7 +52,7 @@ class HeaderComponent extends Component {
 
     _onToolsRightOptionChange(value: Record<string, any>): void {
         if (value) {
-            this._setNodeHidden(false, 'toolsRight');
+            this.setNodeHidden(false, 'toolsRight');
             const comp = this.getComponent('toolsRight');
             if (comp) comp._initItemGroupComponent(value);
         }
@@ -60,7 +60,7 @@ class HeaderComponent extends Component {
 
     _onActionOptionChange(value: Record<string, any>): void {
         if (value) {
-            this._setNodeHidden(false, 'action');
+            this.setNodeHidden(false, 'action');
             const comp = this.getComponent('action');
             if (comp && typeof comp.update === 'function') {
                 comp.update(value);

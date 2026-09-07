@@ -78,14 +78,16 @@ class NavItemComponent extends Component {
     _onModeOptionChange(value: string): void {
         if (value === 'collapsed') this.addCls('q-nav-item--collapsed');
         else this.removeCls('q-nav-item--collapsed');
-        this._setNodeHidden(value === 'collapsed', 'text');
+        this.setNodeHidden(value === 'collapsed', 'text');
         if (this._overlayOpen) this.closeOverlay();
     }
 
     _onChildrenOptionChange(value: Record<string, any>[]): void {
         const hasChildren = !!value?.length;
-        hasChildren ? this.addCls('q-nav-item--has-children') : this.removeCls('q-nav-item--has-children');
-        this._setNodeHidden(!hasChildren, 'expand');
+        hasChildren
+            ? this.addCls('q-nav-item--has-children')
+            : this.removeCls('q-nav-item--has-children');
+        this.setNodeHidden(!hasChildren, 'expand');
         if (hasChildren && this.depth < this.maxDepth) {
             this.attachFloat('subNav', this._buildSubNavDecl());
         } else {

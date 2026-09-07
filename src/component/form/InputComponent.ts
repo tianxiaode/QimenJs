@@ -71,14 +71,14 @@ class InputComponent extends FormFieldComponent {
     _onClearableOptionChange(value: boolean): void {
         this._clearable = value;
         if (value) {
-            this._setNodeHidden(false, 'actions');
+            this.setNodeHidden(false, 'actions');
             this._initClearBtn();
             this._toggleClearBtn();
         } else {
             if (this._clearBtnItem) {
                 this._clearBtnItem.el.hidden = true;
             }
-            this._setNodeHidden(true, 'actions');
+            this.setNodeHidden(true, 'actions');
         }
     }
 
@@ -180,7 +180,7 @@ class InputComponent extends FormFieldComponent {
     addAction(data: Record<string, any>): any {
         const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return null;
-        this._setNodeHidden(false, 'actions');
+        this.setNodeHidden(false, 'actions');
         return actionsCmp.add(data);
     }
 
@@ -188,7 +188,7 @@ class InputComponent extends FormFieldComponent {
         const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return undefined;
         const result = actionsCmp.removeAt(index);
-        if (actionsCmp.count === 0) this._setNodeHidden(true, 'actions');
+        if (actionsCmp.count === 0) this.setNodeHidden(true, 'actions');
         return result;
     }
 

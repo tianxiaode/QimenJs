@@ -25,7 +25,7 @@ class AvatarComponent extends Component {
 
     _onSrcOptionChange(value: string) {
         const nodeName = 'image';
-        this._setNodeHidden(!value, nodeName);
+        this.setNodeHidden(!value, nodeName);
         if (value) {
             this.setAttributes({ src: value }, nodeName);
         }
@@ -34,7 +34,7 @@ class AvatarComponent extends Component {
     _onTextOptionChange(value: string) {
         const nodeName = 'text';
         const el = this.getNodeEl(nodeName);
-        this._setNodeHidden(!value, nodeName);
+        this.setNodeHidden(!value, nodeName);
         if (value) {
             if (el) el.textContent = value.charAt(0).toUpperCase();
         }
@@ -42,7 +42,7 @@ class AvatarComponent extends Component {
 
     _onIconOptionChange(value: string) {
         const nodeName = 'icon';
-        this._setNodeHidden(!value, nodeName);
+        this.setNodeHidden(!value, nodeName);
         const el = this.getNodeEl(nodeName);
         if (value) {
             if (el) el.textContent = value;

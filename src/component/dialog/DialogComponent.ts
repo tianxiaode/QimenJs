@@ -118,13 +118,13 @@ class DialogComponent extends Component {
 
     onHeaderActionCloseClick(): void {
         this.addCls('q-dialog--closed');
-        this._setNodeHidden(true, 'body');
+        this.setNodeHidden(true, 'body');
     }
 
     onAfterInit(): void {
         const headerComp = this.getComponent('header') as any;
         if (headerComp) {
-            headerComp._setNodeHidden(false, 'action');
+            headerComp.setNodeHidden(false, 'action');
             const actionComp = headerComp.getComponent('action');
             if (actionComp && typeof actionComp.update === 'function') {
                 actionComp.update({ icon: 'close', action: 'close' });
@@ -154,7 +154,7 @@ class DialogComponent extends Component {
         const hasFooter = actionKeys.some(k => (data as any)?.[k]) || data?.footerItems;
         if (!hasFooter) return;
 
-        this._setNodeHidden(false, 'footer');
+        this.setNodeHidden(false, 'footer');
         const footerComp = this.getComponent('footer') as any;
         if (!footerComp) return;
 

@@ -478,12 +478,30 @@ export const OverflowAbility = {
     },
 
     /**
+     * overflowMode option 变化时自动触发
+     * 首次调用时懒初始化 OverflowAbility 状态
+     */
+    _onOverflowModeOptionChange(value: OverflowMode): void {
+        if (!this.abilityState(STATE_KEY)) {
+            this.initOverflow({
+                mode: value,
+                direction: this.direction,
+                step: this.step,
+            });
+            this.onCleanup(() => this._teardownOverflow());
+            return;
+        }
+        this._applyOverflowMode();
+    },
+
+    /**
      * 方向变化时重新检测
      */
     _onOverflowDirectionChange(): void {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
+        state.direction = this.direction;
         this._scheduleOverflowUpdate();
     },
 

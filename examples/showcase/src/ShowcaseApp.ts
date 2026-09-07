@@ -1,4 +1,5 @@
 import { Component, DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
+import { ToolbarComponent } from '@qimenjs/component';
 
 export class ShowcaseApp extends Component {
     get tpl(): TemplateDecl {
@@ -31,38 +32,86 @@ export class ShowcaseApp extends Component {
                                         {
                                             tag: 'span',
                                             style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Card:' },
+                                            options: { text: 'Color:' },
                                         },
                                         {
-                                            type: 'button',
-                                            name: 'btnCardPrimary',
-                                            options: { text: 'Primary', color: 'primary' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnCardPrimaryOutline',
+                                            type: ToolbarComponent,
+                                            name: 'colorToolbar',
                                             options: {
-                                                text: 'Primary Outline',
-                                                color: 'primary-outline',
+                                                gap: '4px',
+                                                style: {
+                                                    background: 'transparent',
+                                                    borderBottom: 'none',
+                                                    padding: '0',
+                                                },
+                                                defaultItemType: 'button',
+                                                items: [
+                                                    {
+                                                        text: 'Primary',
+                                                        color: 'primary',
+                                                        action: 'color-primary',
+                                                    },
+                                                    {
+                                                        text: 'P-Out',
+                                                        color: 'primary-outline',
+                                                        action: 'color-primary-outline',
+                                                    },
+                                                    {
+                                                        text: 'Secondary',
+                                                        color: 'secondary',
+                                                        action: 'color-secondary',
+                                                    },
+                                                    {
+                                                        text: 'S-Out',
+                                                        color: 'secondary-outline',
+                                                        action: 'color-secondary-outline',
+                                                    },
+                                                    {
+                                                        text: 'Success',
+                                                        color: 'success',
+                                                        action: 'color-success',
+                                                    },
+                                                    {
+                                                        text: 'Su-Out',
+                                                        color: 'success-outline',
+                                                        action: 'color-success-outline',
+                                                    },
+                                                    {
+                                                        text: 'Warning',
+                                                        color: 'warning',
+                                                        action: 'color-warning',
+                                                    },
+                                                    {
+                                                        text: 'W-Out',
+                                                        color: 'warning-outline',
+                                                        action: 'color-warning-outline',
+                                                    },
+                                                    {
+                                                        text: 'Error',
+                                                        color: 'error',
+                                                        action: 'color-error',
+                                                    },
+                                                    {
+                                                        text: 'E-Out',
+                                                        color: 'error-outline',
+                                                        action: 'color-error-outline',
+                                                    },
+                                                    {
+                                                        text: 'Info',
+                                                        color: 'info',
+                                                        action: 'color-info',
+                                                    },
+                                                    {
+                                                        text: 'I-Out',
+                                                        color: 'info-outline',
+                                                        action: 'color-info-outline',
+                                                    },
+                                                    {
+                                                        text: 'Reset',
+                                                        action: 'color-reset',
+                                                    },
+                                                ],
                                             },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnCardWarning',
-                                            options: { text: 'Warning', color: 'warning' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnCardWarningOutline',
-                                            options: {
-                                                text: 'Warning Outline',
-                                                color: 'warning-outline',
-                                            },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnCardReset',
-                                            options: { text: 'Reset' },
                                         },
                                     ],
                                 },
@@ -73,37 +122,46 @@ export class ShowcaseApp extends Component {
                                         {
                                             tag: 'span',
                                             style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Button:' },
+                                            options: { text: 'Size:' },
                                         },
                                         {
-                                            type: 'button',
-                                            name: 'btnPrimary',
-                                            options: { text: 'Primary', color: 'primary' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnPrimaryOutline',
-                                            options: { text: 'Outline', color: 'primary-outline' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnSuccess',
-                                            options: { text: 'Success', color: 'success' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnSuccessOutline',
-                                            options: { text: 'Outline', color: 'success-outline' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnError',
-                                            options: { text: 'Error', color: 'error' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            name: 'btnErrorOutline',
-                                            options: { text: 'Outline', color: 'error-outline' },
+                                            type: ToolbarComponent,
+                                            name: 'sizeToolbar',
+                                            options: {
+                                                gap: '4px',
+                                                style: {
+                                                    background: 'transparent',
+                                                    borderBottom: 'none',
+                                                    padding: '0',
+                                                },
+                                                items: [
+                                                    {
+                                                        type: 'button',
+                                                        text: 'XS',
+                                                        action: 'size-xs',
+                                                    },
+                                                    {
+                                                        type: 'button',
+                                                        text: 'SM',
+                                                        action: 'size-sm',
+                                                    },
+                                                    {
+                                                        type: 'button',
+                                                        text: 'MD',
+                                                        action: 'size-md',
+                                                    },
+                                                    {
+                                                        type: 'button',
+                                                        text: 'LG',
+                                                        action: 'size-lg',
+                                                    },
+                                                    {
+                                                        type: 'button',
+                                                        text: 'XL',
+                                                        action: 'size-xl',
+                                                    },
+                                                ],
+                                            },
                                         },
                                     ],
                                 },
@@ -118,43 +176,43 @@ export class ShowcaseApp extends Component {
                                         },
                                         {
                                             type: 'avatar',
-                                            name: 'avatarPrimary',
-                                            options: { text: 'P', color: 'primary' },
+                                            name: 'demoAvatar',
+                                            options: { text: 'Q', color: 'primary', size: 'md' },
+                                        },
+                                    ],
+                                },
+                                {
+                                    tag: 'div',
+                                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
+                                    children: [
+                                        {
+                                            tag: 'span',
+                                            style: { fontSize: '13px', width: '80px' },
+                                            options: { text: 'Button:' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarPrimaryOutline',
-                                            options: { text: 'P', color: 'primary-outline' },
+                                            type: 'button',
+                                            options: { text: 'Primary', color: 'primary' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarSuccess',
-                                            options: { text: 'S', color: 'success' },
+                                            type: 'button',
+                                            options: { text: 'Outline', color: 'primary-outline' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarSuccessOutline',
-                                            options: { text: 'S', color: 'success-outline' },
+                                            type: 'button',
+                                            options: { text: 'Success', color: 'success' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarWarning',
-                                            options: { text: 'W', color: 'warning' },
+                                            type: 'button',
+                                            options: { text: 'Outline', color: 'success-outline' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarWarningOutline',
-                                            options: { text: 'W', color: 'warning-outline' },
+                                            type: 'button',
+                                            options: { text: 'Error', color: 'error' },
                                         },
                                         {
-                                            type: 'avatar',
-                                            name: 'avatarError',
-                                            options: { text: 'E', color: 'error' },
-                                        },
-                                        {
-                                            type: 'avatar',
-                                            name: 'avatarErrorOutline',
-                                            options: { text: 'E', color: 'error-outline' },
+                                            type: 'button',
+                                            options: { text: 'Outline', color: 'error-outline' },
                                         },
                                     ],
                                 },
@@ -168,12 +226,25 @@ export class ShowcaseApp extends Component {
 
     domEvents?: DomEventsMap | undefined = {
         click: {
-            btnPrimary: { handler: 'handleBtnClick' },
-            btnPrimaryOutline: { handler: 'handleBtnClick' },
-            btnSuccess: { handler: 'handleBtnClick' },
-            btnSuccessOutline: { handler: 'handleBtnClick' },
-            btnError: { handler: 'handleBtnClick' },
-            btnErrorOutline: { handler: 'handleBtnClick' },
+            colorToolbar: { handler: '_onButtonClick' },
         },
     };
+
+    _onButtonClick(domEvt: any, targetComponent: any): void {
+        if (!targetComponent || targetComponent.type !== 'button') return;
+        const action = targetComponent.action;
+        if (!action) return;
+
+        const card = this.getComponent('colorCard') as any;
+        const avatar = this.getComponent('demoAvatar') as any;
+
+        if (action.startsWith('color-')) {
+            const colorValue = action === 'color-reset' ? null : action.slice(6);
+            if (card) card.color = colorValue;
+            if (avatar) avatar.color = colorValue;
+        } else if (action.startsWith('size-')) {
+            const sizeValue = action.slice(5);
+            if (avatar) avatar.size = sizeValue;
+        }
+    }
 }
