@@ -121,25 +121,25 @@
    反转模式 — 背景变前景色，前景色变背景色
    ======================================== */
 
-.q-card[class*="q-card--color-"].q-card--inverted {
+.q-card[class*="q-card--color-"].q-card--filled {
     background: var(--q-card-accent);
     color: var(--q-card-on-accent);
     border-color: var(--q-card-accent);
 }
-.q-card[class*="q-card--color-"].q-card--inverted .q-card__header {
+.q-card[class*="q-card--color-"].q-card--filled .q-card__header {
     background: var(--q-card-accent-dark, var(--q-card-accent));
     border-bottom-color: rgba(255, 255, 255, 0.2);
     color: var(--q-card-on-accent);
 }
-.q-card[class*="q-card--color-"].q-card--inverted .q-card__footer {
+.q-card[class*="q-card--color-"].q-card--filled .q-card__footer {
     background: var(--q-card-accent-dark, var(--q-card-accent));
     border-top-color: rgba(255, 255, 255, 0.2);
     color: var(--q-card-on-accent);
 }
-.q-card[class*="q-card--color-"].q-card--inverted .q-card__header-action {
+.q-card[class*="q-card--color-"].q-card--filled .q-card__header-action {
     color: var(--q-card-on-accent);
 }
-.q-card[class*="q-card--color-"].q-card--inverted .q-card__header-action:hover {
+.q-card[class*="q-card--color-"].q-card--filled .q-card__header-action:hover {
     color: var(--q-card-on-accent);
     opacity: 0.8;
 }

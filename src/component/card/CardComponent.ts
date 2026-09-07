@@ -33,7 +33,7 @@ const CardComponentDefs: Definitions = {
         body: null,
         footer: null,
         color: null,
-        inverted: false,
+        filled: false,
     },
 } as const;
 
@@ -73,9 +73,9 @@ class CardComponent extends Component {
         this._toggleOptionCls(`${this._cssPrefix}--color-`, value, old);
     }
 
-    _onInvertedOptionChange(value: boolean) {
-        if (value) this.addCls(`${this._cssPrefix}--inverted`);
-        else this.removeCls(`${this._cssPrefix}--inverted`);
+    _onFilledOptionChange(value: boolean) {
+        if (value) this.addCls(`${this._cssPrefix}--filled`);
+        else this.removeCls(`${this._cssPrefix}--filled`);
     }
 }
 
