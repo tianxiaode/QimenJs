@@ -46,14 +46,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     _isRouteNav: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            'TreeNavItem.content': {
-                handler: '_onItemClick',
-                emits: ['select', '[action]'],
-                bridges: ['[action]'],
-                router: 'navigate',
-            },
-        },
+        click: { path: '{TreeNavItem}.content', handler: '_onItemClick', emits: ['select', '[action]'], bridges: ['[action]'], router: 'navigate' },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];

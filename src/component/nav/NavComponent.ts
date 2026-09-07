@@ -52,19 +52,9 @@ class NavComponent extends ItemGroupPooledComponent {
     _currentNavData: { path: string; index: number } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            'NavItem.content': {
-                handler: '_onItemClick',
-                emits: ['[action]'],
-                router: 'navigate',
-            },
-        },
-        mouseenter: {
-            NavItem: { handler: '_onItemEnter' },
-        },
-        mouseleave: {
-            NavItem: { handler: '_onItemLeave' },
-        },
+        click: { path: '{NavItem}.content', handler: '_onItemClick', emits: ['[action]'], router: 'navigate' },
+        mouseenter: { path: '{NavItem}', handler: '_onItemEnter' },
+        mouseleave: { path: '{NavItem}', handler: '_onItemLeave' },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];

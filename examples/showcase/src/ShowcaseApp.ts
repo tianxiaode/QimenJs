@@ -223,13 +223,12 @@ export class ShowcaseApp extends Component {
         };
     }
 
-    domEvents?: DomEventsMap | undefined = {
-        click: {
-            colorToolbar: { handler: '_onButtonClick' },
-        },
-    };
+    // domEvents: DomEventsMap | undefined = {
+    //     click: { path: 'colorCard.[body].colorToolbar.[items]', handler: '_onButtonClick' },
+    // };
 
     _onButtonClick(domEvt: any, targetComponent: any): void {
+        this.logger.info('dddd');
         if (!targetComponent || targetComponent.type !== 'button') return;
         const action = targetComponent.action;
         if (!action) return;

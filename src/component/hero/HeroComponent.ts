@@ -20,11 +20,7 @@ class HeroComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            actionBtn: {
-                emits: ['action'],
-            },
-        },
+        click: { path: 'actionBtn', emits: ['action'] },
     };
 
     _onTitleOptionChange(value: string): void {

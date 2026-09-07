@@ -45,9 +45,13 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     _onDisableOptionChange(_value: any, _old: any) {
-        this.disable
-            ? this.addCls(`${this._cssPrefix}--disabled`)
-            : this.removeCls(`${this._cssPrefix}--disabled`);
+        if (this.disable) {
+            this.addCls(`${this._cssPrefix}--disabled`);
+            this.addCls('q-disabled');
+        } else {
+            this.removeCls(`${this._cssPrefix}--disabled`);
+            this.removeCls('q-disabled');
+        }
     },
 
     _onRadiusOptionChange(value: any, _old: any) {
@@ -148,10 +152,12 @@ export const OptionAbility: AbilityDefinition = {
             const inst = new value({ container: el });
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
+            this._setRawData(nodeName, inst);
         } else if (isTemplateDecl(value)) {
             const inst = this._createSlotComponent(value, el);
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
+            this._setRawData(nodeName, inst);
         }
     },
 

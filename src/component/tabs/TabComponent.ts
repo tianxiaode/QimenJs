@@ -23,9 +23,7 @@ class TabComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            close: { handler: '_onCloseClick', emits: ['close'] },
-        },
+        click: { path: 'close', handler: '_onCloseClick', emits: ['close'] },
     };
 
     _onLabelOptionChange(value: string): void {

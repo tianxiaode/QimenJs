@@ -53,10 +53,10 @@ class PanelComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            expandAction: { handler: true },
-            closeAction: { handler: true },
-        },
+        click: [
+            { path: 'expandAction', handler: true },
+            { path: 'closeAction', handler: true },
+        ],
     };
 
     _onTitleOptionChange(value: string, _old: string): void {

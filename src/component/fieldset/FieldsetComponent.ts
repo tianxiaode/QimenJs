@@ -19,12 +19,7 @@ class FieldsetComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            legend: {
-                handler: 'onLegendToggleClick',
-                emits: ['toggle'],
-            },
-        },
+        click: { path: 'legend', handler: 'onLegendToggleClick', emits: ['toggle'] },
     };
 
     _onLegendOptionChange(value: string): void {

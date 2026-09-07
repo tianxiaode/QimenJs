@@ -21,7 +21,7 @@ class ToggleIconComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: { handler: true },
+        click: { path: '', handler: true },
     };
 
     _onPressedOptionChange(value: boolean): void {

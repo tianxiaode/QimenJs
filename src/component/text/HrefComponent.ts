@@ -23,13 +23,7 @@ class HrefComponent extends Component {
     _pendingNavData: { href: string } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            root: {
-                handler: '_onContentClick',
-                emits: ['navigate'],
-                router: 'navigate',
-            },
-        },
+        click: { path: 'root', handler: '_onContentClick', emits: ['navigate'], router: 'navigate' },
     };
 
     _onTextOptionChange(value: string) {

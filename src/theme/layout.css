@@ -428,3 +428,8 @@
 
 /* ===== 注意：.q-size--* 类已移至 size.css ===== */
 /* 请使用 size.css 中的尺寸系统 */
+
+/* ===== 禁用状态 ===== */
+.q-disabled {
+    pointer-events: none;
+}

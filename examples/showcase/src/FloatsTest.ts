@@ -67,10 +67,10 @@ export class DialogComponent extends FloatingComponent {
     }
 
     domEvents = {
-        click: {
-            cancelBtn: { handler: true },
-            confirmBtn: { handler: true },
-        },
+        click: [
+            { path: 'cancelBtn', handler: true },
+            { path: 'confirmBtn', handler: true },
+        ],
     };
 
     open(): void {

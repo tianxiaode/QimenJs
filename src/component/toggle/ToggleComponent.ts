@@ -42,7 +42,7 @@ class ToggleComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: { handler: true },
+        click: { path: '', handler: true },
     };
 
     _onTextOptionChange(value: string) {

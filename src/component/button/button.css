@@ -51,7 +51,7 @@
     color: var(--q-color-primary, #0078d4);
 }
 .q-button--color-primary-outline:hover {
-    background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.1));
+    background: rgba(0, 120, 212, 0.1);
 }
 
 /* 类型：成功 — 填充模式 */
@@ -72,7 +72,7 @@
     color: var(--q-color-success, #107c10);
 }
 .q-button--color-success-outline:hover {
-    background: var(--q-color-success-hover, rgba(16, 124, 16, 0.1));
+    background: rgba(16, 124, 16, 0.1);
 }
 
 /* 类型：警告 — 填充模式 */
@@ -93,7 +93,7 @@
     color: var(--q-color-warning, #ca5010);
 }
 .q-button--color-warning-outline:hover {
-    background: var(--q-color-warning-hover, rgba(202, 80, 16, 0.1));
+    background: rgba(202, 80, 16, 0.1);
 }
 
 /* 类型：错误 — 填充模式 */
@@ -114,7 +114,7 @@
     color: var(--q-color-error, #d13438);
 }
 .q-button--color-error-outline:hover {
-    background: var(--q-color-error-hover, rgba(209, 52, 56, 0.1));
+    background: rgba(209, 52, 56, 0.1);
 }
 
 /* 类型：信息 — 填充模式 */
@@ -135,7 +135,7 @@
     color: var(--q-color-info, #0078d4);
 }
 .q-button--color-info-outline:hover {
-    background: var(--q-color-info-hover, rgba(0, 120, 212, 0.1));
+    background: rgba(0, 120, 212, 0.1);
 }
 
 

@@ -25,12 +25,7 @@ class BreadcrumbComponent extends Component {
     _pendingNavData: { key: string; index: number } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            items: {
-                handler: '_onItemClick',
-                router: 'navigate',
-            },
-        },
+        click: { path: '[items]', handler: '_onItemClick', router: 'navigate' },
     };
 
     _onItemsOptionChange(_value: BreadcrumbItem[]): void {

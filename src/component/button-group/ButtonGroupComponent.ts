@@ -20,12 +20,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     _lastToggleIndex: number = -1;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            Toggle: {
-                handler: '_onToggleClick',
-                emits: ['select'],
-            },
-        },
+        click: { path: '{Toggle}', handler: '_onToggleClick', emits: ['select'] },
     };
 
     get defaultEventData(): Record<string, any> {

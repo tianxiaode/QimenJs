@@ -62,20 +62,11 @@ class DialogComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            'header.action': {
-                handler: true,
-                emits: ['[action]'],
-            },
-            'header.toolsLeft,header.toolsRight': {
-                handler: true,
-                emits: ['[action]'],
-            },
-            footer: {
-                handler: true,
-                emits: ['[action]'],
-            },
-        },
+        click: [
+            { path: 'header.action', handler: true, emits: ['[action]'] },
+            { path: 'header.toolsLeft,header.toolsRight', handler: true, emits: ['[action]'] },
+            { path: 'footer', handler: true, emits: ['[action]'] },
+        ],
     };
 
     drag?: boolean | DragOptions = { axis: 'both', handle: 'header' };

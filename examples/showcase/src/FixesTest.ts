@@ -170,13 +170,13 @@ export class OverlayTest extends Component {
     }
 
     domEvents = {
-        click: {
-            loadingBtn: { handler: true },
-            toastBtn: { handler: true },
-            msgboxBtn: { handler: true },
-            badgeBtn: { handler: true },
-            dialogBtn: { handler: true },
-        },
+        click: [
+            { path: 'loadingBtn', handler: true },
+            { path: 'toastBtn', handler: true },
+            { path: 'msgboxBtn', handler: true },
+            { path: 'badgeBtn', handler: true },
+            { path: 'dialogBtn', handler: true },
+        ],
     };
 
     onBadgeBtnClick() {

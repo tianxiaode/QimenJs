@@ -42,10 +42,10 @@ class TabBarComponent extends ItemGroupPooledComponent {
     _position: TabBarPosition = 'top';
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            Tab: { handler: '_onTabClick', emits: ['select'] },
-            'Tab.close': { handler: '_onTabClose', emits: ['close'] },
-        },
+        click: [
+            { path: '{Tab}', handler: '_onTabClick', emits: ['select'] },
+            { path: '{Tab}.close', handler: '_onTabClose', emits: ['close'] },
+        ],
     };
 
     _onTabClick(domEvt: any): void {

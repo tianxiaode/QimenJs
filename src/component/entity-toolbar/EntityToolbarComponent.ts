@@ -94,12 +94,7 @@ class EntityToolbarComponent extends ToolbarComponent {
      * 参考 AccordionComponent 的 domEvents 委托模式。
      */
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            Button: {
-                handler: '_onButtonClick',
-                entities: '[action]',
-            },
-        },
+        click: { path: '{Button}', handler: '_onButtonClick', entities: '[action]' },
     };
 
     /**

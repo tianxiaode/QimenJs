@@ -65,7 +65,7 @@ class AlertComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: { closeBtn: { handler: true } },
+        click: { path: 'closeBtn', handler: true },
     };
 
     onAfterInit(): void {

@@ -55,11 +55,7 @@ class TagsComponent extends ItemGroupPooledComponent {
     _overflowTag: TagComponentInstance | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            Tag: {
-                handler: '_onTagClick',
-            },
-        },
+        click: { path: '{Tag}', handler: '_onTagClick' },
     };
 
     get defaultOptions(): Record<string, any> {

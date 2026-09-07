@@ -26,23 +26,9 @@ class MenuComponent extends ItemGroupStaticComponent {
     _isOpen: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            'MenuItem.content': {
-                handler: '_onItemClick',
-                emits: ['select', '[action]'],
-                bridges: ['[action]'],
-            },
-        },
-        mouseenter: {
-            MenuItem: {
-                handler: '_onItemEnter',
-            },
-        },
-        mouseleave: {
-            MenuItem: {
-                handler: '_onItemLeave',
-            },
-        },
+        click: { path: '{MenuItem}.content', handler: '_onItemClick', emits: ['select', '[action]'], bridges: ['[action]'] },
+        mouseenter: { path: '{MenuItem}', handler: '_onItemEnter' },
+        mouseleave: { path: '{MenuItem}', handler: '_onItemLeave' },
     };
 
     get defaultEventData(): Record<string, any> {

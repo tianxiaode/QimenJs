@@ -40,12 +40,7 @@ class StepComponent extends ItemGroupPooledComponent {
     defaultItemType = 'StepItem';
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            StepItem: {
-                handler: '_onStepItemClick',
-                emits: ['stepClick'],
-            },
-        },
+        click: { path: '{StepItem}', handler: '_onStepItemClick', emits: ['stepClick'] },
     };
 
     _onStepItemClick(domEvt: any): void {

@@ -34,10 +34,10 @@ const OneTimePasswordComponentDefs: Definitions = {
 
 class OneTimePasswordComponent extends Component {
     domEvents?: DomEventsMap = {
-        input: { handler: '_onInput' },
-        keydown: { handler: '_onKeydown' },
-        paste: { handler: '_onPaste' },
-        focusin: { handler: '_onFocus' },
+        input: { path: '', handler: '_onInput' },
+        keydown: { path: '', handler: '_onKeydown' },
+        paste: { path: '', handler: '_onPaste' },
+        focusin: { path: '', handler: '_onFocus' },
     };
 
     _onLengthOptionChange(): void {

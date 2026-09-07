@@ -1,41 +1,43 @@
 /**
- * DOM 事件委托类型定义 — 全委托模式（三层嵌套 domEvents）
+ * DOM 事件委托类型定义 — 两层扁平 domEvents
  *
  * ══════════════════════════════════════════════════════════════
- * 全委托模式 — { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
+ * 两层扁平模式 — { [domEvent]: DomEventRule | DomEventRule[] }
  * ══════════════════════════════════════════════════════════════
  *
  * 事件体系三部分：
  *   ① domEvents — DOM 委托事件与转发（本文件）
  *   ② node 事件 — nodeMap 子组件事件订阅（listens: NodeListen）
- *   ③ listens — 统一事件订阅（ListenItem[]，支持 node/source/entity/system/route/file/float/drag）
+ *   ③ listens — 统C统一事件订阅（ListenItem[]，支持 node/source/entity/system/route/file/float/drag）
  *
- * 核心规则：
- *   1. domEvents 三层嵌套：DOM事件 → 组件路径 → action → eventConfig
- *   2. 使用方在当前组件 el 上绑定 DOM 事件，委托匹配目标组件
- *   3. 组件路径首段为 nodeMap key（nodeName），直接定位；后续段为子组件类型
+ *,核心规则：
+ *   1. domEvents 两层扁平：DOM事件 → DomEventRule（含 path + handler + 转发配置）
+ *   2. 使用D使用方在当前组件 el 上绑定 DOM 事件，委托匹配目标组件
+ *   3. path F段语法：裸字符串=name、[xxx]=option、{Type}=type
  *   4. 按钮不需要定义 domEvents，完全被动
- *   5. domEvents 就是声明式监听：handler:true 本地监听，emits 转发，可共存
+ *   5. domEvents 就是声明式监听：handler 本地监听，emits 转发，可共存
  *
- * 三层结构：
- *   第一层 key = DOM 事件名（click / keypress / change 等）
- *   第二层 key = 组件路径（[nodeName].[componentName]...），首段为 nodeName（nodeMap key）
- *   第三层 key = action 名，区分同类型多实例
+ * path 段语法：
+ *   裸字符串  = name 查找（nodeMap 中按 name 定位D，如 'colorCard'）
+ *   [G[xxx]     = option 查找（component[xxx] getter，如 '[body]'、'[items]'）
+ *   {Type}    = type 查找（子组件中按类型匹配，如 '{Button}'）
  *
- * 方法名推导（基于 nodeName，即 componentPath 首段）：
- *   on{NodeName}{Action}{Event}
+ * path 示例：
+ *   'colorCard'                          → ShowcaseApp nodeMap 中找 name=colorCard
+ *   'colorCard.[body].colorToolbar.[items]' → Card → body option → Toolbar → items option
+ *   'toolbar.{Button}'                   → toolbar nodeMap 中找，再按类型 Button 匹配
  *
- *   - 无 action：onCloseBtnClick（路径 'closeBtn'）
- *   - 有 action：onToolbarSaveClick（路径 'toolbar.Button'，action 'save'）
- *   - 同节点多 action：onHeaderActionClick / onHeaderSaveClick（路径 'header.Button'）
+ * [items] 特殊处理：返回数组时，在数组中找 el.contains(target) 的那个组件
+ *
+ * 方法名推导（基于 path 最后一段）：
+ *   on{LastSegment}{Event}
+ *   自定义 handler 优先于自动推导
  *
  * 运行时流程：
  *   在当前组件 el 上绑定 DOM 事件（如 click）
  *   → 事件触发 → 查 domEvents[click]
- *   → 取 componentPath 首段 → nodeMap[nodeName] 直接定位 → el.contains(event.target) 匹配
- *   → 检查 action 匹配 → 执行 eventConfig
- *
- * 详见 docs/design-decisions/2026-07-29-event-delegation-action-path-design.md
+ *   → 解析 path 逐段定位4配 → el.contains(event.target) 验证
+ *   → 执行 handler / 转发
  */
 
 // ══════════════════════════════════════════════════════════════
@@ -45,26 +47,15 @@
 /**
  * 单条委托规则（运行时使用）
  *
- * 全委托模式下，从 domEvents 三层嵌套编译生成。
- * 运行时匹配：当前组件 el 上 DOM 事件触发 → nodeMap 定位 → el.contains → action 匹配
+ * 从 domEvents 两层扁平结构编译生成。
+ * 运行时匹配：当前组件 el 上 DOM 事件触发 → path 逐段定位 → el.contains 验证
  */
 export interface DelegatedEventRule {
     /** DOM 事件名（第一层 key） */
     event: string;
 
-    /** 组件路径（第二层 key，格式 [nodeName].[componentName]...，如 'toolbar.Button'） */
-    componentPath: string;
-
-    /** action 名（第三层 key，如 'save'）。空字符串 '' 表示无 action 场景 */
-    action: string;
-
-    /**
-     * 是否为 action 通配符模式
-     *
-     * 当 emits 包含 '[action]' 占位符时自动标记为 true，
-     * 表示匹配任何 action 值，运行时用实际 action 替换 '[action]'。
-     */
-    wildcardAction?: boolean;
+    /** 组件路径（如 'colorCard.[body].colorToolbar.[items]'） */
+    path: string;
 
     /**
      * 事件数据声明
@@ -89,7 +80,7 @@ export interface DelegatedEventRule {
     /**
      * DOM 事件委托 → 调用组件本地方法
      *
-     * - true：自动推导方法名（on{NodeName}{Action}{Event}）
+     * - true：自动推导方法名（on{LastSegment}{Event}）
      * - string：使用自定义方法名
      */
     handler?: boolean | string;
@@ -108,20 +99,86 @@ export interface DelegatedEventRule {
 }
 
 /**
- * 单条事件配置（三层嵌套中的最内层对象）
+ * domEvents 单条规则配置（两层扁平结构中的 value）
  *
- * 不含 event / componentPath / action / needsBinding，
- * 用于 domEvents 的第三层 value，也可用于其他场景（如 item events）。
+ * path 段语法：
+ *   裸字符串  = name 查找（nodeMap 中按 name 定位）
+ *   [xxx]     = option 查找（component[xxx] getter）
+ *   {Type}    = type 查找（子组件中按类型匹配）
+ *
+ * @example
+ * ```ts
+ * domEvents = {
+ *     click: { path: 'colorCard.[body].colorToolbar.[items]', handler: '_onButtonClick' },
+ *     input: { path: 'searchInput', handler: '_onSearch' },
+ * }
+ * ```
  */
-export type DomEventConfig = Omit<
-    DelegatedEventRule,
-    'event' | 'componentPath' | 'action' | 'needsBinding'
->;
+export interface DomEventRule {
+    /** 组件路径，段间用 '.' 分隔 */
+    path: string;
+
+    /**
+     * DOM 事件委托 → 调用组件本地方法
+     *
+     * - true：自动推导方法名（on{LastSegment}{Event}）
+     * - string：使用自定义方法名
+     */
+    handler?: boolean | string;
+
+    /** 转发为组件事件 */
+    emits?: string[];
+
+    /** 转发为组件事件（通过 ComponentEventBus） */
+    bridges?: string[];
+
+    /** 转发为实体操作 */
+    entities?: string;
+
+    /** 转发为路由事件 */
+    router?: string;
+
+    /** 转发为系统事件 */
+    system?: string[];
+
+    /** 事件数据声明 */
+    data?: string[] | Record<string, string[]>;
+
+    /** 只执行一次 */
+    once?: boolean;
+
+    /** 防抖时间 */
+    debounce?: number;
+
+    /** 节流时间 */
+    throttle?: number;
+}
 
 /**
- * 节点事件配置 — 单条 DOM 事件的监听与转发配置
+ * domEvents 两层扁平类型
  *
- * 等价于 DomEventConfig，用于 ItemGroup 等场景中为子节点声明事件。
+ * 第一层 key = DOM 事件名（click / keypress / change 等）
+ * 第二层 = DomEventRule 或 DomEventRule[]（同一事件多条规则）
+ *
+ * @example
+ * ```ts
+ * domEvents = {
+ *     click: { path: 'colorCard.[body].colorToolbar.[items]', handler: '_onButtonClick' },
+ *     input: [
+ *         { path: 'searchInput', handler: '_onSearch' },
+ *         { path: 'filterInput', handler: '_onFilter' },
+ *     ],
+ * }
+ * ```
+ */
+export interface DomEventsMap {
+    [domEvent: string]: DomEventRule | DomEventRule[];
+}
+
+/**
+ * 节点事件配置 — ItemGroup 等场景中为子节点声明事件
+ *
+ * 与 DomEventRule 类似但不需要 path（因为子节点已经在 item 配置中定位）
  *
  * @example
  * ```ts
@@ -129,40 +186,7 @@ export type DomEventConfig = Omit<
  * { click: { handler: true, emits: ['itemClick'] } }
  * ```
  */
-export type TplEventAction = DomEventConfig;
-
-/**
- * domEvents 两层或三层嵌套类型
- *
- * 三层模式（显式 action）：
- *   { [domEvent]: { [componentPath]: { [action]: eventConfig } } }
- *   示例：{ click: { 'header.action': { collapse: { handler: true, emits: ['collapse'] } } } }
- *
- * 两层模式（[action] 占位符自动匹配）：
- *   { [domEvent]: { [componentPath]: eventConfig } }
- *   示例：{ click: { 'header.action': { handler: true, emits: ['[action]'] } } }
- *
- * 隐式 root 简写（省略 root 直接写配置键）：
- *   { [domEvent]: { [configKey]: value } }
- *   示例：{ input: { handler: '_onInput' } } ← 等价于 { input: { root: { handler: '_onInput' } } }
- *
- * 两层模式下：
- * - handler 方法名使用匹配组件的实际 action
- * - emits 中的 '[action]' 被替换为实际 action
- * - 支持逗号分隔多路径：'path1,path2': eventConfig
- */
-export interface DomEventsMap {
-    [domEvent: string]: {
-        [componentPath: string]:
-            | DomEventConfig
-            | { [action: string]: DomEventConfig }
-            | boolean
-            | string
-            | number
-            | string[]
-            | Record<string, string[]>;
-    };
-}
+export type TplEventAction = Omit<DomEventRule, 'path'>;
 
 // 事件体系三部分：
 // ① domEvents — DOM 委托事件与转发（本文件 DomEventsMap）
