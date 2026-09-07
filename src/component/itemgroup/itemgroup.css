@@ -262,3 +262,8 @@
 .q-itemgroup--vertical.q-itemgroup--overflow {
     flex-direction: column;
 }
+
+.q-itemgroup--disabled {
+    opacity: var(--q-opacity-disabled, 0.4);
+    pointer-events: none;
+}

@@ -28,7 +28,7 @@
     max-height: 240px;
     overflow-y: auto;
     margin-top: 2px;
-    background: var(--q-colors-bg, #fff);
+    background: var(--q-color-bg, #fff);
     border: 2px solid var(--q-colors-border, #dcdfe6);
     border-radius: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
@@ -47,7 +47,7 @@
 }
 
 .q-select__option:hover {
-    background: var(--q-colors-bg-hover, #f0f0f0);
+    background: var(--q-color-bg-hover, #f0f0f0);
 }
 
 .q-select__option--selected {

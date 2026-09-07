@@ -22,8 +22,7 @@
     display: flex;
     align-items: center;
     padding: 4px 8px;
-    background: var(--q-colors-bg, #fff);
-    border-bottom: 2px solid var(--q-colors-border, #dcdfe6);
+    background: var(--q-color-bg, #fff);
     box-sizing: border-box;
 }
 
@@ -52,8 +51,7 @@
     display: flex;
     align-items: center;
     padding: 4px 8px;
-    background: var(--q-colors-bg, #fff);
-    border-bottom: 2px solid var(--q-colors-border, #dcdfe6);
+    background: var(--q-color-bg, #fff);
     box-sizing: border-box;
 }
 
@@ -112,7 +110,7 @@
 
 .q-entity-toolbar__text {
     font-size: 13px;
-    color: var(--q-colors-text-secondary, #666);
+    color: var(--q-color-text-secondary, #666);
     white-space: nowrap;
     padding: 0 4px;
 }

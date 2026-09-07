@@ -417,6 +417,9 @@ export class DomEventsEngine {
         const targetComponent = DomEventsEngine._findComponentByEl(instance, target);
         if (!targetComponent) return;
 
+        // 容器自身 disable 时拦截所有委托事件，防止穿透到子项
+        if (instance.disable) return;
+
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
             instance._domEventDispatchers;
 

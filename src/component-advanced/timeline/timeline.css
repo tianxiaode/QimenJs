@@ -66,7 +66,7 @@
     height: 12px;
     border: 2px solid var(--q-colors-border, #dcdfe6);
     border-radius: 0;
-    background: var(--q-colors-bg, #fff);
+    background: var(--q-color-bg, #fff);
     flex-shrink: 0;
     z-index: 1;
     box-sizing: border-box;

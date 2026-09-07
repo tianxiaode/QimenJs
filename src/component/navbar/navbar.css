@@ -4,7 +4,7 @@
     flex-direction: row;
     min-height: 56px;
     padding: 0 16px;
-    background: var(--q-colors-bg, #ffffff);
+    background: var(--q-color-bg, #ffffff);
     border-bottom: 1px solid var(--q-colors-border, #dcdfe6);
     box-sizing: border-box;
     gap: 16px;

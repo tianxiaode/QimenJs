@@ -15,7 +15,7 @@
     left: 0;
     z-index: 1000;
     margin-top: 2px;
-    background: var(--q-colors-bg, #fff);
+    background: var(--q-color-bg, #fff);
     border: 2px solid var(--q-colors-border, #dcdfe6);
     border-radius: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);

@@ -35,8 +35,6 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    border: none;
-    outline: none;
     cursor: pointer;
     white-space: nowrap;
     transition: all var(--q-transition-fast);

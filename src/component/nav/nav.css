@@ -24,7 +24,7 @@
 }
 
 .q-nav-overlay {
-    background: var(--q-colors-bg, #fff);
+    background: var(--q-color-bg, #fff);
     border: 2px solid var(--q-colors-border, #e0e0e0);
     border-radius: 0;
     box-shadow: none;
@@ -69,7 +69,7 @@
     position: fixed;
     padding: 6px 12px;
     background: var(--q-colors-text, #1a1a1a);
-    color: var(--q-colors-bg, #fff);
+    color: var(--q-color-bg, #fff);
     font-size: var(--q-font-size-sm, 12px);
     font-weight: 600;
     border-radius: 0;

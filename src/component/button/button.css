@@ -46,8 +46,8 @@
 
 /* 类型：主要 — 边框模式 */
 .q-button--color-primary-outline {
-   8   background: transparent;
-    border-color: var(--q-color-primary, #0078d4);
+    background: transparent;
+    border: 2px solid var(--q-color-primary, #0078d4);
     color: var(--q-color-primary, #0078d4);
 }
 .q-button--color-primary-outline:hover {
@@ -68,7 +68,7 @@
 /* 类型：成功 — 边框模式 */
 .q-button--color-success-outline {
     background: transparent;
-    border-color: var(--q-color-success, #107c10);
+    border: 2px solid var(--q-color-success, #107c10);
     color: var(--q-color-success, #107c10);
 }
 .q-button--color-success-outline:hover {
@@ -89,7 +89,7 @@
 /* 类型：警告 — 边框模式 */
 .q-button--color-warning-outline {
     background: transparent;
-    border-color: var(--q-color-warning, #ca5010);
+    border: 2px solid var(--q-color-warning, #ca5010);
     color: var(--q-color-warning, #ca5010);
 }
 .q-button--color-warning-outline:hover {
@@ -110,7 +110,7 @@
 /* 类型：错误 — 边框模式 */
 .q-button--color-error-outline {
     background: transparent;
-    border-color: var(--q-color-error, #d13438);
+    border: 2px solid var(--q-color-error, #d13438);
     color: var(--q-color-error, #d13438);
 }
 .q-button--color-error-outline:hover {
@@ -131,7 +131,7 @@
 /* 类型：信息 — 边框模式 */
 .q-button--color-info-outline {
     background: transparent;
-    border-color: var(--q-color-info, #0078d4);
+    border: 2px solid var(--q-color-info, #0078d4);
     color: var(--q-color-info, #0078d4);
 }
 .q-button--color-info-outline:hover {

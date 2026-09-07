@@ -1,8 +1,15 @@
-import { Component, DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { ToolbarComponent } from '@qimenjs/component';
-
 export class ShowcaseApp extends Component {
-    get tpl(): TemplateDecl {
+    constructor() {
+        super(...arguments);
+        this.domEvents = {
+            click: {
+                colorToolbar: { handler: '_onButtonClick' },
+            },
+        };
+    }
+    get tpl() {
         return {
             tag: 'div',
             name: 'root',
@@ -222,28 +229,25 @@ export class ShowcaseApp extends Component {
             ],
         };
     }
-
-    domEvents?: DomEventsMap | undefined = {
-        click: {
-            colorToolbar: { handler: '_onButtonClick' },
-        },
-    };
-
-    _onButtonClick(domEvt: any, targetComponent: any): void {
-        if (!targetComponent || targetComponent.type !== 'button') return;
+    _onButtonClick(domEvt, targetComponent) {
+        if (!targetComponent || targetComponent.type !== 'button')
+            return;
         const action = targetComponent.action;
-        if (!action) return;
-
-        const card = this.getComponent('colorCard') as any;
-        const avatar = this.getComponent('demoAvatar') as any;
-
+        if (!action)
+            return;
+        const card = this.getComponent('colorCard');
+        const avatar = this.getComponent('demoAvatar');
         if (action.startsWith('color-')) {
             const colorValue = action === 'color-reset' ? null : action.slice(6);
-            if (card) card.color = colorValue;
-            if (avatar) avatar.color = colorValue;
-        } else if (action.startsWith('size-')) {
+            if (card)
+                card.color = colorValue;
+            if (avatar)
+                avatar.color = colorValue;
+        }
+        else if (action.startsWith('size-')) {
             const sizeValue = action.slice(5);
-            if (avatar) avatar.size = sizeValue;
+            if (avatar)
+                avatar.size = sizeValue;
         }
     }
 }

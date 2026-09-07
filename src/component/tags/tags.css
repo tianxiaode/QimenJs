@@ -25,5 +25,5 @@
 
 .q-tags__overflow-tag:hover {
     opacity: 1;
-    background: var(--q-colors-bg-hover, #f5f5f5);
+    background: var(--q-color-bg-hover, #f5f5f5);
 }

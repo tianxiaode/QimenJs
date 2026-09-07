@@ -175,6 +175,9 @@
     --q-color-bg-elevated: #332b25;
     --q-color-bg-inverse: #f7f2e8;
     --q-color-bg-overlay: rgba(26, 21, 18, 0.85);
+    --q-color-bg-hover: #2d2621;
+    --q-color-bg-disabled: #221d19;
+    --q-color-bg-subtle: #221d19;
 
     /* -------- 文本色（宣纸白→淡墨） -------- */
     --q-color-text: #f0ebe3;
