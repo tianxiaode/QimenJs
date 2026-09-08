@@ -23,7 +23,7 @@ class HeaderComponent extends Component {
     }
 
     _onTitleOptionChange(value: string): void {
-        this._setNodeText('title', value);
+        this.setNodeText(value, "title");
     }
 
     _onIconOptionChange(value: string): void {

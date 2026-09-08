@@ -28,11 +28,11 @@ class MenuItemComponent extends Component {
     }
 
     _onTextOptionChange(value: string): void {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _onShortcutOptionChange(value: string): void {
-        this._setNodeText('shortcut', value);
+        this.setNodeText(value, "shortcut");
     }
 
     _onHasSubmenuOptionChange(value: boolean): void {

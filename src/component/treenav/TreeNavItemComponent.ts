@@ -28,7 +28,7 @@ class TreeNavItemComponent extends Component {
     _childInstances: TreeNavItemComponent[] = [];
 
     _onTextOptionChange(value: string): void {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _onIconOptionChange(value: string): void {

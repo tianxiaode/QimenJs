@@ -46,7 +46,7 @@ class ToggleComponent extends Component {
     };
 
     _onTextOptionChange(value: string) {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _onPressedOptionChange(value: boolean): void {

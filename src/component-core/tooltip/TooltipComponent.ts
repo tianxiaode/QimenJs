@@ -35,7 +35,7 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     _onTooltipOptionChange(value: string): void {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _inferArrowPlacement(

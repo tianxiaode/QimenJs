@@ -43,7 +43,7 @@ class AvatarComponent extends Component {
     _onIconClsOptionChange(value: string, old: string) {
         const nodeName = 'icon';
         this.setNodeHidden(!value, nodeName);
-        this._toggleOptionCls('', value, old, nodeName);
+        this.toggleOptionCls('', value, old, nodeName);
     }
 }
 

@@ -27,11 +27,11 @@ class HrefComponent extends Component {
     };
 
     _onTextOptionChange(value: string) {
-        this._setNodeText('root', value);
+        this.setNodeText(value);
     }
 
     _onHrefOptionChange(value: string) {
-        this._setNodeAttr('root', 'href', value ?? '');
+        this.setNodeAttr("href", value ?? '');
     }
 
     _onTargetOptionChange(value: string) {

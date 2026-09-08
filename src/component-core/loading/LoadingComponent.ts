@@ -12,7 +12,7 @@ class LoadingComponent extends FloatingComponent {
     }
 
     _onTextOptionChange(value: string): void {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 }
 

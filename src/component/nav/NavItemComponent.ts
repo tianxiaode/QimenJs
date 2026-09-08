@@ -54,7 +54,7 @@ class NavItemComponent extends Component {
     _overlayOpen: boolean = false;
 
     _onTextOptionChange(value: string): void {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _onIconOptionChange(value: string): void {

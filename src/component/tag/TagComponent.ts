@@ -24,11 +24,11 @@ class TagComponent extends Component {
     }
 
     _onTextOptionChange(value: string) {
-        this._setNodeText('text', value);
+        this.setNodeText(value, "text");
     }
 
     _onTagTypeOptionChange(value: string, old: string) {
-        this._toggleOptionCls('q-tag--', value, old);
+        this.toggleOptionCls('q-tag--', value, old);
     }
 
     _onIconClsOptionChange(value: string, old: string) {

@@ -13,7 +13,7 @@ import { withDefinitions, type AbilityDefinition, type Definitions } from '@/com
 import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
 import type { TemplateDecl } from '@/component-core';
 
-/** 判断是否为 TemplateDecl（模板声明），用于 _renderSlot 三路分发 */
+/** 判断是否为 TemplateDecl（模板声明），用于 renderSlot 三路分发 */
 function isTemplateDecl(value: any): value is TemplateDecl {
     return !!value && typeof value === 'object' && ('tag' in value || 'children' in value);
 }
@@ -65,7 +65,7 @@ export const OptionAbility: AbilityDefinition = {
 
     _onHintOptionChange(value: any, _old: any) {
         if (value) {
-            this._setNodeAttr('root', 'title', String(value));
+            this.setNodeAttr('title', String(value));
         } else {
             this.el?.removeAttribute('title');
             this._unregisterI18nNode('root', 'title');
@@ -76,13 +76,13 @@ export const OptionAbility: AbilityDefinition = {
         return `q-${this.type.toLowerCase()}`;
     },
 
-    _toggleOptionCls(prefix: string, value: string, old: string, nodeName: string = 'root') {
+    toggleOptionCls(prefix: string, value: string, old: string, nodeName: string = 'root') {
         if (value) this.addCls(prefix + value, nodeName);
         if (old) this.removeCls(prefix + old, nodeName);
     },
 
     /** 将文本写入指定节点的 textContent，值以 `@` 开头时自动翻译并注册 i18n 刷新依赖 */
-    _setNodeText(nodeName: string, text: string): void {
+    setNodeText(text: string, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
         (el as HTMLElement).textContent = resolveI18nValue(text ?? '');
@@ -94,7 +94,7 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     /** 向指定节点设置属性，值以 `@` 开头时自动翻译并注册 i18n 刷新依赖 */
-    _setNodeAttr(nodeName: string, key: string, value: string): void {
+    setNodeAttr(key: string, value: string, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
         (el as HTMLElement).setAttribute(key, resolveI18nValue(value));
@@ -118,7 +118,7 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     /** 将 HTML 写入指定节点的 innerHTML */
-    _setNodeHtml(nodeName: string, html: string): void {
+    setNodeHtml(html: string, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
         if (el) (el as HTMLElement).innerHTML = html ?? '';
     },
@@ -135,7 +135,7 @@ export const OptionAbility: AbilityDefinition = {
      * - 换值：先 dispose 旧组件实例再渲染新内容
      * - 宿主销毁：由 _disposeChildComponents 自动清理（子组件已加入 childComponentList）
      */
-    _renderSlot(nodeName: string, value: any): void {
+    renderSlot(value: any, nodeName: string = 'root'): void {
         const self = this as any;
         const slots = self._slotInstances ?? (self._slotInstances = {});
 
@@ -147,7 +147,7 @@ export const OptionAbility: AbilityDefinition = {
         if (!el) return;
 
         if (typeof value === 'string') {
-            this._setNodeHtml(nodeName, value);
+            this.setNodeHtml(value, nodeName);
         } else if (typeof value === 'function') {
             const inst = new value({ container: el });
             slots[nodeName] = inst;

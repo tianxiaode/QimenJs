@@ -28,7 +28,7 @@ class StatisticComponent extends Component {
     }
 
     _onTitleOptionChange(value: string): void {
-        this._setNodeText('title', value);
+        this.setNodeText(value, "title");
     }
 
     _onValueOptionChange(_value: any): void {

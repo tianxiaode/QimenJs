@@ -24,21 +24,21 @@ class HeroComponent extends Component {
     };
 
     _onTitleOptionChange(value: string): void {
-        this._setNodeText('title', value);
+        this.setNodeText(value, "title");
     }
 
     _onSubtitleOptionChange(value: string): void {
-        this._setNodeText('subtitle', value);
-        value ? this.removeCls('hidden', 'subtitle') : this.addCls('hidden', 'subtitle');
+        this.setNodeText(value, "subtitle");
+        this._setNodeHidden(!value, 'subtitle'); // 显示或隐藏 subtitle
     }
 
     _onDescOptionChange(value: string): void {
-        this._setNodeText('desc', value);
+        this.setNodeText(value, "desc");
         value ? this.removeCls('hidden', 'desc') : this.addCls('hidden', 'desc');
     }
 
     _onActionTextOptionChange(value: string): void {
-        this._setNodeText('actionBtn', value);
+        this.setNodeText(value, "actionBtn");
         value ? this.removeCls('hidden', 'actions') : this.addCls('hidden', 'actions');
     }
 }

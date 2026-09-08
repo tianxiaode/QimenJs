@@ -18,7 +18,7 @@ class TextComponent extends Component {
     }
 
     _onTextOptionChange(value: string) {
-        this._setNodeText('root', value);
+        this.setNodeText(value);
     }
 
     _onTagOptionChange(value: string) {

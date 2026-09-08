@@ -23,7 +23,7 @@ class FieldsetComponent extends Component {
     };
 
     _onLegendOptionChange(value: string): void {
-        this._setNodeText('legendText', value);
+        this.setNodeText(value, "legendText");
     }
 
     _onCollapsibleOptionChange(value: boolean): void {

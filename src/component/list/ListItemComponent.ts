@@ -23,15 +23,15 @@ class ListItemComponent extends Component {
     }
 
     _onLabelOptionChange(value: string): void {
-        this._setNodeText('label', value);
+        this.setNodeText(value, "label");
     }
 
     _onStatusOptionChange(value: string, old: string): void {
-        this._toggleOptionCls('q-list__item--', value, old);
+        this.toggleOptionCls('q-list__item--', value, old);
     }
 
     _onMarkFormOptionChange(value: string, old: string): void {
-        this._toggleOptionCls('q-list__mark--', value, old, 'mark');
+        this.toggleOptionCls('q-list__mark--', value, old, 'mark');
     }
 
     _onDescriptionOptionChange(value: string): void {

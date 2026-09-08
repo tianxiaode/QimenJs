@@ -27,7 +27,7 @@ class TabComponent extends Component {
     };
 
     _onLabelOptionChange(value: string): void {
-        this._setNodeText('label', value);
+        this.setNodeText(value, "label");
     }
 
     _onIconOptionChange(value: string): void {

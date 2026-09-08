@@ -74,11 +74,11 @@ export class Toast extends FloatingComponent {
     }
 
     _onTitleOptionChange(value: string): void {
-        this._setNodeHtml('text', value);
+        this.setNodeHtml(value, "text");
     }
 
     _onMessageOptionChange(value: string): void {
-        this._setNodeHtml('message', value);
+        this.setNodeHtml(value, "message");
     }
 
     async close(): Promise<void> {

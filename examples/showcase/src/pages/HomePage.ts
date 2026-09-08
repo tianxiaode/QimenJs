@@ -5,7 +5,7 @@
  * 下方展示特性卡片列表。
  */
 
-import { Component, type TplNode } from '@qimenjs/component-core';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import { HeroComponent, CardComponent, TagComponent } from '@qimenjs/component';
 
 /** 特性数据 */
@@ -43,15 +43,15 @@ const FEATURES = [
 ];
 
 /** 首页模板 */
-const HOME_TPL: TplNode = {
+const HOME_TPL: TemplateDecl = {
     tag: 'div',
-    cls: 'q-home-page',
+    classes: 'q-home-page',
     flex: { direction: 'column', align: 'center' },
     children: [
         {
             name: 'hero',
             type: HeroComponent,
-            cls: 'q-home-page__hero',
+            classes: 'q-home-page__hero',
             title: '@hero.title',
             subtitle: '@hero.subtitle',
             desc: '@hero.desc',
@@ -59,7 +59,7 @@ const HOME_TPL: TplNode = {
         },
         {
             tag: 'section',
-            cls: 'q-home-page__features',
+            classes: 'q-home-page__features',
             children: FEATURES.map((f, i) => ({
                 name: `feature${i}`,
                 type: CardComponent,
@@ -85,6 +85,10 @@ const HOME_TPL: TplNode = {
 
 /** 首页组件 */
 export class HomePage extends Component {
+    get tpl(): TemplateDecl {
+        return HOME_TPL;
+    }
+
     onAfterInit(): void {
         const hero = this.nodeMap.hero?.component;
         if (!hero) return;
@@ -94,6 +98,3 @@ export class HomePage extends Component {
         });
     }
 }
-
-HomePage.useTemplate(HOME_TPL);
-export type HomePageInstance = InstanceType<typeof HomePage>;

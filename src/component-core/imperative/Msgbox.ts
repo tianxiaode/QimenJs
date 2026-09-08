@@ -96,23 +96,23 @@ export class Msgbox extends FloatingComponent {
     }
 
     _onTitleOptionChange(value: string): void {
-        this._setNodeText('title', value);
+        this.setNodeText(value, "title");
     }
 
     _onContentOptionChange(value: string): void {
-        this._setNodeHtml('content', value);
+        this.setNodeHtml(value, "content");
     }
 
     _onConfirmTextOptionChange(value: string | null): void {
-        this._setNodeText('confirm', value ?? t('common:confirm'));
+        this.setNodeText(value ?? t('common:confirm'), "confirm");
     }
 
     _onCancelTextOptionChange(value: string | null): void {
-        this._setNodeText('cancel', value ?? t('common:cancel'));
+        this.setNodeText(value ?? t('common:cancel'), "cancel");
     }
 
     _onValueOptionChange(value: string): void {
-        this._setNodeAttr('field', 'value', value ?? '');
+        this.setNodeAttr("value", value ?? '', "field");
     }
 
     async close(action: 'confirm' | 'cancel' = 'cancel'): Promise<void> {
