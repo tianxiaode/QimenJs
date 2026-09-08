@@ -96,6 +96,8 @@ export interface EventContext {
     sourceType?: string;
     /** 原始 DOM 事件（可选，仅 DOM 事件场景） */
     domEvent?: Event;
+    /** DOM 委托事件命中的目标组件（仅 DOM 事件委托场景） */
+    targetComponent?: any;
     /** 事件传播链（记录事件从源头到当前的传播路径） */
     chain?: EventChainLink[];
     /**

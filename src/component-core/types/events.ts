@@ -82,8 +82,9 @@ export interface DelegatedEventRule {
      *
      * - true：自动推导方法名（on{LastSegment}{Event}）
      * - string：使用自定义方法名
+     * - Record<string, string>：按 action 值映射不同方法名，'default' 为兜底
      */
-    handler?: boolean | string;
+    handler?: boolean | string | Record<string, string>;
 
     /** 只执行一次 */
     once?: boolean;
@@ -123,8 +124,9 @@ export interface DomEventRule {
      *
      * - true：自动推导方法名（on{LastSegment}{Event}）
      * - string：使用自定义方法名
+     * - Record<string, string>：按 action 值映射不同方法名，'default' 为兜底
      */
-    handler?: boolean | string;
+    handler?: boolean | string | Record<string, string>;
 
     /** 转发为组件事件 */
     emits?: string[];

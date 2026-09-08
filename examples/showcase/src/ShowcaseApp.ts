@@ -107,7 +107,7 @@ export class ShowcaseApp extends Component {
                                                     },
                                                     {
                                                         text: 'Reset',
-                                                        action: 'color-reset',
+                                                        action: 'reset',
                                                     },
                                                 ],
                                             },
@@ -178,40 +178,22 @@ export class ShowcaseApp extends Component {
                                             name: 'demoAvatar',
                                             options: { text: 'Q', color: 'primary', size: 'md' },
                                         },
-                                    ],
-                                },
-                                {
-                                    tag: 'div',
-                                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
-                                    children: [
                                         {
-                                            tag: 'span',
-                                            style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Button:' },
+                                            type: 'avatar',
+                                            name: 'demoAvatarSrc',
+                                            options: {
+                                                src: 'https://api.dicebear.com/7.x/initials/svg?seed=QJ',
+                                                size: 'md',
+                                            },
                                         },
                                         {
-                                            type: 'button',
-                                            options: { text: 'Primary', color: 'primary' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            options: { text: 'Outline', color: 'primary-outline' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            options: { text: 'Success', color: 'success' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            options: { text: 'Outline', color: 'success-outline' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            options: { text: 'Error', color: 'error' },
-                                        },
-                                        {
-                                            type: 'button',
-                                            options: { text: 'Outline', color: 'error-outline' },
+                                            type: 'avatar',
+                                            name: 'demoAvatarIcon',
+                                            options: {
+                                                iconCls: 'fas fa-search',
+                                                color: 'success',
+                                                size: 'md',
+                                            },
                                         },
                                     ],
                                 },
@@ -223,26 +205,52 @@ export class ShowcaseApp extends Component {
         };
     }
 
-    // domEvents: DomEventsMap | undefined = {
-    //     click: { path: 'colorCard.[body].colorToolbar.[items]', handler: '_onButtonClick' },
-    // };
+    domEvents: DomEventsMap | undefined = {
+        click: [
+            {
+                path: 'colorCard.[body].colorToolbar.[items]',
+                handler: { default: '_onColorToolbarClick', reset: '_onResetClick' },
+            },
+            { path: 'colorCard.[body].sizeToolbar.[items]', handler: '_onSizeToolbarClick' },
+        ],
+    };
 
-    _onButtonClick(domEvt: any, targetComponent: any): void {
-        this.logger.info('dddd');
+    _onResetClick(_domEvt: any): void {
+        const card = this.getComponent('colorCard') as any;
+        const avatar = this.getComponent('demoAvatar') as any;
+        if (card) card.color = null;
+        if (avatar) avatar.color = null;
+    }
+
+    _onColorToolbarClick(domEvt: any): void {
+        const targetComponent = domEvt?.targetComponent;
         if (!targetComponent || targetComponent.type !== 'button') return;
         const action = targetComponent.action;
         if (!action) return;
 
         const card = this.getComponent('colorCard') as any;
-        const avatar = this.getComponent('demoAvatar') as any;
+        const colorValue = action === 'color-reset' ? null : action.slice(6);
+        if (card) card.color = colorValue;
+        const body = card?.body as any;
+        for (const name of ['demoAvatar', 'demoAvatarIcon']) {
+            const av = body.getComponent(name) as any;
+            if (av) av.color = colorValue;
+        }
+    }
 
-        if (action.startsWith('color-')) {
-            const colorValue = action === 'color-reset' ? null : action.slice(6);
-            if (card) card.color = colorValue;
-            if (avatar) avatar.color = colorValue;
-        } else if (action.startsWith('size-')) {
-            const sizeValue = action.slice(5);
-            if (avatar) avatar.size = sizeValue;
+    _onSizeToolbarClick(domEvt: any): void {
+        const targetComponent = domEvt?.targetComponent;
+        if (!targetComponent || targetComponent.type !== 'button') return;
+        const action = targetComponent.action;
+        this.logger.info('Color Toolbar Clicked', action);
+        if (!action) return;
+        const sizeValue = action.slice(5);
+        const card = this.getComponent('colorCard') as any;
+        const body = card?.body as any;
+        //const toolbar = body?.getComponent('colorToolbar') as any;
+        for (const name of ['demoAvatar', 'demoAvatarSrc', 'demoAvatarIcon']) {
+            const av = body.getComponent(name) as any;
+            if (av) av.size = sizeValue;
         }
     }
 }

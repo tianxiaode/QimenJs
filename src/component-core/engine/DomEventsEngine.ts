@@ -123,22 +123,14 @@ export class DomEventsEngine {
             if (rule.needsBinding) allEventTypes.add(rule.event);
         }
 
-        const dispatchers = new Map<
-            string,
-            (domEvt: any, targetComponent?: any) => void
-        >();
+        const dispatchers = new Map<string, (domEvt: any) => void>();
 
         for (const rule of rules) {
             if (!rule.needsBinding) continue;
 
             const key = DomEventsEngine._ruleKey(rule);
-            let wrapped = (domEvt: any, targetComponent?: any) => {
-                DomEventsEngine._dispatchRule(
-                    instance,
-                    rule,
-                    domEvt,
-                    targetComponent
-                );
+            let wrapped = (domEvt: any) => {
+                DomEventsEngine._dispatchRule(instance, rule, domEvt);
             };
 
             if (rule.debounce && rule.debounce > 0) {
@@ -150,7 +142,7 @@ export class DomEventsEngine {
             if (rule.once) {
                 let called = false;
                 const original = wrapped;
-                wrapped = (domEvt: any, _targetComponent?: any) => {
+                wrapped = (domEvt: any) => {
                     if (called) return;
                     called = true;
                     return original(domEvt);
@@ -199,43 +191,7 @@ export class DomEventsEngine {
         const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
         if (!eventType) return;
 
-        // 容器自身 disable 时拦截所有委托事件
         if (instance.disable) return;
-
-        const dispatchers: Map<string, (...args: any[]) => void> | undefined =
-            instance._domEventDispatchers;
-
-        for (const rule of rules) {
-            if (rule.event !== eventType) continue;
-
-            const1            const matched = DomEventsEngine._matchPath(instance, rule.path, target);
-            if (!matched) continue;
-
-3            if (matched.disable) continue;
-
-            const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
-            if (dispatch) {
-&                dispatch(domEvt, matched);
-            } else {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, matched);
-            }
-            return;
-        }
-    }
-
-        const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
-        if (!eventType) {
-            console.info('[DomEvents] handleDelegatedEvent: no eventType, domEvt.data:', domEvt?.data);
-            return;
-        }
-
-        console.info('[DomEvents] handleDelegatedEvent:', instance.constructor?.name ?? instance.type, 'eventType:', eventType, 'target:', target);
-
-        // 容器自身 disable 时拦截所有委托事件
-        if (instance.disable) {
-            console.info('[DomEvents] instance disabled, abort');
-            return;
-        }
 
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
             instance._domEventDispatchers;
@@ -248,11 +204,14 @@ export class DomEventsEngine {
 
             if (matched.disable) continue;
 
+            domEvt.targetComponent = matched;
+            if (matched.action) domEvt.action = matched.action;
+
             const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
             if (dispatch) {
-                dispatch(domEvt, matched);
+                dispatch(domEvt);
             } else {
-                DomEventsEngine._dispatchRule(instance, rule, domEvt, matched);
+                DomEventsEngine._dispatchRule(instance, rule, domEvt);
             }
             return;
         }
@@ -301,7 +260,6 @@ export class DomEventsEngine {
                     if (!found) return null;
                     currentComponent = found;
                 } else {
-                    // 非数组：必须是组件实例（有 el）才能继续穿透
                     if (!value?.el) return null;
                     currentComponent = value;
                 }
@@ -317,11 +275,20 @@ export class DomEventsEngine {
                 continue;
             }
 
-            // 裸字符串 = name 查找（nodeMap）
-            const nodeMap = currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
+            // 裸字符串 = name 查找
+            // 优先级：nodeMap → nodeInstances（子组件） → nodeElements（DOM 节点）
+            const nodeMap =
+                currentComponent.nodeMap ?? currentComponent.nodeMapMgr?.getAll?.() ?? {};
             const node = nodeMap[seg];
             if (node) {
                 currentComponent = node.component ?? node;
+                continue;
+            }
+
+            // nodeInstances（子组件实例，优先于 DOM 元素）
+            const inst = currentComponent.nodeInstances?.[seg];
+            if (inst) {
+                currentComponent = inst;
                 continue;
             }
 
@@ -332,17 +299,9 @@ export class DomEventsEngine {
                 continue;
             }
 
-            // nodeInstances
-            const inst = currentComponent.nodeInstances?.[seg];
-            if (inst) {
-                currentComponent = inst;
-                continue;
-            }
-
             return null;
         }
 
-        // 验证最终组件的 el 包含 target
         if (!currentComponent?.el) return null;
         if (!currentComponent.el.contains(target)) return null;
 
@@ -399,36 +358,28 @@ export class DomEventsEngine {
      *
      * handler 本地调用 + EventForwarder 统一转发
      */
-    static _dispatchRule(
-        instance: any,
-        rule: DelegatedEventRule,
-        domEvt: any,
-        targetComponent?: any
-    ): void {
+    static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         if (rule.handler) {
-            DomEventsEngine._invokeHandler(instance, rule, domEvt, targetComponent);
+            DomEventsEngine._invokeHandler(instance, rule, domEvt);
         }
 
         const extraData = DomEventsEngine._buildPayload(instance, rule);
         EventForwarder.forward(instance, rule, extraData, domEvt);
     }
 
-    private static _invokeHandler(
-        instance: any,
-        rule: DelegatedEventRule,
-        domEvt: any,
-        targetComponent?: any
-    ): void {
+    private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         let methodName: string;
 
-        if (typeof rule.handler === 'string') {
+        if (typeof rule.handler === 'object' && rule.handler !== null) {
+            const action = domEvt?.action;
+            methodName = rule.handler[action] || rule.handler['default'];
+            if (!methodName) return;
+        } else if (typeof rule.handler === 'string') {
             methodName = rule.handler;
         } else {
-            // 自动推导方法名：on{LastSegment}{Event}
             const segments = rule.path.split('.');
             const lastSeg = segments[segments.length - 1];
-            // 去掉括号符号，取实际名称
-            const cleanName = lastSeg.replace(/[\[\]{}]/g, '');
+            const cleanName = lastSeg.replace(/[[\]{}]/g, '');
             const pascalName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
             const pascalEvent = rule.event.charAt(0).toUpperCase() + rule.event.slice(1);
             methodName = `on${pascalName}${pascalEvent}`;
@@ -436,14 +387,11 @@ export class DomEventsEngine {
 
         const method = instance[methodName];
         if (typeof method === 'function') {
-            method.call(instance, domEvt, targetComponent);
+            method.call(instance, domEvt);
         }
     }
 
-    private static _buildPayload(
-        instance: any,
-        rule: DelegatedEventRule
-    ): any {
+    private static _buildPayload(instance: any, rule: DelegatedEventRule): any {
         if (rule.data) {
             const fields = Array.isArray(rule.data) ? rule.data : rule.data;
             if (Array.isArray(fields)) {

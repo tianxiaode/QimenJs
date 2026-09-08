@@ -5,13 +5,13 @@ import { Definitions } from '@/composable';
 import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './avatar.css';
 
-export type AvatarMode = 'src' | 'text' | 'icon';
+export type AvatarMode = 'src' | 'text' | 'iconCls';
 
 const AvatarComponentDefs: Definitions = {
     options: {
         src: null,
         text: null,
-        icon: null,
+        iconCls: null,
         size: 'md',
         color: null,
     },
@@ -33,25 +33,21 @@ class AvatarComponent extends Component {
 
     _onTextOptionChange(value: string) {
         const nodeName = 'text';
-        const el = this.getNodeEl(nodeName);
         this.setNodeHidden(!value, nodeName);
         if (value) {
+            const el = this.getNodeEl(nodeName);
             if (el) el.textContent = value.charAt(0).toUpperCase();
         }
     }
 
-    _onIconOptionChange(value: string) {
+    _onIconClsOptionChange(value: string, old: string) {
         const nodeName = 'icon';
         this.setNodeHidden(!value, nodeName);
-        const el = this.getNodeEl(nodeName);
-        if (value) {
-            if (el) el.textContent = value;
-        }
+        this._toggleOptionCls('', value, old, nodeName);
     }
 }
 
 AvatarComponent.define(AvatarComponentDefs);
-AvatarComponent.use(SizeAbility);
-AvatarComponent.use(ColorAbility);
+AvatarComponent.use(SizeAbility, ColorAbility);
 
 export { AvatarComponent };

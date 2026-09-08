@@ -116,6 +116,14 @@ export class EventContextBuilder {
     }
 
     /**
+     * 设置 DOM 委托事件命中的目标组件
+     */
+    withTargetComponent(targetComponent: any): this {
+        this.context.targetComponent = targetComponent;
+        return this;
+    }
+
+    /**
      * 设置事件传播链
      */
     withChain(chain?: EventChainLink[]): this {
