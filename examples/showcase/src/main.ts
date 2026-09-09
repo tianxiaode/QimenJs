@@ -3,6 +3,4 @@ import './register';
 import '@/theme/theme.css';
 import './showcase.css';
 
-const app = document.getElementById('app')!;
-const shell = new ShowcaseApp();
-app.appendChild(shell.el!);
+new ShowcaseApp({ container: document.getElementById('app')! });

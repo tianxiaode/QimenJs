@@ -78,6 +78,16 @@ __qimen_i18n_register__('zh-CN', {
         pageSize: '{size} 条/页',
         page: '第 {current}/{total} 页',
     },
+    nav: {
+        home: '首页',
+        components: '组件',
+        apps: '应用',
+        docs: '文档',
+        lang: '语言',
+        theme: '主题',
+        dark: '深色',
+        login: '登录',
+    },
     error: {
         network: '网络错误，请稍后重试',
         timeout: '请求超时，请稍后重试',

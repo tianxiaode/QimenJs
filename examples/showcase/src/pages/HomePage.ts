@@ -6,7 +6,6 @@
  */
 
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { HeroComponent, CardComponent, TagComponent } from '@qimenjs/component';
 
 /** 特性数据 */
 const FEATURES = [
@@ -45,39 +44,39 @@ const FEATURES = [
 /** 首页模板 */
 const HOME_TPL: TemplateDecl = {
     tag: 'div',
-    classes: 'q-home-page',
-    flex: { direction: 'column', align: 'center' },
+    classes: 'q-home-page flex flex-col flex-center',
     children: [
         {
-            name: 'hero',
-            type: HeroComponent,
+            type: 'hero',
             classes: 'q-home-page__hero',
-            title: '@hero.title',
-            subtitle: '@hero.subtitle',
-            desc: '@hero.desc',
-            actionText: '@hero.action',
+            options: {
+                title: '@hero.title',
+                subtitle: '@hero.subtitle',
+                desc: '@hero.desc',
+                actionText: '@hero.action',
+            },
         },
         {
             tag: 'section',
-            classes: 'q-home-page__features',
+            classes: 'q-home-page__features flex flex-row flex-warp',
+            style: { gap: '6px', padding: '16px' }, // 特性卡片间距
             children: FEATURES.map((f, i) => ({
                 name: `feature${i}`,
-                type: CardComponent,
-                cls: 'q-home-page__feature-card',
-                children: [
-                    { tag: 'h3', cls: 'q-home-page__feature-title', text: f.title },
-                    { tag: 'p', cls: 'q-home-page__feature-desc', text: f.desc },
-                    {
+                type: 'card',
+                classes: 'q-home-page__feature-card',
+                options: {
+                    title: f.title,
+                    body: {
                         tag: 'div',
-                        cls: 'q-home-page__feature-tags',
-                        flex: { direction: 'row', gap: '6px', wrap: true },
-                        children: f.tags.map(tag => ({
-                            type: TagComponent,
-                            text: tag,
-                            cls: 'q-home-page__feature-tag',
-                        })),
+                        children: [
+                            {
+                                type: 'text',
+                                classes: 'q-home-page__feature-desc',
+                                options: { text: f.desc, tag: 'p' },
+                            },
+                        ],
                     },
-                ],
+                },
             })),
         },
     ],
@@ -87,14 +86,5 @@ const HOME_TPL: TemplateDecl = {
 export class HomePage extends Component {
     get tpl(): TemplateDecl {
         return HOME_TPL;
-    }
-
-    onAfterInit(): void {
-        const hero = this.nodeMap.hero?.component;
-        if (!hero) return;
-
-        hero.on('action', () => {
-            window.location.hash = '#/components';
-        });
     }
 }

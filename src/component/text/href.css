@@ -2,9 +2,10 @@
     display: inline-flex;
     align-items: center;
     font-size: var(--q-font-size-md, 14px);
-    line-height: 1.5;
+    line-height: 1.8;
     color: var(--q-color-primary, #0078d4);
     text-decoration: none;
+    text-underline-offset: 3px;
     cursor: var(--q-cursor-pointer, pointer);
     transition: color var(--q-transition-fast);
     white-space: nowrap;
@@ -29,4 +30,103 @@
 
 .q-href-disabled:hover {
     text-decoration: none;
+}
+
+/* ========================================
+   颜色方案 — color=primary 文字色，color=primary-outline 边框+文字色
+   ======================================== */
+
+.q-href--color-primary {
+    color: var(--q-color-primary, #0078d4);
+}
+.q-href--color-secondary {
+    color: var(--q-color-secondary, #607d8b);
+}
+.q-href--color-success {
+    color: var(--q-color-success, #107c10);
+}
+.q-href--color-warning {
+    color: var(--q-color-warning, #ca5010);
+}
+.q-href--color-error {
+    color: var(--q-color-error, #d13438);
+}
+.q-href--color-info {
+    color: var(--q-color-info, #0078d4);
+}
+
+.q-href--color-primary:hover {
+    color: var(--q-color-primary-hover, #106ebe);
+}
+.q-href--color-secondary:hover {
+    color: var(--q-color-secondary-hover, #455a64);
+}
+.q-href--color-success:hover {
+    color: var(--q-color-success-hover, #0b6e0b);
+}
+.q-href--color-warning:hover {
+    color: var(--q-color-warning-hover, #b04a0e);
+}
+.q-href--color-error:hover {
+    color: var(--q-color-error-hover, #b02a2e);
+}
+.q-href--color-info:hover {
+    color: var(--q-color-info-hover, #106ebe);
+}
+
+/* 边框模式 */
+.q-href--color-primary-outline {
+    border: 1px solid var(--q-color-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
+    border-radius: var(--q-radius-md);
+}
+.q-href--color-secondary-outline {
+    border: 1px solid var(--q-color-secondary, #607d8b);
+    color: var(--q-color-secondary, #607d8b);
+    border-radius: var(--q-radius-md);
+}
+.q-href--color-success-outline {
+    border: 1px solid var(--q-color-success, #107c10);
+    color: var(--q-color-success, #107c10);
+    border-radius: var(--q-radius-md);
+}
+.q-href--color-warning-outline {
+    border: 1px solid var(--q-color-warning, #ca5010);
+    color: var(--q-color-warning, #ca5010);
+    border-radius: var(--q-radius-md);
+}
+.q-href--color-error-outline {
+    border: 1px solid var(--q-color-error, #d13438);
+    color: var(--q-color-error, #d13438);
+    border-radius: var(--q-radius-md);
+}
+.q-href--color-info-outline {
+    border: 1px solid var(--q-color-info, #0078d4);
+    color: var(--q-color-info, #0078d4);
+    border-radius: var(--q-radius-md);
+}
+
+.q-href--color-primary-outline:hover {
+    background: var(--q-color-primary, #0078d4);
+    color: var(--q-color-on-primary, #fff);
+}
+.q-href--color-secondary-outline:hover {
+    background: var(--q-color-secondary, #607d8b);
+    color: var(--q-color-on-secondary, #fff);
+}
+.q-href--color-success-outline:hover {
+    background: var(--q-color-success, #107c10);
+    color: var(--q-color-on-success, #fff);
+}
+.q-href--color-warning-outline:hover {
+    background: var(--q-color-warning, #ca5010);
+    color: var(--q-color-on-warning, #fff);
+}
+.q-href--color-error-outline:hover {
+    background: var(--q-color-error, #d13438);
+    color: var(--q-color-on-error, #fff);
+}
+.q-href--color-info-outline:hover {
+    background: var(--q-color-info, #0078d4);
+    color: var(--q-color-on-info, #fff);
 }

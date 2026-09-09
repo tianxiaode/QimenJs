@@ -44,7 +44,7 @@ class CardComponent extends Component {
     }
 
     _onTitleOptionChange(value: string, _old: string) {
-        this.setNodeText(value, "headerTitle");
+        this.setNodeText(value, 'headerTitle');
         this.setNodeHidden(!value, 'headerTitle');
     }
 
@@ -61,12 +61,12 @@ class CardComponent extends Component {
     }
 
     _onBodyOptionChange(value: CardContent, _old: CardContent): void {
-        this.renderSlot(value, "body");
+        this.renderSlot(value, 'body');
     }
 
     _onFooterOptionChange(value: CardContent, _old: CardContent): void {
         this.setNodeHidden(!value, 'footer');
-        this.renderSlot(value, "footer");
+        this.renderSlot(value, 'footer');
     }
 }
 

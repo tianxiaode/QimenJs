@@ -53,7 +53,7 @@ class ButtonComponent extends Component {
     }
 
     _onTextOptionChange(value: string, _old: string) {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
         const nodeName = 'text';
         value
             ? this.addCls('q-button__text', nodeName)

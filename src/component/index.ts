@@ -108,4 +108,4 @@ export * from './button/UploadButtonComponent';
 export { NavbarComponent } from './navbar/NavbarComponent';
 
 // Href 超链接文本组件（<a> 封装，navigate 事件 + router 转发）
-export { HrefComponent } from './text/HrefComponent';
+export * from './text';

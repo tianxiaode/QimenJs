@@ -41,4 +41,3 @@ class TextComponent extends Component {
 TextComponent.define(TextComponentDefs);
 
 export { TextComponent };
-export type TextComponentInstance = InstanceType<typeof TextComponent>;

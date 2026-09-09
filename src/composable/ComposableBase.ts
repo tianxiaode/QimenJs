@@ -228,9 +228,9 @@ export class ComposableBase implements IComposableBase {
     }
 
     private applyOptionDefaults(): void {
-        const overrides = this.defaultOptions;
-        for (const [key, value] of Object.entries(this.getDataMap().defaultValues)) {
-            this.setData(key, overrides && key in overrides ? overrides[key] : value);
+        const overrides = { ...this.getDataMap().defaultValues, ...this.defaultOptions };
+        for (const [key, value] of Object.entries(overrides)) {
+            this.setData(key, value);
         }
     }
 

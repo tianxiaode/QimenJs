@@ -78,6 +78,16 @@ __qimen_i18n_register__('en-US', {
         pageSize: '{size} per page',
         page: 'Page {current}/{total}',
     },
+    nav: {
+        home: 'Home',
+        components: 'Components',
+        apps: 'Apps',
+        docs: 'Docs',
+        lang: 'Language',
+        theme: 'Theme',
+        dark: 'Dark',
+        login: 'Login',
+    },
     error: {
         network: 'Network error, please try again later',
         timeout: 'Request timed out, please try again later',

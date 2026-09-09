@@ -172,7 +172,7 @@ class I18nManager {
 }
 
 function getByPath(obj, path) {
-    const keys = path.split(':');
+    const keys = path.split('.');
     let result = obj;
     for (const key of keys) {
         if (result && typeof result === 'object' && key in result) {

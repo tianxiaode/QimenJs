@@ -1,64 +1,207 @@
-/**
- * NavbarComponent 顶部导航栏组件
- *
- * 从 ItemGroupStaticComponent 派生，本质是横向 ItemGroup + 样式差异。
- * 默认内置两项（order 越小越靠左）：
- *   - companyName (Text, order=0) — 公司名称
- *   - logo        (Icon, order=10) — 品牌 Logo
- * 后续可通过 items 属性或 add() 方法追加自定义组件，如：
- *   new NavbarComponent({ items: [
- *       { type: 'Button', text: '首页', order: 100 },
- *       { type: 'Button', text: '退出', order: 9999 },
- *   ]})
- *
- * 与旧 Sidebar 的区别：
- *   - 仅样式方向不同（横向 vs 纵向）
- *   - 不再自建节点树，复用 ItemGroup 的 itemContainer + order 排序机制
- *   - 直接复用 OverflowAbility（overflowMode='menu' 可折叠溢出项）
- */
-
-import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap, ListenItem } from '@qimenjs/component-core';
+import { NAVBAR_TPL } from './navbar-tpl';
 import { Definitions } from '@/composable';
+import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+import { SYSTEM_EVENTS } from '@/events';
 import './navbar.css';
 
 const NavbarComponentDefs: Definitions = {
     options: {
         companyName: null,
         logo: null,
+        items: null,
+        defaultItemOption: null,
+        menuToggleIconCls: null,
     },
 } as const;
 
-class NavbarComponent extends ItemGroupStaticComponent {
-    get defaultOptions(): Record<string, any> {
-        return { direction: 'horizontal', gap: '16px' };
+class NavbarComponent extends Component {
+    static type = 'navbar';
+    get tpl(): TemplateDecl {
+        return NAVBAR_TPL;
     }
 
-    onAfterInit(): void {
-        this.addCls('q-navbar');
-        (this as any).itemContainer?.el?.classList.add('q-navbar__items');
+    _itemInstances: any[] = [];
+    _menuItemInstances: any[] = [];
+    _menuPanel: HTMLElement | null = null;
 
-        const hasUserItems = this.getData('items') && this.getData('items').length > 0;
-        if (!hasUserItems) {
-            this.add({
-                type: 'Text',
-                order: 0,
-                cls: 'q-navbar__company',
-                text: this.getData('companyName') ?? '公司名称',
-            });
-            this.add({
-                type: 'Icon',
-                order: 10,
-                cls: 'q-navbar__logo',
-                icon: this.getData('logo') ?? '🏢',
-            });
+    domEvents: DomEventsMap = {
+        click: [{ path: 'menuToggle', handler: '_onMenuToggleClick' }],
+    };
+
+    listens: Array<ListenItem> = [
+        { system: true, events: { [SYSTEM_EVENTS.WINDOW_RESIZE]: '_onWindowResize' } },
+    ];
+
+    onAfterInit(): void {
+        const logo = this.getData('logo');
+        if (logo) {
+            const logoEl = this.getNodeEl('logo');
+            if (logoEl) logoEl.textContent = logo;
         }
 
-        super.onAfterInit();
+        const companyName = this.getData('companyName');
+        if (companyName) {
+            this.setNodeText(companyName, 'company');
+        }
+
+        const items = this.getData('items');
+        if (items && Array.isArray(items)) {
+            this._renderItems(items);
+        }
+    }
+
+    _renderItems(items: any[]): void {
+        const defaults = this.getData('defaultItemOption') ?? {};
+        for (const config of items) {
+            this._createItem({ ...defaults, ...config });
+        }
+    }
+
+    _createItem(config: any): any {
+        const dock = config.dock ?? 'right';
+        const containerName = `${dock}Items`;
+        const container = this.getNodeEl(containerName);
+        if (!container) return null;
+
+        const instance = this._instantiateItem(config, container);
+        if (!instance) return null;
+
+        const itemName = config.action ?? config.text;
+        if (itemName) {
+            this._setComponent(itemName, instance);
+        }
+
+        this._itemInstances.push(instance);
+        return instance;
+    }
+
+    _instantiateItem(config: any, container: HTMLElement): any {
+        const type = config.type;
+        const props = { ...config };
+        delete props.type;
+        delete props.dock;
+
+        if (typeof type === 'function') {
+            const instance = new type(props);
+            container.appendChild(instance.el);
+            return instance;
+        }
+
+        if (typeof type === 'string') {
+            const ItemClass = ComponentRegistrar.getInstance().get(type);
+            if (!ItemClass) return null;
+            const instance = new ItemClass(props);
+            container.appendChild(instance.el!);
+            return instance;
+        }
+
+        if (type && typeof type === 'object' && ('tag' in type || 'children' in type)) {
+            return this._createSlotComponent(type, container);
+        }
+
+        return null;
+    }
+
+    _onMenuToggleClick(): void {
+        if (this._menuPanel) {
+            this._closeMenu();
+        } else {
+            this._openMenu();
+        }
+    }
+
+    _onMenuToggleIconClsOptionChange(value: string, old: string) {
+        this.toggleOptionCls('', value, old, 'menuToggleIcon');
+    }
+
+    _onWindowResize(data: any): void {
+        const width = data?.width;
+        if (typeof width !== 'number') return;
+        if (width > 768 && this._menuPanel) {
+            this._closeMenu();
+        }
+    }
+
+    _openMenu(): void {
+        const panel = document.createElement('div');
+        panel.className = 'q-navbar__menu-panel';
+
+        const items = this.getData('items') ?? [];
+        const defaults = this.getData('defaultItemOption') ?? {};
+        const mergedItems = items.map((item: any) => ({ ...defaults, ...item }));
+
+        const groups: Record<string, any[]> = {};
+        for (const item of mergedItems) {
+            const dock = item.dock ?? 'right';
+            if (!groups[dock]) groups[dock] = [];
+            groups[dock].push(item);
+        }
+
+        const dockOrder = ['left', 'center', 'right'];
+        let firstGroup = true;
+        for (const dock of dockOrder) {
+            const groupItems = groups[dock];
+            if (!groupItems || groupItems.length === 0) continue;
+
+            if (!firstGroup) {
+                const separator = document.createElement('div');
+                separator.className = 'q-navbar__menu-separator';
+                panel.appendChild(separator);
+            }
+            firstGroup = false;
+
+            for (const config of groupItems) {
+                const itemEl = this._createMenuItem(config);
+                if (itemEl) panel.appendChild(itemEl);
+            }
+        }
+
+        const toggleEl = this.getNodeEl('menuToggle');
+        if (toggleEl) {
+            const rect = toggleEl.getBoundingClientRect();
+            panel.style.position = 'absolute';
+            panel.style.top = `${rect.bottom}px`;
+            panel.style.left = '0px';
+            panel.style.right = '0px';
+        }
+
+        document.body.appendChild(panel);
+        this._menuPanel = panel;
+    }
+
+    _closeMenu(): void {
+        if (this._menuPanel) {
+            this._menuPanel.remove();
+            this._menuPanel = null;
+        }
+        for (const instance of this._menuItemInstances) {
+            if (typeof instance.dispose === 'function') {
+                instance.dispose();
+            }
+        }
+        this._menuItemInstances = [];
+    }
+
+    _createMenuItem(config: any): HTMLElement | null {
+        const panel = document.createElement('div');
+        const instance = this._instantiateItem(config, panel);
+        if (!instance) return null;
+        this._menuItemInstances.push(instance);
+        return instance.el;
+    }
+
+    onBeforeDispose(): void {
+        this._closeMenu();
+        for (const instance of this._itemInstances) {
+            if (typeof instance.dispose === 'function') {
+                instance.dispose();
+            }
+        }
+        this._itemInstances = [];
     }
 }
 
 NavbarComponent.define(NavbarComponentDefs);
-
 export { NavbarComponent };
-/** 导航栏实例类型 */
-export type NavbarComponentInstance = InstanceType<typeof NavbarComponent>;

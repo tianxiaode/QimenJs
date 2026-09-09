@@ -64,8 +64,7 @@ const COMPONENTS_TPL: TemplateDecl = {
         },
         {
             tag: 'main',
-            classes: 'q-components-page__main',
-            flex: { direction: 'column', gap: '24px', flex: 1 },
+            classes: 'q-components-page__main flex flex-col  ',
             children: [
                 {
                     name: 'alert',
@@ -85,5 +84,5 @@ const COMPONENTS_TPL: TemplateDecl = {
 export class ComponentsPage extends Component {
     get tpl(): TemplateDecl {
         return COMPONENTS_TPL;
+    }
 }
-

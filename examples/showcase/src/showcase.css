@@ -1,4 +1,29 @@
 /* Showcase 覆盖样式 - 使用 FontAwesome 图标 */
+body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--q-color-bg);
+}
+
+.q-navbar {
+    background-color: var(--q-color-primary);
+    color: var(--q-color-on-primary);
+
+    .q-navbar__company {
+        color: var(--q-color-on-primary);
+    }
+
+    .q-navbar__toggle {
+        color: var(--q-color-on-primary);
+    }
+
+    .q-href {
+        color: var(--q-color-on-primary);
+
+    }
+}
+
+
 
 .q-msgbox__close::before {
     --q-icon-close: '\f00d';

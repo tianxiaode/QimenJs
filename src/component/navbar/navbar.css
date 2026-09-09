@@ -10,22 +10,36 @@
     gap: 16px;
 }
 
-.q-navbar.q-itemgroup--vertical {
-    flex-direction: row;
+.q-navbar__toggle {
+    display: none;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--q-colors-text-secondary, #666);
+    font-size: 20px;
 }
 
-.q-navbar__items {
+.q-navbar__toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.q-navbar__spacer {
+    flex: 1;
+}
+
+.q-navbar__left,
+.q-navbar__center,
+.q-navbar__right {
     display: flex;
     align-items: center;
-    flex: 1;
-    gap: 16px;
-}
-
-.q-navbar__company {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--q-colors-text, #1a1a1a);
-    white-space: nowrap;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .q-navbar__logo {
@@ -40,27 +54,54 @@
     color: var(--q-colors-primary, #0078d4);
 }
 
-.q-navbar .q-itemgroup__overflow-prev,
-.q-navbar .q-itemgroup__overflow-next,
-.q-navbar .q-itemgroup__overflow-more {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    background: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    color: var(--q-colors-text-secondary, #666);
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+.q-navbar__company {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--q-colors-text, #1a1a1a);
+    white-space: nowrap;
 }
 
-.q-navbar .q-itemgroup__overflow-prev:hover,
-.q-navbar .q-itemgroup__overflow-next:hover,
-.q-navbar .q-itemgroup__overflow-more:hover {
-    background: var(--q-colors-ghost-hover, rgba(128, 128, 128, 0.1));
-    border-color: var(--q-colors-border, #dcdfe6);
-    color: var(--q-colors-text, #1a1a1a);
+@media (max-width: 768px) {
+    .q-navbar__toggle {
+        display: flex;
+    }
+
+    .q-navbar__spacer--1 {
+        order: 1;
+    }
+
+    .q-navbar__logo {
+        order: 2;
+    }
+
+    .q-navbar__company {
+        order: 3;
+    }
+
+    .q-navbar__spacer--2 {
+        order: 4;
+    }
+
+    .q-navbar__left,
+    .q-navbar__center,
+    .q-navbar__right {
+        display: none;
+    }
+}
+
+.q-navbar__menu-panel {
+    background: var(--q-color-bg, #ffffff);
+    border-bottom: 1px solid var(--q-colors-border, #dcdfe6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.q-navbar__menu-separator {
+    height: 1px;
+    background: var(--q-colors-border, #dcdfe6);
+    margin: 4px 0;
 }

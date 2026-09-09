@@ -2,6 +2,7 @@ import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { HREF_TPL } from './href-tpl';
 import { Definitions } from '@/composable';
+import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './href.css';
 
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';
@@ -11,6 +12,8 @@ const HrefComponentDefs: Definitions = {
         text: null,
         href: null,
         target: null,
+        size: 'md',
+        color: null,
     },
 } as const;
 
@@ -20,10 +23,12 @@ class HrefComponent extends Component {
         return HREF_TPL;
     }
 
-    _pendingNavData: { href: string } | null = null;
-
     domEvents?: DomEventsMap | undefined = {
-        click: { path: 'root', handler: '_onContentClick', emits: ['navigate'], router: 'navigate' },
+        click: {
+            path: 'root',
+            emits: ['navigate'],
+            router: 'navigate',
+        },
     };
 
     _onTextOptionChange(value: string) {
@@ -31,7 +36,11 @@ class HrefComponent extends Component {
     }
 
     _onHrefOptionChange(value: string) {
-        this.setNodeAttr("href", value ?? '');
+        if (value && this._isExternal(value)) {
+            this.setNodeAttr('href', value);
+        } else {
+            this.removeAttributes(['href']);
+        }
     }
 
     _onTargetOptionChange(value: string) {
@@ -42,19 +51,7 @@ class HrefComponent extends Component {
         }
     }
 
-    _onContentClick(domEvt: any): void {
-        if (this.disable) {
-            domEvt?.preventDefault?.();
-            return;
-        }
-        const href = this.href;
-        if (href && !HrefComponent._isExternal(href)) {
-            domEvt?.preventDefault?.();
-        }
-        this._pendingNavData = { href };
-    }
-
-    static _isExternal(href: string): boolean {
+    _isExternal(href: string): boolean {
         return /^(https?:|mailto:|tel:|ftp:|\/\/)/i.test(href);
     }
 
@@ -63,13 +60,11 @@ class HrefComponent extends Component {
     }
 
     getCustomEventData(): any {
-        const data = this._pendingNavData;
-        this._pendingNavData = null;
-        return data ?? {};
+        return { href: this.href };
     }
 }
 
 HrefComponent.define(HrefComponentDefs);
+HrefComponent.use(SizeAbility, ColorAbility);
 
 export { HrefComponent };
-export type HrefComponentInstance = InstanceType<typeof HrefComponent>;

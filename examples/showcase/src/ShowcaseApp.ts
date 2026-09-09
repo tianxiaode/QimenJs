@@ -1,256 +1,66 @@
-import { Component, DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
-import { ToolbarComponent } from '@qimenjs/component';
+import { Component, TemplateDecl } from '@qimenjs/component-core';
+import { ShowcaseNavbar } from './ShowcaseNavbar';
+import { HomePage } from './pages/HomePage';
+import { ComponentsPage } from './pages/ComponentsPage';
+import { DocsPage } from './pages/DocsPage';
+
+type PageName = 'home' | 'components' | 'docs';
+
+const PAGE_MAP: Record<PageName, any> = {
+    home: HomePage,
+    components: ComponentsPage,
+    docs: DocsPage,
+};
 
 export class ShowcaseApp extends Component {
+    _currentPage: PageName = 'home';
+    _pageInstance: any = null;
+
     get tpl(): TemplateDecl {
         return {
             tag: 'div',
-            name: 'root',
             classes: 'q-showcase',
             style: {
-                padding: '40px',
                 fontFamily: 'sans-serif',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '24px',
+                minHeight: '100vh',
             },
             children: [
                 {
-                    type: 'card',
-                    name: 'colorCard',
-                    options: {
-                        title: '颜色方案演示',
-                        body: {
-                            tag: 'div',
-                            classes: 'q-showcase__color-demo',
-                            style: { display: 'flex', flexDirection: 'column', gap: '16px' },
-                            children: [
-                                {
-                                    tag: 'div',
-                                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
-                                    children: [
-                                        {
-                                            tag: 'span',
-                                            style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Color:' },
-                                        },
-                                        {
-                                            type: ToolbarComponent,
-                                            name: 'colorToolbar',
-                                            options: {
-                                                gap: '4px',
-                                                style: {
-                                                    borderBottom: 'none',
-                                                    padding: '0',
-                                                },
-                                                defaultItemType: 'button',
-                                                items: [
-                                                    {
-                                                        text: 'Primary',
-                                                        color: 'primary',
-                                                        action: 'color-primary',
-                                                    },
-                                                    {
-                                                        text: 'P-Out',
-                                                        color: 'primary-outline',
-                                                        action: 'color-primary-outline',
-                                                    },
-                                                    {
-                                                        text: 'Secondary',
-                                                        color: 'secondary',
-                                                        action: 'color-secondary',
-                                                    },
-                                                    {
-                                                        text: 'S-Out',
-                                                        color: 'secondary-outline',
-                                                        action: 'color-secondary-outline',
-                                                    },
-                                                    {
-                                                        text: 'Success',
-                                                        color: 'success',
-                                                        action: 'color-success',
-                                                    },
-                                                    {
-                                                        text: 'Su-Out',
-                                                        color: 'success-outline',
-                                                        action: 'color-success-outline',
-                                                    },
-                                                    {
-                                                        text: 'Warning',
-                                                        color: 'warning',
-                                                        action: 'color-warning',
-                                                    },
-                                                    {
-                                                        text: 'W-Out',
-                                                        color: 'warning-outline',
-                                                        action: 'color-warning-outline',
-                                                    },
-                                                    {
-                                                        text: 'Error',
-                                                        color: 'error',
-                                                        action: 'color-error',
-                                                    },
-                                                    {
-                                                        text: 'E-Out',
-                                                        color: 'error-outline',
-                                                        action: 'color-error-outline',
-                                                    },
-                                                    {
-                                                        text: 'Info',
-                                                        color: 'info',
-                                                        action: 'color-info',
-                                                    },
-                                                    {
-                                                        text: 'I-Out',
-                                                        color: 'info-outline',
-                                                        action: 'color-info-outline',
-                                                    },
-                                                    {
-                                                        text: 'Reset',
-                                                        action: 'reset',
-                                                    },
-                                                ],
-                                            },
-                                        },
-                                    ],
-                                },
-                                {
-                                    tag: 'div',
-                                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
-                                    children: [
-                                        {
-                                            tag: 'span',
-                                            style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Size:' },
-                                        },
-                                        {
-                                            type: ToolbarComponent,
-                                            name: 'sizeToolbar',
-                                            options: {
-                                                gap: '4px',
-                                                style: {
-                                                    background: 'transparent',
-                                                    borderBottom: 'none',
-                                                    padding: '0',
-                                                },
-                                                items: [
-                                                    {
-                                                        type: 'button',
-                                                        text: 'XS',
-                                                        action: 'size-xs',
-                                                    },
-                                                    {
-                                                        type: 'button',
-                                                        text: 'SM',
-                                                        action: 'size-sm',
-                                                    },
-                                                    {
-                                                        type: 'button',
-                                                        text: 'MD',
-                                                        action: 'size-md',
-                                                    },
-                                                    {
-                                                        type: 'button',
-                                                        text: 'LG',
-                                                        action: 'size-lg',
-                                                    },
-                                                    {
-                                                        type: 'button',
-                                                        text: 'XL',
-                                                        action: 'size-xl',
-                                                    },
-                                                ],
-                                            },
-                                        },
-                                    ],
-                                },
-                                {
-                                    tag: 'div',
-                                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
-                                    children: [
-                                        {
-                                            tag: 'span',
-                                            style: { fontSize: '13px', width: '80px' },
-                                            options: { text: 'Avatar:' },
-                                        },
-                                        {
-                                            type: 'avatar',
-                                            name: 'demoAvatar',
-                                            options: { text: 'Q', color: 'primary', size: 'md' },
-                                        },
-                                        {
-                                            type: 'avatar',
-                                            name: 'demoAvatarSrc',
-                                            options: {
-                                                src: 'https://api.dicebear.com/7.x/initials/svg?seed=QJ',
-                                                size: 'md',
-                                            },
-                                        },
-                                        {
-                                            type: 'avatar',
-                                            name: 'demoAvatarIcon',
-                                            options: {
-                                                iconCls: 'fas fa-search',
-                                                color: 'success',
-                                                size: 'md',
-                                            },
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    },
+                    type: ShowcaseNavbar,
+                    name: 'navbar',
+                },
+                {
+                    tag: 'div',
+                    name: 'pageContainer',
+                    classes: 'q-showcase__page',
+                    style: { flex: '1' },
                 },
             ],
         };
     }
 
-    domEvents: DomEventsMap | undefined = {
-        click: [
-            {
-                path: 'colorCard.[body].colorToolbar.[items]',
-                handler: { default: '_onColorToolbarClick', reset: '_onResetClick' },
-            },
-            { path: 'colorCard.[body].sizeToolbar.[items]', handler: '_onSizeToolbarClick' },
-        ],
-    };
-
-    _onResetClick(_domEvt: any): void {
-        const card = this.getComponent('colorCard') as any;
-        const avatar = this.getComponent('demoAvatar') as any;
-        if (card) card.color = null;
-        if (avatar) avatar.color = null;
+    onAfterInit(): void {
+        this._renderPage(this._currentPage);
     }
 
-    _onColorToolbarClick(domEvt: any): void {
-        const targetComponent = domEvt?.targetComponent;
-        if (!targetComponent || targetComponent.type !== 'button') return;
-        const action = targetComponent.action;
-        if (!action) return;
-
-        const card = this.getComponent('colorCard') as any;
-        const colorValue = action === 'color-reset' ? null : action.slice(6);
-        if (card) card.color = colorValue;
-        const body = card?.body as any;
-        for (const name of ['demoAvatar', 'demoAvatarIcon']) {
-            const av = body.getComponent(name) as any;
-            if (av) av.color = colorValue;
+    _renderPage(page: PageName): void {
+        if (this._pageInstance) {
+            if (typeof this._pageInstance.dispose === 'function') {
+                this._pageInstance.dispose();
+            }
+            this._pageInstance = null;
         }
-    }
 
-    _onSizeToolbarClick(domEvt: any): void {
-        const targetComponent = domEvt?.targetComponent;
-        if (!targetComponent || targetComponent.type !== 'button') return;
-        const action = targetComponent.action;
-        this.logger.info('Color Toolbar Clicked', action);
-        if (!action) return;
-        const sizeValue = action.slice(5);
-        const card = this.getComponent('colorCard') as any;
-        const body = card?.body as any;
-        //const toolbar = body?.getComponent('colorToolbar') as any;
-        for (const name of ['demoAvatar', 'demoAvatarSrc', 'demoAvatarIcon']) {
-            const av = body.getComponent(name) as any;
-            if (av) av.size = sizeValue;
-        }
+        this._currentPage = page;
+        const PageClass = PAGE_MAP[page];
+        if (!PageClass) return;
+
+        const container = this.getNodeEl('pageContainer');
+        if (!container) return;
+
+        this._pageInstance = new PageClass();
+        container.appendChild(this._pageInstance.el);
     }
 }
