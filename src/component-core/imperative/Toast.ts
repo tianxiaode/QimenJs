@@ -1,12 +1,13 @@
 import { TOAST_TEMPLATE } from './toast-tpl';
-import { FloatingComponent } from '../overlay';
+import { Component } from '../Component';
 import type { TemplateDecl, ToastType } from '../types';
 import type { Definitions } from '@/composable';
+import { ZIndexLevel, zIndexManager } from '../engine';
 import './toast.css';
 
 const DEFAULT_DURATION = 3000;
 
-export class Toast extends FloatingComponent {
+export class Toast extends Component {
     static type = 'toast';
     get tpl(): TemplateDecl {
         return TOAST_TEMPLATE;
@@ -42,7 +43,7 @@ export class Toast extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.pointerEvents = 'auto';
+        this.el!.style.pointerEvents = 'auto';
         const toastType: ToastType = this.toastType ?? 'info';
         this.addCls(`q-toast--${toastType}`);
         this.addCls(`q-toast__icon--${toastType}`, 'icon');
@@ -51,12 +52,12 @@ export class Toast extends FloatingComponent {
             this.addCls('q-toast--titled');
         }
 
-        this.zIndex = this.acquireZIndex();
+        this.el!.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.notification));
     }
 
     show(): void {
         this.mountToOverlay(this.el!);
-        this._bindGlobalHandlers();
+        this._bindOverlayHandlers();
         this.playEnter();
 
         const duration = this.duration ?? DEFAULT_DURATION;
@@ -94,8 +95,8 @@ export class Toast extends FloatingComponent {
 
         await this.playLeave();
 
-        this.hide();
-        this.releaseZIndex();
+        this.unmountFromOverlay(this.el!);
+        zIndexManager.release(ZIndexLevel.notification);
 
         this._resolve?.();
         this._resolve = null;

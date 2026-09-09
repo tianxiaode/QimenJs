@@ -1,10 +1,10 @@
-import { FloatingComponent } from '../overlay/FloatingComponent';
+import { Component } from '../Component';
 import type { TemplateDecl } from '../types';
 import type { Definitions } from '@/composable';
 import { LOADING_TPL } from './loading-tpl';
 import './loading.css';
 
-class LoadingComponent extends FloatingComponent {
+class LoadingComponent extends Component {
     static type = 'loading';
 
     get tpl(): TemplateDecl {

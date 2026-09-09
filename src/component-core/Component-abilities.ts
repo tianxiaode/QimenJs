@@ -24,6 +24,7 @@ import {
     PermissionAbility,
     OptionAbility,
     EntityAbility,
+    OverlayAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
@@ -43,6 +44,7 @@ export const COMPONENT_ABILITIES = [
     OptionAbility,
     BadgeAbility,
     FloatAbility,
+    OverlayAbility,
     TooltipAbility,
     DialogAbility,
     PopoverAbility,

@@ -1,4 +1,4 @@
-import { FloatingComponent } from '../overlay';
+import { Component } from '../Component';
 import type { TemplateDecl } from '../types';
 import type { Definitions } from '@/composable';
 import { ZIndexLevel, zIndexManager } from '../engine';
@@ -7,7 +7,7 @@ import { InferAbility } from '@/composable';
 import './tooltip.css';
 import { ArrowAbility } from '../abilities';
 
-export class TooltipComponent extends FloatingComponent {
+class TooltipComponent extends Component {
     static type = 'tooltip';
 
     get tpl(): TemplateDecl {
@@ -15,13 +15,13 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     open(): void {
-        this.hidden = false; // 修正这里
-        this.zIndex = zIndexManager.acquire(ZIndexLevel.tooltip); // 修正这里
-        this._overlayOpen = true;
+        this.hidden = false;
+        this.el!.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.tooltip));
+        this.setAbilityState('OverlayAbility:open', true);
         if (typeof this.updateArrowPlacement === 'function') {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    const placement = (this as any)._actualPlacement ?? 'bottom';
+                    const placement = this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
                     const arrowPlacement = this._inferArrowPlacement(placement);
                     this.updateArrowPlacement(arrowPlacement);
                 });
@@ -30,8 +30,8 @@ export class TooltipComponent extends FloatingComponent {
     }
 
     close(): void {
-        this.hidden = true; // 修正这里
-        this._overlayOpen = false;
+        this.hidden = true;
+        this.setAbilityState('OverlayAbility:open', false);
     }
 
     _onTooltipOptionChange(value: string): void {
@@ -47,8 +47,7 @@ export class TooltipComponent extends FloatingComponent {
             left: 'right',
             right: 'left',
         };
-        const arrowPlacement = map[placement];
-        return arrowPlacement;
+        return map[placement];
     }
 }
 

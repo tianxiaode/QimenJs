@@ -8,14 +8,12 @@
  */
 
 import { Component } from './Component';
-import { FloatingComponent } from './overlay';
 import { Toast } from './imperative';
 import { Msgbox } from './imperative';
 import { LoadingComponent } from './loading';
 import { TooltipComponent } from './tooltip';
 
 Component.register();
-FloatingComponent.register();
 Toast.register();
 Msgbox.register();
 LoadingComponent.register();

@@ -22,11 +22,13 @@ const MenuComponentDefs: Definitions = {
 } as const;
 
 class MenuComponent extends ItemGroupStaticComponent {
-    _anchor: HTMLElement | null = null;
-    _isOpen: boolean = false;
-
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '{MenuItem}.content', handler: '_onItemClick', emits: ['select', '[action]'], bridges: ['[action]'] },
+        click: {
+            path: '{MenuItem}.content',
+            handler: '_onItemClick',
+            emits: ['select', '[action]'],
+            bridges: ['[action]'],
+        },
         mouseenter: { path: '{MenuItem}', handler: '_onItemEnter' },
         mouseleave: { path: '{MenuItem}', handler: '_onItemLeave' },
     };
@@ -40,7 +42,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
         return {
             ...super.defaultEventData,
-            isOpen: self._isOpen,
+            isOpen: this.isOverlayOpen,
             selected,
         };
     }
@@ -77,9 +79,6 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     onAfterInit(): void {
         const self = this as any;
-        const anchor = this.getData('anchor');
-        if (anchor) self._anchor = anchor;
-
         super.onAfterInit();
 
         self.initGroupSelect({ defaultMode: 'radio' });
@@ -91,28 +90,23 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     get isOpen(): boolean {
-        const self = this as any;
-        return self._isOpen;
+        return this.isOverlayOpen;
     }
 
     open(): void {
-        const self = this as any;
-        if (self._isOpen) return;
-        self.el.style.display = '';
-        self._isOpen = true;
+        if (this.isOverlayOpen) return;
+        const anchor = this.getData('anchor') ?? this.el!;
+        this.showOverlay(anchor, 'bottom', 4);
     }
 
     close(): void {
-        const self = this as any;
-        if (!self._isOpen) return;
-        self.el.style.display = 'none';
-        self._isOpen = false;
+        if (!this.isOverlayOpen) return;
+        this.hideOverlay();
     }
 
     onBeforeDispose(): void {
-        const self = this as any;
-        self.close();
-        self.clearGroups();
+        this.close();
+        (this as any).clearGroups();
     }
 }
 

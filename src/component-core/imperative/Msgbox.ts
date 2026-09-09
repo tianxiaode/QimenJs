@@ -1,11 +1,12 @@
 import { MSGBOX_TPL } from './msgbox-tpl';
-import { FloatingComponent } from '../overlay';
+import { Component } from '../Component';
 import type { TemplateDecl, ViewportPosition } from '../types';
 import type { Definitions } from '@/composable';
+import { ZIndexAbility, ViewportPositionAbility } from '../abilities';
 import { t } from '@/i18n';
 import './msgbox.css';
 
-export class Msgbox extends FloatingComponent {
+export class Msgbox extends Component {
     static type = 'msgbox';
     get tpl(): TemplateDecl {
         return MSGBOX_TPL;
@@ -48,7 +49,7 @@ export class Msgbox extends FloatingComponent {
     }
 
     onAfterInit(): void {
-        this.pointerEvents = 'auto';
+        this.el!.style.pointerEvents = 'auto';
         const type = this.msgboxType;
         if (type === 'alert') {
             this.addCls('hidden', 'cancel');
@@ -56,19 +57,22 @@ export class Msgbox extends FloatingComponent {
             this.toggleCls('field', 'hidden');
         }
 
-        this.zIndex = this.acquireZIndex();
+        this.el!.style.zIndex = String(this.acquireZIndex());
 
-        this._initMask({ color: 'rgba(0,0,0,0.5)' });
+        this.initOverlayMask({ color: 'rgba(0,0,0,0.5)' });
 
-        if (this.msgboxType === 'alert' && this._mask) {
-            this.onCleanup(this.bind(this._mask.el, 'click'));
-            const off = this.on('dom:click', (e: any) => {
-                const target = e?.data?.originalEvent?.target ?? e?.target;
-                if (target === this._mask!.el) {
-                    this.close('cancel');
-                }
-            });
-            this.onCleanup(off);
+        if (this.msgboxType === 'alert') {
+            const mask = this.abilityState('OverlayAbility:mask');
+            if (mask) {
+                this.onCleanup(this.bind(mask.el, 'click'));
+                const off = this.on('dom:click', (e: any) => {
+                    const target = e?.data?.originalEvent?.target ?? e?.target;
+                    if (target === mask.el) {
+                        this.close('cancel');
+                    }
+                });
+                this.onCleanup(off);
+            }
         }
 
         this.setViewportPosition('center' as ViewportPosition);
@@ -79,7 +83,7 @@ export class Msgbox extends FloatingComponent {
 
     show(): void {
         this.mountToOverlay(this.el!);
-        this._bindGlobalHandlers();
+        this._bindOverlayHandlers();
         this.animation.enterKeyframes = [
             { transform: 'translate(-50%, -50%) scale(0.8)', opacity: 0 },
             { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
@@ -126,14 +130,15 @@ export class Msgbox extends FloatingComponent {
         }
         this.callback?.(result);
 
-        const maskEl = this._mask?.el;
+        const mask = this.abilityState('OverlayAbility:mask');
+        const maskEl = mask?.el;
         const maskAnim = maskEl?.animate([{ opacity: 1 }, { opacity: 0 }], {
             duration: 200,
             easing: 'ease-in',
         });
         await Promise.all([this.playLeave(), maskAnim?.finished]);
 
-        this.hide();
+        this.unmountFromOverlay(this.el!);
         this.releaseZIndex();
 
         this.componentEmit('closed', {}, { source: this.eventKey ?? 'msgbox' });
@@ -144,8 +149,6 @@ export class Msgbox extends FloatingComponent {
 
     onClose?: () => void;
 }
-
-// ─── Definitions ────────────────────────────────────────────
 
 const MsgboxDefs: Definitions = {
     options: {
@@ -161,4 +164,5 @@ const MsgboxDefs: Definitions = {
     },
 };
 
+Msgbox.use([ZIndexAbility, ViewportPositionAbility]);
 Msgbox.define(MsgboxDefs);

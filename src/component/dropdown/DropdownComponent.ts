@@ -23,33 +23,12 @@
  */
 
 import { ButtonComponent } from '../button/ButtonComponent';
-import type { FloatDecl } from '@qimenjs/component-core';
 import './dropdown.css';
-
-const DEFAULT_POPOVER_FLOAT = {
-    trigger: 'click' as const,
-    placement: 'bottom' as const,
-};
 
 export class DropdownComponent extends ButtonComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-dropdown');
         this.setNodeHidden(false, 'dropIcon');
-
-        const popover = this.popover;
-        if (popover?.type) {
-            this.attachFloat('dropIcon', { ...DEFAULT_POPOVER_FLOAT, ...popover } as FloatDecl);
-        }
-    }
-
-    update(props?: Record<string, any>): void {
-        if (props?.popover?.type) {
-            this.attachFloat('dropIcon', {
-                ...DEFAULT_POPOVER_FLOAT,
-                ...props.popover,
-            } as FloatDecl);
-        }
-        super.update(props);
     }
 }
