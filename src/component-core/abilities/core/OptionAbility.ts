@@ -84,9 +84,12 @@ export const OptionAbility: AbilityDefinition = {
     /** 将文本写入指定节点的 textContent，值以 `@` 开头时自动翻译并注册 i18n 刷新依赖 */
     setNodeText(text: string, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
-        if (!el) return;
+        if (!el) {
+            this.logger.warn('setNodeText: el is null', nodeName);
+            return;
+        }
         (el as HTMLElement).textContent = resolveI18nValue(text ?? '');
-        if (text && text.startsWith(I18N_PREFIX)) {
+        if (text && text.startsWith(I18N_PREFIX) && !text.startsWith('@@')) {
             this._registerI18nNode(nodeName, 'textContent', text);
         } else {
             this._unregisterI18nNode(nodeName, 'textContent');
@@ -117,10 +120,33 @@ export const OptionAbility: AbilityDefinition = {
         i18nTextRegistry.unregister(this, nodeName, prop);
     },
 
+    /** 注册 i18n 刷新回调，语言切换时自动执行 */
+    registerI18nRefresh(callback: () => void): void {
+        if (!this.abilityState('OptionAbility:i18nCleanupRegistered')) {
+            this.setAbilityState('OptionAbility:i18nCleanupRegistered', true);
+            this.onCleanup(() => i18nTextRegistry.unregisterAll(this));
+        }
+        i18nTextRegistry.registerCallback(this, callback);
+    },
+
+    /** 解绑 i18n 刷新回调 */
+    unregisterI18nRefresh(callback: () => void): void {
+        i18nTextRegistry.unregisterCallback(this, callback);
+    },
+
     /** 将 HTML 写入指定节点的 innerHTML */
     setNodeHtml(html: string, nodeName: string = 'root'): void {
         const el = this.getNodeEl(nodeName);
-        if (el) (el as HTMLElement).innerHTML = html ?? '';
+        if (!el) {
+            this.logger.warn('setNodeHtml: el is null', nodeName);
+            return;
+        }
+        (el as HTMLElement).innerHTML = resolveI18nValue(html ?? '');
+        if (html && html.startsWith(I18N_PREFIX) && !html.startsWith('@@')) {
+            this._registerI18nNode(nodeName, 'innerHTML', html);
+        } else {
+            this._unregisterI18nNode(nodeName, 'innerHTML');
+        }
     },
 
     /**

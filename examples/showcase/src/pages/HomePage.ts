@@ -3,52 +3,56 @@
  *
  * 使用 HeroComponent 展示框架核心特点，
  * 下方展示特性卡片列表。
+ *
+ * 所有展示文本（hero + 特性卡片）均为 @ 前缀 i18n key，
+ * 由组件 setNodeText 自动解析翻译，语言切换即时刷新。
  */
 
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 
-/** 特性数据 */
-const FEATURES = [
+/** 特性数据（i18n key，翻译见语言包 home.f0~f5） */
+const FEATURES: { titleKey: string; descKey: string; tagKeys: string[] }[] = [
     {
-        title: '模板驱动',
-        desc: '声明式 TplNode 定义组件结构，useTemplate 一行绑定，告别手动 DOM 操作',
-        tags: ['useTemplate', 'TplNode'],
+        titleKey: '@home.f0.title',
+        descKey: '@home.f0.desc',
+        tagKeys: ['@home.f0.tag1', '@home.f0.tag2', '@home.f0.tag3'],
     },
     {
-        title: 'Ability 架构',
-        desc: '纯对象能力混入，按需组合路由、事件、尺寸等能力，零继承负担',
-        tags: ['RouteEventBusAbility', 'SystemEventBusAbility'],
+        titleKey: '@home.f1.title',
+        descKey: '@home.f1.desc',
+        tagKeys: ['@home.f1.tag1', '@home.f1.tag2', '@home.f1.tag3'],
     },
     {
-        title: 'Extends 模式',
-        desc: '组件 extends 继承 + 静态 useTemplate，编译时确定结构，运行时零开销',
-        tags: ['extends', 'Component'],
+        titleKey: '@home.f2.title',
+        descKey: '@home.f2.desc',
+        tagKeys: ['@home.f2.tag1', '@home.f2.tag2', '@home.f2.tag3'],
     },
     {
-        title: '丰富组件库',
-        desc: '50+ 开箱即用组件：Button、Card、Table、Form、Dialog、Tabs…',
-        tags: ['Button', 'Card', 'Table'],
+        titleKey: '@home.f3.title',
+        descKey: '@home.f3.desc',
+        tagKeys: ['@home.f3.tag1', '@home.f3.tag2', '@home.f3.tag3'],
     },
     {
-        title: '主题系统',
-        desc: 'CSS 变量驱动，零 JS 开销切换亮色/暗色/自定义主题，按需打包',
-        tags: ['Design Tokens', 'CSS Variables'],
+        titleKey: '@home.f4.title',
+        descKey: '@home.f4.desc',
+        tagKeys: ['@home.f4.tag1', '@home.f4.tag2', '@home.f4.tag3'],
     },
     {
-        title: '国际化',
-        desc: 'I18nManager 内置多语言支持，@ 前缀自动翻译，事件驱动的语言切换',
-        tags: ['i18n', 'locale'],
+        titleKey: '@home.f5.title',
+        descKey: '@home.f5.desc',
+        tagKeys: ['@home.f5.tag1', '@home.f5.tag2', '@home.f5.tag3'],
     },
 ];
 
 /** 首页模板 */
 const HOME_TPL: TemplateDecl = {
     tag: 'div',
-    classes: 'q-home-page flex flex-col flex-center',
+    classes: 'q-home-page',
+    style: { display: 'flex', flexDirection: 'column', padding: '40px', gap: '32px' },
     children: [
         {
+            name: 'hero',
             type: 'hero',
-            classes: 'q-home-page__hero',
             options: {
                 title: '@hero.title',
                 subtitle: '@hero.subtitle',
@@ -58,21 +62,33 @@ const HOME_TPL: TemplateDecl = {
         },
         {
             tag: 'section',
-            classes: 'q-home-page__features flex flex-row flex-warp',
-            style: { gap: '6px', padding: '16px' }, // 特性卡片间距
+            name: 'features',
+            classes: 'q-home-page__features',
+            style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+            },
             children: FEATURES.map((f, i) => ({
                 name: `feature${i}`,
                 type: 'card',
                 classes: 'q-home-page__feature-card',
                 options: {
-                    title: f.title,
+                    title: f.titleKey,
                     body: {
                         tag: 'div',
+                        name: 'body',
+                        classes: 'q-home-page__feature-body',
+                        style: { display: 'flex', flexDirection: 'column', gap: '8px' },
                         children: [
                             {
                                 type: 'text',
-                                classes: 'q-home-page__feature-desc',
-                                options: { text: f.desc, tag: 'p' },
+                                name: 'desc',
+                                options: { text: f.descKey, tag: 'p' },
+                            },
+                            {
+                                type: 'tag',
+                                options: { tags: f.tagKeys, size: 'sm' },
                             },
                         ],
                     },

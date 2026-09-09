@@ -1,3 +1,43 @@
 .q-text {
     display: inline;
 }
+
+/* 接入 SizeAbility：仅取 q-size--* 的 font-size，
+   重置控件化的 height/padding/nowrap 等冲突属性 */
+.q-text.q-size--xs,
+.q-text.q-size--sm,
+.q-text.q-size--md,
+.q-text.q-size--lg,
+.q-text.q-size--xl,
+.q-text.q-size--2xl {
+    display: inline;
+    height: auto;
+    min-height: auto;
+    padding: 0;
+    white-space: normal;
+    line-height: inherit;
+    cursor: inherit;
+}
+
+/* ========================================
+   颜色方案 — 六种主题色文字
+   ======================================== */
+
+.q-text--color-primary {
+    color: var(--q-color-primary, #0078d4);
+}
+.q-text--color-secondary {
+    color: var(--q-color-secondary, #607d8b);
+}
+.q-text--color-success {
+    color: var(--q-color-success, #107c10);
+}
+.q-text--color-warning {
+    color: var(--q-color-warning, #ca5010);
+}
+.q-text--color-error {
+    color: var(--q-color-error, #d13438);
+}
+.q-text--color-info {
+    color: var(--q-color-info, #0078d4);
+}

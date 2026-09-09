@@ -1,12 +1,10 @@
 import type { TemplateDecl } from '@/component-core';
 
-/** 标签模板定义 */
+/** 标签组件模板 — 容器 + items 节点（标签通过 HTML 注入） */
 export const TAG_TPL: TemplateDecl = {
-    tag: 'span',
-    classes: 'q-tag',
+    tag: 'div',
+    classes: 'q-tags',
     children: [
-        { tag: 'i', name: 'icon', classes: 'q-tag__icon hidden' },
-        { tag: 'span', name: 'text', classes: 'q-tag__text' },
-        { tag: 'span', name: 'closeBtn', classes: 'q-tag__close hidden' },
+        { tag: 'div', name: 'items', classes: 'q-tags__items' },
     ],
 };

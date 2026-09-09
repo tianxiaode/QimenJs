@@ -3,6 +3,7 @@ import { resolveI18nValue } from '@/i18n';
 
 class I18nTextRegistry {
     private entries = new Map<any, Map<string, Map<string, string>>>();
+    private callbacks = new Map<any, Set<() => void>>();
     private offEvent: (() => void) | null = null;
 
     constructor() {
@@ -37,6 +38,23 @@ class I18nTextRegistry {
 
     unregisterAll(component: any): void {
         this.entries.delete(component);
+        this.callbacks.delete(component);
+    }
+
+    registerCallback(component: any, callback: () => void): void {
+        let set = this.callbacks.get(component);
+        if (!set) {
+            set = new Set();
+            this.callbacks.set(component, set);
+        }
+        set.add(callback);
+    }
+
+    unregisterCallback(component: any, callback: () => void): void {
+        const set = this.callbacks.get(component);
+        if (!set) return;
+        set.delete(callback);
+        if (set.size === 0) this.callbacks.delete(component);
     }
 
     private flushAll(): void {
@@ -53,12 +71,18 @@ class I18nTextRegistry {
                 }
             }
         }
+        for (const [, set] of this.callbacks) {
+            for (const callback of set) {
+                callback();
+            }
+        }
     }
 
     dispose(): void {
         this.offEvent?.();
         this.offEvent = null;
         this.entries.clear();
+        this.callbacks.clear();
     }
 }
 

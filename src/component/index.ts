@@ -34,10 +34,8 @@ export { DividerComponent } from './divider/DividerComponent';
 export { HeroComponent } from './hero/HeroComponent';
 export { ProgressComponent } from './progress/ProgressComponent';
 export { SpacerComponent } from './spacer/SpacerComponent';
-export { TagComponent } from './tag/TagComponent';
-
-// Tags 标签组组件（从 ItemGroupPooledComponent 派生，maxCount 折叠 + close 代理）
-export { TagsComponent } from './tags/TagsComponent';
+export * from './tag';
+export * from './html';
 
 // 表单组件
 export { InputComponent } from './form/InputComponent';

@@ -20,6 +20,7 @@ import {
     HrefComponent,
     TextComponent,
     HeroComponent,
+    TagComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 CardComponent.register();
@@ -28,3 +29,4 @@ NavbarComponent.register();
 HrefComponent.register();
 TextComponent.register();
 HeroComponent.register();
+TagComponent.register();
