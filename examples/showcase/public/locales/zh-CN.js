@@ -135,6 +135,8 @@ __qimen_i18n_register__('zh-CN', {
         docs: '文档',
         lang: '语言',
         theme: '主题',
+        themeLight: '亮色',
+        themeDark: '深色',
         dark: '深色',
         login: '登录',
     },

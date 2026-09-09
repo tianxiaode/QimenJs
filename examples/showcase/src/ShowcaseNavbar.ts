@@ -31,18 +31,30 @@ class ShowcaseNavbar extends NavbarComponent {
                     action: 'nav-docs',
                 },
                 {
-                    type: 'href',
-                    href: '#action/toggle-lang',
+                    type: 'dropdown',
                     text: '@nav.lang',
                     dock: 'right',
-                    action: 'toggle-lang',
+                    popover: {
+                        type: 'menu',
+                        placement: 'bottom',
+                        items: [
+                            { text: '中文', action: 'set-lang-zh' },
+                            { text: 'English', action: 'set-lang-en' },
+                        ],
+                    },
                 },
                 {
-                    type: 'href',
-                    href: '#action/toggle-theme',
+                    type: 'dropdown',
                     text: '@nav.theme',
                     dock: 'right',
-                    action: 'toggle-theme',
+                    popover: {
+                        type: 'menu',
+                        placement: 'bottom',
+                        items: [
+                            { text: '@nav.themeLight', action: 'set-theme-light' },
+                            { text: '@nav.themeDark', action: 'set-theme-dark' },
+                        ],
+                    },
                 },
                 {
                     type: 'href',

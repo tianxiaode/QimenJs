@@ -17,6 +17,19 @@ import type { AbilityDefinition } from '@/composable';
 
 /** 提示浮层能力，提供创建、更新快捷方法 */
 export const TooltipAbility: AbilityDefinition = {
+    _onTooltipOptionChange(value: any, old: any): void {
+        if (value === old) return;
+        if (!this._templateInitialized) return;
+        const inst = this.abilityState('tooltip-instance') as any;
+        if (inst) {
+            this._disposeFloat(inst);
+            this.setAbilityState('tooltip-instance', undefined);
+        }
+        if (value) {
+            this._initTooltip();
+        }
+    },
+
     _initTooltip(): void {
         const cfg: any = this.tooltip;
         if (!cfg) return;

@@ -7,7 +7,7 @@ import { InferAbility } from '@/composable';
 import './tooltip.css';
 import { ArrowAbility } from '../abilities';
 
-class TooltipComponent extends Component {
+export class TooltipComponent extends Component {
     static type = 'tooltip';
 
     get tpl(): TemplateDecl {
@@ -21,7 +21,8 @@ class TooltipComponent extends Component {
         if (typeof this.updateArrowPlacement === 'function') {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    const placement = this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
+                    const placement =
+                        this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
                     const arrowPlacement = this._inferArrowPlacement(placement);
                     this.updateArrowPlacement(arrowPlacement);
                 });
@@ -35,7 +36,7 @@ class TooltipComponent extends Component {
     }
 
     _onTooltipOptionChange(value: string): void {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
     }
 
     _inferArrowPlacement(

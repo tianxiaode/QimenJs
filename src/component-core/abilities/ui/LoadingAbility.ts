@@ -20,6 +20,19 @@ import type { FloatDecl, LoadingOptions } from '../../types';
 
 /** 加载浮层能力，提供 show/hide/update 快捷方法 */
 export const LoadingAbility: AbilityDefinition = {
+    _onLoadingOptionChange(value: any, old: any): void {
+        if (value === old) return;
+        if (!this._templateInitialized) return;
+        const inst = this.abilityState('loading-instance') as any;
+        if (inst) {
+            this._disposeFloat(inst);
+            this.setAbilityState('loading-instance', undefined);
+        }
+        if (value) {
+            this._initLoading();
+        }
+    },
+
     _initLoading(): void {
         const cfg: LoadingOptions = this.loading;
         if (!cfg) return;

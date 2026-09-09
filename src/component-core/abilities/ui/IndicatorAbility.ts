@@ -59,6 +59,19 @@ export const IndicatorAbility: AbilityDefinition = {
      * 根据组件 indicator 配置创建轮播指示器 DOM（箭头 + 指示项），
      * 插入 this.el 末尾，并绑定点击切换、trigger 显隐。
      */
+    _onIndicatorOptionChange(value: any, old: any): void {
+        if (value === old) return;
+        if (!this._templateInitialized) return;
+        const state = this.abilityState(INDICATOR_STATE_KEY) as IndicatorState | undefined;
+        if (state) {
+            state.el.remove();
+            this.setAbilityState(INDICATOR_STATE_KEY, undefined);
+        }
+        if (value) {
+            this._initIndicator();
+        }
+    },
+
     _initIndicator(): void {
         const cfg = this.indicator as IndicatorOptions | undefined;
         if (!cfg) return;

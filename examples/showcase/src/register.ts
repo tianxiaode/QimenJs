@@ -21,6 +21,7 @@ import {
     TextComponent,
     HeroComponent,
     TagComponent,
+    DropdownComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 CardComponent.register();
@@ -30,3 +31,4 @@ HrefComponent.register();
 TextComponent.register();
 HeroComponent.register();
 TagComponent.register();
+DropdownComponent.register();

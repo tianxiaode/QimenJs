@@ -51,6 +51,18 @@ export const ComponentDefs: Definitions = {
         /** 权限配置 — 控制组件的访问权限 */
         permission: null,
         cssPrefix: null,
+        /** 定义组件角标 */
+        badge: null,
+        /** 组件提示信息 */
+        tooltip: null,
+        /** 对话框 */
+        dialog: null,
+        /** 弹出层 */
+        popover: null,
+        /** 指示器配置 */
+        indicator: null,
+        /** 加载配置 */
+        loading: null,
     },
 
     fields: {
@@ -82,20 +94,6 @@ export const ComponentDefs: Definitions = {
         entityKey: null,
         /** 组件动画配置 */
         animation: null,
-        /** 定义组件角标，可参考BadgeOptions的定义  */
-        badge: null,
-        /**
-         * 组件提示信息 — 控制组件的提示信息
-         */
-        tooltip: null,
-        /** 对话框 */
-        dialog: null,
-        /** 弹出层 */
-        popover: null,
-        /** 指示器配置 */
-        indicator: null,
-        /** 加载配置 */
-        loading: null,
         /**
          * 拖拽开关 — 控制组件是否可拖拽
          *

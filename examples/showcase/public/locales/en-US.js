@@ -135,6 +135,8 @@ __qimen_i18n_register__('en-US', {
         docs: 'Docs',
         lang: 'Language',
         theme: 'Theme',
+        themeLight: 'Light',
+        themeDark: 'Dark',
         dark: 'Dark',
         login: 'Login',
     },

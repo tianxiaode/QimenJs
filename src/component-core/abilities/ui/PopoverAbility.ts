@@ -26,6 +26,19 @@ import type { AbilityDefinition } from '@/composable';
 
 /** 弹出层能力，提供 show/hide/toggle/update 快捷方法 */
 export const PopoverAbility: AbilityDefinition = {
+    _onPopoverOptionChange(value: any, old: any): void {
+        if (value === old) return;
+        if (!this._templateInitialized) return;
+        const inst = this.abilityState('popover-instance') as any;
+        if (inst) {
+            this._disposeFloat(inst);
+            this.setAbilityState('popover-instance', undefined);
+        }
+        if (value) {
+            this._initPopover();
+        }
+    },
+
     _initPopover(): void {
         const decl = this._getPopoverFloatDecl();
         if (!decl) return;

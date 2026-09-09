@@ -27,6 +27,19 @@ export const BadgeAbility: AbilityDefinition = {
      * 根据组件 badge 配置创建 DOM 元素，设置样式，
      * 通过 abilityState 保存 el 引用，追加到 this.el 末尾。
      */
+    _onBadgeOptionChange(value: any, old: any): void {
+        if (value === old) return;
+        if (!this._templateInitialized) return;
+        const el = this.abilityState(BADGE_STATE_KEY) as HTMLElement | undefined;
+        if (el) {
+            el.remove();
+            this.setAbilityState(BADGE_STATE_KEY, undefined);
+        }
+        if (value) {
+            this._initBadge();
+        }
+    },
+
     _initBadge() {
         const cfg: BadgeOptions | undefined = this.badge;
         if (!cfg) return;
