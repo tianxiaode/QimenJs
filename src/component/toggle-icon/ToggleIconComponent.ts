@@ -1,6 +1,5 @@
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
-import { SizeAbility } from '@/component-abilities';
 import { TOGGLE_ICON_TPL } from './toggle-icon-tpl';
 import { Definitions } from '@/composable';
 import './toggle-icon.css';
@@ -52,7 +51,6 @@ class ToggleIconComponent extends Component {
 }
 
 ToggleIconComponent.define(ToggleIconComponentDefs);
-ToggleIconComponent.use(SizeAbility);
 
 export { ToggleIconComponent };
 export type ToggleIconComponentInstance = InstanceType<typeof ToggleIconComponent>;

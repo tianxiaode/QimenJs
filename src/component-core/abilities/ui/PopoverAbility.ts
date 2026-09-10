@@ -60,17 +60,14 @@ export const PopoverAbility: AbilityDefinition = {
             };
         }
 
-        const { type, trigger, placement, mask, closeOnEscape, closeOnClickOutside, emits, ...data } =
-            popover as Record<string, any>;
         return {
-            type,
-            trigger: trigger ?? 'click',
-            placement: placement ?? 'bottom',
-            mask: mask ?? false,
-            closeOnEscape: closeOnEscape ?? true,
-            closeOnClickOutside: closeOnClickOutside ?? true,
-            emits,
-            data: Object.keys(data).length > 0 ? data : undefined,
+            isFloating: true,
+            trigger: 'click',
+            placement: 'bottom',
+            mask: false,
+            closeOnEscape: true,
+            closeOnClickOutside: true,
+            ...popover, // 透传其他配置
         };
     },
 
@@ -79,14 +76,12 @@ export const PopoverAbility: AbilityDefinition = {
         if (!decl) return;
         const inst = this._ensurePopoverFloat(decl);
         if (inst) {
-            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+            inst.overlay.show();
         }
     },
 
     hidePopover(): void {
-        const inst = this.abilityState('popover-instance') as
-            | { overlay: any }
-            | undefined;
+        const inst = this.abilityState('popover-instance') as { overlay: any } | undefined;
         if (inst) {
             inst.overlay.hide();
         }
@@ -100,14 +95,12 @@ export const PopoverAbility: AbilityDefinition = {
         if (inst.overlay.isOpen) {
             inst.overlay.hide();
         } else {
-            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+            inst.overlay.show();
         }
     },
 
     updatePopover(data: Record<string, any>): void {
-        const inst = this.abilityState('popover-instance') as
-            | { overlay: any }
-            | undefined;
+        const inst = this.abilityState('popover-instance') as { overlay: any } | undefined;
         if (inst) {
             inst.overlay.update(data);
         }
@@ -123,13 +116,18 @@ export const PopoverAbility: AbilityDefinition = {
             return null;
         }
 
-        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlay = new OverlayClass({ ...data });
         const anchorEl = this._getFloatAnchor('popover', decl);
+        const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+        const overlay = new OverlayClass({
+            ...rest,
+            anchor: anchorEl,
+            placement: decl.placement,
+            offset: decl.offset,
+        });
         const inst = { overlay, anchorEl, decl };
 
         if (decl.mask) {
-            overlay._initMask?.({
+            overlay.initOverlayMask?.({
                 color: typeof decl.mask === 'string' ? decl.mask : undefined,
                 scoped: decl.maskMode === 'scoped',
             });
@@ -139,13 +137,13 @@ export const PopoverAbility: AbilityDefinition = {
         this.onCleanup(() => this._disposeFloat(inst));
 
         this._bindFloatTrigger('popover', inst.decl, {
-            onShow: () => inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset),
+            onShow: () => inst.overlay.show(),
             onHide: () => inst.overlay.hide(),
             onToggle: () => {
                 if (inst.overlay.isOpen) {
                     inst.overlay.hide();
                 } else {
-                    inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+                    inst.overlay.show();
                 }
             },
         });

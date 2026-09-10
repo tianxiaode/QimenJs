@@ -12,16 +12,11 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { GroupSelectAbility } from '@qimenjs/component-abilities';
 import { DomEventsMap } from '@qimenjs/component-core';
-import { Definitions } from '@/composable';
 import './menu.css';
 
-const MenuComponentDefs: Definitions = {
-    options: {
-        anchor: null,
-    },
-} as const;
-
 class MenuComponent extends ItemGroupStaticComponent {
+    static type = 'menu';
+    defaultItemType = 'menu-item';
     domEvents?: DomEventsMap | undefined = {
         click: {
             path: '{MenuItem}.content',
@@ -29,8 +24,8 @@ class MenuComponent extends ItemGroupStaticComponent {
             emits: ['select', '[action]'],
             bridges: ['[action]'],
         },
-        mouseenter: { path: '{MenuItem}', handler: '_onItemEnter' },
-        mouseleave: { path: '{MenuItem}', handler: '_onItemLeave' },
+        enter: { path: '{MenuItem}', handler: '_onItemEnter' },
+        leave: { path: '{MenuItem}', handler: '_onItemLeave' },
     };
 
     get defaultEventData(): Record<string, any> {
@@ -42,7 +37,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
         return {
             ...super.defaultEventData,
-            isOpen: this.isOverlayOpen,
+            isOpen: this.isOpen,
             selected,
         };
     }
@@ -77,31 +72,32 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
     }
 
-    onAfterInit(): void {
-        const self = this as any;
-        super.onAfterInit();
-
-        self.initGroupSelect({ defaultMode: 'radio' });
-        self.registerGroupItems([...self.items]);
+    setItems(datas: Record<string, any>[]): void {
+        super.setItems(datas);
+        for (const item of this._items) {
+            if ((item as any)._hasSubmenu) {
+                (item as any).setExpandArrow('collapsed');
+            }
+        }
+        this.initGroupSelect({ defaultMode: 'radio' });
+        this.registerGroupItems(this._items);
     }
 
     get itemGroup(): any {
         return this;
     }
 
-    get isOpen(): boolean {
-        return this.isOverlayOpen;
-    }
-
     open(): void {
-        if (this.isOverlayOpen) return;
-        const anchor = this.getData('anchor') ?? this.el!;
-        this.showOverlay(anchor, 'bottom', 4);
+        if (this.isOpen) return;
+        if (!this.anchor) {
+            this._setRawData('anchor', this.el!);
+        }
+        this.show();
     }
 
     close(): void {
-        if (!this.isOverlayOpen) return;
-        this.hideOverlay();
+        if (!this.isOpen) return;
+        this.hide();
     }
 
     onBeforeDispose(): void {
@@ -111,8 +107,5 @@ class MenuComponent extends ItemGroupStaticComponent {
 }
 
 MenuComponent.use(GroupSelectAbility);
-MenuComponent.define(MenuComponentDefs);
 
 export { MenuComponent };
-/** 菜单实例类型 */
-export type MenuComponentInstance = InstanceType<typeof MenuComponent>;

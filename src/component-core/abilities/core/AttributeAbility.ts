@@ -49,7 +49,7 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     getCls(nodeName: string = 'root'): DOMTokenList {
-        return this.getNodeEl(nodeName).classList;
+        return this.getNodeEl(nodeName)?.classList;
     },
 
     _toClsTokens(cls: string | string[]): string[] {
@@ -63,11 +63,11 @@ export const AttributeAbility: AbilityDefinition = {
     },
 
     addCls(cls: string | string[], nodeName: string = 'root'): void {
-        this.getCls(nodeName).add(...this._toClsTokens(cls));
+        this.getCls(nodeName)?.add(...this._toClsTokens(cls));
     },
 
     removeCls(cls: string | string[], nodeName: string = 'root'): void {
-        this.getCls(nodeName).remove(...this._toClsTokens(cls));
+        this.getCls(nodeName)?.remove(...this._toClsTokens(cls));
     },
 
     toggleCls(cls: string | string[], nodeName: string = 'root', force?: boolean): void {

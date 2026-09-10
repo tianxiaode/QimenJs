@@ -21,6 +21,10 @@ body {
         color: var(--q-color-on-primary);
 
     }
+
+    .q-button {
+        color: var(--q-color-on-primary);
+    }
 }
 
 

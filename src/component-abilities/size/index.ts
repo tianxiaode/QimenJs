@@ -1,1 +1,1 @@
-export { SizeAbility, type SizeConfig } from './SizeAbility';
+export { SizeAbility } from './SizeAbility';

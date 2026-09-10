@@ -100,14 +100,8 @@ export class Component extends ComposableBase implements IComponent {
         };
     }
 
-    /**
-     * 自定义事件数据 — body 中定义，编译时挂原型
-     *
-     * 与 defaultEventData 分离：defaultEventData 是类继承链，
-     * getCustomEventData 是组件实例级别的动态数据。
-     */
-    getCustomEventData(): Record<string, any> {
-        return {};
+    get earlyOptionKeys(): string[] {
+        return ['anchor'];
     }
 
     constructor(options?: ComponentCoreOptions) {

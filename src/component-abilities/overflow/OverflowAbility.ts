@@ -96,10 +96,24 @@ export const OverflowAbility = {
      */
     getOverflowState(): OverflowState {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
-        if (!state) return { canScrollPrev: false, canScrollNext: false, scrollPos: 0, maxScroll: 0, overflowing: false };
+        if (!state)
+            return {
+                canScrollPrev: false,
+                canScrollNext: false,
+                scrollPos: 0,
+                maxScroll: 0,
+                overflowing: false,
+            };
 
         const container = this.itemContainer?.el;
-        if (!container) return { canScrollPrev: false, canScrollNext: false, scrollPos: 0, maxScroll: 0, overflowing: false };
+        if (!container)
+            return {
+                canScrollPrev: false,
+                canScrollNext: false,
+                scrollPos: 0,
+                maxScroll: 0,
+                overflowing: false,
+            };
 
         const scrollPos = getScrollPos(container, state.direction);
         const scrollSize = getScrollSize(container, state.direction);
@@ -214,15 +228,27 @@ export const OverflowAbility = {
 
         if (state.direction === 'horizontal') {
             if (childRect.left < containerRect.left) {
-                container.scrollBy({ left: childRect.left - containerRect.left, behavior: smooth ? 'smooth' : 'instant' });
+                container.scrollBy({
+                    left: childRect.left - containerRect.left,
+                    behavior: smooth ? 'smooth' : 'instant',
+                });
             } else if (childRect.right > containerRect.right) {
-                container.scrollBy({ left: childRect.right - containerRect.right, behavior: smooth ? 'smooth' : 'instant' });
+                container.scrollBy({
+                    left: childRect.right - containerRect.right,
+                    behavior: smooth ? 'smooth' : 'instant',
+                });
             }
         } else {
             if (childRect.top < containerRect.top) {
-                container.scrollBy({ top: childRect.top - containerRect.top, behavior: smooth ? 'smooth' : 'instant' });
+                container.scrollBy({
+                    top: childRect.top - containerRect.top,
+                    behavior: smooth ? 'smooth' : 'instant',
+                });
             } else if (childRect.bottom > containerRect.bottom) {
-                container.scrollBy({ top: childRect.bottom - containerRect.bottom, behavior: smooth ? 'smooth' : 'instant' });
+                container.scrollBy({
+                    top: childRect.bottom - containerRect.bottom,
+                    behavior: smooth ? 'smooth' : 'instant',
+                });
             }
         }
     },

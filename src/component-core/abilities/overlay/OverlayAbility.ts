@@ -2,11 +2,12 @@
  * OverlayAbility — 浮层能力
  *
  * 为任何组件提供浮层（overlay）操作能力：
- * - showOverlay / hideOverlay — 挂载到 OverlayRoot + z-index + 定位 + 点击外部关闭
+ * - show / hide — 挂载到 OverlayRoot + z-index + 定位 + 点击外部关闭
  * - repositionOverlay — 重新定位
  * - mountToOverlay / unmountFromOverlay — 直接操作 OverlayRoot
  * - initOverlayMask / removeOverlayMask — 遮罩层管理
  *
+ * show/hide 无参，从 option 读取 anchor/placement/offset/zIndexLevel。
  * 替代 FloatingComponent 继承模式，通过 Ability 组合让任何组件可浮动。
  */
 
@@ -17,7 +18,7 @@ import { positionOverlay, type Placement } from '../../overlay/dispatch/position
 import { ZIndexLevel, zIndexManager } from '../../engine';
 
 export const OverlayAbility: AbilityDefinition = {
-    get isOverlayOpen(): boolean {
+    get isOpen(): boolean {
         return this.abilityState('OverlayAbility:open', () => false);
     },
 
@@ -30,12 +31,17 @@ export const OverlayAbility: AbilityDefinition = {
         if (el.parentNode) el.parentNode.removeChild(el);
     },
 
-    showOverlay(anchor: HTMLElement, placement?: Placement, offset?: number): void {
+    show(): void {
+        const anchor = this.anchor;
+        if (!anchor) {
+            this.logger?.warn?.('[OverlayAbility] show() called without anchor option');
+            return;
+        }
         this.setAbilityState('OverlayAbility:anchor', anchor);
         this.setAbilityState('OverlayAbility:open', true);
 
         const el = this.el!;
-        const persistent = this.getData?.('persistent') ?? false;
+        const persistent = this.persistent;
 
         if (persistent) {
             const mounted = this.abilityState('OverlayAbility:mounted', () => false);
@@ -51,6 +57,7 @@ export const OverlayAbility: AbilityDefinition = {
             el.style.display = '';
         } else {
             this.mountToOverlay(el);
+            el.style.display = '';
             this.onCleanup(() => {
                 if (this.abilityState('OverlayAbility:open')) {
                     this.unmountFromOverlay(el);
@@ -58,15 +65,17 @@ export const OverlayAbility: AbilityDefinition = {
             });
         }
 
-        el.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.dropdown));
+        const zIndexLevel = this.zIndexLevel ?? ZIndexLevel.dropdown;
+        el.style.zIndex = String(zIndexManager.acquire(zIndexLevel));
         el.style.pointerEvents = 'auto';
 
-        const p = placement ?? 'bottom';
-        if (p !== 'center' && p !== 'anchor-center') {
+        const placement = (this.placement ?? 'bottom') as Placement;
+        if (placement !== 'center' && placement !== 'anchor-center') {
             el.style.position = 'absolute';
         }
 
-        const actualPlacement = positionOverlay(el, anchor, p, offset ?? 4, true);
+        const offset = this.offset ?? 4;
+        const actualPlacement = positionOverlay(el, anchor, placement, offset, true);
         this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
 
         const mask = this.abilityState('OverlayAbility:mask');
@@ -78,10 +87,10 @@ export const OverlayAbility: AbilityDefinition = {
         this._bindOverlayHandlers();
     },
 
-    hideOverlay(): void {
+    hide(): void {
         this.setAbilityState('OverlayAbility:open', false);
         const el = this.el!;
-        const persistent = this.getData?.('persistent') ?? false;
+        const persistent = this.persistent;
 
         if (persistent) {
             el.style.display = 'none';
@@ -95,12 +104,20 @@ export const OverlayAbility: AbilityDefinition = {
         }
     },
 
-    repositionOverlay(anchor: HTMLElement, placement?: Placement, offset?: number): void {
-        this.setAbilityState('OverlayAbility:anchor', anchor);
-        positionOverlay(this.el!, anchor, placement ?? 'bottom', offset ?? 4, true);
+    repositionOverlay(anchor?: HTMLElement, placement?: Placement, offset?: number): void {
+        const actualAnchor = anchor ?? this.anchor;
+        if (!actualAnchor) return;
+        this.setAbilityState('OverlayAbility:anchor', actualAnchor);
+        positionOverlay(
+            this.el!,
+            actualAnchor,
+            placement ?? (this.placement ?? 'bottom'),
+            offset ?? (this.offset ?? 4),
+            true
+        );
         const mask = this.abilityState('OverlayAbility:mask');
         if (mask) {
-            mask.updatePosition(anchor.getBoundingClientRect());
+            mask.updatePosition(actualAnchor.getBoundingClientRect());
         }
     },
 
@@ -145,7 +162,7 @@ export const OverlayAbility: AbilityDefinition = {
 
             if (event instanceof KeyboardEvent) {
                 if (event.key === 'Escape') {
-                    this.hideOverlay();
+                    this.hide();
                 }
                 return;
             }
@@ -157,7 +174,7 @@ export const OverlayAbility: AbilityDefinition = {
                     !el.contains(event.target as Node) &&
                     !anchor.contains(event.target as Node)
                 ) {
-                    this.hideOverlay();
+                    this.hide();
                 }
             }
         };

@@ -14,6 +14,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
+import { ZIndexLevel } from '../../engine';
 
 /** 提示浮层能力，提供创建、更新快捷方法 */
 export const TooltipAbility: AbilityDefinition = {
@@ -31,16 +32,19 @@ export const TooltipAbility: AbilityDefinition = {
     },
 
     _initTooltip(): void {
-        const cfg: any = this.tooltip;
+        let cfg: any = this.tooltip;
         if (!cfg) return;
-
+        if (typeof cfg === 'string') {
+            cfg = { text: cfg }; // 兼容旧配置
+        }
         const decl: any = {
             type: 'tooltip',
             trigger: cfg.trigger ?? 'hover',
             placement: cfg.placement ?? 'top',
             offset: cfg.offset,
             showDelay: cfg.delay,
-            data: { tooltip: cfg.content },
+            zIndexLevel: ZIndexLevel.tooltip,
+            text: cfg.text,
         };
 
         const OverlayClass = this._resolveFloatType(decl.type);
@@ -49,25 +53,28 @@ export const TooltipAbility: AbilityDefinition = {
             return;
         }
 
-        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlay = new OverlayClass({ ...data });
         const anchorEl = this._getFloatAnchor('tooltip', decl);
+        const overlay = new OverlayClass({ ...decl, anchor: anchorEl });
         const inst = { overlay, anchorEl, decl };
 
         this.abilityState('tooltip-instance', () => inst);
         this.onCleanup(() => this._disposeFloat(inst));
 
         this._bindFloatTrigger('tooltip', inst.decl, {
-            onShow: () => inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset),
-            onHide: () => inst.overlay.hide(),
+            onShow: () => {
+                inst.overlay.show();
+                inst.overlay.open?.();
+            },
+            onHide: () => {
+                inst.overlay.hide();
+                inst.overlay.close?.();
+            },
             onToggle: () => {},
         });
     },
 
     updateTooltip(data: Record<string, any>): void {
-        const inst = this.abilityState('tooltip-instance') as
-            | { overlay: any }
-            | undefined;
+        const inst = this.abilityState('tooltip-instance') as { overlay: any } | undefined;
         if (inst) {
             inst.overlay.update(data);
         }

@@ -73,7 +73,7 @@
 .q-indicator--number .q-indicator__item--active {
     background: var(--q-color-primary, #0078d4);
     border-color: var(--q-color-primary, #0078d4);
-    color: #fff;
+    color: var(--q-color-bg, #fff);
 }
 
 .q-indicator--number .q-indicator__item:hover:not(.q-indicator__item--active) {
@@ -113,7 +113,7 @@
 .q-indicator--button .q-indicator__item--active {
     background: var(--q-color-primary, #0078d4);
     border-color: var(--q-color-primary, #0078d4);
-    color: #fff;
+    color: var(--q-color-bg, #fff);
 }
 
 .q-indicator--button .q-indicator__item:hover:not(.q-indicator__item--active) {

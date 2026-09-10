@@ -8,7 +8,7 @@
  *   FINALIZE 晚期 — node 类型的子组件事件（依赖 nodeMap 已实例化）
  *
  * 统一支持本地监听 + 六路转发：
- *   handler 处理后自动走 EventForwarder.forward()，合并 defaultEventData + getCustomEventData
+ *   handler 处理后自动走 EventForwarder.forward()，合并 defaultEventData
  *
  * 解绑通过 instance.onCleanup() 自动完成。
  */
@@ -103,10 +103,9 @@ export class ListensEngine {
      * 创建事件处理器：可选 handler 本地调用 + EventForwarder 六路转发
      *
      * 数据传递：
-     *   forwardedData = { ...defaultEventData, ...getCustomEventData(), ...receivedData }
+     *   forwardedData = { ...defaultEventData, ...receivedData }
      *   receivedData 是事件触发时传入的原始数据
      *   defaultEventData 是 getter 返回的默认数据
-     *   getCustomEventData() 是运行时收集的自定义数据
      */
     private static _createHandler(
         instance: any,

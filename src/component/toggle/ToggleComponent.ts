@@ -46,7 +46,7 @@ class ToggleComponent extends Component {
     };
 
     _onTextOptionChange(value: string) {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
     }
 
     _onPressedOptionChange(value: boolean): void {
@@ -68,8 +68,6 @@ class ToggleComponent extends Component {
 }
 
 ToggleComponent.define(ToggleComponentDefs);
-ToggleComponent.use([SizeAbility]);
+ToggleComponent.use(SizeAbility);
 
 export { ToggleComponent };
-/** 切换实例类型 */
-export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;

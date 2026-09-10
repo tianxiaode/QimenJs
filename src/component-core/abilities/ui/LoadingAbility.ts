@@ -48,7 +48,7 @@ export const LoadingAbility: AbilityDefinition = {
             if (maskMode !== undefined) data.maskMode = maskMode;
             inst.overlay.update(data);
         }
-        inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+        inst.overlay.show();
     },
 
     hideLoading(): void {
@@ -81,12 +81,17 @@ export const LoadingAbility: AbilityDefinition = {
         }
 
         const data = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlay = new OverlayClass({ ...data });
         const anchorEl = this._getFloatAnchor('loading', decl);
+        const overlay = new OverlayClass({
+            ...data,
+            anchor: anchorEl,
+            placement: decl.placement,
+            offset: decl.offset,
+        });
         const inst = { overlay, anchorEl, decl };
 
         if (decl.mask) {
-            overlay._initMask?.({
+            overlay.initOverlayMask?.({
                 color: typeof decl.mask === 'string' ? decl.mask : undefined,
                 scoped: decl.maskMode === 'scoped',
             });

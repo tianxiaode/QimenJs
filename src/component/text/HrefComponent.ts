@@ -2,7 +2,6 @@ import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { HREF_TPL } from './href-tpl';
 import { Definitions } from '@/composable';
-import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './href.css';
 
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';
@@ -55,16 +54,15 @@ class HrefComponent extends Component {
         return /^(https?:|mailto:|tel:|ftp:|\/\/)/i.test(href);
     }
 
-    getForwardFilter(_domEvent?: any): string[] | null {
-        return this.disable ? [] : null;
+    get defaultEventData(): Record<string, any> {
+        return { ...super.defaultEventData, href: this.href };
     }
 
-    getCustomEventData(): any {
-        return { href: this.href };
+    getForwardFilter(_domEvent?: any): string[] | null {
+        return this.disable ? [] : null;
     }
 }
 
 HrefComponent.define(HrefComponentDefs);
-HrefComponent.use(SizeAbility, ColorAbility);
 
 export { HrefComponent };

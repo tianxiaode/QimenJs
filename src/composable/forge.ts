@@ -62,7 +62,8 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
         }
 
         if (proto[key]) {
-            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}`);
+            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}, skipping`);
+            continue;
         }
 
         if (typeof value === 'function') {

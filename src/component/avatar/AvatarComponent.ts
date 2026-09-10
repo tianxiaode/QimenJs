@@ -2,7 +2,6 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { AVATAR_TPL } from './avatar-tpl';
 import { Definitions } from '@/composable';
-import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './avatar.css';
 
 export type AvatarMode = 'src' | 'text' | 'iconCls';
@@ -48,6 +47,5 @@ class AvatarComponent extends Component {
 }
 
 AvatarComponent.define(AvatarComponentDefs);
-AvatarComponent.use(SizeAbility, ColorAbility);
 
 export { AvatarComponent };

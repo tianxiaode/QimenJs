@@ -160,11 +160,8 @@ export class ComposableBase implements IComposableBase {
      * const inst = new SlotCls({ container });
      * ```
      */
-    static extend(
-        this: any,
-        definitions: Definitions & { type?: string; tpl?: any }
-    ): any {
-        const Base = this;
+    static extend(this: any, definitions: Definitions & { type?: string; tpl?: any }): any {
+        const Base = this as any;
         const Derived = class extends Base {};
         const { type, tpl, ...rest } = definitions;
 
@@ -184,6 +181,31 @@ export class ComposableBase implements IComposableBase {
     }
 
     /**
+     * 配置组件默认 option 值（语法糖，自动合并已有 defaultOptions）
+     *
+     * 重写 prototype 上的 defaultOptions getter，将传入的 options 与
+     * 原有 defaultOptions 合并。用于全局调整组件默认行为，
+     * 如统一设置 DropdownComponent 的 arrowCls。
+     *
+     *<parameter name="@example">     * ```ts
+     * DropdownComponent.configure({ arrowCls: 'my-arrow' });
+     * TooltipComponent.configure({ arrowCls: 'my-tooltip-arrow' });
+     * ```
+     */
+    static configure(this: any, options: Record<string, any>): any {
+        const proto = this.prototype;
+        const original = Object.getOwnPropertyDescriptor(proto, 'defaultOptions');
+        Object.defineProperty(proto, 'defaultOptions', {
+            get() {
+                const base = original?.get?.call(this) ?? {};
+                return { ...base, ...options };
+            },
+            configurable: true,
+        });
+        return this;
+    }
+
+    /**
      * 派生类可覆写（prototype getter，类似 tpl）：为 option 提供默认值覆盖。
      *
      * getter 定义在原型链上，实例化即可读取（不依赖字段初始化顺序），
@@ -200,6 +222,26 @@ export class ComposableBase implements IComposableBase {
      */
     get defaultOptions(): Record<string, any> | undefined {
         return undefined;
+    }
+
+    /**
+     * 派生类可覆写：声明需要在 _applyOptions 之前提取的 option key。
+     *
+     * 这些 option 的值会在 applyOptionDefaults 之后、_applyOptions 之前
+     * 通过 _setRawData 直接写入（绕过 change 机制），并从 options 中删除。
+     * 适用于 DOM 引用类数据（如 anchor），避免走 change 机制的复杂性。
+     *
+     * @example
+     * ```ts
+     * class TooltipComponent extends Component {
+     *     get earlyOptionKeys() {
+     *         return [...super.earlyOptionKeys, 'placement', 'offset'];
+     *     }
+     * }
+     * ```
+     */
+    get earlyOptionKeys(): string[] {
+        return [];
     }
 
     _onOptionChange(_key: string, _value: any, _old: any): void {}

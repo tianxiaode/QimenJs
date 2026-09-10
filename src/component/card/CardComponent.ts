@@ -22,7 +22,6 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { CARD_TPL } from './card-tpl';
 import { Definitions } from '@/composable';
-import { ColorAbility } from '@/component-abilities';
 import type { CardContent } from './types';
 import './card.css';
 
@@ -71,6 +70,5 @@ class CardComponent extends Component {
 }
 
 CardComponent.define(CardComponentDefs);
-CardComponent.use(ColorAbility);
 
 export { CardComponent };

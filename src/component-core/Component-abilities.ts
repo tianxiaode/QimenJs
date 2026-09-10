@@ -8,6 +8,7 @@ import {
 } from '@/system-abilities';
 import {
     AnimationAbility,
+    ArrowAbility,
     AttributeAbility,
     BadgeAbility,
     FloatAbility,
@@ -53,6 +54,7 @@ export const COMPONENT_ABILITIES = [
     DragAbility,
     DropAbility,
     AnimationAbility,
+    ArrowAbility,
     PermissionAbility,
     EntityAbility,
 

@@ -43,10 +43,6 @@ class TagComponent extends Component {
         this._scheduleRender();
     }
 
-    _onSizeOptionChange(): void {
-        this._scheduleRender();
-    }
-
     _onTagTypeOptionChange(): void {
         this._scheduleRender();
     }
@@ -60,6 +56,9 @@ class TagComponent extends Component {
     }
 
     _onCollapsedOptionChange(): void {
+        this._scheduleRender();
+    }
+    _onSizeOptionChange(): void {
         this._scheduleRender();
     }
 
@@ -198,6 +197,4 @@ class TagComponent extends Component {
 }
 
 TagComponent.define(TagComponentDefs);
-
 export { TagComponent };
-export type TagComponentInstance = InstanceType<typeof TagComponent>;

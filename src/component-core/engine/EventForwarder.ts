@@ -12,7 +12,7 @@
  * 扩展：加路 = FORWARD_ROUTES push 一条，调度器不改。
  *
  * 转发时自动收集事件数据：
- *   data = { ...instance.defaultEventData, ...instance.getCustomEventData?.(), ...extraData }
+ *   data = { ...instance.defaultEventData, ...extraData }
  *
  * EventContext 构建也集中在此，保证所有转发路径的 context 结构一致。
  */
@@ -46,8 +46,6 @@ interface ForwardContext {
     data: any;
     domEvent?: any;
     actualAction?: string;
-    customData: any;
-    hasCustomData: boolean;
 }
 
 interface ForwardRoute {
@@ -183,11 +181,7 @@ export class EventForwarder {
         domEvent?: any,
         actualAction?: string
     ): void {
-        const customData =
-            typeof instance.getCustomEventData === 'function' ? instance.getCustomEventData() : {};
-        const hasCustomData =
-            customData && typeof customData === 'object' && Object.keys(customData).length > 0;
-        const data = EventForwarder.collectEventData(instance, extraData, customData);
+        const data = EventForwarder.collectEventData(instance, extraData);
 
         const ctx: ForwardContext = {
             instance,
@@ -195,8 +189,6 @@ export class EventForwarder {
             data,
             domEvent,
             actualAction,
-            customData,
-            hasCustomData,
         };
 
         const allowed =
@@ -214,21 +206,14 @@ export class EventForwarder {
     /**
      * 收集事件数据
      *
-     * 合并顺序：defaultEventData → getCustomEventData() → extraData
+     * 合并顺序：defaultEventData → extraData
      * defaultEventData 是 getter，子类 super 天然合并。
      */
-    static collectEventData(instance: any, extraData?: any, precomputedCustomData?: any): any {
+    static collectEventData(instance: any, extraData?: any): any {
         const defaultData =
             typeof instance.defaultEventData === 'object' ? instance.defaultEventData : {};
-        const customData =
-            precomputedCustomData !== undefined
-                ? precomputedCustomData
-                : typeof instance.getCustomEventData === 'function'
-                  ? instance.getCustomEventData()
-                  : {};
-        const base = { ...defaultData, ...customData };
-        if (!extraData) return base;
-        if (typeof extraData === 'object') return { ...base, ...extraData };
+        if (!extraData) return defaultData;
+        if (typeof extraData === 'object') return { ...defaultData, ...extraData };
         return extraData;
     }
 

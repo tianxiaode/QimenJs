@@ -31,8 +31,8 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { BUTTON_TPL } from './button-tpl';
 import { Definitions } from '@/composable';
-import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './button.css';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 const ButtonComponentDefs: Definitions = {
     options: {
@@ -43,6 +43,7 @@ const ButtonComponentDefs: Definitions = {
         color: null,
         iconCls: null,
         busy: false,
+        arrowCls: null,
     },
 } as const;
 

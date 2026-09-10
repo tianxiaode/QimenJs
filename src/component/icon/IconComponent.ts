@@ -44,6 +44,6 @@ class IconComponent extends Component {
 }
 
 IconComponent.define(IconComponentDefs);
-IconComponent.use([SizeAbility]);
+IconComponent.use(SizeAbility);
 
 export { IconComponent };

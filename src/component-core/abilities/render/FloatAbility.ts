@@ -46,14 +46,19 @@ export const FloatAbility: AbilityDefinition = {
             return null;
         }
 
-        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlay = new OverlayClass({ ...data });
         const anchorEl = this._getFloatAnchor(key, decl);
+        const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+        const overlay = new OverlayClass({
+            ...rest,
+            anchor: anchorEl,
+            placement: decl.placement,
+            offset: decl.offset,
+        });
 
-        overlay.show(anchorEl, decl.placement, decl.offset);
+        overlay.show();
 
         if (decl.mask) {
-            overlay._initMask?.({
+            overlay.initOverlayMask?.({
                 color: typeof decl.mask === 'string' ? decl.mask : undefined,
                 scoped: decl.maskMode === 'scoped',
             });
@@ -134,7 +139,7 @@ export const FloatAbility: AbilityDefinition = {
             this.abilityState(`float-instance:${key}`, () => inst);
             this.onCleanup(() => this._disposeFloat(inst));
         } else {
-            inst.overlay.show(inst.anchorEl, inst.decl.placement, inst.decl.offset);
+            inst.overlay.show();
         }
     },
 

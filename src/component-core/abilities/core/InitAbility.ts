@@ -64,6 +64,7 @@ export const InitAbility = {
             }
         }
         this.applyOptionDefaults();
+        this._extractEarlyOptions(options);
         this._applyOptions(options);
         // 将构造函数选项应用到组件实例
         this.logger.debug(`[prepare:apply options]`, `[${this.type}]:[${this.id}]`);
@@ -129,6 +130,7 @@ export const InitAbility = {
      */
     _continueInit(childReady?: () => void) {
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
+        this._initArrow();
         this._initBadge();
         this._initPermission();
         this._initListensEvents();
@@ -220,5 +222,22 @@ export const InitAbility = {
             }
         }
         this.childComponentList = [];
+    },
+
+    /**
+     * 提取 early option keys 的值，直接写入 data（绕过 change 机制），
+     * 并从 options 中删除对应 key，使其不参与后续 _applyOptions。
+     *
+     * 适用于 DOM 引用类数据（如 anchor），这类数据是"初始化输入"而非"响应式配置"。
+     */
+    _extractEarlyOptions(options?: Record<string, any>): void {
+        const keys = this.earlyOptionKeys;
+        if (!keys?.length || !options) return;
+        for (const key of keys) {
+            if (key in options) {
+                this._setRawData(key, options[key]);
+                delete options[key];
+            }
+        }
     },
 } satisfies AbilityDefinition;

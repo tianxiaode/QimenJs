@@ -29,7 +29,7 @@
 import type { AbilityDefinition } from '@/composable';
 
 export const SizeAbility = {
-    _onSizeOptionChange(value: string, old: string) {
+    _onSizeOptionChange(value: string, old: string): void {
         const prefix = 'q-size--';
         if (value) this.addCls(prefix + value);
         if (old) this.removeCls(prefix + old);

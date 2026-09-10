@@ -1,81 +1,37 @@
 /**
- * ArrowAbility — 浮层箭头指示器能力
+ * ArrowAbility — 浮层箭头能力
  *
- * 通用浮层箭头能力，可组合到任何浮层组件（Tips/Dropdown/Popover 等）。
- * 模板中通过 name="xxx:arrow" 声明箭头节点，
- * 通过 getNodeEl 定位节点，控制方向类和显隐。
- * 不创建 DOM——箭头 div 由模板定义。
+ * 默认绑定到所有组件（COMPONENT_ABILITIES）。
+ * 通过 arrowCls option 附加自定义 CSS 类到箭头节点，
+ * 通过 updateArrowPlacement() 更新方向类（q-arrow--top/bottom/left/right）。
  *
- * 与 ExpandArrowAbility（展开/折叠箭头，name='expand'）区分。
+ * 箭头基础样式由全局 theme/arrow.css 定义，组件通过 --q-arrow-color / --q-arrow-size
+ * CSS 变量定制外观，无需各自定义箭头 CSS。
  *
- * 特定组件能力：由组件定义时 .with(ArrowAbility) 注入，
- * 不加入 TEMPLATE_COMPONENT_ABILITIES，与 tooltip/badge 等通用能力不同。
- *
- * 状态通过 abilityState 保存，不使用实例属性。
- * 箭头节点通过 getNodeEl(arrowName) 惰性获取，无需显式 init。
- *
- * CSS 变量（在 .q-arrow 上定义默认值）：
- * - --q-arrow-color：箭头颜色，默认 var(--q-color-dark, #303133)
- * - --q-arrow-size：箭头尺寸（px），默认 5
- *
- * 使用方式：
- * 1. 模板中定义 { tag: 'span', name: 'xxx:arrow', className: 'q-arrow' }
- * 2. 浮层组件声明 .with(ArrowAbility)
- * 3. 直接设置 arrowName/arrow/arrowVars 属性即可
- * 4. 定位后调用 updateArrowPlacement(placement) 更新方向
+ * 模板中通过 name="arrow" 声明箭头节点（可通过 arrowNode field 修改）。
+ * arrowCls option 为 null 时不附加任何自定义类。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import {
-    ARROW_HIDDEN_CLS,
-    ARROW_PLACEMENT_CLS,
-    ARROW_STATE_KEYS,
-} from '@/component-core/constants';
 
 export const ArrowAbility = {
-    /** 箭头节点名称，默认 'arrow' */
-    arrowName: {
-        get() {
-            return this.abilityState(ARROW_STATE_KEYS.name) ?? 'arrow';
-        },
-        set(v: string) {
-            this.setAbilityState(ARROW_STATE_KEYS.name, v);
-        },
-    },
-
-    /** 箭头可见性 */
-    arrow: {
-        get() {
-            return this.abilityState(ARROW_STATE_KEYS.visible) ?? true;
-        },
-        set(v: boolean) {
-            this.setAbilityState(ARROW_STATE_KEYS.visible, v);
-            const name = this.arrowName;
-            if (!name) return;
-            if (v) {
-                this.removeCls(ARROW_HIDDEN_CLS, name);
-            } else {
-                this.addCls(ARROW_HIDDEN_CLS, name);
-            }
-        },
-    },
-
-    /** 箭头 CSS 变量（setter only） */
-    arrowVars: {
-        set(v: Record<string, string>) {
-            const name = this.arrowName;
-            if (!name) return;
-            this.setStyles(v, name);
-        },
+    _onArrowClsOptionChange(value: string, old: string): void {
+        if (this._templateInitialized === false) return;
+        const node = this.arrowNode;
+        if (old) this.removeCls(old, node);
+        if (value) this.addCls(value, node);
     },
 
     updateArrowPlacement(placement: string): void {
-        const name = this.arrowName;
-        if (!name) return;
-        this.removeCls(ARROW_PLACEMENT_CLS.top, name);
-        this.removeCls(ARROW_PLACEMENT_CLS.bottom, name);
-        this.removeCls(ARROW_PLACEMENT_CLS.left, name);
-        this.removeCls(ARROW_PLACEMENT_CLS.right, name);
-        this.addCls(ARROW_PLACEMENT_CLS[placement as keyof typeof ARROW_PLACEMENT_CLS], name);
+        const node = this.arrowNode;
+        this.removeCls('q-arrow--top', node);
+        this.removeCls('q-arrow--bottom', node);
+        this.removeCls('q-arrow--left', node);
+        this.removeCls('q-arrow--right', node);
+        this.addCls(`q-arrow--${placement}`, node);
+    },
+
+    _initArrow(): void {
+        this._onArrowClsOptionChange(this.arrowCls, null);
     },
 } satisfies AbilityDefinition;

@@ -2,7 +2,6 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { TEXT_TPL } from './text-tpl';
 import { Definitions } from '@/composable';
-import { SizeAbility, ColorAbility } from '@/component-abilities';
 import './text.css';
 
 const TextComponentDefs: Definitions = {
@@ -42,6 +41,5 @@ class TextComponent extends Component {
 }
 
 TextComponent.define(TextComponentDefs);
-TextComponent.use(SizeAbility, ColorAbility);
 
 export { TextComponent };

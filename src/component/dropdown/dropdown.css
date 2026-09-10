@@ -2,11 +2,14 @@
     cursor: pointer;
 }
 
-.q-dropdown .q-expand-arrow {
+.q-dropdown .q-arrow {
+    position: static;
+    --q-arrow-color: currentColor;
+    border-width: var(--q-arrow-size) var(--q-arrow-size) 0 var(--q-arrow-size);
     margin-left: 4px;
     transition: transform 0.2s ease;
 }
 
-.q-dropdown.q-dropdown--open .q-expand-arrow {
+.q-dropdown.q-dropdown--open .q-arrow {
     transform: rotate(180deg);
 }

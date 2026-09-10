@@ -77,10 +77,10 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         }
     }
 
-    getCustomEventData(): any {
+    get defaultEventData(): Record<string, any> {
         const data = this._pendingNavData;
         this._pendingNavData = null;
-        return data ?? {};
+        return { ...super.defaultEventData, ...(data ?? {}) };
     }
 
     /**

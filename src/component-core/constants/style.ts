@@ -12,4 +12,4 @@
  * - hidden：走固定类 `.hidden` / `.invisible` / `.opacity-0`（utilities.css）
  * - radius：走 `_onRadiusOptionChange`（CSS 变量 `--q-radius-*` + setProperty）
  */
-export const GLOBAL_STYLE_KEYS = new Set(['size', 'shape']);
+export const GLOBAL_STYLE_KEYS = new Set(['size', 'shape', 'arrow']);

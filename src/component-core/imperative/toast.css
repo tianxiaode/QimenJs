@@ -4,7 +4,7 @@
     max-width: 400px;
     padding: 12px 20px;
     background: var(--q-color-text);
-    color: var(--q-color-on-primary);
+    color: var(--q-color-bg, #fff);
     border-radius: var(--q-radius-lg, 8px);
     font-size: 14px;
     box-shadow: var(--q-shadow-md);
@@ -62,15 +62,15 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: rgba(255,255,255,0.7);
+    color: var(--q-color-bg, rgba(255,255,255,0.7));
     font-size: 14px;
     border-radius: 4px;
     transition: color 0.2s, background-color 0.2s;
 }
 
 .q-toast__close:hover {
-    color: #fff;
-    background-color: rgba(255,255,255,0.15);
+    color: var(--q-color-bg, #fff);
+    background-color: var(--q-overlay-light-active, rgba(255,255,255,0.15));
 }
 
 .q-toast__close::before {

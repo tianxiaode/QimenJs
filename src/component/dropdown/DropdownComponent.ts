@@ -24,7 +24,10 @@ import './dropdown.css';
 
 const DropdownComponentDefs: Definitions = {
     options: {
-        items: null,
+        arrowCls: 'q-arrow--bottom',
+    },
+    fields: {
+        arrowNode: 'dropIcon',
     },
 } as const;
 
@@ -37,14 +40,6 @@ export class DropdownComponent extends ButtonComponent {
         this.setNodeHidden(false, 'dropIcon');
         if (this.items && !this.popover) {
             this.popover = { type: 'menu', items: this.items };
-        }
-    }
-
-    _onItemsOptionChange(value: any): void {
-        if (value && !this.popover) {
-            this.popover = { type: 'menu', items: value };
-        } else if (this.popover && (this.popover as any).type === 'menu') {
-            this.popover = { ...(this.popover as any), items: value };
         }
     }
 }

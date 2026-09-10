@@ -1,0 +1,75 @@
+/* ========================================
+   🔺 箭头系统 - 浮层指示箭头
+   配合 ArrowAbility 使用，通过 --q-arrow-color / --q-arrow-size 定制
+   ======================================== */
+
+:root {
+    --q-arrow-size: 6px;
+    --q-arrow-color: var(--q-color-text, #303133);
+}
+
+/* -------- 基础箭头 -------- */
+.q-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* -------- 方向类 -------- */
+.q-arrow--top {
+    top: calc(var(--q-arrow-size) * -2);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--q-arrow-size);
+    border-color: transparent transparent var(--q-arrow-color) transparent;
+}
+
+.q-arrow--bottom {
+    bottom: calc(var(--q-arrow-size) * -2);
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: var(--q-arrow-size);
+    border-color: var(--q-arrow-color) transparent transparent transparent;
+}
+
+.q-arrow--left {
+    left: calc(var(--q-arrow-size) * -2);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size);
+    border-color: transparent var(--q-arrow-color) transparent transparent;
+}
+
+.q-arrow--right {
+    right: calc(var(--q-arrow-size) * -2);
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: var(--q-arrow-size);
+    border-color: transparent transparent transparent var(--q-arrow-color);
+}
+
+/* -------- 箭头跟随尺寸 -------- */
+.q-size--xs .q-arrow {
+    --q-arrow-size: 4px;
+}
+.q-size--sm .q-arrow {
+    --q-arrow-size: 5px;
+}
+.q-size--md .q-arrow {
+    --q-arrow-size: 6px;
+}
+.q-size--lg .q-arrow {
+    --q-arrow-size: 7px;
+}
+.q-size--xl .q-arrow {
+    --q-arrow-size: 8px;
+}
+.q-size--2xl .q-arrow {
+    --q-arrow-size: 10px;
+}
+
+/* -------- 箭头隐藏 -------- */
+.q-arrow.hidden {
+    display: none;
+}

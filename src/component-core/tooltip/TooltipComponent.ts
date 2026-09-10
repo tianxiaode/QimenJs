@@ -1,11 +1,8 @@
 import { Component } from '../Component';
 import type { TemplateDecl } from '../types';
 import type { Definitions } from '@/composable';
-import { ZIndexLevel, zIndexManager } from '../engine';
 import { TOOLTIP_TPL } from './tooltip-tpl';
-import { InferAbility } from '@/composable';
 import './tooltip.css';
-import { ArrowAbility } from '../abilities';
 
 export class TooltipComponent extends Component {
     static type = 'tooltip';
@@ -15,27 +12,18 @@ export class TooltipComponent extends Component {
     }
 
     open(): void {
-        this.hidden = false;
-        this.el!.style.zIndex = String(zIndexManager.acquire(ZIndexLevel.tooltip));
-        this.setAbilityState('OverlayAbility:open', true);
-        if (typeof this.updateArrowPlacement === 'function') {
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    const placement =
-                        this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
-                    const arrowPlacement = this._inferArrowPlacement(placement);
-                    this.updateArrowPlacement(arrowPlacement);
-                });
+                const placement = this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
+                const arrowPlacement = this._inferArrowPlacement(placement);
+                this.updateArrowPlacement(arrowPlacement);
             });
-        }
+        });
     }
 
-    close(): void {
-        this.hidden = true;
-        this.setAbilityState('OverlayAbility:open', false);
-    }
+    close(): void {}
 
-    _onTooltipOptionChange(value: string): void {
+    _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
     }
 
@@ -54,11 +42,9 @@ export class TooltipComponent extends Component {
 
 const TooltipComponentDefs: Definitions = {
     options: {
-        tooltip: null,
+        text: null,
+        persistent: true,
     },
 };
 
-TooltipComponent.use(ArrowAbility);
 TooltipComponent.define(TooltipComponentDefs);
-
-export interface TooltipComponent extends InferAbility<typeof ArrowAbility> {}

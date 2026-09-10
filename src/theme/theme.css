@@ -12,6 +12,9 @@
 /* 尺寸系统 */
 @import './size.css';
 
+/* 箭头系统 */
+@import './arrow.css';
+
 /* 布局系统 */
 @import './layout.css';
 

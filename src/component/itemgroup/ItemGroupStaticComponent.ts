@@ -6,7 +6,7 @@
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
 
 /** 静态项组组件 */
-class ItemGroupStaticComponent extends ItemGroupBaseComponent {
+export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     setItems(datas: Record<string, any>[]): void {
         this.clear();
         for (let i = 0; i < datas.length; i++) {
@@ -105,7 +105,3 @@ class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         this._emitItemsChange('move', { from: fromIndex, to: toIndex });
     }
 }
-
-export { ItemGroupStaticComponent };
-/** 静态项组实例类型 */
-export type ItemGroupStaticComponentType = InstanceType<typeof ItemGroupStaticComponent>;

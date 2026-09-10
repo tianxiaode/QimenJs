@@ -28,15 +28,17 @@ class MenuItemComponent extends Component {
     }
 
     _onTextOptionChange(value: string): void {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
     }
 
     _onShortcutOptionChange(value: string): void {
-        this.setNodeText(value, "shortcut");
+        this.setNodeText(value, 'shortcut');
     }
 
     _onHasSubmenuOptionChange(value: boolean): void {
-        value ? this.addCls('q-menu-item--has-submenu') : this.removeCls('q-menu-item--has-submenu');
+        value
+            ? this.addCls('q-menu-item--has-submenu')
+            : this.removeCls('q-menu-item--has-submenu');
         value ? this.removeCls('hidden', 'expand') : this.addCls('hidden', 'expand');
     }
 

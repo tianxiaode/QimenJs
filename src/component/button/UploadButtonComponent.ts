@@ -22,7 +22,6 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TplNode } from '@qimenjs/component-core';
-import { SizeAbility } from '@qimenjs/component-abilities';
 import {
     fileDispatchCenter,
     formatFileSize,
@@ -69,7 +68,6 @@ class UploadButtonComponent extends Component {
     _boundListClick: ((e: Event) => void) | null = null;
 
     onAfterInit(): void {
-        this.initSize();
         this._initUploadButton();
     }
 
@@ -340,7 +338,6 @@ class UploadButtonComponent extends Component {
     }
 }
 
-UploadButtonComponent.use(SizeAbility);
 UploadButtonComponent.define(UploadButtonComponentDefs);
 
 export { UploadButtonComponent };

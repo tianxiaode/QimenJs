@@ -233,7 +233,7 @@ class FormFieldComponent extends Component {
     }
 }
 
-FormFieldComponent.use([SizeAbility]);
+FormFieldComponent.use(SizeAbility);
 FormFieldComponent.define(FormFieldComponentDefs);
 
 export { FormFieldComponent };

@@ -28,7 +28,7 @@ export const BUTTON_TPL: TemplateDecl = {
         {
             tag: 'i',
             name: 'dropIcon',
-            classes: 'q-expand-arrow q-expand-arrow--collapsed hidden',
+            classes: 'q-arrow q-expand-arrow q-expand-arrow--collapsed hidden',
         },
     ],
 };

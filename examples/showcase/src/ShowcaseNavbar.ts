@@ -32,8 +32,11 @@ class ShowcaseNavbar extends NavbarComponent {
                 },
                 {
                     type: 'dropdown',
-                    text: '@nav.lang',
+                    //text: '@nav.lang',
+                    iconCls: 'fa fa-globe',
+                    tooltip: { text: '@nav.lang' },
                     dock: 'right',
+                    ghost: true,
                     popover: {
                         type: 'menu',
                         placement: 'bottom',
@@ -46,7 +49,10 @@ class ShowcaseNavbar extends NavbarComponent {
                 {
                     type: 'dropdown',
                     text: '@nav.theme',
+                    iconCls: 'fa fa-paint-brush',
+                    tooltip: { text: '@nav.theme' },
                     dock: 'right',
+                    ghost: true,
                     popover: {
                         type: 'menu',
                         placement: 'bottom',
@@ -73,14 +79,6 @@ class ShowcaseNavbar extends NavbarComponent {
             ],
         };
     }
-    // onAfterInit(): void {
-    //     this.logo = 'Q';
-    //     this.companyName = 'QimenJS';
-    //     this.defaultItemOption = {
-    //         size: 'lg',
-    //     };
-    //     super.onAfterInit();
-    // }
 }
 
 export { ShowcaseNavbar };

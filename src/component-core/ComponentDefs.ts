@@ -34,6 +34,8 @@ export const ComponentDefs: Definitions = {
         radius: null,
         /** 是否浮动组件 — 浮动组件初始化时不播放进入动画 */
         isFloat: false,
+        /** 是否常驻浮层 — hide 时 display:none 而非从 DOM 移除，show 时复用已挂载元素 */
+        persistent: false,
         /** 定位样式 */
         left: null,
         top: null,
@@ -63,6 +65,20 @@ export const ComponentDefs: Definitions = {
         indicator: null,
         /** 加载配置 */
         loading: null,
+        /** 浮层锚点元素 — 用于 OverlayAbility 定位的参照 DOM 元素 */
+        anchor: null,
+        /** 浮层定位方向 — top/bottom/left/right/center/anchor-center */
+        placement: null,
+        /** 浮层偏移量 — 与 anchor 的间距（px） */
+        offset: null,
+        /** 浮层 z-index 档位 — dropdown(1050)/tooltip(1080) 等 */
+        zIndexLevel: null,
+        /** 箭头自定义 CSS 类 — 附加到 arrowNode 指定的节点上 */
+        arrowCls: null,
+        /** 组件尺寸 — sm/md/lg/xl/2xl，走全局 q-size--* CSS 类 */
+        size: null,
+        /** 组件颜色方案 — primary/secondary/success/warning/error/info，走组件 BEM */
+        color: null,
     },
 
     fields: {
@@ -137,6 +153,8 @@ export const ComponentDefs: Definitions = {
         /**
          * 是否为容器 — 控制组件是否可容纳其他组件
          */
+        /** 箭头节点名称 — 模板中箭头节点的 name，默认 'arrow' */
+        arrowNode: 'arrow',
     },
 
     privateFields: {
