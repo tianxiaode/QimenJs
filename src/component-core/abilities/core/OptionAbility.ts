@@ -9,7 +9,7 @@
 import { HIDDEN_MODE_CSS_MAP, RADIUS_MAP } from '@/component-core/constants';
 import { i18nTextRegistry } from '@/component-core/engine';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
-import { withDefinitions, type AbilityDefinition, type Definitions } from '@/composable';
+import { type AbilityDefinition } from '@/composable';
 import { I18N_PREFIX, resolveI18nValue } from '@/i18n';
 import type { TemplateDecl } from '@/component-core';
 
@@ -188,14 +188,8 @@ export const OptionAbility: AbilityDefinition = {
     },
 
     _createSlotComponent(decl: TemplateDecl, container: HTMLElement): any {
-        const BaseCtor = ComponentRegistrar.getInstance().get('component')!;
-        const SlotCls = class SlotComponentFactory extends BaseCtor {
-            static type = 'slot';
-            get tpl(): TemplateDecl {
-                return decl;
-            }
-        };
-        withDefinitions(SlotCls, {} as Definitions);
+        const BaseCtor = ComponentRegistrar.getInstance().get('component') as any;
+        const SlotCls = BaseCtor.extend({ type: 'slot', tpl: decl });
         return new SlotCls({ container });
     },
 

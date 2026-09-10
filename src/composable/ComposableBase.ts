@@ -141,6 +141,49 @@ export class ComposableBase implements IComposableBase {
     }
 
     /**
+     * 从当前类派生新类（类似 Ext.define）
+     *
+     * 创建派生类并注入定义，不修改原类。保留完整原型链和 instanceof。
+     * definitions 额外支持：
+     *   - type — 派生类的 static type
+     *   - tpl  — 派生类的模板（注入为 prototype getter）
+     * 其余（options/fields/privateFields/overrides）走 withDefinitions。
+     *
+     * @example
+     * ```ts
+     * const SlotCls = Component.extend({
+     *     type: 'slot',
+     *     tpl: { tag: 'div', children: [...] },
+     *     options: { text: null },
+     *     _onTextOptionChange(value: string) { this.setNodeText(value, 'text'); },
+     * });
+     * const inst = new SlotCls({ container });
+     * ```
+     */
+    static extend(
+        this: any,
+        definitions: Definitions & { type?: string; tpl?: any }
+    ): any {
+        const Base = this;
+        const Derived = class extends Base {};
+        const { type, tpl, ...rest } = definitions;
+
+        if (type) {
+            Derived.type = type;
+            Object.defineProperty(Derived, 'name', { value: type, configurable: true });
+        }
+        if (tpl !== undefined) {
+            Object.defineProperty(Derived.prototype, 'tpl', {
+                get: () => tpl,
+                configurable: true,
+            });
+        }
+
+        withDefinitions(Derived, rest as Definitions);
+        return Derived;
+    }
+
+    /**
      * 派生类可覆写（prototype getter，类似 tpl）：为 option 提供默认值覆盖。
      *
      * getter 定义在原型链上，实例化即可读取（不依赖字段初始化顺序），
