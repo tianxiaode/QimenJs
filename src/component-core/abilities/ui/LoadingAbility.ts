@@ -115,4 +115,10 @@ export const LoadingAbility: AbilityDefinition = {
 
         return overlay;
     },
+
+    _initLoading(): void {
+        if (this.loading) {
+            this._onLoadingOptionChange(this.loading);
+        }
+    },
 } satisfies AbilityDefinition;

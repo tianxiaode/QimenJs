@@ -66,6 +66,10 @@ class MenuComponent extends ItemGroupStaticComponent {
         if (!item.select()) return;
 
         (this as any).notifyGroupSelect(item);
+
+        if (!item._hasSubmenu) {
+            this.close();
+        }
     }
 
     _onItemEnter(domEvt: any): void {

@@ -157,7 +157,10 @@ class ShowcaseNavbar extends NavbarComponent {
             } else {
                 comp.popover = {
                     ...popover,
-                    items: popover.items.map((it: any) => ({ ...it, checked: it.action === action })),
+                    items: popover.items.map((it: any) => ({
+                        ...it,
+                        checked: it.action === action,
+                    })),
                 };
             }
         }

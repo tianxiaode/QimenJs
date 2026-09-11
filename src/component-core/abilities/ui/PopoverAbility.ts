@@ -36,7 +36,22 @@ export const PopoverAbility: AbilityDefinition = {
             }
             const decl = this._getPopoverFloatDecl();
             if (decl) {
-                const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+                const {
+                    type,
+                    trigger,
+                    anchor,
+                    mask,
+                    maskMode,
+                    closeOnEscape,
+                    closeOnClickOutside,
+                    emits,
+                    showDelay,
+                    hideDelay,
+                    data,
+                    placement,
+                    offset,
+                    ...rest
+                } = decl;
                 for (const [key, val] of Object.entries(rest)) {
                     if (val !== undefined) {
                         old[key] = val;
@@ -124,7 +139,22 @@ export const PopoverAbility: AbilityDefinition = {
         }
 
         const anchorEl = this._getFloatAnchor('popover', decl);
-        const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+        const {
+            type,
+            trigger,
+            anchor,
+            mask,
+            maskMode,
+            closeOnEscape,
+            closeOnClickOutside,
+            emits,
+            showDelay,
+            hideDelay,
+            data,
+            placement,
+            offset,
+            ...rest
+        } = decl;
         const overlay = new OverlayClass({
             ...rest,
             anchor: anchorEl,
@@ -156,5 +186,11 @@ export const PopoverAbility: AbilityDefinition = {
         this._setRawData('popover', overlay);
 
         return overlay;
+    },
+
+    _initPopover(): void {
+        if (this.popover) {
+            this._onPopoverOptionChange(this.popover);
+        }
     },
 } satisfies AbilityDefinition;

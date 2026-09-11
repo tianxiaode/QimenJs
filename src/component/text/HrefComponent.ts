@@ -3,6 +3,7 @@ import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { HREF_TPL } from './href-tpl';
 import { Definitions } from '@/composable';
 import './href.css';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 export type HrefTarget = '_self' | '_blank' | '_parent' | '_top';
 
@@ -64,5 +65,5 @@ class HrefComponent extends Component {
 }
 
 HrefComponent.define(HrefComponentDefs);
-
+HrefComponent.use(SizeAbility, ColorAbility);
 export { HrefComponent };

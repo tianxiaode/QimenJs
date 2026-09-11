@@ -115,7 +115,7 @@ export class Component extends ComposableBase implements IComponent {
 
         this._initializing = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));
-        this.onBeforeInit();
+        this.onBeforeInit(options);
         this._buildDOM(options);
     }
 
@@ -123,7 +123,7 @@ export class Component extends ComposableBase implements IComponent {
         this._applyOptions(options);
     }
 
-    onBeforeInit(): void {}
+    onBeforeInit(_options?: ComponentCoreOptions): void {}
     onAfterInit(): void {}
 
     override onBeforeDispose(): void {

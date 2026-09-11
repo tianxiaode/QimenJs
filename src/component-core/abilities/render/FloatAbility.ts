@@ -47,7 +47,22 @@ export const FloatAbility: AbilityDefinition = {
         }
 
         const anchorEl = this._getFloatAnchor(key, decl);
-        const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+        const {
+            type,
+            trigger,
+            anchor,
+            mask,
+            maskMode,
+            closeOnEscape,
+            closeOnClickOutside,
+            emits,
+            showDelay,
+            hideDelay,
+            data,
+            placement,
+            offset,
+            ...rest
+        } = decl;
         const overlay = new OverlayClass({
             ...rest,
             anchor: anchorEl,

@@ -40,7 +40,22 @@ export const TooltipAbility: AbilityDefinition = {
                 zIndexLevel: ZIndexLevel.tooltip,
                 text: cfg.text,
             };
-            const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+            const {
+                type,
+                trigger,
+                anchor,
+                mask,
+                maskMode,
+                closeOnEscape,
+                closeOnClickOutside,
+                emits,
+                showDelay,
+                hideDelay,
+                data,
+                placement,
+                offset,
+                ...rest
+            } = decl;
             for (const [key, val] of Object.entries(rest)) {
                 if (val !== undefined) {
                     old[key] = val;
@@ -110,5 +125,11 @@ export const TooltipAbility: AbilityDefinition = {
         this._setRawData('tooltip', overlay);
 
         return overlay;
+    },
+
+    _initTooltip(): void {
+        if (this.tooltip) {
+            this._onTooltipOptionChange(this.tooltip);
+        }
     },
 } satisfies AbilityDefinition;

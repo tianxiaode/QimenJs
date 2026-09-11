@@ -103,8 +103,8 @@ export const OverlayAbility: AbilityDefinition = {
         positionOverlay(
             this.el!,
             actualAnchor,
-            placement ?? (this.placement ?? 'bottom'),
-            offset ?? (this.offset ?? 4),
+            placement ?? this.placement ?? 'bottom',
+            offset ?? this.offset ?? 4,
             true
         );
         this.updateMaskPosition?.(actualAnchor);

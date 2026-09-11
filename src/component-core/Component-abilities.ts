@@ -26,6 +26,7 @@ import {
     OptionAbility,
     EntityAbility,
     OverlayAbility,
+    MaskAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
