@@ -28,8 +28,15 @@ export class ComposableBase implements IComposableBase {
     };
     private cleanups: (() => void)[] = [];
 
-    constructor() {
+    constructor(options?: Record<string, any>) {
         this.logger = Logger.for(this.constructor.name);
+        if (options) {
+            this._setRawData('_rawOptions', { ...options });
+        }
+    }
+
+    get rawOptions(): Record<string, any> | undefined {
+        return this.getData('_rawOptions');
     }
 
     getData(key: string): any {

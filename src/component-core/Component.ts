@@ -105,7 +105,7 @@ export class Component extends ComposableBase implements IComponent {
     }
 
     constructor(options?: ComponentCoreOptions) {
-        super();
+        super(options);
         this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
         this.hasParent = options?.hasParent ?? false;
         this.container = options?.container;
