@@ -59,10 +59,9 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     _onItemClick(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
-        if (!target) return;
+        const item = domEvt.targetComponent;
+        if (!item) return;
 
-        const item = target.component;
         if (!item.select()) return;
 
         (this as any).notifyGroupSelect(item);
@@ -73,20 +72,18 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     _onItemEnter(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
-        if (!target) return;
+        const item = domEvt.targetComponent;
+        if (!item) return;
 
-        const item = target.component;
         if (item._hasSubmenu && !item._disabled) {
             item.setExpandArrow('expanded');
         }
     }
 
     _onItemLeave(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
-        if (!target) return;
+        const item = domEvt.targetComponent;
+        if (!item) return;
 
-        const item = target.component;
         if (item._hasSubmenu) {
             item.setExpandArrow('collapsed');
         }
