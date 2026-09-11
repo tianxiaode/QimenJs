@@ -127,8 +127,7 @@ class FormComponent extends ItemGroupStaticComponent {
         const items = this._items as any[];
         if (!items) return;
 
-        for (const item of items) {
-            const cmp = item.component;
+        for (const cmp of items) {
             if (!cmp || typeof cmp.getFormValue !== 'function') continue;
 
             const fieldName = cmp._fieldName || cmp.fieldName || '';

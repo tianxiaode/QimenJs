@@ -410,8 +410,8 @@ class EntityToolbarComponent extends ToolbarComponent {
 
     _findItemByName(name: string): any {
         const self = this as any;
-        for (const item of self._items) {
-            if (item.component?.name === name) return item.component;
+        for (const component of self._items) {
+            if (component?.name === name) return component;
         }
         return null;
     }

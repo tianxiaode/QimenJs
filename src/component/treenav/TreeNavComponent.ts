@@ -112,11 +112,11 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
         for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            if (item.el.contains(target)) {
-                const deepest = this._findDeepestMatch(item.component, target);
+            const component = this._items[i];
+            if (component.el.contains(target)) {
+                const deepest = this._findDeepestMatch(component, target);
                 if (deepest) return deepest;
-                return { component: item.component, type: item.component?.type ?? '', index: i };
+                return { component, type: component?.type ?? '', index: i };
             }
         }
         return null;

@@ -41,8 +41,8 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
 
     addError(text: string): any {
         if (this._errorItem) {
-            this._errorItem.component.update({ text });
-            return this._errorItem.component;
+            this._errorItem.update({ text });
+            return this._errorItem;
         }
         const component = this.add({
             type: TextComponent,
@@ -63,13 +63,13 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
     }
 
     get errorText(): string {
-        return this._errorItem?.component?.text ?? '';
+        return this._errorItem?.text ?? '';
     }
 
     addHelp(text: string): any {
         if (this._helpItem) {
-            this._helpItem.component.update({ text });
-            return this._helpItem.component;
+            this._helpItem.update({ text });
+            return this._helpItem;
         }
         const component = this.add({
             type: TextComponent,

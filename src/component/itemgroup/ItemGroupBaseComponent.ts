@@ -24,6 +24,7 @@ const ItemGroupBaseComponentDefs: Definitions = {
         indicator: undefined,
         isItemContainer: true,
         _items: [],
+        _itemData: [],
     },
 } as const;
 
@@ -61,11 +62,9 @@ class ItemGroupBaseComponent extends Component {
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
         if (!Array.isArray(this._items)) this._items = [];
+        if (!Array.isArray(this._itemData)) this._itemData = [];
         if (value) this.setItems(value);
-        this._setRawData(
-            'items',
-            this._items.map((item: any) => item.component)
-        );
+        this._setRawData('items', this._items);
     }
 
     onAfterInit(): void {
@@ -82,10 +81,10 @@ class ItemGroupBaseComponent extends Component {
 
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
         for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            if (this.containsElement('', target) || item.el.contains(target)) {
-                const type = item.component.constructor?._type || item.component.type || '';
-                return { component: item.component, type, index: i };
+            const component = this._items[i];
+            if (this.containsElement('', target) || component.el.contains(target)) {
+                const type = component.constructor?._type || component.type || '';
+                return { component, type, index: i };
             }
         }
         return null;
@@ -93,24 +92,24 @@ class ItemGroupBaseComponent extends Component {
 
     getAt(index: number): any {
         if (index < 0 || index >= this._items.length) return null;
-        return this._items[index].component;
+        return this._items[index];
     }
 
     indexOf(instance: any): number {
         for (let i = 0; i < this._items.length; i++) {
-            if (this._items[i].component === instance) return i;
+            if (this._items[i] === instance) return i;
         }
         return -1;
     }
 
     updateAt(index: number, data: Record<string, any>): void {
         if (index < 0 || index >= this._items.length) return;
-        const item = this._items[index];
-        item.data = data;
-        if (typeof item.component.update === 'function') {
-            item.component.update(data);
+        this._itemData[index] = data;
+        const component = this._items[index];
+        if (typeof component.update === 'function') {
+            component.update(data);
         }
-        this._emitItemUpdate(index, item.component, data);
+        this._emitItemUpdate(index, component, data);
     }
 
     _emitItemAdd(index: number, component: any, data: Record<string, any>): void {
@@ -148,27 +147,19 @@ class ItemGroupBaseComponent extends Component {
 
         const props = { ...data };
         delete props.type;
-        const itemEvents = props.events;
         delete props.events;
 
         const instance = new ItemClass(props);
 
-        const item = {
-            data,
-            component: instance,
-            el: instance.el,
-            events: itemEvents,
-        };
-
         const container = this.getNodeEl('itemContainer');
         if (container) container.appendChild(instance.el);
 
-        return item;
+        return instance;
     }
 
-    _destroyItem(item: any): void {
-        if (typeof item?.component?.dispose === 'function') {
-            item.component.dispose();
+    _destroyItem(component: any): void {
+        if (typeof component?.dispose === 'function') {
+            component.dispose();
         }
     }
 
@@ -178,8 +169,8 @@ class ItemGroupBaseComponent extends Component {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
         const fragment = document.createDocumentFragment();
-        for (const item of this._items) {
-            fragment.appendChild(item.el);
+        for (const component of this._items) {
+            fragment.appendChild(component.el);
         }
         while (container.firstChild) {
             container.removeChild(container.firstChild);

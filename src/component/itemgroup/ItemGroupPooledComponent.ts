@@ -1,19 +1,9 @@
-// ============================================
-// ItemGroupPooledComponent.ts - 池化
-// 数据驱动，CSS order 控制位置，支持辅助池
-// ============================================
-
 import { ItemGroupBaseComponent } from './ItemGroupBaseComponent';
-import type { TplEventAction } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 
-/** 辅助池角色-分组 */
 export const AUX_ROLE_GROUP = 'group';
-/** 辅助池角色-展开行 */
 export const AUX_ROLE_EXPAND = 'expand';
-/** 辅助池角色-分组汇总 */
 export const AUX_ROLE_GROUP_SUMMARY = 'groupSummary';
-/** 辅助池角色-表格汇总 */
 export const AUX_ROLE_TABLE_SUMMARY = 'tableSummary';
 
 const ROLE_OFFSETS: Record<string, number> = {
@@ -23,22 +13,16 @@ const ROLE_OFFSETS: Record<string, number> = {
     [AUX_ROLE_TABLE_SUMMARY]: 0.9,
 };
 
-/** 辅助池配置 */
 export interface AuxPoolConfig {
     itemType: string;
     offset: number;
 }
 
-interface AuxPoolEntry {
-    data: Record<string, any>;
-    component: any;
-    el: HTMLElement;
-    events?: Record<string, TplEventAction>;
-}
-
 interface AuxPool {
-    items: AuxPoolEntry[];
-    hiddenItems: AuxPoolEntry[];
+    items: any[];
+    itemData: Record<string, any>[];
+    hiddenItems: any[];
+    hiddenItemData: Record<string, any>[];
     itemType: string;
     offset: number;
 }
@@ -54,26 +38,21 @@ const ItemGroupPooledComponentDefs: Definitions = {
         groupSummaryItems: null,
         tableSummaryItems: null,
     },
+    fields: {
+        _hiddenItems: [],
+        _hiddenItemData: [],
+        _auxPools: undefined,
+    },
 } as const;
 
-/** 池化项组组件 */
 class ItemGroupPooledComponent extends ItemGroupBaseComponent {
-    _hiddenItems: Array<{
-        data: Record<string, any>;
-        component: any;
-        el: HTMLElement;
-        events?: Record<string, TplEventAction>;
-    }> = [];
-
-    _auxPools: Map<string, AuxPool> = new Map();
-
     get poolSize(): number {
         return this._hiddenItems.length;
     }
 
     onAfterInit(): void {
         super.onAfterInit();
-
+        this._auxPools = new Map();
         this._initAuxPools();
     }
 
@@ -116,39 +95,43 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const currentLength = this._items.length;
 
         for (let i = 0; i < Math.min(currentLength, newLength); i++) {
-            const item = this._items[i];
-            item.data = datas[i];
-            if (typeof item.component.update === 'function') {
-                item.component.update(datas[i]);
+            const component = this._items[i];
+            this._itemData[i] = datas[i];
+            if (typeof component.update === 'function') {
+                component.update(datas[i]);
             } else {
                 this.logger.warn(
-                    `item "${item.component.name || item.component.type || i}" missing update(), pooled data change will not reflect`
+                    `item "${component.name || component.type || i}" missing update(), pooled data change will not reflect`
                 );
             }
-            item.el.hidden = false;
+            component.el.hidden = false;
         }
 
         for (let i = currentLength; i < newLength; i++) {
             const reused = this._reuseFromPool(datas[i]);
             if (reused) {
                 this._items.push(reused);
-                this._emitItemAdd(i, reused.component, datas[i]);
+                this._itemData.push(datas[i]);
+                this._emitItemAdd(i, reused, datas[i]);
             } else {
-                const item = this._createItem(datas[i]);
-                if (item) {
-                    this._items.push(item);
-                    this._emitItemAdd(i, item.component, datas[i]);
+                const component = this._createItem(datas[i]);
+                if (component) {
+                    this._items.push(component);
+                    this._itemData.push(datas[i]);
+                    this._emitItemAdd(i, component, datas[i]);
                 }
             }
         }
 
         for (let i = newLength; i < currentLength; i++) {
-            const item = this._items[i];
-            item.el.hidden = true;
-            this._hiddenItems.push(item);
-            this._emitItemRemove(i, item.component, item.data);
+            const component = this._items[i];
+            component.el.hidden = true;
+            this._hiddenItems.push(component);
+            this._hiddenItemData.push(this._itemData[i]);
+            this._emitItemRemove(i, component, this._itemData[i]);
         }
         this._items.length = newLength;
+        this._itemData.length = newLength;
 
         this._applyOrders();
         this._emitItemsChange('set', { count: newLength });
@@ -158,17 +141,19 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const reused = this._reuseFromPool(data);
         if (reused) {
             this._items.push(reused);
+            this._itemData.push(data);
             this._applyOrders();
-            this._emitItemAdd(this._items.length - 1, reused.component, data);
-            return reused.component;
+            this._emitItemAdd(this._items.length - 1, reused, data);
+            return reused;
         }
 
-        const item = this._createItem(data);
-        if (item) {
-            this._items.push(item);
+        const component = this._createItem(data);
+        if (component) {
+            this._items.push(component);
+            this._itemData.push(data);
             this._applyOrders();
-            this._emitItemAdd(this._items.length - 1, item.component, data);
-            return item.component;
+            this._emitItemAdd(this._items.length - 1, component, data);
+            return component;
         }
         return null;
     }
@@ -179,45 +164,52 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const reused = this._reuseFromPool(data);
         if (reused) {
             this._items.splice(clampedIndex, 0, reused);
+            this._itemData.splice(clampedIndex, 0, data);
             this._applyOrders();
-            this._emitItemAdd(clampedIndex, reused.component, data);
-            return reused.component;
+            this._emitItemAdd(clampedIndex, reused, data);
+            return reused;
         }
 
-        const item = this._createItem(data);
-        if (item) {
-            this._items.splice(clampedIndex, 0, item);
+        const component = this._createItem(data);
+        if (component) {
+            this._items.splice(clampedIndex, 0, component);
+            this._itemData.splice(clampedIndex, 0, data);
             this._applyOrders();
-            this._emitItemAdd(clampedIndex, item.component, data);
-            return item.component;
+            this._emitItemAdd(clampedIndex, component, data);
+            return component;
         }
         return null;
     }
 
     removeAt(index: number): any {
         if (index < 0 || index >= this._items.length) return undefined;
-        const [item] = this._items.splice(index, 1);
-        item.el.hidden = true;
-        this._hiddenItems.push(item);
+        const [component] = this._items.splice(index, 1);
+        const [data] = this._itemData.splice(index, 1);
+        component.el.hidden = true;
+        this._hiddenItems.push(component);
+        this._hiddenItemData.push(data);
         this._applyOrders();
-        this._emitItemRemove(index, item.component, item.data);
-        return item.component;
+        this._emitItemRemove(index, component, data);
+        return component;
     }
 
     clear(): void {
         for (let i = 0; i < this._items.length; i++) {
-            const item = this._items[i];
-            item.el.hidden = true;
-            this._hiddenItems.push(item);
-            this._emitItemRemove(i, item.component, item.data);
+            const component = this._items[i];
+            component.el.hidden = true;
+            this._hiddenItems.push(component);
+            this._hiddenItemData.push(this._itemData[i]);
+            this._emitItemRemove(i, component, this._itemData[i]);
         }
         this._items = [];
+        this._itemData = [];
         for (const pool of this._auxPools.values()) {
-            for (const item of pool.items) {
-                item.el.hidden = true;
-                pool.hiddenItems.push(item);
+            for (const component of pool.items) {
+                component.el.hidden = true;
+                pool.hiddenItems.push(component);
             }
             pool.items = [];
+            pool.itemData = [];
         }
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
         this._emitItemsChange('clear');
@@ -227,17 +219,16 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const dataType = data.type ?? this._defaultItemType;
         if (!dataType) return null;
         for (let i = 0; i < this._hiddenItems.length; i++) {
-            const item = this._hiddenItems[i];
-            const itemType = item.component?.type ?? item.component?.constructor?.type;
+            const component = this._hiddenItems[i];
+            const itemType = component?.type ?? component?.constructor?.type;
             if (itemType === dataType) {
                 this._hiddenItems.splice(i, 1);
-                item.data = data;
-                item.events = data.events;
-                if (typeof item.component.update === 'function') {
-                    item.component.update(data);
+                const hiddenData = this._hiddenItemData.splice(i, 1)[0];
+                if (typeof component.update === 'function') {
+                    component.update(data);
                 }
-                item.el.hidden = false;
-                return item;
+                component.el.hidden = false;
+                return component;
             }
         }
         return null;
@@ -245,15 +236,18 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
     trimPool(maxSize: number = 10): void {
         while (this._hiddenItems.length > maxSize) {
-            const item = this._hiddenItems.pop();
-            if (item) this._destroyItem(item);
+            const component = this._hiddenItems.pop();
+            this._hiddenItemData.pop();
+            if (component) this._destroyItem(component);
         }
     }
 
     registerAuxPool(role: string, config: AuxPoolConfig): void {
         this._auxPools.set(role, {
             items: [],
+            itemData: [],
             hiddenItems: [],
+            hiddenItemData: [],
             itemType: config.itemType,
             offset: config.offset,
         });
@@ -262,8 +256,8 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     unregisterAuxPool(role: string): void {
         const pool = this._auxPools.get(role);
         if (!pool) return;
-        for (const item of pool.items) this._destroyItem(item);
-        for (const item of pool.hiddenItems) this._destroyItem(item);
+        for (const component of pool.items) this._destroyItem(component);
+        for (const component of pool.hiddenItems) this._destroyItem(component);
         this._auxPools.delete(role);
     }
 
@@ -275,30 +269,36 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const currentLength = pool.items.length;
 
         for (let i = 0; i < Math.min(currentLength, newLength); i++) {
-            const item = pool.items[i];
-            item.data = datas[i];
-            if (typeof item.component.update === 'function') {
-                item.component.update(datas[i]);
+            const component = pool.items[i];
+            pool.itemData[i] = datas[i];
+            if (typeof component.update === 'function') {
+                component.update(datas[i]);
             }
-            item.el.hidden = false;
+            component.el.hidden = false;
         }
 
         for (let i = currentLength; i < newLength; i++) {
             const reused = this._reuseFromAuxPool(role, datas[i]);
             if (reused) {
                 pool.items.push(reused);
+                pool.itemData.push(datas[i]);
             } else {
-                const item = this._createItem(datas[i]);
-                if (item) pool.items.push(item);
+                const component = this._createItem(datas[i]);
+                if (component) {
+                    pool.items.push(component);
+                    pool.itemData.push(datas[i]);
+                }
             }
         }
 
         for (let i = newLength; i < currentLength; i++) {
-            const item = pool.items[i];
-            item.el.hidden = true;
-            pool.hiddenItems.push(item);
+            const component = pool.items[i];
+            component.el.hidden = true;
+            pool.hiddenItems.push(component);
+            pool.hiddenItemData.push(pool.itemData[i]);
         }
         pool.items.length = newLength;
+        pool.itemData.length = newLength;
 
         this._applyOrders();
     }
@@ -310,15 +310,17 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const reused = this._reuseFromAuxPool(role, data);
         if (reused) {
             pool.items.push(reused);
+            pool.itemData.push(data);
             this._applyOrders();
-            return reused.component;
+            return reused;
         }
 
-        const item = this._createItem(data);
-        if (item) {
-            pool.items.push(item);
+        const component = this._createItem(data);
+        if (component) {
+            pool.items.push(component);
+            pool.itemData.push(data);
             this._applyOrders();
-            return item.component;
+            return component;
         }
         return null;
     }
@@ -328,29 +330,32 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!pool) return undefined;
         if (index < 0 || index >= pool.items.length) return undefined;
 
-        const [item] = pool.items.splice(index, 1);
-        item.el.hidden = true;
-        pool.hiddenItems.push(item);
+        const [component] = pool.items.splice(index, 1);
+        const [data] = pool.itemData.splice(index, 1);
+        component.el.hidden = true;
+        pool.hiddenItems.push(component);
+        pool.hiddenItemData.push(data);
         this._applyOrders();
-        return item.component;
+        return component;
     }
 
     clearAuxPool(role: string): void {
         const pool = this._auxPools.get(role);
         if (!pool) return;
 
-        for (const item of pool.items) {
-            item.el.hidden = true;
-            pool.hiddenItems.push(item);
+        for (const component of pool.items) {
+            component.el.hidden = true;
+            pool.hiddenItems.push(component);
         }
         pool.items = [];
+        pool.itemData = [];
         this._applyOrders();
     }
 
     getAuxItems(role: string): readonly any[] {
         const pool = this._auxPools.get(role);
         if (!pool) return [];
-        return pool.items.map((item: any) => item.component);
+        return pool.items;
     }
 
     getAuxCount(role: string): number {
@@ -362,8 +367,9 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const pool = this._auxPools.get(role);
         if (!pool) return;
         while (pool.hiddenItems.length > maxSize) {
-            const item = pool.hiddenItems.pop();
-            if (item) this._destroyItem(item);
+            const component = pool.hiddenItems.pop();
+            pool.hiddenItemData.pop();
+            if (component) this._destroyItem(component);
         }
     }
 
@@ -375,17 +381,16 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!dataType) return null;
 
         for (let i = 0; i < pool.hiddenItems.length; i++) {
-            const item = pool.hiddenItems[i];
-            const itemType = item.component?.type ?? item.component?.constructor?.type;
+            const component = pool.hiddenItems[i];
+            const itemType = component?.type ?? component?.constructor?.type;
             if (itemType === dataType) {
                 pool.hiddenItems.splice(i, 1);
-                item.data = data;
-                item.events = data.events;
-                if (typeof item.component.update === 'function') {
-                    item.component.update(data);
+                pool.hiddenItemData.splice(i, 1);
+                if (typeof component.update === 'function') {
+                    component.update(data);
                 }
-                item.el.hidden = false;
-                return item;
+                component.el.hidden = false;
+                return component;
             }
         }
         return null;
@@ -414,15 +419,16 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const step = this._step;
 
         for (let i = 0; i < this._items.length; i++) {
-            const customOrder = this._items[i].data.order;
+            const customOrder = this._itemData[i].order;
             this._items[i].el.style.order =
                 customOrder !== undefined ? String(customOrder) : String((i + 1) * step);
         }
 
         for (const pool of this._auxPools.values()) {
-            for (const item of pool.items) {
-                const orderIndex = item.data.orderIndex ?? 0;
-                item.el.style.order = String(Math.floor(orderIndex * step + step * pool.offset));
+            for (let i = 0; i < pool.items.length; i++) {
+                const component = pool.items[i];
+                const orderIndex = pool.itemData[i].orderIndex ?? 0;
+                component.el.style.order = String(Math.floor(orderIndex * step + step * pool.offset));
             }
         }
     }
@@ -433,10 +439,10 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         for (const pool of this._auxPools.values()) {
             for (let i = 0; i < pool.items.length; i++) {
-                const item = pool.items[i];
-                if (item.component.containsElement('', target) || item.el.contains(target)) {
-                    const type = item.component.constructor?._type || item.component.type || '';
-                    return { component: item.component, type, index: i };
+                const component = pool.items[i];
+                if (component.containsElement('', target) || component.el.contains(target)) {
+                    const type = component.constructor?._type || component.type || '';
+                    return { component, type, index: i };
                 }
             }
         }
@@ -447,5 +453,4 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 ItemGroupPooledComponent.define(ItemGroupPooledComponentDefs);
 
 export { ItemGroupPooledComponent };
-/** 池化项组实例类型 */
 export type ItemGroupPooledComponentType = InstanceType<typeof ItemGroupPooledComponent>;

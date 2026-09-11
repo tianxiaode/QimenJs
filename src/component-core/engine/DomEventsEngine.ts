@@ -333,7 +333,7 @@ export class DomEventsEngine {
      */
     private static _getChildren(component: any): any[] {
         if (component.isItemContainer && Array.isArray(component._items)) {
-            return component._items.map((item: any) => item.component);
+            return component._items;
         }
         if (
             Array.isArray(component.childComponentList) &&
