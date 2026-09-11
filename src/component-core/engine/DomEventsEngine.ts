@@ -99,7 +99,6 @@ export class DomEventsEngine {
      * 则将其返回的 DomEventsMap 与静态 domEvents 深度合并后再编译。
      */
     static bindDomEvents(instance: any): void {
-        console.log(`[DomEvt.bindDomEvents] inst=${instance.type}#${instance.id} el=${!!instance.el} domEvents=${JSON.stringify(Object.keys(instance.domEvents || {}))}`);
         const staticDomEvents: DomEventsMap | undefined = instance.domEvents;
 
         let merged: DomEventsMap = staticDomEvents ? { ...staticDomEvents } : {};
@@ -337,6 +336,7 @@ export class DomEventsEngine {
      * - 普通组件：优先返回 childComponentList，回退到 nodeMap/nodeInstances
      */
     private static _getChildren(component: any): any[] {
+        console.log(`[DomEvt._getChildren] inst=${component.type}#${component.id} isItemContainer=${component.isItemContainer} _itemsLen=${Array.isArray(component._items) ? component._items.length : 'n/a'}`);
         if (component.isItemContainer && Array.isArray(component._items)) {
             return component._items.map((item: any) => item.component);
         }

@@ -111,7 +111,6 @@ export class ComponentEventBus {
      */
     componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void {
         const componentEvent = encodeComponentEvent(sourceId, eventName);
-        console.log(`[ComponentBus.on] sourceId=${sourceId} eventName=${eventName} componentEvent=${componentEvent}`);
         return this.componentScope.on(componentEvent, (ctx: any) => {
             console.log(`[ComponentBus.on HIT] sourceId=${sourceId} eventName=${eventName}`);
             const data = ctx?.data !== undefined ? ctx.data : ctx;

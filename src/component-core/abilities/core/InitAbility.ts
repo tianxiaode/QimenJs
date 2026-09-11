@@ -170,7 +170,6 @@ export const InitAbility = {
 
     /** 初始化 DOM 事件委托 */
     _initDomEvents(): void {
-        console.log(`[_initDomEvents] inst=${this.type}#${this.id} domEvents=${JSON.stringify(Object.keys(this.domEvents || {}))} templateInit=${this._templateInitialized}`);
         if (this.domEvents && Object.keys(this.domEvents).length > 0) {
             DomEventsEngine.bindDomEvents(this);
         }

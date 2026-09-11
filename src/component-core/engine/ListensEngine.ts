@@ -236,7 +236,6 @@ export class ListensEngine {
         source: string,
         events: Record<string, EventMapping>
     ): void {
-        console.log(`[Listens._bindComponent] inst=${instance.type}#${instance.id} source=${source} events=${JSON.stringify(Object.keys(events))}`);
         const bus = ComponentEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {

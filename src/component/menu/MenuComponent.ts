@@ -16,7 +16,9 @@ import './menu.css';
 
 class MenuComponent extends ItemGroupStaticComponent {
     static type = 'menu';
-    get defaultItemType(): string { return 'menu-item'; }
+    get defaultItemType(): string {
+        return 'menu-item';
+    }
 
     get defaultOptions(): Record<string, any> {
         return {
