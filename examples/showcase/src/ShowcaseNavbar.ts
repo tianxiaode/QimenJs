@@ -146,7 +146,7 @@ class ShowcaseNavbar extends NavbarComponent {
     }
 
     private _updateDropdownPopover(eventKey: string, updateItems: (items: any[]) => any[]): void {
-        for (const comp of this.items) {
+        for (const comp of this._itemInstances) {
             if (comp?.constructor?.type === 'dropdown' && comp.popover?.eventKey === eventKey) {
                 comp.popover = {
                     ...comp.popover,
