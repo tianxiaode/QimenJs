@@ -193,6 +193,28 @@ export const OptionAbility: AbilityDefinition = {
         return new SlotCls({ container });
     },
 
+    _applyPropertyKeys(options?: Record<string, any>) {
+        if (!options) return;
+        const propertyKeys: Map<string, any> = this.propertyKeys;
+        for (const [key, value] of Object.entries(options)) {
+            if (key === 'id') continue;
+            if (propertyKeys.has(key)) {
+                this[key] = value;
+            }
+        }
+    },
+
+    _applyOptionKeys(options?: Record<string, any>) {
+        if (!options) return;
+        const optionsKeys: Map<string, any> = this.optionsKeys;
+        for (const [key, value] of Object.entries(options)) {
+            if (key === 'id') continue;
+            if (optionsKeys.has(key)) {
+                this.setData(key, value);
+            }
+        }
+    },
+
     _applyOptions(options?: Record<string, any>) {
         if (!options) return;
         const optionsKeys: Map<string, any> = this.optionsKeys;

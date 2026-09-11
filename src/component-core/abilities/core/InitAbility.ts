@@ -32,6 +32,7 @@ export const InitAbility = {
         this.nodeElements = {};
         this.nodeInstances = {};
         this.childComponentList = [];
+        this._ctorOptions = options;
         const fragment = this._getCache().templateCache!.content.cloneNode(true);
         const el = (fragment.firstElementChild as HTMLElement) ?? document.createElement('div');
         this.el = el;
@@ -63,11 +64,8 @@ export const InitAbility = {
                 this.addCls(classes, name);
             }
         }
-        this.applyOptionDefaults();
-        this._extractEarlyOptions(options);
-        this._applyOptions(options);
-        // 将构造函数选项应用到组件实例
-        this.logger.debug(`[prepare:apply options]`, `[${this.type}]:[${this.id}]`);
+        this._applyPropertyKeys(options);
+        this.logger.debug(`[prepare:apply property keys]`, `[${this.type}]:[${this.id}]`);
     },
 
     createChildren(childReady?: () => void): void {
@@ -126,19 +124,19 @@ export const InitAbility = {
     /**
      * 串联后续初始化
      *
-     * 顺序：角标 → i18n → 权限 → listens 事件订阅 → DOM 事件委托 → 浮层注册 → onAfterInit → 动画播放
+     * 顺序：options默认值 → earlyOptions提取 → optionsKeys复制 → 箭头 → 权限 → listens → DOM事件 → 拖拽/拖放 → onAfterInit → 动画
      */
     _continueInit(childReady?: () => void) {
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
+        this.applyOptionDefaults();
+        this._extractEarlyOptions(this._ctorOptions);
+        this._applyOptionKeys(this._ctorOptions);
+        delete this._ctorOptions;
+
         this._initArrow();
-        this._initBadge();
         this._initPermission();
         this._initListensEvents();
         this._initDomEvents();
-        this._initTooltip();
-        this._initPopover();
-        this._initIndicator();
-        this._initLoading();
         this._commitDrags();
         this._commitDrops();
 
