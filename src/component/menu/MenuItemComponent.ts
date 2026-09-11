@@ -44,23 +44,24 @@ class MenuItemComponent extends Component {
 
     _onGroupOptionChange(value: string): void {
         value ? this.addCls('q-menu-item--grouped') : this.removeCls('q-menu-item--grouped');
-        this._applyIcon();
         this._applyAria();
     }
 
-    _onGroupModeOptionChange(_value: string): void {
-        this._applyIcon();
+    _onGroupModeOptionChange(value: string): void {
+        if (value === 'checkbox') {
+            this.addCls('q-menu-item--checkbox');
+        } else {
+            this.removeCls('q-menu-item--checkbox');
+        }
         this._applyAria();
     }
 
     _onCheckedOptionChange(value: boolean): void {
         value ? this.addCls('q-menu-item--checked') : this.removeCls('q-menu-item--checked');
-        this._applyIcon();
         this._applyAria();
     }
 
     _onIconOptionChange(_value: string): void {
-        this._applyIcon();
     }
 
     select(): boolean {
@@ -87,23 +88,6 @@ class MenuItemComponent extends Component {
         } else {
             this.removeCls('q-expand-arrow--expanded', 'expand');
             this.addCls('q-expand-arrow--collapsed', 'expand');
-        }
-    }
-
-    private _applyIcon(): void {
-        const el = this.getNodeEl('icon');
-        if (!el) return;
-
-        if (this.group) {
-            if (this.groupMode === 'radio') {
-                el.textContent = this.checked ? '●' : '○';
-            } else {
-                el.textContent = this.checked ? '☑' : '☐';
-            }
-        } else if (this.icon) {
-            el.textContent = this.icon;
-        } else {
-            el.textContent = '';
         }
     }
 
