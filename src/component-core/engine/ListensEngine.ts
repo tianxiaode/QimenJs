@@ -115,7 +115,7 @@ export class ListensEngine {
     ): (...args: any[]) => void {
         return (...args: any[]) => {
             const sourceComp = nodeName
-                ? instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName]
+                ? (instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName])
                 : null;
             if (sourceComp?.disable) return;
 

@@ -127,6 +127,7 @@ class ShowcaseNavbar extends NavbarComponent {
     ];
 
     _onLangChange(data: any): void {
+        console.log('[ShowcaseNavbar] _onLangChange called, data=' + JSON.stringify(data));
         const locale = data.action === 'set-lang-zh' ? 'zh-CN' : 'en-US';
         const i18n = window.__qimen_i18n__;
         if (i18n) {
@@ -138,6 +139,7 @@ class ShowcaseNavbar extends NavbarComponent {
     }
 
     _onThemeChange(data: any): void {
+        console.log('[ShowcaseNavbar] _onThemeChange called, data=' + JSON.stringify(data));
         const preset = data.action.replace('set-theme-', '');
         document.documentElement.setAttribute('data-theme-preset', preset);
         this._updateDropdownPopover('theme', (items: any[]) =>
@@ -146,8 +148,13 @@ class ShowcaseNavbar extends NavbarComponent {
     }
 
     private _updateDropdownPopover(eventKey: string, updateItems: (items: any[]) => any[]): void {
+        console.log('[ShowcaseNavbar] _updateDropdownPopover eventKey=' + eventKey + ' _itemInstances.length=' + this._itemInstances.length);
         for (const comp of this._itemInstances) {
-            if (comp?.constructor?.type === 'dropdown' && comp.popover?.eventKey === eventKey) {
+            const ctorType = comp?.constructor?.type;
+            const popoverEventKey = comp?.popover?.eventKey;
+            console.log('[ShowcaseNavbar] comp ctorType=' + ctorType + ' popoverEventKey=' + popoverEventKey);
+            if (ctorType === 'dropdown' && popoverEventKey === eventKey) {
+                console.log('[ShowcaseNavbar] MATCHED dropdown, updating popover items');
                 comp.popover = {
                     ...comp.popover,
                     items: updateItems(comp.popover.items),
