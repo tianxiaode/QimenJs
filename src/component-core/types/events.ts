@@ -459,6 +459,8 @@ export interface FloatDecl {
     trigger?: FloatTrigger | FloatTrigger[];
     /** 弹出方向 */
     placement?: 'top' | 'bottom' | 'left' | 'right' | 'center' | 'anchor-center';
+    /** 对齐方式：'start'=左/顶对齐，'center'=居中（默认），'end'=右/底对齐 */
+    align?: 'start' | 'center' | 'end';
     /** 与锚点的间距（像素） */
     offset?: number;
     /** 点击浮层外部是否关闭（默认 true） */

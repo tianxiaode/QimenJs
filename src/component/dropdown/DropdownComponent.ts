@@ -35,12 +35,6 @@ export class DropdownComponent extends ButtonComponent {
     static type = 'dropdown';
 
     onAfterInit(): void {
-        super.onAfterInit();
-        this.addCls('q-dropdown');
-        this.setNodeHidden(false, 'dropIcon');
-        if (this.items && !this.popover) {
-            this.popover = { type: 'menu', items: this.items };
-        }
     }
 }
 

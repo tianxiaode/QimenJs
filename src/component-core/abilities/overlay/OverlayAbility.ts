@@ -75,7 +75,8 @@ export const OverlayAbility: AbilityDefinition = {
         }
 
         const offset = this.offset ?? 4;
-        const actualPlacement = positionOverlay(el, anchor, placement, offset, true);
+        const align = (this as any).align ?? 'center';
+        const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
         this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
 
         const mask = this.abilityState('OverlayAbility:mask');

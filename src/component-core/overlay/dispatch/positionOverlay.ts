@@ -21,6 +21,8 @@ import {
  */
 export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'center' | 'anchor-center';
 
+export type Align = 'start' | 'center' | 'end';
+
 /**
  * 将 HTMLElement 的 getBoundingClientRect 转换为 Rect
  */
@@ -48,28 +50,37 @@ function alignByPlacement(
     overlayRect: Rect,
     anchorRect: Rect,
     placement: 'top' | 'bottom' | 'left' | 'right',
-    offset: number
+    offset: number,
+    align: Align = 'center'
 ): Rect {
     let result = overlayRect;
 
     switch (placement) {
         case 'bottom':
-            result = alignCenterX(result, anchorRect);
+            result = align === 'start' ? alignLeft(result, anchorRect)
+                : align === 'end' ? alignRight(result, anchorRect)
+                : alignCenterX(result, anchorRect);
             result = { ...result, y: anchorRect.y + anchorRect.height + offset };
             break;
 
         case 'top':
-            result = alignCenterX(result, anchorRect);
+            result = align === 'start' ? alignLeft(result, anchorRect)
+                : align === 'end' ? alignRight(result, anchorRect)
+                : alignCenterX(result, anchorRect);
             result = { ...result, y: anchorRect.y - result.height - offset };
             break;
 
         case 'right':
-            result = alignCenterY(result, anchorRect);
+            result = align === 'start' ? alignTop(result, anchorRect)
+                : align === 'end' ? alignBottom(result, anchorRect)
+                : alignCenterY(result, anchorRect);
             result = { ...result, x: anchorRect.x + anchorRect.width + offset };
             break;
 
         case 'left':
-            result = alignCenterY(result, anchorRect);
+            result = align === 'start' ? alignTop(result, anchorRect)
+                : align === 'end' ? alignBottom(result, anchorRect)
+                : alignCenterY(result, anchorRect);
             result = { ...result, x: anchorRect.x - result.width - offset };
             break;
     }
@@ -114,7 +125,8 @@ export function positionOverlay(
     anchorEl: HTMLElement,
     placement: Placement = 'bottom',
     offset: number = 4,
-    flip: boolean = true
+    flip: boolean = true,
+    align: Align = 'center'
 ): Placement {
     const anchorRect = toRect(anchorEl);
     const overlayRect = toRect(overlayEl);
@@ -139,11 +151,11 @@ export function positionOverlay(
     type AnchorPlacement = 'top' | 'bottom' | 'left' | 'right';
     const anchorPlacement = placement as AnchorPlacement;
     let actualPlacement: AnchorPlacement = anchorPlacement;
-    let aligned = alignByPlacement(overlayRect, anchorRect, anchorPlacement, offset);
+    let aligned = alignByPlacement(overlayRect, anchorRect, anchorPlacement, offset, align);
 
     if (flip && isOverflowing(aligned, viewport)) {
         const flippedPlacement = flipPlacement(anchorPlacement);
-        const flipped = alignByPlacement(overlayRect, anchorRect, flippedPlacement, offset);
+        const flipped = alignByPlacement(overlayRect, anchorRect, flippedPlacement, offset, align);
 
         if (!isOverflowing(flipped, viewport)) {
             aligned = flipped;
@@ -151,16 +163,14 @@ export function positionOverlay(
         }
     }
 
-    // 智能调整对齐方式，避免 tooltip 被截断
+    // 智能调整对齐方式，避免浮层被截断
     if (anchorPlacement === 'top' || anchorPlacement === 'bottom') {
-        // 水平方向：如果左侧超出，改为左对齐；如果右侧超出，改为右对齐
         if (aligned.x < viewport.x) {
             aligned = alignLeft(aligned, anchorRect);
         } else if (aligned.x + aligned.width > viewport.x + viewport.width) {
             aligned = alignRight(aligned, anchorRect);
         }
     } else {
-        // 垂直方向：如果顶部超出，改为顶对齐；如果底部超出，改为底对齐
         if (aligned.y < viewport.y) {
             aligned = alignTop(aligned, anchorRect);
         } else if (aligned.y + aligned.height > viewport.y + viewport.height) {

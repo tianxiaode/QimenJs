@@ -16,7 +16,21 @@ import './menu.css';
 
 class MenuComponent extends ItemGroupStaticComponent {
     static type = 'menu';
-    defaultItemType = 'menu-item';
+    get defaultItemType(): string { return 'menu-item'; }
+
+    get defaultOptions(): Record<string, any> {
+        return {
+            ...super.defaultOptions,
+            direction: 'vertical',
+            align: 'start',
+        };
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.addCls('q-menu');
+    }
+
     domEvents?: DomEventsMap | undefined = {
         click: {
             path: '{MenuItem}.content',

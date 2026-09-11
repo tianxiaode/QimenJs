@@ -34,7 +34,8 @@ class ShowcaseNavbar extends NavbarComponent {
                     type: 'dropdown',
                     //text: '@nav.lang',
                     iconCls: 'fa fa-globe',
-                    tooltip: { text: '@nav.lang' },
+                    hint: '@nav.lang',
+                    //tooltip: { text: '@nav.lang' },
                     dock: 'right',
                     ghost: true,
                     popover: {
@@ -50,7 +51,8 @@ class ShowcaseNavbar extends NavbarComponent {
                     type: 'dropdown',
                     text: '@nav.theme',
                     iconCls: 'fa fa-paint-brush',
-                    tooltip: { text: '@nav.theme' },
+                    hint: '@nav.theme',
+                    //tooltip: { text: '@nav.theme' },
                     dock: 'right',
                     ghost: true,
                     popover: {

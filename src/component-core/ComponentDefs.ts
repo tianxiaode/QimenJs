@@ -71,6 +71,8 @@ export const ComponentDefs: Definitions = {
         placement: null,
         /** 浮层偏移量 — 与 anchor 的间距（px） */
         offset: null,
+        /** 浮层对齐方式 — 'start'=左/顶对齐，'center'=居中，'end'=右/底对齐 */
+        align: null,
         /** 浮层 z-index 档位 — dropdown(1050)/tooltip(1080) 等 */
         zIndexLevel: null,
         /** 箭头自定义 CSS 类 — 附加到 arrowNode 指定的节点上 */
