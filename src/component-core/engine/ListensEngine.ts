@@ -236,9 +236,6 @@ export class ListensEngine {
         source: string,
         events: Record<string, EventMapping>
     ): void {
-        const eventKey = EventForwarder.resolveKey(instance.eventKey);
-        if (!eventKey) return;
-
         const bus = ComponentEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {

@@ -81,8 +81,20 @@ class ShowcaseNavbar extends NavbarComponent {
                         placement: 'bottom',
                         eventKey: 'lang',
                         items: [
-                            { text: '中文', action: 'set-lang-zh', group: 'lang', groupMode: 'radio', checked: lang === 'zh-CN' },
-                            { text: 'English', action: 'set-lang-en', group: 'lang', groupMode: 'radio', checked: lang === 'en-US' },
+                            {
+                                text: '中文',
+                                action: 'set-lang-zh',
+                                group: 'lang',
+                                groupMode: 'radio',
+                                checked: lang === 'zh-CN',
+                            },
+                            {
+                                text: 'English',
+                                action: 'set-lang-en',
+                                group: 'lang',
+                                groupMode: 'radio',
+                                checked: lang === 'en-US',
+                            },
                         ],
                     },
                 },
@@ -115,11 +127,12 @@ class ShowcaseNavbar extends NavbarComponent {
     ];
 
     _onLangChange(data: any): void {
+        this.logger.warn('lang change', data); // eslint-disable-line no-console
         const locale = data.action === 'set-lang-zh' ? 'zh-CN' : 'en-US';
         const i18n = window.__qimen_i18n__;
         if (i18n) {
             i18n.locale = locale;
-            i18n.loadScript(`/locales/${locale}.js`);
+            //i18n.loadScript(`/locales/${locale}.js`);
         }
         this._updateDropdownPopover('lang', (items: any[]) =>
             items.map(it => ({ ...it, checked: it.action === data.action }))
