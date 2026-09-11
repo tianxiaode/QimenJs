@@ -201,6 +201,7 @@ export class DomEventsEngine {
             if (rule.event !== eventType) continue;
 
             const matched = DomEventsEngine._matchPath(instance, rule.path, target);
+            console.log(`[DomEvt.handleDelegated] ruleEvent=${rule.event} path=${rule.path} matched=${!!matched}`);
             if (!matched) continue;
 
             if (matched.disable) continue;
@@ -317,12 +318,14 @@ export class DomEventsEngine {
      */
     private static _findByType(component: any, type: string, target: Element): any {
         const children = DomEventsEngine._getChildren(component);
+        console.log(`[DomEvt._findByType] type=${type} childrenCount=${children.length} childTypes=${children.map(c => c?.constructor?._type || c?.constructor?.name?.replace(/Component$/, '') || c?.type).join(',')}`);
         for (const childComp of children) {
             if (!childComp?.el) continue;
             if (!childComp.el.contains(target)) continue;
             const ctor = childComp.constructor;
             const childType =
                 ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
+            console.log(`[DomEvt._findByType] childType=${childType} matches=${childType === type} elContains=${childComp.el.contains(target)}`);
             if (childType === type) return childComp;
         }
         return null;
