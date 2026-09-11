@@ -1,9 +1,9 @@
 /**
  * TooltipAbility — 提示浮层能力
  *
- * 由能力自行创建 tooltip 浮层实例并管理生命周期：
- * init 时创建实例但不显示，hover 时由 _bindFloatTrigger 触发 show，
- * 实例纳入宿主 onCleanup 自动清理。
+ * tooltip option 初始化前是配置对象，初始化后变成浮动组件实例。
+ * this.tooltip 直接返回实例，外部代码可 this.tooltip.show() / this.tooltip.hide()。
+ * trigger 事件（hover）绑定一次，由父组件 onCleanup 自动清理。
  *
  * @example
  * // 组件 options 中声明
@@ -16,14 +16,16 @@
 import type { AbilityDefinition } from '@/composable';
 import { ZIndexLevel } from '../../engine';
 
-/** 提示浮层能力，提供创建、更新快捷方法 */
 export const TooltipAbility: AbilityDefinition = {
     _onTooltipOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
 
-        const inst = this.abilityState('tooltip-instance') as any;
-        if (inst) {
+        if (old && typeof old.show === 'function') {
+            if (!value) {
+                old.dispose();
+                return;
+            }
             let cfg: any = this.tooltip;
             if (!cfg) return;
             if (typeof cfg === 'string') {
@@ -41,23 +43,37 @@ export const TooltipAbility: AbilityDefinition = {
             const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
             for (const [key, val] of Object.entries(rest)) {
                 if (val !== undefined) {
-                    inst.overlay[key] = val;
+                    old[key] = val;
                 }
             }
+            this._setRawData('tooltip', old);
             return;
         }
 
         if (value) {
-            this._initTooltip();
+            this._ensureTooltip();
         }
     },
 
-    _initTooltip(): void {
-        let cfg: any = this.tooltip;
-        if (!cfg) return;
-        if (typeof cfg === 'string') {
-            cfg = { text: cfg }; // 兼容旧配置
+    updateTooltip(data: Record<string, any>): void {
+        if (this.tooltip && typeof this.tooltip.show === 'function') {
+            for (const [key, val] of Object.entries(data)) {
+                this.tooltip[key] = val;
+            }
         }
+    },
+
+    _ensureTooltip(): any {
+        if (this.tooltip && typeof this.tooltip.show === 'function') {
+            return this.tooltip;
+        }
+
+        let cfg: any = this.tooltip;
+        if (!cfg) return null;
+        if (typeof cfg === 'string') {
+            cfg = { text: cfg };
+        }
+
         const decl: any = {
             type: 'tooltip',
             trigger: cfg.trigger ?? 'hover',
@@ -71,33 +87,28 @@ export const TooltipAbility: AbilityDefinition = {
         const OverlayClass = this._resolveFloatType(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[TooltipAbility] overlay type not found: ${decl.type}`);
-            return;
+            return null;
         }
 
         const anchorEl = this._getFloatAnchor('tooltip', decl);
         const overlay = new OverlayClass({ ...decl, anchor: anchorEl });
-        const inst = { overlay, anchorEl, decl };
 
-        this.abilityState('tooltip-instance', () => inst);
-        this.onCleanup(() => this._disposeFloat(inst));
+        this.onCleanup(() => overlay.dispose());
 
-        this._bindFloatTrigger('tooltip', inst.decl, {
+        this._bindFloatTrigger('tooltip', decl, {
             onShow: () => {
-                inst.overlay.show();
-                inst.overlay.open?.();
+                overlay.show();
+                overlay.open?.();
             },
             onHide: () => {
-                inst.overlay.hide();
-                inst.overlay.close?.();
+                overlay.hide();
+                overlay.close?.();
             },
             onToggle: () => {},
         });
-    },
 
-    updateTooltip(data: Record<string, any>): void {
-        const inst = this.abilityState('tooltip-instance') as { overlay: any } | undefined;
-        if (inst) {
-            inst.overlay.update(data);
-        }
+        this._setRawData('tooltip', overlay);
+
+        return overlay;
     },
 } satisfies AbilityDefinition;

@@ -127,37 +127,37 @@ class ShowcaseNavbar extends NavbarComponent {
     ];
 
     _onLangChange(data: any): void {
-        console.log('[ShowcaseNavbar] _onLangChange called, data=' + JSON.stringify(data));
         const locale = data.action === 'set-lang-zh' ? 'zh-CN' : 'en-US';
         const i18n = window.__qimen_i18n__;
         if (i18n) {
             i18n.locale = locale;
         }
-        this._updateDropdownPopover('lang', (items: any[]) =>
-            items.map(it => ({ ...it, checked: it.action === data.action }))
-        );
+        this._updateMenuChecked('lang', data.action);
     }
 
     _onThemeChange(data: any): void {
-        console.log('[ShowcaseNavbar] _onThemeChange called, data=' + JSON.stringify(data));
         const preset = data.action.replace('set-theme-', '');
         document.documentElement.setAttribute('data-theme-preset', preset);
-        this._updateDropdownPopover('theme', (items: any[]) =>
-            items.map(it => ({ ...it, checked: it.action === data.action }))
-        );
+        this._updateMenuChecked('theme', data.action);
     }
 
-    private _updateDropdownPopover(eventKey: string, updateItems: (items: any[]) => any[]): void {
-        console.log('[ShowcaseNavbar] _updateDropdownPopover eventKey=' + eventKey + ' _itemInstances.length=' + this._itemInstances.length);
+    private _updateMenuChecked(eventKey: string, action: string): void {
         for (const comp of this._itemInstances) {
-            const ctorType = comp?.constructor?.type;
-            const popoverEventKey = comp?.popover?.eventKey;
-            console.log('[ShowcaseNavbar] comp ctorType=' + ctorType + ' popoverEventKey=' + popoverEventKey);
-            if (ctorType === 'dropdown' && popoverEventKey === eventKey) {
-                console.log('[ShowcaseNavbar] MATCHED dropdown, updating popover items');
+            if (comp?.constructor?.type !== 'dropdown') continue;
+            const popover = comp.popover;
+            if (!popover) continue;
+
+            const popoverEventKey = popover.eventKey;
+            if (popoverEventKey !== eventKey) continue;
+
+            if (typeof popover.show === 'function') {
+                for (const item of popover.items) {
+                    item.checked = item.action === action;
+                }
+            } else {
                 comp.popover = {
-                    ...comp.popover,
-                    items: updateItems(comp.popover.items),
+                    ...popover,
+                    items: popover.items.map((it: any) => ({ ...it, checked: it.action === action })),
                 };
             }
         }

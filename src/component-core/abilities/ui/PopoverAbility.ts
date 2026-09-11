@@ -1,9 +1,9 @@
 /**
  * PopoverAbility — 弹出层能力
  *
- * 由能力自行创建 popover 浮层实例并管理生命周期，
- * 创建时不自动显示，click 时由 _bindFloatTrigger 触发 show，
- * 实例纳入宿主 onCleanup 自动清理。
+ * popover option 初始化前是配置对象，初始化后变成浮动组件实例。
+ * this.popover 直接返回实例，外部代码可 this.popover.show() / this.popover.items = newItems。
+ * trigger 事件绑定一次，由父组件 onCleanup 自动清理。
  *
  * this.popover 支持两种形式：
  * - 组件类：class MyPopover extends Component { ... }
@@ -24,35 +24,32 @@
 
 import type { AbilityDefinition } from '@/composable';
 
-/** 弹出层能力，提供 show/hide/toggle/update 快捷方法 */
 export const PopoverAbility: AbilityDefinition = {
     _onPopoverOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
 
-        const inst = this.abilityState('popover-instance') as any;
-        if (inst) {
+        if (old && typeof old.show === 'function') {
+            if (!value) {
+                old.dispose();
+                return;
+            }
             const decl = this._getPopoverFloatDecl();
             if (decl) {
                 const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
                 for (const [key, val] of Object.entries(rest)) {
                     if (val !== undefined) {
-                        inst.overlay[key] = val;
+                        old[key] = val;
                     }
                 }
             }
+            this._setRawData('popover', old);
             return;
         }
 
         if (value) {
-            this._initPopover();
+            this._ensurePopover();
         }
-    },
-
-    _initPopover(): void {
-        const decl = this._getPopoverFloatDecl();
-        if (!decl) return;
-        this._ensurePopoverFloat(decl);
     },
 
     _getPopoverFloatDecl(): any {
@@ -77,48 +74,48 @@ export const PopoverAbility: AbilityDefinition = {
             mask: false,
             closeOnEscape: true,
             closeOnClickOutside: true,
-            ...popover, // 透传其他配置
+            ...popover,
         };
     },
 
     showPopover(): void {
-        const decl = this._getPopoverFloatDecl();
-        if (!decl) return;
-        const inst = this._ensurePopoverFloat(decl);
+        const inst = this._ensurePopover();
         if (inst) {
-            inst.overlay.show();
+            inst.show();
         }
     },
 
     hidePopover(): void {
-        const inst = this.abilityState('popover-instance') as { overlay: any } | undefined;
-        if (inst) {
-            inst.overlay.hide();
+        if (this.popover && typeof this.popover.show === 'function') {
+            this.popover.hide();
         }
     },
 
     togglePopover(): void {
-        const decl = this._getPopoverFloatDecl();
-        if (!decl) return;
-        const inst = this._ensurePopoverFloat(decl);
+        const inst = this._ensurePopover();
         if (!inst) return;
-        if (inst.overlay.isOpen) {
-            inst.overlay.hide();
+        if (inst.isOpen) {
+            inst.hide();
         } else {
-            inst.overlay.show();
+            inst.show();
         }
     },
 
     updatePopover(data: Record<string, any>): void {
-        const inst = this.abilityState('popover-instance') as { overlay: any } | undefined;
-        if (inst) {
-            inst.overlay.update(data);
+        if (this.popover && typeof this.popover.show === 'function') {
+            for (const [key, val] of Object.entries(data)) {
+                this.popover[key] = val;
+            }
         }
     },
 
-    _ensurePopoverFloat(decl: any) {
-        const existing = this.abilityState('popover-instance') as any;
-        if (existing) return existing;
+    _ensurePopover(): any {
+        if (this.popover && typeof this.popover.show === 'function') {
+            return this.popover;
+        }
+
+        const decl = this._getPopoverFloatDecl();
+        if (!decl) return null;
 
         const OverlayClass = this._resolveFloatType(decl.type);
         if (!OverlayClass) {
@@ -134,7 +131,6 @@ export const PopoverAbility: AbilityDefinition = {
             placement: decl.placement,
             offset: decl.offset,
         });
-        const inst = { overlay, anchorEl, decl };
 
         if (decl.mask) {
             overlay.initOverlayMask?.({
@@ -143,21 +139,22 @@ export const PopoverAbility: AbilityDefinition = {
             });
         }
 
-        this.abilityState('popover-instance', () => inst);
-        this.onCleanup(() => this._disposeFloat(inst));
+        this.onCleanup(() => overlay.dispose());
 
-        this._bindFloatTrigger('popover', inst.decl, {
-            onShow: () => inst.overlay.show(),
-            onHide: () => inst.overlay.hide(),
+        this._bindFloatTrigger('popover', decl, {
+            onShow: () => overlay.show(),
+            onHide: () => overlay.hide(),
             onToggle: () => {
-                if (inst.overlay.isOpen) {
-                    inst.overlay.hide();
+                if (overlay.isOpen) {
+                    overlay.hide();
                 } else {
-                    inst.overlay.show();
+                    overlay.show();
                 }
             },
         });
 
-        return inst;
+        this._setRawData('popover', overlay);
+
+        return overlay;
     },
 } satisfies AbilityDefinition;

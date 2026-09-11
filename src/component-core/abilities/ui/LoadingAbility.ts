@@ -1,8 +1,9 @@
 /**
  * LoadingAbility — 加载浮层能力
  *
- * 由能力自行创建 loading 浮层实例并管理生命周期，
- * 创建时不自动显示，由 showLoading 控制显示，实例纳入宿主 onCleanup 自动清理。
+ * loading option 初始化前是配置对象，初始化后变成浮动组件实例。
+ * this.loading 直接返回实例，外部代码可 this.loading.show() / this.loading.hide()。
+ * 实例复用，trigger 为 manual，由 showLoading/hideLoading 手动控制。
  *
  * @example
  * // 组件 options 中声明
@@ -18,70 +19,74 @@
 import type { AbilityDefinition } from '@/composable';
 import type { FloatDecl, LoadingOptions } from '../../types';
 
-/** 加载浮层能力，提供 show/hide/update 快捷方法 */
 export const LoadingAbility: AbilityDefinition = {
     _onLoadingOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
 
-        const inst = this.abilityState('loading-instance') as any;
-        if (inst) {
+        if (old && typeof old.show === 'function') {
+            if (!value) {
+                old.dispose();
+                return;
+            }
             const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
             const { maskMode, mask, ...loadingData } = cfg;
             for (const [key, val] of Object.entries(loadingData)) {
                 if (val !== undefined) {
-                    inst.overlay[key] = val;
+                    old[key] = val;
                 }
             }
+            this._setRawData('loading', old);
             return;
         }
 
         if (value) {
-            this._initLoading();
+            this._ensureLoading();
         }
-    },
-
-    _initLoading(): void {
-        const cfg: LoadingOptions = this.loading;
-        if (!cfg) return;
-        this._ensureLoadingFloat();
     },
 
     showLoading(text?: string, maskMode?: 'none' | 'scoped' | 'global'): void {
-        const inst = this._ensureLoadingFloat();
+        const inst = this._ensureLoading();
         if (!inst) return;
         if (text !== undefined || maskMode !== undefined) {
-            const data: Record<string, any> = {};
-            if (text !== undefined) data.text = text;
-            if (maskMode !== undefined) data.maskMode = maskMode;
-            inst.overlay.update(data);
+            if (text !== undefined) inst.text = text;
+            if (maskMode !== undefined) inst.maskMode = maskMode;
         }
-        inst.overlay.show();
+        inst.show();
     },
 
     hideLoading(): void {
-        const inst = this.abilityState('loading-instance') as
-            | { overlay: any }
-            | undefined;
-        if (inst) {
-            inst.overlay.hide();
+        if (this.loading && typeof this.loading.show === 'function') {
+            this.loading.hide();
         }
     },
 
     updateLoading(data: Record<string, any>): void {
-        const inst = this.abilityState('loading-instance') as
-            | { overlay: any }
-            | undefined;
-        if (inst) {
-            inst.overlay.update(data);
+        if (this.loading && typeof this.loading.show === 'function') {
+            for (const [key, val] of Object.entries(data)) {
+                this.loading[key] = val;
+            }
         }
     },
 
-    _ensureLoadingFloat() {
-        const existing = this.abilityState('loading-instance') as any;
-        if (existing) return existing;
+    _ensureLoading(): any {
+        if (this.loading && typeof this.loading.show === 'function') {
+            return this.loading;
+        }
 
-        const decl = this._getLoadingFloatDecl();
+        const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
+        const { maskMode, mask, ...loadingData } = cfg;
+
+        const decl: FloatDecl = {
+            type: 'loading',
+            trigger: 'manual',
+            anchor: 'self',
+            placement: 'anchor-center',
+            maskMode: maskMode ?? 'scoped',
+            mask: mask ?? true,
+            data: loadingData,
+        };
+
         const OverlayClass = this._resolveFloatType(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[LoadingAbility] overlay type not found: ${decl.type}`);
@@ -96,7 +101,6 @@ export const LoadingAbility: AbilityDefinition = {
             placement: decl.placement,
             offset: decl.offset,
         });
-        const inst = { overlay, anchorEl, decl };
 
         if (decl.mask) {
             overlay.initOverlayMask?.({
@@ -105,22 +109,10 @@ export const LoadingAbility: AbilityDefinition = {
             });
         }
 
-        this.abilityState('loading-instance', () => inst);
-        this.onCleanup(() => this._disposeFloat(inst));
-        return inst;
-    },
+        this.onCleanup(() => overlay.dispose());
 
-    _getLoadingFloatDecl(): FloatDecl {
-        const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
-        const { maskMode, mask, ...loadingData } = cfg;
-        return {
-            type: 'loading',
-            trigger: 'manual',
-            anchor: 'self',
-            placement: 'anchor-center',
-            maskMode: maskMode ?? 'scoped',
-            mask: mask ?? true,
-            data: loadingData,
-        } as FloatDecl;
+        this._setRawData('loading', overlay);
+
+        return overlay;
     },
 } satisfies AbilityDefinition;
