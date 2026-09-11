@@ -363,7 +363,10 @@ export class DomEventsEngine {
         }
 
         const extraData = DomEventsEngine._buildPayload(instance, rule);
-        EventForwarder.forward(instance, rule, extraData, domEvt);
+        if (domEvt?.action) {
+            extraData.action = domEvt.action;
+        }
+        EventForwarder.forward(instance, rule, extraData, domEvt, domEvt?.action);
     }
 
     private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {

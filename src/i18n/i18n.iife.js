@@ -18,7 +18,7 @@ class I18nManager {
     }
 
     set locale(value) {
-        if (2value === this._locale) return;
+        if (value === this._locale) return;
         const previous = this._locale;
         this._locale = value;
         if (typeof document !== 'undefined') {

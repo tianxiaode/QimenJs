@@ -1,6 +1,4 @@
 import { NavbarComponent } from '@qimenjs/component';
-import { ListenItem } from '@qimenjs/component-core';
-
 const THEME_PRESETS = [
     { key: 'cinnabar', name: '朱砂红' },
     { key: 'indigo', name: '黛蓝' },
@@ -15,17 +13,21 @@ const THEME_PRESETS = [
     { key: 'qinghua', name: '青花瓷' },
     { key: 'skyblue', name: '天青' },
 ];
-
-function getCurrentLang(): string {
+function getCurrentLang() {
     return window.__qimen_i18n__?.locale || 'zh-CN';
 }
-
-function getCurrentPreset(): string {
+function getCurrentPreset() {
     return document.documentElement.getAttribute('data-theme-preset') || 'qinghua';
 }
-
 class ShowcaseNavbar extends NavbarComponent {
-    get defaultOptions(): Record<string, any> {
+    constructor() {
+        super(...arguments);
+        this.listens = [
+            { source: 'lang', events: { select: '_onLangChange' } },
+            { source: 'theme', events: { select: '_onThemeChange' } },
+        ];
+    }
+    get defaultOptions() {
         const lang = getCurrentLang();
         const preset = getCurrentPreset();
         return {
@@ -120,32 +122,20 @@ class ShowcaseNavbar extends NavbarComponent {
             ],
         };
     }
-
-    listens: ListenItem[] = [
-        { source: 'lang', events: { select: '_onLangChange' } },
-        { source: 'theme', events: { select: '_onThemeChange' } },
-    ];
-
-    _onLangChange(data: any): void {
+    _onLangChange(data) {
         const locale = data.action === 'set-lang-zh' ? 'zh-CN' : 'en-US';
         const i18n = window.__qimen_i18n__;
         if (i18n) {
             i18n.locale = locale;
         }
-        this._updateDropdownPopover('lang', (items: any[]) =>
-            items.map(it => ({ ...it, checked: it.action === data.action }))
-        );
+        this._updateDropdownPopover('lang', (items) => items.map(it => ({ ...it, checked: it.action === data.action })));
     }
-
-    _onThemeChange(data: any): void {
+    _onThemeChange(data) {
         const preset = data.action.replace('set-theme-', '');
         document.documentElement.setAttribute('data-theme-preset', preset);
-        this._updateDropdownPopover('theme', (items: any[]) =>
-            items.map(it => ({ ...it, checked: it.action === data.action }))
-        );
+        this._updateDropdownPopover('theme', (items) => items.map(it => ({ ...it, checked: it.action === data.action })));
     }
-
-    private _updateDropdownPopover(eventKey: string, updateItems: (items: any[]) => any[]): void {
+    _updateDropdownPopover(eventKey, updateItems) {
         for (const comp of this.items) {
             if (comp?.constructor?.type === 'dropdown' && comp.popover?.eventKey === eventKey) {
                 comp.popover = {
@@ -156,5 +146,4 @@ class ShowcaseNavbar extends NavbarComponent {
         }
     }
 }
-
 export { ShowcaseNavbar };
