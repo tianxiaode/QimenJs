@@ -40,8 +40,16 @@ export const DialogAbility: AbilityDefinition = {
             };
         }
 
-        const { type, trigger, placement, mask, closeOnEscape, closeOnClickOutside, emits, ...data } =
-            dialog as Record<string, any>;
+        const {
+            type,
+            trigger,
+            placement,
+            mask,
+            closeOnEscape,
+            closeOnClickOutside,
+            emits,
+            ...data
+        } = dialog as Record<string, any>;
         return {
             type,
             trigger: trigger ?? 'manual',

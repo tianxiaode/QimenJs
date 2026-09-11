@@ -187,10 +187,4 @@ export const PopoverAbility: AbilityDefinition = {
 
         return overlay;
     },
-
-    _initPopover(): void {
-        if (this.popover) {
-            this._onPopoverOptionChange(this.popover);
-        }
-    },
 } satisfies AbilityDefinition;

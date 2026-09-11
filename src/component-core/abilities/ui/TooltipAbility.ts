@@ -126,10 +126,4 @@ export const TooltipAbility: AbilityDefinition = {
 
         return overlay;
     },
-
-    _initTooltip(): void {
-        if (this.tooltip) {
-            this._onTooltipOptionChange(this.tooltip);
-        }
-    },
 } satisfies AbilityDefinition;

@@ -30,6 +30,7 @@ export const LoadingAbility: AbilityDefinition = {
                 return;
             }
             const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { maskMode, mask, ...loadingData } = cfg;
             for (const [key, val] of Object.entries(loadingData)) {
                 if (val !== undefined) {
@@ -114,11 +115,5 @@ export const LoadingAbility: AbilityDefinition = {
         this._setRawData('loading', overlay);
 
         return overlay;
-    },
-
-    _initLoading(): void {
-        if (this.loading) {
-            this._onLoadingOptionChange(this.loading);
-        }
     },
 } satisfies AbilityDefinition;
