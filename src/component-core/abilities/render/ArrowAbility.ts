@@ -16,7 +16,6 @@ import type { AbilityDefinition } from '@/composable';
 
 export const ArrowAbility = {
     _onArrowClsOptionChange(value: string, old: string): void {
-        if (this._templateInitialized === false) return;
         const node = this.arrowNode;
         if (old) this.removeCls(old, node);
         if (value) this.addCls(value, node);
@@ -29,9 +28,5 @@ export const ArrowAbility = {
         this.removeCls('q-arrow--left', node);
         this.removeCls('q-arrow--right', node);
         this.addCls(`q-arrow--${placement}`, node);
-    },
-
-    _initArrow(): void {
-        this._onArrowClsOptionChange(this.arrowCls, null);
     },
 } satisfies AbilityDefinition;

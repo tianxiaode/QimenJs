@@ -23,7 +23,6 @@ const ItemGroupBaseComponentDefs: Definitions = {
         defaultItem: {},
         indicator: undefined,
         isItemContainer: true,
-        _itemData: [],
     },
 } as const;
 
@@ -61,7 +60,6 @@ class ItemGroupBaseComponent extends Component {
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
         if (!Array.isArray(this.items)) this._setRawData('items', []);
-        if (!Array.isArray(this._itemData)) this._itemData = [];
         if (value) this.setItems([...value]);
     }
 
@@ -108,24 +106,23 @@ class ItemGroupBaseComponent extends Component {
     updateAt(index: number, data: Record<string, any>): void {
         const items = this.items;
         if (!Array.isArray(items) || index < 0 || index >= items.length) return;
-        this._itemData[index] = data;
         const component = items[index];
         if (typeof component.update === 'function') {
             component.update(data);
         }
-        this._emitItemUpdate(index, component, data);
+        this._emitItemUpdate(index, component);
     }
 
-    _emitItemAdd(index: number, component: any, data: Record<string, any>): void {
-        this.emit('itemadd', { index, component, data });
+    _emitItemAdd(index: number, component: any): void {
+        this.emit('itemadd', { index, component });
     }
 
-    _emitItemRemove(index: number, component: any, data: Record<string, any>): void {
-        this.emit('itemremove', { index, component, data });
+    _emitItemRemove(index: number, component: any): void {
+        this.emit('itemremove', { index, component });
     }
 
-    _emitItemUpdate(index: number, component: any, data: Record<string, any>): void {
-        this.emit('itemupdate', { index, component, data });
+    _emitItemUpdate(index: number, component: any): void {
+        this.emit('itemupdate', { index, component });
     }
 
     _emitItemsChange(type: 'set' | 'clear' | 'sort' | 'move', details?: Record<string, any>): void {

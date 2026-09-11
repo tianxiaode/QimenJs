@@ -54,7 +54,7 @@ class TimelineComponent extends ItemGroupPooledComponent {
     }
 
     get items(): TimelineItem[] {
-        return this._itemData as TimelineItem[];
+        return this.rawOptions?.items as TimelineItem[] ?? [];
     }
     set items(value: TimelineItem[]) {
         this.setItems(value);

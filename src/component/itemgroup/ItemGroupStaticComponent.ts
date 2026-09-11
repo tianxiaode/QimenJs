@@ -8,8 +8,7 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
             const component = this._createItem(data);
             if (component) {
                 this.items.push(component);
-                this._itemData.push(data);
-                this._emitItemAdd(i, component, data);
+                this._emitItemAdd(i, component);
             }
         }
         this.sort();
@@ -20,9 +19,8 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         const component = this._createItem(data);
         if (component) {
             this.items.push(component);
-            this._itemData.push(data);
             this.sort();
-            this._emitItemAdd(this.items.length - 1, component, data);
+            this._emitItemAdd(this.items.length - 1, component);
             return component;
         }
         return null;
@@ -35,36 +33,31 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
 
         if (this.items.length === 0) {
             this.items.push(component);
-            this._itemData.push(data);
         } else if (clampedIndex === 0) {
             const firstOrder = this.items[0]?.order ?? 0;
             component.order = firstOrder - 1;
             this.items.push(component);
-            this._itemData.push(data);
         } else if (clampedIndex >= this.items.length) {
             const lastOrder = this.items[this.items.length - 1]?.order ?? 0;
             component.order = lastOrder + 1;
             this.items.push(component);
-            this._itemData.push(data);
         } else {
             const prevOrder = this.items[clampedIndex - 1]?.order ?? 0;
             const nextOrder = this.items[clampedIndex]?.order ?? 0;
             component.order = (prevOrder + nextOrder) / 2;
             this.items.push(component);
-            this._itemData.push(data);
         }
 
         this.sort();
-        this._emitItemAdd(clampedIndex, component, data);
+        this._emitItemAdd(clampedIndex, component);
         return component;
     }
 
     removeAt(index: number): any {
         if (index < 0 || index >= this.items.length) return undefined;
         const [component] = this.items.splice(index, 1);
-        const [data] = this._itemData.splice(index, 1);
         this._destroyItem(component);
-        this._emitItemRemove(index, component, data);
+        this._emitItemRemove(index, component);
         return component;
     }
 
@@ -73,12 +66,11 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; i++) {
                 const component = items[i];
-                this._emitItemRemove(i, component, this._itemData[i]);
+                this._emitItemRemove(i, component);
                 this._destroyItem(component);
             }
             items.length = 0;
         }
-        this._itemData = [];
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
         this._emitItemsChange('clear');
     }

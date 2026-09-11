@@ -39,7 +39,7 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 
     get items(): ListItem[] {
-        return this._itemData as ListItem[];
+        return this.rawOptions?.items as ListItem[] ?? [];
     }
     set items(value: ListItem[]) {
         this.setItems(value);

@@ -207,8 +207,9 @@ export const OptionAbility: AbilityDefinition = {
     _applyOptionKeys(options?: Record<string, any>) {
         if (!options) return;
         const optionsKeys: Map<string, any> = this.optionsKeys;
+        const keys = this.earlyOptionKeys;
         for (const [key, value] of Object.entries(options)) {
-            if (key === 'id') continue;
+            if (key === 'id' || keys.includes(key)) continue;
             if (optionsKeys.has(key)) {
                 this.setData(key, value);
             }
@@ -225,6 +226,24 @@ export const OptionAbility: AbilityDefinition = {
                 this.setData(key, value);
             } else if (propertyKeys.has(key)) {
                 this[key] = value;
+            }
+        }
+    },
+
+    /**
+     * 提取 early option keys 的值，直接写入 data（绕过 change 机制），
+     * 并从 options 中删除对应 key，使其不参与后续 _applyOptions。
+     *
+     * 适用于 DOM 引用类数据（如 anchor），这类数据是"初始化输入"而非"响应式配置"。
+     */
+    _extractEarlyOptions(): void {
+        const options = this.rawOptions;
+        const keys = this.earlyOptionKeys;
+        if (!keys?.length || !options) return;
+        for (const key of keys) {
+            if (key in options) {
+                this._setRawData(key, options[key]);
+                delete options[key];
             }
         }
     },

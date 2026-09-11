@@ -17,7 +17,7 @@ const THEME_PRESETS = [
 ];
 
 function getCurrentLang(): string {
-    return window.__qimen_i18n__?.locale || 'zh-CN';
+    return (window as any).__qimen_i18n__?.locale || 'zh-CN';
 }
 
 function getCurrentPreset(): string {
@@ -128,7 +128,7 @@ class ShowcaseNavbar extends NavbarComponent {
 
     _onLangChange(data: any): void {
         const locale = data.action === 'set-lang-zh' ? 'zh-CN' : 'en-US';
-        const i18n = window.__qimen_i18n__;
+        const i18n = (window as any).__qimen_i18n__;
         if (i18n) {
             i18n.locale = locale;
         }
