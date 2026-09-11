@@ -94,14 +94,7 @@ export class ComponentEventBus {
         const sourceId = ctx.source;
         const eventName = ctx.type!;
         const componentEvent = encodeComponentEvent(sourceId, eventName);
-        this.logger.debug?.(
-            '[ComponentEventBus] componentEmit, sourceId =',
-            sourceId,
-            'eventName =',
-            eventName,
-            'componentEvent =',
-            componentEvent
-        );
+        console.log(`[ComponentBus.emit] sourceId=${sourceId} eventName=${eventName} componentEvent=${componentEvent}`);
         this.componentScope.emit(componentEvent, ctx);
     }
 
@@ -118,16 +111,9 @@ export class ComponentEventBus {
      */
     componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void {
         const componentEvent = encodeComponentEvent(sourceId, eventName);
-        this.logger.debug?.(
-            '[ComponentEventBus] componentOn, sourceId =',
-            sourceId,
-            'eventName =',
-            eventName,
-            'componentEvent =',
-            componentEvent
-        );
+        console.log(`[ComponentBus.on] sourceId=${sourceId} eventName=${eventName} componentEvent=${componentEvent}`);
         return this.componentScope.on(componentEvent, (ctx: any) => {
-            // EventScope.on 的 handler 接收 EventContext，提取 data 传给业务 handler
+            console.log(`[ComponentBus.on HIT] sourceId=${sourceId} eventName=${eventName}`);
             const data = ctx?.data !== undefined ? ctx.data : ctx;
             handler(data);
         });

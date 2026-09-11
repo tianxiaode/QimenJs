@@ -72,15 +72,20 @@ function _forwardEmits(ctx: ForwardContext): void {
 }
 
 function _forwardBridges(ctx: ForwardContext): void {
-    const eventKey = EventForwarder.resolveKey(ctx.instance.eventKey)!;
+    const eventKey = EventForwarder.resolveKey(ctx.instance.eventKey);
+    console.log(`[Fwd._forwardBridges] inst=${ctx.instance.type}#${ctx.instance.id} eventKey=${eventKey} bridges=${JSON.stringify(ctx.config.bridges)}`);
+    if (!eventKey) return;
     for (const bridge of ctx.config.bridges!) {
+        const resolvedName =
+            bridge === '[action]' && ctx.actualAction ? ctx.actualAction : bridge;
         const eventCtx = EventForwarder.buildContext(
             ctx.instance,
-            bridge,
+            resolvedName,
             ctx.data,
             eventKey,
             'bridge'
         );
+        console.log(`[Fwd._forwardBridges] calling componentEmit type=${eventCtx.type} source=${eventCtx.source}`);
         ctx.instance.componentEmit(eventCtx.type, eventCtx);
     }
 }
@@ -181,6 +186,7 @@ export class EventForwarder {
         domEvent?: any,
         actualAction?: string
     ): void {
+        console.log(`[Fwd.forward] inst=${instance.type}#${instance.id} eventKey=${instance.eventKey} emits=${JSON.stringify(config.emits)} bridges=${JSON.stringify(config.bridges)} actualAction=${actualAction}`);
         const data = EventForwarder.collectEventData(instance, extraData);
 
         const ctx: ForwardContext = {

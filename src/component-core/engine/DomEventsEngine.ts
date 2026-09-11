@@ -359,6 +359,7 @@ export class DomEventsEngine {
      * handler 本地调用 + EventForwarder 统一转发
      */
     static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
+        console.log(`[DomEvt._dispatchRule] inst=${instance.type}#${instance.id} event=${rule.event} path=${rule.path} handler=${rule.handler} emits=${JSON.stringify(rule.emits)} bridges=${JSON.stringify(rule.bridges)}`);
         if (rule.handler) {
             DomEventsEngine._invokeHandler(instance, rule, domEvt);
         }
