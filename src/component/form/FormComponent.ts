@@ -124,7 +124,7 @@ class FormComponent extends ItemGroupStaticComponent {
     }
 
     _collectFields(): void {
-        const items = this._items as any[];
+        const items = this.items as any[];
         if (!items) return;
 
         for (const cmp of items) {

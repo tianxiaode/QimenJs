@@ -23,7 +23,6 @@ const ItemGroupBaseComponentDefs: Definitions = {
         defaultItem: {},
         indicator: undefined,
         isItemContainer: true,
-        _items: [],
         _itemData: [],
     },
 } as const;
@@ -48,7 +47,7 @@ class ItemGroupBaseComponent extends Component {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
         if (value > 1) {
-            this.setStyles({ '--q-itemgroup-cols': String(value) }, 'itemContainer'); // 设置样式
+            this.setStyles({ '--q-itemgroup-cols': String(value) }, 'itemContainer');
             this.addCls('q-itemgroup__items--cols');
         } else {
             this.removeStyles(['--q-itemgroup-cols']);
@@ -61,10 +60,9 @@ class ItemGroupBaseComponent extends Component {
     }
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
-        if (!Array.isArray(this._items)) this._items = [];
+        if (!Array.isArray(this.items)) this._setRawData('items', []);
         if (!Array.isArray(this._itemData)) this._itemData = [];
-        if (value) this.setItems(value);
-        this._setRawData('items', this._items);
+        if (value) this.setItems([...value]);
     }
 
     onAfterInit(): void {
@@ -76,12 +74,14 @@ class ItemGroupBaseComponent extends Component {
     }
 
     get count(): number {
-        return (this._items || []).length;
+        return (this.items || []).length;
     }
 
     getTargetItem(target: Element): { component: any; type: string; index: number } | null {
-        for (let i = 0; i < this._items.length; i++) {
-            const component = this._items[i];
+        const items = this.items;
+        if (!Array.isArray(items)) return null;
+        for (let i = 0; i < items.length; i++) {
+            const component = items[i];
             if (this.containsElement('', target) || component.el.contains(target)) {
                 const type = component.constructor?._type || component.type || '';
                 return { component, type, index: i };
@@ -91,21 +91,25 @@ class ItemGroupBaseComponent extends Component {
     }
 
     getAt(index: number): any {
-        if (index < 0 || index >= this._items.length) return null;
-        return this._items[index];
+        const items = this.items;
+        if (!Array.isArray(items) || index < 0 || index >= items.length) return null;
+        return items[index];
     }
 
     indexOf(instance: any): number {
-        for (let i = 0; i < this._items.length; i++) {
-            if (this._items[i] === instance) return i;
+        const items = this.items;
+        if (!Array.isArray(items)) return -1;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i] === instance) return i;
         }
         return -1;
     }
 
     updateAt(index: number, data: Record<string, any>): void {
-        if (index < 0 || index >= this._items.length) return;
+        const items = this.items;
+        if (!Array.isArray(items) || index < 0 || index >= items.length) return;
         this._itemData[index] = data;
-        const component = this._items[index];
+        const component = items[index];
         if (typeof component.update === 'function') {
             component.update(data);
         }
@@ -168,8 +172,10 @@ class ItemGroupBaseComponent extends Component {
     _reorderDOM(): void {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
         const fragment = document.createDocumentFragment();
-        for (const component of this._items) {
+        for (const component of items) {
             fragment.appendChild(component.el);
         }
         while (container.firstChild) {

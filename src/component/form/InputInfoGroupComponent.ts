@@ -51,13 +51,13 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
             role: 'alert',
             order: ERROR_ORDER,
         });
-        this._errorItem = this._items[this._items.length - 1] ?? null;
+        this._errorItem = this.items[this.items.length - 1] ?? null;
         return component;
     }
 
     removeError(): void {
         if (!this._errorItem) return;
-        const idx = this._items.indexOf(this._errorItem);
+        const idx = this.items.indexOf(this._errorItem);
         if (idx >= 0) this.removeAt(idx);
         this._errorItem = null;
     }
@@ -77,13 +77,13 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
             text,
             order: HELP_ORDER,
         });
-        this._helpItem = this._items[this._items.length - 1] ?? null;
+        this._helpItem = this.items[this.items.length - 1] ?? null;
         return component;
     }
 
     removeHelp(): void {
         if (!this._helpItem) return;
-        const idx = this._items.indexOf(this._helpItem);
+        const idx = this.items.indexOf(this._helpItem);
         if (idx >= 0) this.removeAt(idx);
         this._helpItem = null;
     }

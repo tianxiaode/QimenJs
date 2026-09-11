@@ -7,7 +7,7 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
             const data = datas[i];
             const component = this._createItem(data);
             if (component) {
-                this._items.push(component);
+                this.items.push(component);
                 this._itemData.push(data);
                 this._emitItemAdd(i, component, data);
             }
@@ -19,10 +19,10 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     add(data: Record<string, any>): any {
         const component = this._createItem(data);
         if (component) {
-            this._items.push(component);
+            this.items.push(component);
             this._itemData.push(data);
             this.sort();
-            this._emitItemAdd(this._items.length - 1, component, data);
+            this._emitItemAdd(this.items.length - 1, component, data);
             return component;
         }
         return null;
@@ -31,26 +31,26 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     insert(index: number, data: Record<string, any>): any {
         const component = this._createItem(data);
         if (!component) return null;
-        const clampedIndex = Math.min(Math.max(0, index), this._items.length);
+        const clampedIndex = Math.min(Math.max(0, index), this.items.length);
 
-        if (this._items.length === 0) {
-            this._items.push(component);
+        if (this.items.length === 0) {
+            this.items.push(component);
             this._itemData.push(data);
         } else if (clampedIndex === 0) {
-            const firstOrder = this._items[0]?.order ?? 0;
+            const firstOrder = this.items[0]?.order ?? 0;
             component.order = firstOrder - 1;
-            this._items.push(component);
+            this.items.push(component);
             this._itemData.push(data);
-        } else if (clampedIndex >= this._items.length) {
-            const lastOrder = this._items[this._items.length - 1]?.order ?? 0;
+        } else if (clampedIndex >= this.items.length) {
+            const lastOrder = this.items[this.items.length - 1]?.order ?? 0;
             component.order = lastOrder + 1;
-            this._items.push(component);
+            this.items.push(component);
             this._itemData.push(data);
         } else {
-            const prevOrder = this._items[clampedIndex - 1]?.order ?? 0;
-            const nextOrder = this._items[clampedIndex]?.order ?? 0;
+            const prevOrder = this.items[clampedIndex - 1]?.order ?? 0;
+            const nextOrder = this.items[clampedIndex]?.order ?? 0;
             component.order = (prevOrder + nextOrder) / 2;
-            this._items.push(component);
+            this.items.push(component);
             this._itemData.push(data);
         }
 
@@ -60,8 +60,8 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     }
 
     removeAt(index: number): any {
-        if (index < 0 || index >= this._items.length) return undefined;
-        const [component] = this._items.splice(index, 1);
+        if (index < 0 || index >= this.items.length) return undefined;
+        const [component] = this.items.splice(index, 1);
         const [data] = this._itemData.splice(index, 1);
         this._destroyItem(component);
         this._emitItemRemove(index, component, data);
@@ -69,22 +69,27 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     }
 
     clear(): void {
-        for (let i = 0; i < this._items.length; i++) {
-            const component = this._items[i];
-            this._emitItemRemove(i, component, this._itemData[i]);
-            this._destroyItem(component);
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (let i = 0; i < items.length; i++) {
+                const component = items[i];
+                this._emitItemRemove(i, component, this._itemData[i]);
+                this._destroyItem(component);
+            }
+            items.length = 0;
         }
-        this._items = [];
         this._itemData = [];
         this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
         this._emitItemsChange('clear');
     }
 
     sort(compareFn?: (a: any, b: any) => number): void {
+        const items = this.items;
+        if (!Array.isArray(items)) return;
         if (compareFn) {
-            this._items.sort((a: any, b: any) => compareFn(a, b));
+            items.sort((a: any, b: any) => compareFn(a, b));
         } else {
-            this._items.sort((a: any, b: any) => {
+            items.sort((a: any, b: any) => {
                 const orderA = a?.order ?? 0;
                 const orderB = b?.order ?? 0;
                 return orderA - orderB;
@@ -95,14 +100,16 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     }
 
     move(fromIndex: number, toIndex: number): void {
-        if (fromIndex < 0 || fromIndex >= this._items.length) return;
-        if (toIndex < 0 || toIndex >= this._items.length) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        if (fromIndex < 0 || fromIndex >= items.length) return;
+        if (toIndex < 0 || toIndex >= items.length) return;
         if (fromIndex === toIndex) return;
 
-        const fromOrder = this._items[fromIndex]?.order ?? 0;
-        const toOrder = this._items[toIndex]?.order ?? 0;
-        this._items[fromIndex].order = toOrder;
-        this._items[toIndex].order = fromOrder;
+        const fromOrder = items[fromIndex]?.order ?? 0;
+        const toOrder = items[toIndex]?.order ?? 0;
+        items[fromIndex].order = toOrder;
+        items[toIndex].order = fromOrder;
         this.sort();
         this._emitItemsChange('move', { from: fromIndex, to: toIndex });
     }

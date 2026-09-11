@@ -84,7 +84,7 @@ class NumberInputComponent extends InputComponent {
             order: STEP_UP_ORDER,
         });
         const actionsCmp = this.getComponent('actions') as any;
-        const items = actionsCmp?._items ?? [];
+        const items = actionsCmp?.items ?? [];
         this._stepUpItem = items[items.length - 1] ?? null;
 
         this.addAction({
@@ -93,7 +93,7 @@ class NumberInputComponent extends InputComponent {
             text: '▼',
             order: STEP_DOWN_ORDER,
         });
-        this._stepDownItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
+        this._stepDownItem = actionsCmp?.items[actionsCmp.items.length - 1] ?? null;
     }
 
     _unmountStepButtons(): void {

@@ -71,7 +71,7 @@ class RadioGroupComponent extends FormFieldComponent {
                 text: opt.label,
                 order: 0,
             });
-            const itemObj = optionsCmp._items[optionsCmp._items.length - 1];
+            const itemObj = optionsCmp.items[optionsCmp.items.length - 1];
             if (itemObj) {
                 const el = itemObj.el as HTMLElement;
                 if (el) {

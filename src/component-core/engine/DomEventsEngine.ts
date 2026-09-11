@@ -332,8 +332,8 @@ export class DomEventsEngine {
      * - 普通组件：优先返回 childComponentList，回退到 nodeMap/nodeInstances
      */
     private static _getChildren(component: any): any[] {
-        if (component.isItemContainer && Array.isArray(component._items)) {
-            return component._items;
+        if (component.isItemContainer && Array.isArray(component.items)) {
+            return component.items;
         }
         if (
             Array.isArray(component.childComponentList) &&

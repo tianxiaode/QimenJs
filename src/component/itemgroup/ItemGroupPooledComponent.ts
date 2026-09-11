@@ -91,11 +91,12 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     setItems(datas: Record<string, any>[]): void {
+        const items = this.items;
         const newLength = datas.length;
-        const currentLength = this._items.length;
+        const currentLength = Array.isArray(items) ? items.length : 0;
 
         for (let i = 0; i < Math.min(currentLength, newLength); i++) {
-            const component = this._items[i];
+            const component = items[i];
             this._itemData[i] = datas[i];
             if (typeof component.update === 'function') {
                 component.update(datas[i]);
@@ -110,13 +111,13 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         for (let i = currentLength; i < newLength; i++) {
             const reused = this._reuseFromPool(datas[i]);
             if (reused) {
-                this._items.push(reused);
+                items.push(reused);
                 this._itemData.push(datas[i]);
                 this._emitItemAdd(i, reused, datas[i]);
             } else {
                 const component = this._createItem(datas[i]);
                 if (component) {
-                    this._items.push(component);
+                    items.push(component);
                     this._itemData.push(datas[i]);
                     this._emitItemAdd(i, component, datas[i]);
                 }
@@ -124,13 +125,13 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         }
 
         for (let i = newLength; i < currentLength; i++) {
-            const component = this._items[i];
+            const component = items[i];
             component.el.hidden = true;
             this._hiddenItems.push(component);
             this._hiddenItemData.push(this._itemData[i]);
             this._emitItemRemove(i, component, this._itemData[i]);
         }
-        this._items.length = newLength;
+        items.length = newLength;
         this._itemData.length = newLength;
 
         this._applyOrders();
@@ -138,32 +139,34 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     add(data: Record<string, any>): any {
+        const items = this.items;
         const reused = this._reuseFromPool(data);
         if (reused) {
-            this._items.push(reused);
+            items.push(reused);
             this._itemData.push(data);
             this._applyOrders();
-            this._emitItemAdd(this._items.length - 1, reused, data);
+            this._emitItemAdd(items.length - 1, reused, data);
             return reused;
         }
 
         const component = this._createItem(data);
         if (component) {
-            this._items.push(component);
+            items.push(component);
             this._itemData.push(data);
             this._applyOrders();
-            this._emitItemAdd(this._items.length - 1, component, data);
+            this._emitItemAdd(items.length - 1, component, data);
             return component;
         }
         return null;
     }
 
     insert(index: number, data: Record<string, any>): any {
-        const clampedIndex = Math.min(Math.max(0, index), this._items.length);
+        const items = this.items;
+        const clampedIndex = Math.min(Math.max(0, index), items.length);
 
         const reused = this._reuseFromPool(data);
         if (reused) {
-            this._items.splice(clampedIndex, 0, reused);
+            items.splice(clampedIndex, 0, reused);
             this._itemData.splice(clampedIndex, 0, data);
             this._applyOrders();
             this._emitItemAdd(clampedIndex, reused, data);
@@ -172,7 +175,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         const component = this._createItem(data);
         if (component) {
-            this._items.splice(clampedIndex, 0, component);
+            items.splice(clampedIndex, 0, component);
             this._itemData.splice(clampedIndex, 0, data);
             this._applyOrders();
             this._emitItemAdd(clampedIndex, component, data);
@@ -182,8 +185,9 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     removeAt(index: number): any {
-        if (index < 0 || index >= this._items.length) return undefined;
-        const [component] = this._items.splice(index, 1);
+        const items = this.items;
+        if (index < 0 || index >= items.length) return undefined;
+        const [component] = items.splice(index, 1);
         const [data] = this._itemData.splice(index, 1);
         component.el.hidden = true;
         this._hiddenItems.push(component);
@@ -194,14 +198,17 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     clear(): void {
-        for (let i = 0; i < this._items.length; i++) {
-            const component = this._items[i];
-            component.el.hidden = true;
-            this._hiddenItems.push(component);
-            this._hiddenItemData.push(this._itemData[i]);
-            this._emitItemRemove(i, component, this._itemData[i]);
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (let i = 0; i < items.length; i++) {
+                const component = items[i];
+                component.el.hidden = true;
+                this._hiddenItems.push(component);
+                this._hiddenItemData.push(this._itemData[i]);
+                this._emitItemRemove(i, component, this._itemData[i]);
+            }
+            items.length = 0;
         }
-        this._items = [];
         this._itemData = [];
         for (const pool of this._auxPools.values()) {
             for (const component of pool.items) {
@@ -223,7 +230,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             const itemType = component?.type ?? component?.constructor?.type;
             if (itemType === dataType) {
                 this._hiddenItems.splice(i, 1);
-                const hiddenData = this._hiddenItemData.splice(i, 1)[0];
+                this._hiddenItemData.splice(i, 1);
                 if (typeof component.update === 'function') {
                     component.update(data);
                 }
@@ -417,10 +424,12 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         container.style.flexDirection = this._direction === 'horizontal' ? 'row' : 'column';
 
         const step = this._step;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
 
-        for (let i = 0; i < this._items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
             const customOrder = this._itemData[i].order;
-            this._items[i].el.style.order =
+            items[i].el.style.order =
                 customOrder !== undefined ? String(customOrder) : String((i + 1) * step);
         }
 

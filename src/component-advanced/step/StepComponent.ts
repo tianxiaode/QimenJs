@@ -52,7 +52,7 @@ class StepComponent extends ItemGroupPooledComponent {
     }
 
     _onActiveIndexOptionChange(value: number, old: number): void {
-        if (this._items.length > 0) {
+        if (this.items.length > 0) {
             this._syncStepStatus();
             if (old !== value) {
                 this.emit('select', { index: value, prevIndex: old });

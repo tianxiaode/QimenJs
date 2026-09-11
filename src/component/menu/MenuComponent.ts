@@ -90,13 +90,13 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     setItems(datas: Record<string, any>[]): void {
         super.setItems(datas);
-        for (const item of this._items) {
+        for (const item of this.items) {
             if ((item as any)._hasSubmenu) {
                 (item as any).setExpandArrow('collapsed');
             }
         }
         this.initGroupSelect({ defaultMode: 'radio' });
-        this.registerGroupItems(this._items);
+        this.registerGroupItems(this.items);
     }
 
     get itemGroup(): any {

@@ -116,8 +116,10 @@ class InputComponent extends FormFieldComponent {
     }
 
     _itemsIndexOf(group: any, item: any): number {
-        for (let i = 0; i < group._items.length; i++) {
-            if (group._items[i] === item) return i;
+        const items = group.items;
+        if (!Array.isArray(items)) return -1;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i] === item) return i;
         }
         return -1;
     }
@@ -132,7 +134,7 @@ class InputComponent extends FormFieldComponent {
             text: '×',
             order: CLEAR_BTN_ORDER,
         });
-        this._clearBtnItem = actionsCmp._items[actionsCmp._items.length - 1] ?? null;
+        this._clearBtnItem = actionsCmp.items[actionsCmp.items.length - 1] ?? null;
     }
 
     onClearBtnClick(): void {

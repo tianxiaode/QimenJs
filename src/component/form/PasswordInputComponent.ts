@@ -89,7 +89,7 @@ class PasswordInputComponent extends InputComponent {
             order: EYE_BTN_ORDER,
         });
         const actionsCmp = this.getComponent('actions') as any;
-        this._eyeBtnItem = actionsCmp?._items[actionsCmp._items.length - 1] ?? null;
+        this._eyeBtnItem = actionsCmp?.items[actionsCmp.items.length - 1] ?? null;
     }
 
     onFieldBodyActionClick(data: any): void {
@@ -114,7 +114,7 @@ class PasswordInputComponent extends InputComponent {
             order: STRENGTH_ORDER,
         });
         if (strengthCmp) {
-            this._strengthItem = infoCmp._items[infoCmp._items.length - 1] ?? null;
+            this._strengthItem = infoCmp.items[infoCmp.items.length - 1] ?? null;
         }
     }
 
