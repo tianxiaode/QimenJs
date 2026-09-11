@@ -187,7 +187,6 @@ export class DomEventsEngine {
         const originalEvent = domEvt?.data?.originalEvent;
         const target = originalEvent?.target ?? (domEvt?.target as Element);
         const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
-        console.log(`[DomEvt.handleDelegated] inst=${instance.type}#${instance.id} eventType=${eventType} hasTarget=${!!target} rulesCount=${rules.length}`);
         if (!target) return;
         if (!eventType) return;
 
@@ -200,7 +199,6 @@ export class DomEventsEngine {
             if (rule.event !== eventType) continue;
 
             const matched = DomEventsEngine._matchPath(instance, rule.path, target);
-            console.log(`[DomEvt.handleDelegated] ruleEvent=${rule.event} path=${rule.path} matched=${!!matched}`);
             if (!matched) continue;
 
             if (matched.disable) continue;
@@ -317,14 +315,12 @@ export class DomEventsEngine {
      */
     private static _findByType(component: any, type: string, target: Element): any {
         const children = DomEventsEngine._getChildren(component);
-        console.log(`[DomEvt._findByType] type=${type} childrenCount=${children.length} childTypes=${children.map(c => c?.constructor?._type || c?.constructor?.name?.replace(/Component$/, '') || c?.type).join(',')}`);
         for (const childComp of children) {
             if (!childComp?.el) continue;
             if (!childComp.el.contains(target)) continue;
             const ctor = childComp.constructor;
             const childType =
                 ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
-            console.log(`[DomEvt._findByType] childType=${childType} matches=${childType === type} elContains=${childComp.el.contains(target)}`);
             if (childType === type) return childComp;
         }
         return null;
@@ -336,7 +332,6 @@ export class DomEventsEngine {
      * - 普通组件：优先返回 childComponentList，回退到 nodeMap/nodeInstances
      */
     private static _getChildren(component: any): any[] {
-        console.log(`[DomEvt._getChildren] inst=${component.type}#${component.id} isItemContainer=${component.isItemContainer} _itemsLen=${Array.isArray(component._items) ? component._items.length : 'n/a'}`);
         if (component.isItemContainer && Array.isArray(component._items)) {
             return component._items.map((item: any) => item.component);
         }
@@ -363,7 +358,6 @@ export class DomEventsEngine {
      * handler 本地调用 + EventForwarder 统一转发
      */
     static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
-        console.log(`[DomEvt._dispatchRule] inst=${instance.type}#${instance.id} event=${rule.event} path=${rule.path} handler=${rule.handler} emits=${JSON.stringify(rule.emits)} bridges=${JSON.stringify(rule.bridges)}`);
         if (rule.handler) {
             DomEventsEngine._invokeHandler(instance, rule, domEvt);
         }

@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl, TplEventAction, FloatDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, FloatDecl } from '@qimenjs/component-core';
 import { OverflowAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
@@ -22,22 +22,16 @@ const ItemGroupBaseComponentDefs: Definitions = {
         defaultItemType: '',
         defaultItem: {},
         indicator: undefined,
+        isItemContainer: true,
+        _items: [],
     },
 } as const;
 
 class ItemGroupBaseComponent extends Component {
     static type = 'itemgroup';
-    isItemContainer: boolean = true;
     get tpl(): TemplateDecl {
         return ITEMGROUP_BASE_TPL;
     }
-
-    _items: Array<{
-        data: Record<string, any>;
-        component: any;
-        el: HTMLElement;
-        events?: Record<string, TplEventAction>;
-    }> = [];
 
     _onDirectionOptionChange(value: string): void {
         this.removeCls(['q-itemgroup--horizontal', 'q-itemgroup--vertical']);
@@ -70,7 +64,7 @@ class ItemGroupBaseComponent extends Component {
         if (value) this.setItems(value);
         this._setRawData(
             'items',
-            this._items.map(item => item.component)
+            this._items.map((item: any) => item.component)
         );
     }
 

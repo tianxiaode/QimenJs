@@ -94,7 +94,6 @@ export class ComponentEventBus {
         const sourceId = ctx.source;
         const eventName = ctx.type!;
         const componentEvent = encodeComponentEvent(sourceId, eventName);
-        console.log(`[ComponentBus.emit] sourceId=${sourceId} eventName=${eventName} componentEvent=${componentEvent}`);
         this.componentScope.emit(componentEvent, ctx);
     }
 
@@ -112,7 +111,6 @@ export class ComponentEventBus {
     componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void {
         const componentEvent = encodeComponentEvent(sourceId, eventName);
         return this.componentScope.on(componentEvent, (ctx: any) => {
-            console.log(`[ComponentBus.on HIT] sourceId=${sourceId} eventName=${eventName}`);
             const data = ctx?.data !== undefined ? ctx.data : ctx;
             handler(data);
         });

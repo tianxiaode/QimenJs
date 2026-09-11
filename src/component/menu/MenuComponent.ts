@@ -35,7 +35,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     domEvents?: DomEventsMap | undefined = {
         click: {
-            path: '{MenuItem}.content',
+            path: '{MenuItem}',
             handler: '_onItemClick',
             emits: ['select', '[action]'],
             bridges: ['select', '[action]'],
