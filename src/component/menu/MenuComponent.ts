@@ -36,7 +36,7 @@ class MenuComponent extends ItemGroupStaticComponent {
             path: '{MenuItem}.content',
             handler: '_onItemClick',
             emits: ['select', '[action]'],
-            bridges: ['[action]'],
+            bridges: ['select', '[action]'],
         },
         enter: { path: '{MenuItem}', handler: '_onItemEnter' },
         leave: { path: '{MenuItem}', handler: '_onItemLeave' },

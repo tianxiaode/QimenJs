@@ -1,4 +1,5 @@
 import { NavbarComponent } from '@qimenjs/component';
+import { ListenItem } from '@qimenjs/component-core';
 
 class ShowcaseNavbar extends NavbarComponent {
     get defaultOptions(): Record<string, any> {
@@ -31,38 +32,11 @@ class ShowcaseNavbar extends NavbarComponent {
                     action: 'nav-docs',
                 },
                 {
-                    type: 'dropdown',
-                    //text: '@nav.lang',
-                    iconCls: 'fa fa-globe',
-                    hint: '@nav.lang',
-                    //tooltip: { text: '@nav.lang' },
+                    type: 'href',
+                    href: '#action/toggle-login',
+                    text: '@nav.login',
                     dock: 'right',
-                    ghost: true,
-                    popover: {
-                        type: 'menu',
-                        placement: 'bottom',
-                        items: [
-                            { text: '中文', action: 'set-lang-zh' },
-                            { text: 'English', action: 'set-lang-en' },
-                        ],
-                    },
-                },
-                {
-                    type: 'dropdown',
-                    text: '@nav.theme',
-                    iconCls: 'fa fa-paint-brush',
-                    hint: '@nav.theme',
-                    //tooltip: { text: '@nav.theme' },
-                    dock: 'right',
-                    ghost: true,
-                    popover: {
-                        type: 'menu',
-                        placement: 'bottom',
-                        items: [
-                            { text: '@nav.themeLight', action: 'set-theme-light' },
-                            { text: '@nav.themeDark', action: 'set-theme-dark' },
-                        ],
-                    },
+                    action: 'toggle-login',
                 },
                 {
                     type: 'href',
@@ -72,14 +46,45 @@ class ShowcaseNavbar extends NavbarComponent {
                     action: 'toggle-dark',
                 },
                 {
-                    type: 'href',
-                    href: '#action/toggle-login',
-                    text: '@nav.login',
+                    type: 'dropdown',
+                    iconCls: 'fa fa-globe',
+                    hint: '@nav.lang',
                     dock: 'right',
-                    action: 'toggle-login',
+                    ghost: true,
+                    popover: {
+                        type: 'menu',
+                        placement: 'bottom',
+                        eventKey: 'lang',
+                        items: [
+                            { text: '中文', action: 'set-lang-zh' },
+                            { text: 'English', action: 'set-lang-en' },
+                        ],
+                    },
+                },
+                {
+                    type: 'dropdown',
+                    iconCls: 'fa fa-paint-brush',
+                    hint: '@nav.theme',
+                    dock: 'right',
+                    ghost: true,
+                    popover: {
+                        type: 'menu',
+                        placement: 'bottom',
+                        eventKey: 'theme',
+                        items: [
+                            { text: '@nav.themeLight', action: 'set-theme-light' },
+                            { text: '@nav.themeDark', action: 'set-theme-dark' },
+                        ],
+                    },
                 },
             ],
         };
+    }
+
+    listens: ListenItem[] = [{ source: 'lang', events: { select: '_onLangChange' } }];
+
+    _onLangChange(data: any): void {
+        console.log('Language changed:', data);
     }
 }
 
