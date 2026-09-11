@@ -133,10 +133,10 @@ export const PopoverAbility: AbilityDefinition = {
         });
 
         if (decl.mask) {
-            overlay.initOverlayMask?.({
-                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+            overlay.mask = {
                 scoped: decl.maskMode === 'scoped',
-            });
+                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+            };
         }
 
         this.onCleanup(() => overlay.dispose());

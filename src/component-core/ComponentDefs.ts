@@ -75,6 +75,8 @@ export const ComponentDefs: Definitions = {
         align: null,
         /** 浮层 z-index 档位 — dropdown(1050)/tooltip(1080) 等 */
         zIndexLevel: null,
+        /** 遮罩配置 — false/true/'scoped'/'global'/{color,scoped} */
+        mask: null,
         /** 箭头自定义 CSS 类 — 附加到 arrowNode 指定的节点上 */
         arrowCls: null,
         /** 组件尺寸 — sm/md/lg/xl/2xl，走全局 q-size--* CSS 类 */

@@ -58,10 +58,10 @@ export const FloatAbility: AbilityDefinition = {
         overlay.show();
 
         if (decl.mask) {
-            overlay.initOverlayMask?.({
-                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+            overlay.mask = {
                 scoped: decl.maskMode === 'scoped',
-            });
+                color: typeof decl.mask === 'string' ? decl.mask : undefined,
+            };
         }
 
         return { overlay, anchorEl, decl };

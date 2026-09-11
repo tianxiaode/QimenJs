@@ -46,6 +46,7 @@ export const COMPONENT_ABILITIES = [
     BadgeAbility,
     FloatAbility,
     OverlayAbility,
+    MaskAbility,
     TooltipAbility,
     DialogAbility,
     PopoverAbility,

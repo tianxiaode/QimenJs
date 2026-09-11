@@ -59,10 +59,10 @@ export class Msgbox extends Component {
 
         this.el!.style.zIndex = String(this.acquireZIndex());
 
-        this.initOverlayMask({ color: 'rgba(0,0,0,0.5)' });
+        this.mask = { color: 'rgba(0,0,0,0.5)' };
 
         if (this.msgboxType === 'alert') {
-            const mask = this.abilityState('OverlayAbility:mask');
+            const mask = this.abilityState('MaskAbility:instance');
             if (mask) {
                 this.onCleanup(this.bind(mask.el, 'click'));
                 const off = this.on('dom:click', (e: any) => {
@@ -130,7 +130,7 @@ export class Msgbox extends Component {
         }
         this.callback?.(result);
 
-        const mask = this.abilityState('OverlayAbility:mask');
+        const mask = this.abilityState('MaskAbility:instance');
         const maskEl = mask?.el;
         const maskAnim = maskEl?.animate([{ opacity: 1 }, { opacity: 0 }], {
             duration: 200,

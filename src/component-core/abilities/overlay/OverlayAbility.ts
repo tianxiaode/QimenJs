@@ -1,19 +1,17 @@
 /**
  * OverlayAbility — 浮层能力
  *
- * 为任何组件提供浮层（overlay）操作能力：
+ * 为浮动组件提供浮层（overlay）操作能力：
  * - show / hide — 挂载到 OverlayRoot + z-index + 定位 + 点击外部关闭
  * - repositionOverlay — 重新定位
  * - mountToOverlay / unmountFromOverlay — 直接操作 OverlayRoot
- * - initOverlayMask / removeOverlayMask — 遮罩层管理
  *
- * show/hide 无参，从 option 读取 anchor/placement/offset/zIndexLevel。
- * 替代 FloatingComponent 继承模式，通过 Ability 组合让任何组件可浮动。
+ * show/hide 自动联动 MaskAbility 的 showMask/hideMask（如果存在）。
+ * mask 管理已拆分到独立的 MaskAbility，通过 mask option 控制。
  */
 
 import type { AbilityDefinition } from '@/composable';
 import { OverlayRoot } from '../../overlay/OverlayRoot';
-import { MaskComponent } from '../../overlay/mask';
 import { positionOverlay, type Placement } from '../../overlay/dispatch/positionOverlay';
 import { ZIndexLevel, zIndexManager } from '../../engine';
 
@@ -79,11 +77,7 @@ export const OverlayAbility: AbilityDefinition = {
         const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
         this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
 
-        const mask = this.abilityState('OverlayAbility:mask');
-        if (mask) {
-            mask.show();
-            mask.updatePosition(anchor.getBoundingClientRect());
-        }
+        this.showMask?.();
 
         this._bindOverlayHandlers();
     },
@@ -99,10 +93,7 @@ export const OverlayAbility: AbilityDefinition = {
             this.unmountFromOverlay(el);
         }
 
-        const mask = this.abilityState('OverlayAbility:mask');
-        if (mask) {
-            mask.hide();
-        }
+        this.hideMask?.();
     },
 
     repositionOverlay(anchor?: HTMLElement, placement?: Placement, offset?: number): void {
@@ -116,39 +107,7 @@ export const OverlayAbility: AbilityDefinition = {
             offset ?? (this.offset ?? 4),
             true
         );
-        const mask = this.abilityState('OverlayAbility:mask');
-        if (mask) {
-            mask.updatePosition(actualAnchor.getBoundingClientRect());
-        }
-    },
-
-    initOverlayMask(config?: { scoped?: boolean; color?: string }): void {
-        const existing = this.abilityState('OverlayAbility:mask');
-        if (existing) return;
-
-        const zIndex = this.el?.style.zIndex ? Number(this.el.style.zIndex) - 1 : 1;
-        const mask = new MaskComponent({
-            scoped: config?.scoped,
-            color: config?.color,
-            zIndex,
-        });
-        mask.mount();
-        mask.hide();
-        this.setAbilityState('OverlayAbility:mask', mask);
-        this.onCleanup(() => this.removeOverlayMask());
-
-        const anchor = this.abilityState('OverlayAbility:anchor');
-        if (anchor) {
-            mask.updatePosition(anchor.getBoundingClientRect());
-        }
-    },
-
-    removeOverlayMask(): void {
-        const mask = this.abilityState('OverlayAbility:mask');
-        if (mask) {
-            mask.dispose();
-            this.setAbilityState('OverlayAbility:mask', null);
-        }
+        this.updateMaskPosition?.(actualAnchor);
     },
 
     _bindOverlayHandlers(): void {
