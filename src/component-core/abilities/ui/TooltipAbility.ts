@@ -21,11 +21,32 @@ export const TooltipAbility: AbilityDefinition = {
     _onTooltipOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
+
         const inst = this.abilityState('tooltip-instance') as any;
         if (inst) {
-            this._disposeFloat(inst);
-            this.setAbilityState('tooltip-instance', undefined);
+            let cfg: any = this.tooltip;
+            if (!cfg) return;
+            if (typeof cfg === 'string') {
+                cfg = { text: cfg };
+            }
+            const decl: any = {
+                type: 'tooltip',
+                trigger: cfg.trigger ?? 'hover',
+                placement: cfg.placement ?? 'top',
+                offset: cfg.offset,
+                showDelay: cfg.delay,
+                zIndexLevel: ZIndexLevel.tooltip,
+                text: cfg.text,
+            };
+            const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+            for (const [key, val] of Object.entries(rest)) {
+                if (val !== undefined) {
+                    inst.overlay[key] = val;
+                }
+            }
+            return;
         }
+
         if (value) {
             this._initTooltip();
         }

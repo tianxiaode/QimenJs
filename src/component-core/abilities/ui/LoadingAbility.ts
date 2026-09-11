@@ -23,11 +23,19 @@ export const LoadingAbility: AbilityDefinition = {
     _onLoadingOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
+
         const inst = this.abilityState('loading-instance') as any;
         if (inst) {
-            this._disposeFloat(inst);
-            this.setAbilityState('loading-instance', undefined);
+            const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
+            const { maskMode, mask, ...loadingData } = cfg;
+            for (const [key, val] of Object.entries(loadingData)) {
+                if (val !== undefined) {
+                    inst.overlay[key] = val;
+                }
+            }
+            return;
         }
+
         if (value) {
             this._initLoading();
         }

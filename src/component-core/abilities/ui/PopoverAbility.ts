@@ -29,11 +29,21 @@ export const PopoverAbility: AbilityDefinition = {
     _onPopoverOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (!this._templateInitialized) return;
+
         const inst = this.abilityState('popover-instance') as any;
         if (inst) {
-            this._disposeFloat(inst);
-            this.setAbilityState('popover-instance', undefined);
+            const decl = this._getPopoverFloatDecl();
+            if (decl) {
+                const { type, trigger, anchor, mask, maskMode, closeOnEscape, closeOnClickOutside, emits, showDelay, hideDelay, data, placement, offset, ...rest } = decl;
+                for (const [key, val] of Object.entries(rest)) {
+                    if (val !== undefined) {
+                        inst.overlay[key] = val;
+                    }
+                }
+            }
+            return;
         }
+
         if (value) {
             this._initPopover();
         }
