@@ -99,6 +99,7 @@ export class DomEventsEngine {
      * 则将其返回的 DomEventsMap 与静态 domEvents 深度合并后再编译。
      */
     static bindDomEvents(instance: any): void {
+        console.log(`[DomEvt.bindDomEvents] inst=${instance.type}#${instance.id} el=${!!instance.el} domEvents=${JSON.stringify(Object.keys(instance.domEvents || {}))}`);
         const staticDomEvents: DomEventsMap | undefined = instance.domEvents;
 
         let merged: DomEventsMap = staticDomEvents ? { ...staticDomEvents } : {};
@@ -186,9 +187,9 @@ export class DomEventsEngine {
     static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
         const originalEvent = domEvt?.data?.originalEvent;
         const target = originalEvent?.target ?? (domEvt?.target as Element);
-        if (!target) return;
-
         const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
+        console.log(`[DomEvt.handleDelegated] inst=${instance.type}#${instance.id} eventType=${eventType} hasTarget=${!!target} rulesCount=${rules.length}`);
+        if (!target) return;
         if (!eventType) return;
 
         if (instance.disable) return;
