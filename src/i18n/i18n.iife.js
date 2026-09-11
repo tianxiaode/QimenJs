@@ -18,10 +18,14 @@ class I18nManager {
     }
 
     set locale(value) {
-        if (value === this._locale) return;
+        if (2value === this._locale) return;
         const previous = this._locale;
         this._locale = value;
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = value;
+        }
         this.emit('locale:change', { previous, current: value });
+        this.loadScript('/locales/' + value + '.js');
     }
 
     t(key, params, defaultValue) {
