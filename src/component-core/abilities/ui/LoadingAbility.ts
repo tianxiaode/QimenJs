@@ -88,13 +88,15 @@ export const LoadingAbility: AbilityDefinition = {
             data: loadingData,
         };
 
-        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
+        const OverlayClass =
+            typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[LoadingAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 
-        const anchorEl = decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
+        const anchorEl =
+            decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
         const data = typeof decl.data === 'function' ? decl.data() : decl.data;
         const overlay = new OverlayClass({
             ...data,

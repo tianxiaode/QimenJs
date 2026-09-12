@@ -29,41 +29,10 @@ import type { DelegatedEventRule } from '../../types/events';
 export const PopoverAbility: AbilityDefinition = {
     _onPopoverOptionChange(value: any, old: any): void {
         if (value === old) return;
-        if (!this._templateInitialized) return;
-
-        if (old && typeof old.show === 'function') {
-            if (!value) {
-                old.dispose();
-                return;
-            }
-            const decl = this._getPopoverFloatDecl();
-            if (decl) {
-                const {
-                    type,
-                    trigger,
-                    anchor,
-                    mask,
-                    maskMode,
-                    closeOnEscape,
-                    closeOnClickOutside,
-                    emits,
-                    showDelay,
-                    hideDelay,
-                    data,
-                    placement,
-                    offset,
-                    ...rest
-                } = decl;
-                for (const [key, val] of Object.entries(rest)) {
-                    if (val !== undefined) {
-                        old[key] = val;
-                    }
-                }
-            }
-            this.setData('popover', old, true);
+        if (old?.isInstance) {
+            if (!value) old.dispose();
             return;
         }
-
         if (value) {
             this._ensurePopover();
         }
@@ -126,6 +95,15 @@ export const PopoverAbility: AbilityDefinition = {
         }
     },
 
+    replacePopover(config: any): void {
+        const old = this.popover;
+        if (old?.isInstance) {
+            old.dispose();
+        }
+        this.setData('popover', config, true);
+        this._ensurePopover();
+    },
+
     _ensurePopover(): any {
         if (this.popover && typeof this.popover.show === 'function') {
             return this.popover;
@@ -134,13 +112,15 @@ export const PopoverAbility: AbilityDefinition = {
         const decl = this._getPopoverFloatDecl();
         if (!decl) return null;
 
-        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
+        const OverlayClass =
+            typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[PopoverAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 
-        const anchorEl = decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
+        const anchorEl =
+            decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
         const {
             type,
             trigger,
@@ -181,7 +161,7 @@ export const PopoverAbility: AbilityDefinition = {
                 needsBinding: true,
             };
             DomEventsEngine.addEventRule(this, clickRule);
-            this.onCleanup(() => {
+            overlay.onCleanup(() => {
                 DomEventsEngine.removeEventRule(this, clickRule);
             });
         }

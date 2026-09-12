@@ -19,8 +19,26 @@ import type { AbilityDefinition } from '@/composable';
 import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
 import { SKELETON_CLS } from '../../constants';
 import { ComponentCoreOptions, IComponentCore } from '../../types';
+import { string } from '@/utils';
+
 /** 组件初始化能力 */
 export const InitAbility = {
+    _initialize(options?: ComponentCoreOptions) {
+        this.logger.debug(`[initialize][${this.id}]`, '开始初始化');
+        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
+        this.hasParent = options?.hasParent ?? false;
+        this.container = options?.container;
+        delete options?.id;
+        delete options?.hasParent;
+        delete options?.container;
+
+        this._initializing = true;
+        this.isInstance = true;
+        this.ready = new Promise(resolve => (this._readyResolve = resolve));
+        this.onBeforeInit(options);
+        this._buildDOM(options);
+    },
+
     /**
      * 构建 DOM
      *

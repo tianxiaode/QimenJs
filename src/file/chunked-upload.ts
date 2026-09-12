@@ -58,7 +58,6 @@ export class ChunkedUploader {
     private status: ChunkUploadStatus[] = [];
     private paused = false;
     private aborted = false;
-    private onProgress: ((progress: ChunkProgress) => void) | null = null;
 
     private resolvePromise!: (result: any) => void;
     private rejectPromise!: (err: any) => void;
@@ -170,19 +169,25 @@ export class ChunkedUploader {
     private async _checkUploadedChunks(): Promise<void> {
         try {
             const client = new HttpClient(this.config.domain);
-            const task = client.post(this.config.checkUrl, {
-                uploadId: this.uploadId,
-                fileName: this.file.name,
-                fileSize: this.file.size,
-                chunkSize: this.config.chunkSize,
-                totalChunks: this.chunks.length,
-            }, { headers: this.config.headers });
+            const task = client.post(
+                this.config.checkUrl,
+                {
+                    uploadId: this.uploadId,
+                    fileName: this.file.name,
+                    fileSize: this.file.size,
+                    chunkSize: this.config.chunkSize,
+                    totalChunks: this.chunks.length,
+                },
+                { headers: this.config.headers }
+            );
 
             const ctx = await task.context;
             const uploadedIndices: number[] = ctx.data?.uploadedChunks ?? [];
 
             if (uploadedIndices.length > 0) {
-                this.logger.debug?.(`[ChunkedUploader] resume: ${uploadedIndices.length} chunks already uploaded`);
+                this.logger.debug?.(
+                    `[ChunkedUploader] resume: ${uploadedIndices.length} chunks already uploaded`
+                );
                 for (const idx of uploadedIndices) {
                     if (idx >= 0 && idx < this.chunks.length) {
                         this.chunks[idx].uploaded = true;
@@ -236,12 +241,16 @@ export class ChunkedUploader {
         if (!this.config.mergeUrl) return { uploadId: this.uploadId };
 
         const client = new HttpClient(this.config.domain);
-        const task = client.post(this.config.mergeUrl, {
-            uploadId: this.uploadId,
-            fileName: this.file.name,
-            fileSize: this.file.size,
-            totalChunks: this.chunks.length,
-        }, { headers: { ...this.config.headers, ...this.config.mergeHeaders } });
+        const task = client.post(
+            this.config.mergeUrl,
+            {
+                uploadId: this.uploadId,
+                fileName: this.file.name,
+                fileSize: this.file.size,
+                totalChunks: this.chunks.length,
+            },
+            { headers: { ...this.config.headers, ...this.config.mergeHeaders } }
+        );
 
         const ctx = await task.context;
         return ctx.data ?? { uploadId: this.uploadId };

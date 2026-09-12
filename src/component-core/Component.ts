@@ -25,7 +25,6 @@ import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
 import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
 
-import { string } from '@/utils';
 import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 import { ComponentRegistrar } from './ComponentRegistrar';
@@ -106,17 +105,7 @@ export class Component extends ComposableBase implements IComponent {
 
     constructor(options?: ComponentCoreOptions) {
         super(options);
-        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
-        this.hasParent = options?.hasParent ?? false;
-        this.container = options?.container;
-        delete options?.id;
-        delete options?.hasParent;
-        delete options?.container;
-
-        this._initializing = true;
-        this.ready = new Promise(resolve => (this._readyResolve = resolve));
-        this.onBeforeInit(options);
-        this._buildDOM(options);
+        this._initialize(options);
     }
 
     update(options?: ComponentCoreOptions) {

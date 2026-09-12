@@ -3,14 +3,22 @@
  *
  * tooltip option 初始化前是配置对象，初始化后变成浮动组件实例。
  * this.tooltip 直接返回实例，外部代码可 this.tooltip.show() / this.tooltip.hide()。
- * trigger 事件（hover）绑定一次，由父组件 onCleanup 自动清理。
+ * trigger 事件通过 DomEventsEngine.addEventRule 注册，
+ * overlay dispose 时自动清理事件规则。
+ *
+ * 更新方式：
+ *   updateTooltip({ text: '新提示' })   — 更新已有实例属性
+ *   replaceTooltip({ text: '全新配置' }) — 销毁旧实例，用新配置重建
  *
  * @example
  * // 组件 options 中声明
- * tooltip: { content: '保存', placement: 'top' }
+ * tooltip: { text: '保存', placement: 'top' }
  *
- * // 运行时更新
- * this.updateTooltip({ content: '新提示' });
+ * // 运行时更新文本
+ * this.updateTooltip({ text: '新提示' });
+ *
+ * // 运行时替换整个 tooltip
+ * this.replaceTooltip({ text: '全新配置', trigger: 'click' });
  */
 
 import type { AbilityDefinition } from '@/composable';
@@ -21,52 +29,10 @@ import type { DelegatedEventRule } from '../../types/events';
 export const TooltipAbility: AbilityDefinition = {
     _onTooltipOptionChange(value: any, old: any): void {
         if (value === old) return;
-        if (!this._templateInitialized) return;
-
-        if (old && typeof old.show === 'function') {
-            if (!value) {
-                old.dispose();
-                return;
-            }
-            let cfg: any = this.tooltip;
-            if (!cfg) return;
-            if (typeof cfg === 'string') {
-                cfg = { text: cfg };
-            }
-            const decl: any = {
-                type: 'tooltip',
-                trigger: cfg.trigger ?? 'hover',
-                placement: cfg.placement ?? 'top',
-                offset: cfg.offset,
-                showDelay: cfg.delay,
-                zIndexLevel: ZIndexLevel.tooltip,
-                text: cfg.text,
-            };
-            const {
-                type,
-                trigger,
-                anchor,
-                mask,
-                maskMode,
-                closeOnEscape,
-                closeOnClickOutside,
-                emits,
-                showDelay,
-                hideDelay,
-                data,
-                placement,
-                offset,
-                ...rest
-            } = decl;
-            for (const [key, val] of Object.entries(rest)) {
-                if (val !== undefined) {
-                    old[key] = val;
-                }
-            }
-            this.setData('tooltip', old, true);
+        if (old?.isInstance) {
+            if (!value) old.dispose();
             return;
         }
-
         if (value) {
             this._ensureTooltip();
         }
@@ -80,60 +46,64 @@ export const TooltipAbility: AbilityDefinition = {
         }
     },
 
+    replaceTooltip(config: any): void {
+        const old = this.tooltip;
+        if (old?.isInstance) {
+            old.dispose();
+        }
+        this.setData('tooltip', config, true);
+        this._ensureTooltip();
+    },
+
     _ensureTooltip(): any {
         if (this.tooltip && typeof this.tooltip.show === 'function') {
             return this.tooltip;
         }
 
-        let cfg: any = this.tooltip;
-        if (!cfg) return null;
-        if (typeof cfg === 'string') {
-            cfg = { text: cfg };
-        }
+        const value = this.tooltip;
+        if (!value) return null;
 
+        const anchor = value.anchor ?? 'self';
+        const anchorEl = anchor === 'self' ? this.el! : (this.getNodeEl?.(anchor) ?? this.el!);
+        const type = typeof value === 'string' ? 'tooltip' : (value?.type ?? 'tooltip');
+        const OverlayClass = typeof type === 'function' ? type : this.resolveComponent(type);
+        if (!OverlayClass) return null;
+
+        const { type: _type, ...rest } = typeof value === 'string' ? { text: value } : value;
         const decl: any = {
-            type: 'tooltip',
-            trigger: cfg.trigger ?? 'hover',
-            placement: cfg.placement ?? 'top',
-            offset: cfg.offset,
-            showDelay: cfg.delay,
+            placement: 'top',
             zIndexLevel: ZIndexLevel.tooltip,
-            text: cfg.text,
+            anchor: anchorEl,
+            ...rest,
         };
 
-        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
-        if (!OverlayClass) {
-            this.logger?.warn?.(`[TooltipAbility] overlay type not found: ${decl.type}`);
-            return null;
-        }
-
-        const anchorEl = decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
-        const overlay = new OverlayClass({ ...decl, anchor: anchorEl });
+        const overlay = new OverlayClass(decl);
 
         this.onCleanup(() => overlay.dispose());
+        this.setData('tooltip', overlay, true);
 
-        if (decl.trigger !== 'manual') {
-            const enterRule: DelegatedEventRule = {
-                event: 'mouseenter',
-                path: anchorEl,
-                handler: '_onTooltipEnter',
-                needsBinding: true,
-            };
-            const leaveRule: DelegatedEventRule = {
-                event: 'mouseleave',
-                path: anchorEl,
-                handler: '_onTooltipLeave',
-                needsBinding: true,
-            };
-            DomEventsEngine.addEventRule(this, enterRule);
-            DomEventsEngine.addEventRule(this, leaveRule);
-            this.onCleanup(() => {
-                DomEventsEngine.removeEventRule(this, enterRule);
-                DomEventsEngine.removeEventRule(this, leaveRule);
+        const trigger = decl.trigger ?? 'hover';
+        if (trigger !== 'manual') {
+            const rules: DelegatedEventRule[] = [];
+            if (trigger === 'hover') {
+                rules.push(
+                    { event: 'mouseenter', path: anchorEl, handler: '_onTooltipEnter', needsBinding: true },
+                    { event: 'mouseleave', path: anchorEl, handler: '_onTooltipLeave', needsBinding: true },
+                );
+            } else if (trigger === 'click') {
+                rules.push(
+                    { event: 'click', path: anchorEl, handler: '_onTooltipClick', needsBinding: true },
+                );
+            }
+            for (const rule of rules) {
+                DomEventsEngine.addEventRule(this, rule);
+            }
+            overlay.onCleanup(() => {
+                for (const rule of rules) {
+                    DomEventsEngine.removeEventRule(this, rule);
+                }
             });
         }
-
-        this.setData('tooltip', overlay, true);
 
         return overlay;
     },
@@ -152,5 +122,12 @@ export const TooltipAbility: AbilityDefinition = {
             overlay.hide();
             overlay.close?.();
         }
+    },
+
+    _onTooltipClick(): void {
+        const overlay = this.tooltip;
+        if (!overlay || typeof overlay.show !== 'function') return;
+        if (overlay.isOpen) overlay.hide();
+        else overlay.show();
     },
 } satisfies AbilityDefinition;

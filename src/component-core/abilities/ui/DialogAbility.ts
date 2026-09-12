@@ -60,7 +60,8 @@ export const DialogAbility: AbilityDefinition = {
         const decl = this._getDialogFloatDecl();
         if (!decl) return;
 
-        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
+        const OverlayClass =
+            typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return;
 
         const overlay = new OverlayClass({ ...decl });
