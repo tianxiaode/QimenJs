@@ -46,7 +46,7 @@ class LabelComponent extends Component {
         if (value) this._applyRequiredMark();
     }
 
-    _onRequiredMarkOptionChange(value: string): void {
+    _onRequiredMarkOptionChange(_value: string): void {
         this._applyRequiredMark();
     }
 
@@ -99,5 +99,3 @@ class LabelComponent extends Component {
 
 LabelComponent.define(LabelComponentDefs);
 export { LabelComponent };
-/** 标签实例类型 */
-export type LabelComponentInstance = InstanceType<typeof LabelComponent>;

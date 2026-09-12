@@ -24,6 +24,7 @@ import { CARD_TPL } from './card-tpl';
 import { Definitions } from '@/composable';
 import type { CardContent } from './types';
 import './card.css';
+import { ColorAbility } from '@/component-abilities';
 
 const CardComponentDefs: Definitions = {
     options: {
@@ -70,5 +71,5 @@ class CardComponent extends Component {
 }
 
 CardComponent.define(CardComponentDefs);
-
+CardComponent.use(ColorAbility);
 export { CardComponent };

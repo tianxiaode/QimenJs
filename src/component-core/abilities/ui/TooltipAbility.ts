@@ -99,28 +99,27 @@ export const TooltipAbility: AbilityDefinition = {
             text: cfg.text,
         };
 
-        const OverlayClass = this._resolveFloatType(decl.type);
+        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[TooltipAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 
-        const anchorEl = this._getFloatAnchor('tooltip', decl);
+        const anchorEl = decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
         const overlay = new OverlayClass({ ...decl, anchor: anchorEl });
 
         this.onCleanup(() => overlay.dispose());
 
-        this._bindFloatTrigger('tooltip', decl, {
-            onShow: () => {
+        if (decl.trigger !== 'manual') {
+            this.onEnter(anchorEl, () => {
                 overlay.show();
                 overlay.open?.();
-            },
-            onHide: () => {
+            });
+            this.onLeave(anchorEl, () => {
                 overlay.hide();
                 overlay.close?.();
-            },
-            onToggle: () => {},
-        });
+            });
+        }
 
         this.setData('tooltip', overlay, true);
 

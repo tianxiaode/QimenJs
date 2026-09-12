@@ -3,6 +3,7 @@ import type { TemplateDecl } from '@/component-core';
 import { TEXT_TPL } from './text-tpl';
 import { Definitions } from '@/composable';
 import './text.css';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 const TextComponentDefs: Definitions = {
     options: {
@@ -41,5 +42,5 @@ class TextComponent extends Component {
 }
 
 TextComponent.define(TextComponentDefs);
-
+TextComponent.use(SizeAbility, ColorAbility);
 export { TextComponent };

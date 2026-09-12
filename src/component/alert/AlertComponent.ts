@@ -73,7 +73,7 @@ class AlertComponent extends Component {
     }
 
     _onTextOptionChange(value: string): void {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
     }
 
     _onAlertTypeOptionChange(value: AlertType, old: AlertType): void {
@@ -82,7 +82,7 @@ class AlertComponent extends Component {
     }
 
     _onTitleOptionChange(value: string, _old: string): void {
-        this.setNodeText(value, "title");
+        this.setNodeText(value, 'title');
         value ? this.removeCls('hidden', 'title') : this.addCls('hidden', 'title');
     }
 

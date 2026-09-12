@@ -40,24 +40,13 @@ export const DialogAbility: AbilityDefinition = {
             };
         }
 
-        const {
-            type,
-            trigger,
-            placement,
-            mask,
-            closeOnEscape,
-            closeOnClickOutside,
-            emits,
-        } = dialog as Record<string, any>;
         return {
-            type,
-            trigger: trigger ?? 'manual',
-            placement: placement ?? 'center',
-            mask: mask ?? true,
-            closeOnEscape: closeOnEscape ?? true,
-            closeOnClickOutside: closeOnClickOutside ?? false,
-            emits,
-            data: this.extra ?? undefined,
+            trigger: 'manual',
+            placement: 'center',
+            mask: true,
+            closeOnEscape: true,
+            closeOnClickOutside: false,
+            ...dialog, // 透传 dialog 的其他属性
         };
     },
 
@@ -71,11 +60,10 @@ export const DialogAbility: AbilityDefinition = {
         const decl = this._getDialogFloatDecl();
         if (!decl) return;
 
-        const OverlayClass = this._resolveFloatType(decl.type);
+        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return;
 
-        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
-        const overlay = new OverlayClass({ ...data });
+        const overlay = new OverlayClass({ ...decl });
 
         this.abilityState('dialog-instance', () => ({ overlay, decl }));
 
@@ -99,13 +87,6 @@ export const DialogAbility: AbilityDefinition = {
             this.hideDialog();
         } else {
             this.showDialog();
-        }
-    },
-
-    updateDialog(data: Record<string, any>): void {
-        const inst = this.abilityState('dialog-instance') as any;
-        if (inst) {
-            inst.overlay.onOverlayChange?.(data);
         }
     },
 } satisfies AbilityDefinition;

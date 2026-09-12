@@ -3,6 +3,7 @@ import type { TemplateDecl } from '@/component-core';
 import { AVATAR_TPL } from './avatar-tpl';
 import { Definitions } from '@/composable';
 import './avatar.css';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 export type AvatarMode = 'src' | 'text' | 'iconCls';
 
@@ -47,5 +48,5 @@ class AvatarComponent extends Component {
 }
 
 AvatarComponent.define(AvatarComponentDefs);
-
+AvatarComponent.use(SizeAbility, ColorAbility);
 export { AvatarComponent };

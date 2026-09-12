@@ -132,13 +132,13 @@ export const PopoverAbility: AbilityDefinition = {
         const decl = this._getPopoverFloatDecl();
         if (!decl) return null;
 
-        const OverlayClass = this._resolveFloatType(decl.type);
+        const OverlayClass = typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) {
             this.logger?.warn?.(`[PopoverAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 
-        const anchorEl = this._getFloatAnchor('popover', decl);
+        const anchorEl = decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
         const {
             type,
             trigger,
@@ -171,17 +171,18 @@ export const PopoverAbility: AbilityDefinition = {
 
         this.onCleanup(() => overlay.dispose());
 
-        this._bindFloatTrigger('popover', decl, {
-            onShow: () => overlay.show(),
-            onHide: () => overlay.hide(),
-            onToggle: () => {
-                if (overlay.isOpen) {
-                    overlay.hide();
-                } else {
-                    overlay.show();
-                }
-            },
-        });
+        if (decl.trigger !== 'manual') {
+            this.onCleanup(this.bind(anchorEl, 'click'));
+            this.onCleanup(
+                this.on('dom:click', (ctx: any) => {
+                    const event = ctx?.data?.originalEvent as MouseEvent;
+                    if (event && anchorEl.contains(event.target as Node)) {
+                        if (overlay.isOpen) overlay.hide();
+                        else overlay.show();
+                    }
+                })
+            );
+        }
 
         this.setData('popover', overlay, true);
 

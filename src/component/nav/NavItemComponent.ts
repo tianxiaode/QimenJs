@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl, FloatDecl } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 import './nav-item.css';
@@ -88,10 +88,8 @@ class NavItemComponent extends Component {
             ? this.addCls('q-nav-item--has-children')
             : this.removeCls('q-nav-item--has-children');
         this.setNodeHidden(!hasChildren, 'expand');
-        if (hasChildren && this.depth < this.maxDepth) {
-            this.attachFloat('subNav', this._buildSubNavDecl());
-        } else {
-            this.detachFloat('subNav');
+        if (!hasChildren || this.depth >= this.maxDepth) {
+            this._disposeSubNav();
         }
     }
 
@@ -124,12 +122,34 @@ class NavItemComponent extends Component {
 
     showTooltip(): void {
         if (this.mode !== 'collapsed' || !this.text) return;
-        this.updateFloat('tooltip', { tooltip: this.text });
-        this.showFloat('tooltip');
+
+        let inst = this.abilityState('navTooltip') as any;
+        if (!inst) {
+            const OverlayClass = this.resolveComponent('tooltip');
+            if (!OverlayClass) return;
+
+            const overlay: any = new OverlayClass({
+                text: this.text,
+                anchor: this.el!,
+                placement: 'right',
+                trigger: 'manual',
+            });
+            overlay.show();
+            inst = { overlay };
+            this.abilityState('navTooltip', () => inst);
+            this.onCleanup(() => {
+                overlay.dispose();
+                this.setAbilityState('navTooltip', undefined);
+            });
+        } else {
+            inst.overlay.text = this.text;
+            inst.overlay.show();
+        }
     }
 
     hideTooltip(): void {
-        this.hideFloat('tooltip');
+        const inst = this.abilityState('navTooltip') as any;
+        if (inst) inst.overlay.hide();
     }
 
     toggleOverlay(): void {
@@ -140,7 +160,33 @@ class NavItemComponent extends Component {
     openOverlay(): void {
         if (this._overlayOpen || !this.children?.length) return;
         if (this.depth >= this.maxDepth) return;
-        this.showFloat('subNav');
+
+        let inst = this.abilityState('subNav') as any;
+        if (!inst) {
+            const OverlayClass = this._resolveSubNavType();
+            if (!OverlayClass) return;
+
+            const options = this.overlayOptions ?? {};
+            const overlay: any = new OverlayClass({
+                items: this.children,
+                mode: this.mode,
+                depth: this.depth + 1,
+                maxDepth: this.maxDepth,
+                anchor: this.el!,
+                placement: options.placement ?? 'right-start',
+                offset: options.offset ?? 0,
+            });
+            overlay.show();
+            inst = { overlay };
+            this.abilityState('subNav', () => inst);
+            this.onCleanup(() => {
+                overlay.dispose();
+                this.setAbilityState('subNav', undefined);
+            });
+        } else {
+            inst.overlay.show();
+        }
+
         this._overlayOpen = true;
         this.setExpandArrow('expanded');
         this.emit('overlayOpen', { item: this });
@@ -148,7 +194,8 @@ class NavItemComponent extends Component {
 
     closeOverlay(): void {
         if (!this._overlayOpen) return;
-        this.hideFloat('subNav');
+        const inst = this.abilityState('subNav') as any;
+        if (inst) inst.overlay.hide();
         this._overlayOpen = false;
         this.setExpandArrow('collapsed');
         this.emit('overlayClose', { item: this });
@@ -157,26 +204,24 @@ class NavItemComponent extends Component {
     onBeforeDispose(): void {
         if (this._overlayOpen) this.closeOverlay();
         this.hideTooltip();
+        this._disposeSubNav();
         super.onBeforeDispose();
     }
 
-    private _buildSubNavDecl(): FloatDecl {
-        const options = this.overlayOptions ?? {};
-        return {
-            type: this.overlayComponent
-                ? ((this.overlayComponent as any).type ?? 'NavOverlay')
-                : 'NavOverlay',
-            anchor: 'self',
-            trigger: 'manual',
-            placement: (options.placement ?? 'right-start') as any,
-            offset: options.offset ?? 0,
-            data: {
-                items: this.children,
-                mode: this.mode,
-                depth: this.depth + 1,
-                maxDepth: this.maxDepth,
-            },
-        } as FloatDecl;
+    private _resolveSubNavType(): any {
+        if (this.overlayComponent) {
+            const t = (this.overlayComponent as any).type ?? 'NavOverlay';
+            return typeof t === 'function' ? this.overlayComponent : this.resolveComponent(t);
+        }
+        return this.resolveComponent('NavOverlay');
+    }
+
+    private _disposeSubNav(): void {
+        const inst = this.abilityState('subNav') as any;
+        if (inst) {
+            inst.overlay.dispose();
+            this.setAbilityState('subNav', undefined);
+        }
     }
 }
 

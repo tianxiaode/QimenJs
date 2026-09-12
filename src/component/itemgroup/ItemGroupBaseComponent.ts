@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl, FloatDecl } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { OverflowAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
@@ -64,11 +64,6 @@ class ItemGroupBaseComponent extends Component {
     }
 
     onAfterInit(): void {
-        if (typeof (this as any).indicatorFloat === 'object') {
-            for (const [key, decl] of Object.entries((this as any).indicatorFloat)) {
-                this.attachFloat(key, decl as FloatDecl);
-            }
-        }
     }
 
     get count(): number {

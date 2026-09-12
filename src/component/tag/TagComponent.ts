@@ -5,6 +5,7 @@ import { Definitions } from '@/composable';
 import { string } from '@/utils';
 import { resolveI18nValue } from '@/i18n';
 import './tag.css';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
@@ -176,4 +177,5 @@ class TagComponent extends Component {
 }
 
 TagComponent.define(TagComponentDefs);
+TagComponent.use(SizeAbility, ColorAbility);
 export { TagComponent };
