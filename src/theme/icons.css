@@ -92,6 +92,7 @@
 /* -------- Radio -------- */
 .q-radio {
     display: inline-block;
+    flex-shrink: 0;
     box-sizing: border-box;
     width: var(--q-icon-size);
     height: var(--q-icon-size);
@@ -120,6 +121,7 @@
 /* -------- Checkbox -------- */
 .q-checkbox {
     display: inline-block;
+    flex-shrink: 0;
     box-sizing: border-box;
     width: var(--q-icon-size);
     height: var(--q-icon-size);

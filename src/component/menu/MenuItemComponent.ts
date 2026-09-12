@@ -54,7 +54,7 @@ class MenuItemComponent extends Component {
             this.removeCls('q-checkbox--checked', 'icon');
         }
         this._applyAria();
-    },
+    }
 
     _onGroupModeOptionChange(value: string): void {
         if (value === 'checkbox') {
@@ -64,12 +64,12 @@ class MenuItemComponent extends Component {
         }
         this._applyGroupIcon();
         this._applyAria();
-    },
+    }
 
-    _onCheckedOptionChange(value: boolean): void {
+    _onCheckedOptionChange(_value: boolean): void {
         this._applyGroupIcon();
         this._applyAria();
-    },
+    }
 
     _onIconOptionChange(_value: string): void {}
 
