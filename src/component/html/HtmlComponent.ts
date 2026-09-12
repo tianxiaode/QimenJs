@@ -18,7 +18,7 @@ class HtmlComponent extends Component {
     _onContentOptionChange(value: undefined | null | string | string[]): void {
         if (Array.isArray(value) && value.length > 0) {
             value = value.join(''); // 处理数组情况
-            this._setRawData('content', value); // 处理数组情况
+            this.setData('content', value, true); // 处理数组情况
         }
         this.setNodeHtml(value);
     }

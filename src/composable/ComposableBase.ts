@@ -31,7 +31,7 @@ export class ComposableBase implements IComposableBase {
     constructor(options?: Record<string, any>) {
         this.logger = Logger.for(this.constructor.name);
         if (options) {
-            this._setRawData('_rawOptions', { ...options });
+            this.setData('_rawOptions', { ...options }, true);
         }
     }
 
@@ -45,10 +45,14 @@ export class ComposableBase implements IComposableBase {
         return key in data ? data[key] : undefined;
     }
 
-    setData(key: string, value: any): void {
+    setData(key: string, value: any, raw?: boolean): void {
         const self = this as any;
         const data = this._getData();
         const old = this.getData(key);
+        if (raw) {
+            data[key] = value;
+            return;
+        }
         if (old === value) return;
         data[key] = value;
         const changeKey = `_on${string.capitalize(key)}OptionChange`;
@@ -57,17 +61,6 @@ export class ComposableBase implements IComposableBase {
         }
 
         self._onOptionChange(key, value, old);
-    }
-
-    /**
-     * 直接写入 data_map，不触发 _onXxxOptionChange handler
-     *
-     * 用于 option change handler 内部需要替换 option 值的场景
-     * （如 items option 在 setItems 后替换为组件实例数组），
-     * 避免 setData 造成的递归调用。
-     */
-    _setRawData(key: string, value: any): void {
-        this._getData()[key] = value;
     }
 
     get optionsKeys(): Set<string> {
@@ -235,7 +228,7 @@ export class ComposableBase implements IComposableBase {
      * 派生类可覆写：声明需要在 _applyOptions 之前提取的 option key。
      *
      * 这些 option 的值会在 applyOptionDefaults 之后、_applyOptions 之前
-     * 通过 _setRawData 直接写入（绕过 change 机制），并从 options 中删除。
+     * 通过 setData(key, value, true) 直接写入（绕过 change 机制），并从 options 中删除。
      * 适用于 DOM 引用类数据（如 anchor），避免走 change 机制的复杂性。
      *
      * @example

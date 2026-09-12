@@ -7,7 +7,7 @@ import type { ILogger } from '@qimenjs/logger';
 export interface IComposableBase {
     logger: ILogger;
     getData(key: string): any;
-    setData(key: string, value: any): void;
+    setData(key: string, value: any, raw?: boolean): void;
     get optionsKeys(): Set<string>;
     get propertyKeys(): Set<string>;
     _onOptionChange(_key: string, _value: any, _old: any): void;

@@ -61,7 +61,7 @@ export const TooltipAbility: AbilityDefinition = {
                     old[key] = val;
                 }
             }
-            this._setRawData('tooltip', old);
+            this.setData('tooltip', old, true);
             return;
         }
 
@@ -122,7 +122,7 @@ export const TooltipAbility: AbilityDefinition = {
             onToggle: () => {},
         });
 
-        this._setRawData('tooltip', overlay);
+        this.setData('tooltip', overlay, true);
 
         return overlay;
     },

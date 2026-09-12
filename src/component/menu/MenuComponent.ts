@@ -107,7 +107,7 @@ class MenuComponent extends ItemGroupStaticComponent {
     open(): void {
         if (this.isOpen) return;
         if (!this.anchor) {
-            this._setRawData('anchor', this.el!);
+            this.setData('anchor', this.el!, true);
         }
         this.show();
     }

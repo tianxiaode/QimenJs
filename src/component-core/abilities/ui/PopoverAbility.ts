@@ -58,7 +58,7 @@ export const PopoverAbility: AbilityDefinition = {
                     }
                 }
             }
-            this._setRawData('popover', old);
+            this.setData('popover', old, true);
             return;
         }
 
@@ -183,7 +183,7 @@ export const PopoverAbility: AbilityDefinition = {
             },
         });
 
-        this._setRawData('popover', overlay);
+        this.setData('popover', overlay, true);
 
         return overlay;
     },

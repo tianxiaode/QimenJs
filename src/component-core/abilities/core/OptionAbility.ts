@@ -178,12 +178,12 @@ export const OptionAbility: AbilityDefinition = {
             const inst = new value({ container: el });
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
-            this._setRawData(nodeName, inst);
+            this.setData(nodeName, inst, true);
         } else if (isTemplateDecl(value)) {
             const inst = this._createSlotComponent(value, el);
             slots[nodeName] = inst;
             this.childComponentList.push(inst);
-            this._setRawData(nodeName, inst);
+            this.setData(nodeName, inst, true);
         }
     },
 
@@ -242,7 +242,7 @@ export const OptionAbility: AbilityDefinition = {
         if (!keys?.length || !options) return;
         for (const key of keys) {
             if (key in options) {
-                this._setRawData(key, options[key]);
+                this.setData(key, options[key], true);
                 delete options[key];
             }
         }

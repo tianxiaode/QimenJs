@@ -37,7 +37,7 @@ export const LoadingAbility: AbilityDefinition = {
                     old[key] = val;
                 }
             }
-            this._setRawData('loading', old);
+            this.setData('loading', old, true);
             return;
         }
 
@@ -112,7 +112,7 @@ export const LoadingAbility: AbilityDefinition = {
 
         this.onCleanup(() => overlay.dispose());
 
-        this._setRawData('loading', overlay);
+        this.setData('loading', overlay, true);
 
         return overlay;
     },

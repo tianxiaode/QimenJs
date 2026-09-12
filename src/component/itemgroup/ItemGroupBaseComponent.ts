@@ -59,7 +59,7 @@ class ItemGroupBaseComponent extends Component {
     }
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
-        if (!Array.isArray(this.items)) this._setRawData('items', []);
+        if (!Array.isArray(this.items)) this.setData('items', [], true);
         if (value) this.setItems([...value]);
     }
 
