@@ -117,6 +117,7 @@ export class DomEventsEngine {
 
         const ctor = instance.constructor;
         ctor._domEventRules = rules;
+        instance._eventRules = rules;
 
         const allEventTypes = new Set<string>();
         for (const rule of rules) {
@@ -164,7 +165,7 @@ export class DomEventsEngine {
 
             const domEventKey = `${DOM_EVENT_PREFIX}${eventType}`;
             const handler = (domEvt: any) => {
-                DomEventsEngine.handleDelegatedEvent(instance, domEvt, rules);
+                DomEventsEngine.handleDelegatedEvent(instance, domEvt);
             };
             const off = instance.on(domEventKey, handler);
 
@@ -175,7 +176,8 @@ export class DomEventsEngine {
     }
 
     private static _ruleKey(rule: DelegatedEventRule): string {
-        return `${rule.path}::${rule.event}`;
+        const pathStr = typeof rule.path === 'string' ? rule.path : '#el';
+        return `${pathStr}::${rule.event}`;
     }
 
     /**
@@ -183,7 +185,7 @@ export class DomEventsEngine {
      *
      * path 逐段定位目标组件，el.contains 验证，disable 检查
      */
-    static handleDelegatedEvent(instance: any, domEvt: any, rules: DelegatedEventRule[]): void {
+    static handleDelegatedEvent(instance: any, domEvt: any): void {
         const originalEvent = domEvt?.data?.originalEvent;
         const target = originalEvent?.target ?? (domEvt?.target as Element);
         const eventType = domEvt?.data?.semantic ?? (domEvt?.data?.signal as string);
@@ -192,6 +194,7 @@ export class DomEventsEngine {
 
         if (instance.disable) return;
 
+        const rules: DelegatedEventRule[] = instance._eventRules ?? [];
         const dispatchers: Map<string, (...args: any[]) => void> | undefined =
             instance._domEventDispatchers;
 
@@ -212,7 +215,6 @@ export class DomEventsEngine {
             } else {
                 DomEventsEngine._dispatchRule(instance, rule, domEvt);
             }
-            return;
         }
     }
 
@@ -226,7 +228,12 @@ export class DomEventsEngine {
      *
      * [xxx] 返回数组时（如 [items]），在数组中找 el.contains(target) 的那个组件
      */
-    private static _matchPath(instance: any, path: string, target: Element): any {
+    private static _matchPath(instance: any, path: string | HTMLElement, target: Element): any {
+        if (path instanceof HTMLElement) {
+            if (!path.contains(target)) return null;
+            return { el: path };
+        }
+
         if (path === '') {
             if (!instance?.el) return null;
             if (!instance.el.contains(target)) return null;
@@ -378,13 +385,15 @@ export class DomEventsEngine {
             if (!methodName) return;
         } else if (typeof rule.handler === 'string') {
             methodName = rule.handler;
-        } else {
+        } else if (typeof rule.path === 'string') {
             const segments = rule.path.split('.');
             const lastSeg = segments[segments.length - 1];
             const cleanName = lastSeg.replace(/[[\]{}]/g, '');
             const pascalName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
             const pascalEvent = rule.event.charAt(0).toUpperCase() + rule.event.slice(1);
             methodName = `on${pascalName}${pascalEvent}`;
+        } else {
+            return;
         }
 
         const method = instance[methodName];
@@ -418,5 +427,47 @@ export class DomEventsEngine {
             }
         }
         return result;
+    }
+
+    static addEventRule(instance: any, rule: DelegatedEventRule): void {
+        if (!instance._eventRules) instance._eventRules = [];
+        instance._eventRules.push(rule);
+
+        const isDirect = rule.path instanceof HTMLElement;
+        const targetEl = isDirect ? rule.path : instance.el;
+
+        if (!instance._boundEventTypes) instance._boundEventTypes = new Map();
+        let eventTypesOnEl = instance._boundEventTypes.get(targetEl);
+        if (!eventTypesOnEl) {
+            eventTypesOnEl = new Set();
+            instance._boundEventTypes.set(targetEl, eventTypesOnEl);
+        }
+        if (!eventTypesOnEl.has(rule.event)) {
+            eventTypesOnEl.add(rule.event);
+
+            const useCapture = rule.event === 'focus' || rule.event === 'blur';
+            instance.bind(targetEl, rule.event as any, {
+                capture: useCapture,
+                delegated: !isDirect,
+            });
+
+            const domEventKey = `${DOM_EVENT_PREFIX}${rule.event}`;
+            const handler = (domEvt: any) => {
+                DomEventsEngine.handleDelegatedEvent(instance, domEvt);
+            };
+            const off = instance.on(domEventKey, handler);
+            instance.onCleanup(() => {
+                off();
+            });
+        }
+    }
+
+    static removeEventRule(instance: any, rule: DelegatedEventRule): void {
+        if (!instance._eventRules) return;
+
+        const idx = instance._eventRules.indexOf(rule);
+        if (idx !== -1) {
+            instance._eventRules.splice(idx, 1);
+        }
     }
 }

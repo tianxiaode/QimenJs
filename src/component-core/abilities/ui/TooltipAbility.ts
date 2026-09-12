@@ -15,6 +15,8 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { ZIndexLevel } from '../../engine';
+import { DomEventsEngine } from '../../engine';
+import type { DelegatedEventRule } from '../../types/events';
 
 export const TooltipAbility: AbilityDefinition = {
     _onTooltipOptionChange(value: any, old: any): void {
@@ -111,18 +113,44 @@ export const TooltipAbility: AbilityDefinition = {
         this.onCleanup(() => overlay.dispose());
 
         if (decl.trigger !== 'manual') {
-            this.onEnter(anchorEl, () => {
-                overlay.show();
-                overlay.open?.();
-            });
-            this.onLeave(anchorEl, () => {
-                overlay.hide();
-                overlay.close?.();
+            const enterRule: DelegatedEventRule = {
+                event: 'mouseenter',
+                path: anchorEl,
+                handler: '_onTooltipEnter',
+                needsBinding: true,
+            };
+            const leaveRule: DelegatedEventRule = {
+                event: 'mouseleave',
+                path: anchorEl,
+                handler: '_onTooltipLeave',
+                needsBinding: true,
+            };
+            DomEventsEngine.addEventRule(this, enterRule);
+            DomEventsEngine.addEventRule(this, leaveRule);
+            this.onCleanup(() => {
+                DomEventsEngine.removeEventRule(this, enterRule);
+                DomEventsEngine.removeEventRule(this, leaveRule);
             });
         }
 
         this.setData('tooltip', overlay, true);
 
         return overlay;
+    },
+
+    _onTooltipEnter(): void {
+        const overlay = this.tooltip;
+        if (overlay && typeof overlay.show === 'function') {
+            overlay.show();
+            overlay.open?.();
+        }
+    },
+
+    _onTooltipLeave(): void {
+        const overlay = this.tooltip;
+        if (overlay && typeof overlay.hide === 'function') {
+            overlay.hide();
+            overlay.close?.();
+        }
     },
 } satisfies AbilityDefinition;

@@ -23,6 +23,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
+import { DomEventsEngine } from '../../engine';
+import type { DelegatedEventRule } from '../../types/events';
 
 export const PopoverAbility: AbilityDefinition = {
     _onPopoverOptionChange(value: any, old: any): void {
@@ -172,20 +174,27 @@ export const PopoverAbility: AbilityDefinition = {
         this.onCleanup(() => overlay.dispose());
 
         if (decl.trigger !== 'manual') {
-            this.onCleanup(this.bind(anchorEl, 'click'));
-            this.onCleanup(
-                this.on('dom:click', (ctx: any) => {
-                    const event = ctx?.data?.originalEvent as MouseEvent;
-                    if (event && anchorEl.contains(event.target as Node)) {
-                        if (overlay.isOpen) overlay.hide();
-                        else overlay.show();
-                    }
-                })
-            );
+            const clickRule: DelegatedEventRule = {
+                event: 'click',
+                path: anchorEl,
+                handler: '_onPopoverClick',
+                needsBinding: true,
+            };
+            DomEventsEngine.addEventRule(this, clickRule);
+            this.onCleanup(() => {
+                DomEventsEngine.removeEventRule(this, clickRule);
+            });
         }
 
         this.setData('popover', overlay, true);
 
         return overlay;
+    },
+
+    _onPopoverClick(): void {
+        const overlay = this.popover;
+        if (!overlay || typeof overlay.show !== 'function') return;
+        if (overlay.isOpen) overlay.hide();
+        else overlay.show();
     },
 } satisfies AbilityDefinition;

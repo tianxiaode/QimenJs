@@ -54,8 +54,11 @@ export interface DelegatedEventRule {
     /** DOM 事件名（第一层 key） */
     event: string;
 
-    /** 组件路径（如 'colorCard.[body].colorToolbar.[items]'） */
-    path: string;
+    /**
+     * 组件路径（如 'colorCard.[body].colorToolbar.[items]'）
+     * 动态注册时可直接传 HTMLElement，用 el.contains(target) 匹配
+     */
+    path: string | HTMLElement;
 
     /**
      * 事件数据声明
