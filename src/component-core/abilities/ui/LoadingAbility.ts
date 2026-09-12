@@ -22,25 +22,10 @@ import type { FloatDecl, LoadingOptions } from '../../types';
 export const LoadingAbility: AbilityDefinition = {
     _onLoadingOptionChange(value: any, old: any): void {
         if (value === old) return;
-        if (!this._templateInitialized) return;
-
-        if (old && typeof old.show === 'function') {
-            if (!value) {
-                old.dispose();
-                return;
-            }
-            const cfg: LoadingOptions = this.loading || ({} as LoadingOptions);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { maskMode, mask, ...loadingData } = cfg;
-            for (const [key, val] of Object.entries(loadingData)) {
-                if (val !== undefined) {
-                    old[key] = val;
-                }
-            }
-            this.setData('loading', old, true);
+        if (old?.isInstance) {
+            if (!value) old.dispose();
             return;
         }
-
         if (value) {
             this._ensureLoading();
         }
@@ -62,12 +47,19 @@ export const LoadingAbility: AbilityDefinition = {
         }
     },
 
-    updateLoading(data: Record<string, any>): void {
-        if (this.loading && typeof this.loading.show === 'function') {
-            for (const [key, val] of Object.entries(data)) {
-                this.loading[key] = val;
-            }
+    updateLoading(option: Record<string, any>): void {
+        if (this.loading?.isInstance) {
+            this.loading.update(option);
         }
+    },
+
+    replaceLoading(config: any): void {
+        const old = this.loading;
+        if (old?.isInstance) {
+            old.dispose();
+        }
+        this.setData('loading', config, true);
+        this._ensureLoading();
     },
 
     _ensureLoading(): any {
@@ -97,9 +89,7 @@ export const LoadingAbility: AbilityDefinition = {
 
         const anchorEl =
             decl.anchor === 'self' ? this.el! : (this.getNodeEl?.(decl.anchor) ?? this.el!);
-        const data = typeof decl.data === 'function' ? decl.data() : decl.data;
         const overlay = new OverlayClass({
-            ...data,
             anchor: anchorEl,
             placement: decl.placement,
             offset: decl.offset,

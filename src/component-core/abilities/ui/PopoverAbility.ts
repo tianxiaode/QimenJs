@@ -115,7 +115,6 @@ export const PopoverAbility: AbilityDefinition = {
         const OverlayClass =
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) {
-            this.logger?.warn?.(`[PopoverAbility] overlay type not found: ${decl.type}`);
             return null;
         }
 

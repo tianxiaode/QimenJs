@@ -38,11 +38,9 @@ export const TooltipAbility: AbilityDefinition = {
         }
     },
 
-    updateTooltip(data: Record<string, any>): void {
-        if (this.tooltip && typeof this.tooltip.show === 'function') {
-            for (const [key, val] of Object.entries(data)) {
-                this.tooltip[key] = val;
-            }
+    updateTooltip(options: Record<string, any>): void {
+        if (this.tooltip.isInstance) {
+            this.tooltip.update(options);
         }
     },
 
@@ -87,13 +85,26 @@ export const TooltipAbility: AbilityDefinition = {
             const rules: DelegatedEventRule[] = [];
             if (trigger === 'hover') {
                 rules.push(
-                    { event: 'mouseenter', path: anchorEl, handler: '_onTooltipEnter', needsBinding: true },
-                    { event: 'mouseleave', path: anchorEl, handler: '_onTooltipLeave', needsBinding: true },
+                    {
+                        event: 'mouseenter',
+                        path: anchorEl,
+                        handler: '_onTooltipEnter',
+                        needsBinding: true,
+                    },
+                    {
+                        event: 'mouseleave',
+                        path: anchorEl,
+                        handler: '_onTooltipLeave',
+                        needsBinding: true,
+                    }
                 );
             } else if (trigger === 'click') {
-                rules.push(
-                    { event: 'click', path: anchorEl, handler: '_onTooltipClick', needsBinding: true },
-                );
+                rules.push({
+                    event: 'click',
+                    path: anchorEl,
+                    handler: '_onTooltipClick',
+                    needsBinding: true,
+                });
             }
             for (const rule of rules) {
                 DomEventsEngine.addEventRule(this, rule);
