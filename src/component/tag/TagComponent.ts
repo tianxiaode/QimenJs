@@ -21,6 +21,9 @@ const TagComponentDefs: Definitions = {
     },
 } as const;
 
+/** Tag 自有 option — 变更时需重建渲染；继承自 ComponentDefs 的公共 option 走自身兜底，不重复渲染 */
+const TAG_RENDER_OPTION_KEYS = new Set(Object.keys(TagComponentDefs.options ?? {}));
+
 class TagComponent extends Component {
     static type = 'tag';
     get tpl(): TemplateDecl {
@@ -39,35 +42,11 @@ class TagComponent extends Component {
         this.registerI18nRefresh(() => this._render());
     }
 
-    _onTagsOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onTagTypeOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onClosableOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onMaxCountOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onCollapsedOptionChange(): void {
-        this._scheduleRender();
-    }
-    _onSizeOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onOverflowTagTypeOptionChange(): void {
-        this._scheduleRender();
-    }
-
-    _onDirectionOptionChange(): void {
-        this._scheduleRender();
+    _onOptionChange(key: string, value: any, old: any): void {
+        super._onOptionChange(key, value, old);
+        if (TAG_RENDER_OPTION_KEYS.has(key) && value !== old) {
+            this._scheduleRender();
+        }
     }
 
     _onTagClick(domEvt: any): void {
