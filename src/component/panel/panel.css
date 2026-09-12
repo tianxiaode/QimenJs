@@ -50,11 +50,42 @@
 }
 
 .q-panel__expand::before {
-    content: '▾';
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.q-panel__close {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+}
+
+.q-panel__close::before,
+.q-panel__close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    transform-origin: center;
 }
 
 .q-panel__close::before {
-    content: '✕';
+    transform: rotate(45deg);
+}
+
+.q-panel__close::after {
+    transform: rotate(-45deg);
 }
 
 /* 内容区 */

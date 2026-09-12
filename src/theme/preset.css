@@ -311,11 +311,13 @@
 }
 
 .border-chinese::before {
-    content: '◆';
+    content: '';
     position: absolute;
     top: -0.75rem;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
     background: var(--q-color-bg);
     padding: 0 0.5rem;
     color: var(--q-color-gold);

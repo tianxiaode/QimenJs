@@ -15,6 +15,9 @@
 /* 箭头系统 */
 @import './arrow.css';
 
+/* 图标系统 */
+@import './icons.css';
+
 /* 布局系统 */
 @import './layout.css';
 

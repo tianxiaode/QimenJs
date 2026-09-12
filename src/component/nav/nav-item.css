@@ -45,7 +45,13 @@
 }
 
 .q-nav-item__expand::after {
-    content: '›';
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(-45deg);
 }
 
 .q-nav-item__expand--expanded {

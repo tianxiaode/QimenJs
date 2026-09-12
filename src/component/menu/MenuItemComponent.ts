@@ -43,9 +43,18 @@ class MenuItemComponent extends Component {
     }
 
     _onGroupOptionChange(value: string): void {
-        value ? this.addCls('q-menu-item--grouped') : this.removeCls('q-menu-item--grouped');
+        if (value) {
+            this.addCls('q-menu-item--grouped');
+            this._applyGroupIcon();
+        } else {
+            this.removeCls('q-menu-item--grouped');
+            this.removeCls('q-radio', 'icon');
+            this.removeCls('q-checkbox', 'icon');
+            this.removeCls('q-radio--checked', 'icon');
+            this.removeCls('q-checkbox--checked', 'icon');
+        }
         this._applyAria();
-    }
+    },
 
     _onGroupModeOptionChange(value: string): void {
         if (value === 'checkbox') {
@@ -53,13 +62,14 @@ class MenuItemComponent extends Component {
         } else {
             this.removeCls('q-menu-item--checkbox');
         }
+        this._applyGroupIcon();
         this._applyAria();
-    }
+    },
 
     _onCheckedOptionChange(value: boolean): void {
-        value ? this.addCls('q-menu-item--checked') : this.removeCls('q-menu-item--checked');
+        this._applyGroupIcon();
         this._applyAria();
-    }
+    },
 
     _onIconOptionChange(_value: string): void {}
 
@@ -98,6 +108,26 @@ class MenuItemComponent extends Component {
             });
         } else {
             this.removeAttributes(['role', 'aria-checked']);
+        }
+    }
+
+    private _applyGroupIcon(): void {
+        if (!this.group) return;
+
+        const isCheckbox = this.groupMode === 'checkbox';
+        const baseCls = isCheckbox ? 'q-checkbox' : 'q-radio';
+        const otherCls = isCheckbox ? 'q-radio' : 'q-checkbox';
+        const checkedCls = isCheckbox ? 'q-checkbox--checked' : 'q-radio--checked';
+        const otherCheckedCls = isCheckbox ? 'q-radio--checked' : 'q-checkbox--checked';
+
+        this.removeCls(otherCls, 'icon');
+        this.removeCls(otherCheckedCls, 'icon');
+        this.addCls(baseCls, 'icon');
+
+        if (this.checked) {
+            this.addCls(checkedCls, 'icon');
+        } else {
+            this.removeCls(checkedCls, 'icon');
         }
     }
 }

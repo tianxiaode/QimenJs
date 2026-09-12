@@ -39,59 +39,6 @@
     font-size: var(--q-font-size-md, 16px);
 }
 
-/* -------- 分组选中标记（纯 CSS 实现） -------- */
-.q-menu-item--grouped .q-menu-item__icon::before {
-    content: '';
-    display: block;
-    box-sizing: border-box;
-}
-
-/* radio 模式：圆圈 */
-.q-menu-item--grouped:not(.q-menu-item--checkbox) .q-menu-item__icon::before {
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--q-color-text-secondary, #999);
-    border-radius: 50%;
-    transition: border-color var(--q-transition-fast);
-}
-
-.q-menu-item--grouped:not(.q-menu-item--checkbox).q-menu-item--checked .q-menu-item__icon::before {
-    border-color: var(--q-color-primary, #0078d4);
-}
-
-.q-menu-item--grouped:not(.q-menu-item--checkbox).q-menu-item--checked .q-menu-item__icon::after {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--q-color-primary, #0078d4);
-}
-
-/* checkbox 模式：方框 */
-.q-menu-item--grouped.q-menu-item--checkbox .q-menu-item__icon::before {
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--q-color-text-secondary, #999);
-    border-radius: 2px;
-    transition: border-color var(--q-transition-fast);
-}
-
-.q-menu-item--grouped.q-menu-item--checkbox.q-menu-item--checked .q-menu-item__icon::before {
-    border-color: var(--q-color-primary, #0078d4);
-}
-
-.q-menu-item--grouped.q-menu-item--checkbox.q-menu-item--checked .q-menu-item__icon::after {
-    content: '';
-    position: absolute;
-    width: 4px;
-    height: 8px;
-    border: solid var(--q-color-primary, #0078d4);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-    margin-top: -2px;
-}
-
 .q-menu-item__text {
     flex: 1;
     overflow: hidden;
