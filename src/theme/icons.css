@@ -1,19 +1,20 @@
 /* ========================================
    图标系统 - 纯 CSS 绘制的通用图标
-   类似 arrow.css，通过 CSS 变量定制
+   通过 --q-icon-size / --q-icon-color 定制
+   所有图标尺寸基于 --q-icon-size 按比例推导
    ======================================== */
 
 :root {
     --q-icon-size: 14px;
     --q-icon-color: var(--q-color-text, #303133);
-    --q-icon-border-width: 2px;
+    --q-icon-border-width: calc(var(--q-icon-size) * 0.14);
 }
 
 /* -------- 勾 (check) -------- */
 .q-check {
     display: inline-block;
-    width: 4px;
-    height: 8px;
+    width: calc(var(--q-icon-size) * 0.3);
+    height: calc(var(--q-icon-size) * 0.57);
     border: solid var(--q-icon-color);
     border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
     transform: rotate(45deg);
@@ -23,8 +24,8 @@
 .q-close {
     position: relative;
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: calc(var(--q-icon-size) * 0.85);
+    height: calc(var(--q-icon-size) * 0.85);
 }
 
 .q-close::before,
@@ -63,8 +64,8 @@
 /* -------- 右箭头 (chevron-right) -------- */
 .q-chevron-right {
     display: inline-block;
-    width: 6px;
-    height: 6px;
+    width: calc(var(--q-icon-size) * 0.43);
+    height: calc(var(--q-icon-size) * 0.43);
     border: solid var(--q-icon-color);
     border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
     transform: rotate(-45deg);
@@ -73,8 +74,8 @@
 /* -------- 下箭头 (chevron-down) -------- */
 .q-chevron-down {
     display: inline-block;
-    width: 6px;
-    height: 6px;
+    width: calc(var(--q-icon-size) * 0.43);
+    height: calc(var(--q-icon-size) * 0.43);
     border: solid var(--q-icon-color);
     border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
     transform: rotate(45deg);
@@ -83,8 +84,8 @@
 /* -------- 菱形 (diamond) -------- */
 .q-diamond {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: calc(var(--q-icon-size) * 0.57);
+    height: calc(var(--q-icon-size) * 0.57);
     background: var(--q-icon-color);
     transform: rotate(45deg);
 }
@@ -112,8 +113,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 6px;
-    height: 6px;
+    width: calc(var(--q-icon-size) * 0.43);
+    height: calc(var(--q-icon-size) * 0.43);
     border-radius: 50%;
     background: var(--q-color-primary, #0078d4);
 }
@@ -141,30 +142,26 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(45deg);
-    width: 4px;
-    height: 8px;
+    width: calc(var(--q-icon-size) * 0.3);
+    height: calc(var(--q-icon-size) * 0.57);
     border: solid var(--q-color-primary, #0078d4);
-    border-width: 0 2px 2px 0;
-    margin-top: -2px;
+    border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
+    margin-top: calc(var(--q-icon-size) * -0.14);
 }
 
 /* -------- 尺寸跟随 -------- */
-.q-size--xs .q-radio,
-.q-size--xs .q-checkbox {
+.q-size--xs :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox) {
     --q-icon-size: 10px;
 }
 
-.q-size--sm .q-radio,
-.q-size--sm .q-checkbox {
+.q-size--sm :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox) {
     --q-icon-size: 12px;
 }
 
-.q-size--lg .q-radio,
-.q-size--lg .q-checkbox {
+.q-size--lg :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox) {
     --q-icon-size: 18px;
 }
 
-.q-size--xl .q-radio,
-.q-size--xl .q-checkbox {
+.q-size--xl :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox) {
     --q-icon-size: 20px;
 }
