@@ -21,7 +21,6 @@ import type { ColumnMeta } from '../column-types';
 export class EditOverlayComponent extends Component {
     _editableMetas: ColumnMeta[] = [];
     _activeColName: string | null = null;
-    private _rafId: number = 0;
 
     onAfterInit(): void {
         this._hideAllSlots();
@@ -95,15 +94,8 @@ export class EditOverlayComponent extends Component {
     _focusInput(colName: string): void {
         const input = this._getInput(colName);
         if (input) {
-            this._rafId = requestAnimationFrame(() => {
-                this._rafId = 0;
-                input.focus();
-            });
+            this.nextFrame(() => input.focus());
         }
-    }
-
-    override onBeforeDispose(): void {
-        if (this._rafId) cancelAnimationFrame(this._rafId);
     }
 
     _getInput(colName: string): HTMLInputElement | null {

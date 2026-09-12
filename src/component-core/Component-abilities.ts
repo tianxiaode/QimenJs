@@ -4,6 +4,7 @@ import {
     DomEventsAbility,
     SystemAbility,
     DebounceAbility,
+    RAFAbility,
     PermissionAbility as SystemPermissionAbility,
 } from '@/system-abilities';
 import {
@@ -38,6 +39,7 @@ export const COMPONENT_ABILITIES = [
     SystemAbility,
     SystemPermissionAbility,
     DebounceAbility,
+    RAFAbility,
 
     InitAbility,
     LifecycleAbility,

@@ -6,16 +6,14 @@ import './tooltip.css';
 
 export class TooltipComponent extends Component {
     static type = 'tooltip';
-    private _rafId: number = 0;
 
     get tpl(): TemplateDecl {
         return TOOLTIP_TPL;
     }
 
     open(): void {
-        this._rafId = requestAnimationFrame(() => {
-            this._rafId = requestAnimationFrame(() => {
-                this._rafId = 0;
+        this.nextFrame(() => {
+            this.nextFrame(() => {
                 const placement = this.abilityState('OverlayAbility:actualPlacement') ?? 'bottom';
                 const arrowPlacement = this._inferArrowPlacement(placement);
                 this.updateArrowPlacement(arrowPlacement);
@@ -24,10 +22,6 @@ export class TooltipComponent extends Component {
     }
 
     close(): void {}
-
-    override onBeforeDispose(): void {
-        if (this._rafId) cancelAnimationFrame(this._rafId);
-    }
 
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
