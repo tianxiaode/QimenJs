@@ -83,6 +83,8 @@ export const ComponentDefs: Definitions = {
         size: null,
         /** 组件颜色方案 — primary/secondary/success/warning/error/info，走组件 BEM */
         color: null,
+        /** 额外配置 — 透传给浮层/子组件实例的补充数据，不参与组件自身的 option change 机制 */
+        extra: null,
     },
 
     fields: {

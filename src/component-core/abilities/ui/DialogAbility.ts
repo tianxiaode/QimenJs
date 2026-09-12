@@ -48,7 +48,6 @@ export const DialogAbility: AbilityDefinition = {
             closeOnEscape,
             closeOnClickOutside,
             emits,
-            ...data
         } = dialog as Record<string, any>;
         return {
             type,
@@ -58,7 +57,7 @@ export const DialogAbility: AbilityDefinition = {
             closeOnEscape: closeOnEscape ?? true,
             closeOnClickOutside: closeOnClickOutside ?? false,
             emits,
-            data: Object.keys(data).length > 0 ? data : undefined,
+            data: this.extra ?? undefined,
         };
     },
 
