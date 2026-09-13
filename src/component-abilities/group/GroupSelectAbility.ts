@@ -159,27 +159,30 @@ export const GroupSelectAbility = {
      */
     notifyGroupSelect(item: any): void {
         const state = this.abilityState(STATE_KEY) as GroupSelectState | undefined;
+        console.log('[notifyGroupSelect] state:', !!state, 'item.group:', item?.group, 'item.checked:', item?.checked);
+
         if (!state) return;
 
         const groupName = item.group;
         if (!groupName) return;
 
         const group = state.groups[groupName];
+        console.log('[notifyGroupSelect] group:', !!group, 'mode:', group?.mode, 'itemsCount:', group?.items?.length);
+        console.log('[notifyGroupSelect] group.items checked states:', group?.items?.map((i: any) => ({ group: i.group, checked: i.checked, sameRef: i === item })));
+
         if (!group) return;
 
         if (group.mode === 'radio') {
-            // radio：取消同组其他项
             for (const child of group.items) {
                 if (child !== item && child.checked) {
+                    console.log('[notifyGroupSelect] unchecking:', child.group, child.checked);
                     child.checked = false;
                 }
             }
-            // 确保当前项选中
             if (!item.checked) {
                 item.checked = true;
             }
         }
-        // checkbox 模式无需额外处理，子项自行切换
     },
 
     // ─── 查询 ───
