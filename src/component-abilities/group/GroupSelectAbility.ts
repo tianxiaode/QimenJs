@@ -104,19 +104,19 @@ export const GroupSelectAbility = {
         const state = this.abilityState(STATE_KEY) as GroupSelectState | undefined;
         if (!state) return;
 
-        const groupName = item.group;
+        const raw = item.rawOptions ?? {};
+        const groupName = item.group ?? raw.group;
         if (!groupName) return;
 
         if (!state.groups[groupName]) {
             state.groups[groupName] = {
-                mode: item.groupMode ?? state.defaultMode,
+                mode: item.groupMode ?? raw.groupMode ?? state.defaultMode,
                 items: [],
             };
         }
 
         const group = state.groups[groupName];
 
-        // 避免重复注册
         if (!group.items.includes(item)) {
             group.items.push(item);
         }
@@ -159,23 +159,17 @@ export const GroupSelectAbility = {
      */
     notifyGroupSelect(item: any): void {
         const state = this.abilityState(STATE_KEY) as GroupSelectState | undefined;
-        console.log('[notifyGroupSelect] state:', !!state, 'item.group:', item?.group, 'item.checked:', item?.checked);
-
         if (!state) return;
 
         const groupName = item.group;
         if (!groupName) return;
 
         const group = state.groups[groupName];
-        console.log('[notifyGroupSelect] group:', !!group, 'mode:', group?.mode, 'itemsCount:', group?.items?.length);
-        console.log('[notifyGroupSelect] group.items checked states:', group?.items?.map((i: any) => ({ group: i.group, checked: i.checked, sameRef: i === item })));
-
         if (!group) return;
 
         if (group.mode === 'radio') {
             for (const child of group.items) {
                 if (child !== item && child.checked) {
-                    console.log('[notifyGroupSelect] unchecking:', child.group, child.checked);
                     child.checked = false;
                 }
             }

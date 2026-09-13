@@ -60,22 +60,14 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     _onItemClick(domEvt: any): void {
         const item = domEvt.targetComponent;
-        console.log('[_onItemClick] item:', item?.type, 'hasSubmenu:', item?._hasSubmenu, 'group:', item?.group, 'checked:', item?.checked);
-
         if (!item) return;
 
-        const selectResult = item.select();
-        console.log('[_onItemClick] select() returned:', selectResult);
-
-        if (!selectResult) return;
+        if (!item.select()) return;
 
         (this as any).notifyGroupSelect(item);
-        console.log('[_onItemClick] after notifyGroupSelect, isOpen:', this.isOpen);
 
         if (!item._hasSubmenu) {
-            console.log('[_onItemClick] calling close()');
             this.close();
-            console.log('[_onItemClick] after close(), isOpen:', this.isOpen);
         }
     }
 
