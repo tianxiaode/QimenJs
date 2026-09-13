@@ -475,6 +475,12 @@ export interface FloatDecl {
     /** 遮罩模式：'scoped'=遮盖锚点组件el，'global'=全屏遮盖，'none'=无遮罩 */
     maskMode?: 'none' | 'scoped' | 'global';
     /**
+     * 传给子组件的构造参数（惰性实例化时 show 才透传）
+     * 控制字段（type/anchor/trigger/placement/mask 等）留在顶层，
+     * 子组件需要的 open 集 options 整体放这里，父侧不做解构提取。
+     */
+    options?: Record<string, any>;
+    /**
      * 浮层事件转发：key=反馈事件名，value=转发到组件的事件名
      *
      * 反馈事件：shown（已显示）、hidden（已隐藏）、changed（数据已变更）

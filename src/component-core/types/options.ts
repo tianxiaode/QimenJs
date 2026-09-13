@@ -113,12 +113,12 @@ export interface Tooltiptoptions {
     trigger?: 'click' | 'hover' | 'focus' | 'manual' | 'always';
 }
 
-/** Loading 快捷配置，用于声明式创建加载浮层 */
+/** Loading 快捷配置，用于声明式创建加载浮层（控制字段留顶层，内容放 options） */
 export interface LoadingOptions {
-    text?: string;
-    spinner?: string;
     maskMode?: 'none' | 'scoped' | 'global';
     mask?: boolean | string;
+    /** 传给子组件（loading 浮层）的构造参数，如 { text, spinner } */
+    options?: Record<string, any>;
 }
 
 /**
