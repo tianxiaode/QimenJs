@@ -97,9 +97,7 @@ class MenuComponent extends ItemGroupStaticComponent {
             }
         }
         this.initGroupSelect({ defaultMode: 'radio' });
-        Promise.all(this.items.map((item: any) => item.ready)).then(() => {
-            this.registerGroupItems(this.items);
-        });
+        this.registerGroupItems(this.items);
     }
 
     get itemGroup(): any {

@@ -82,6 +82,8 @@ export const InitAbility = {
             }
         }
         this._applyPropertyKeys(options);
+        this.applyOptionDefaults();
+        this._extractEarlyOptions();
         this.logger.debug(`[prepare:apply property keys]`, `[${this.type}]:[${this.id}]`);
     },
 
@@ -141,12 +143,11 @@ export const InitAbility = {
     /**
      * 串联后续初始化
      *
-     * 顺序：options默认值 → earlyOptions提取 → optionsKeys复制 → 箭头 → 权限 → listens → DOM事件 → 拖拽/拖放 → onAfterInit → 动画
+     * 顺序：optionsKeys复制 → 权限 → listens → DOM事件 → 拖拽/拖放 → onAfterInit → 动画
+     * （options默认值和earlyOptions提取已在 _applyNodeMeta 同步阶段完成）
      */
     _continueInit(childReady?: () => void) {
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
-        this.applyOptionDefaults();
-        this._extractEarlyOptions();
         this._applyOptionKeys(this.rawOptions);
 
         this._initPermission();

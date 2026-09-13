@@ -27,6 +27,10 @@ class MenuItemComponent extends Component {
         return MENU_ITEM_TPL;
     }
 
+    get earlyOptionKeys(): string[] {
+        return [...super.earlyOptionKeys, 'group'];
+    }
+
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
     }
