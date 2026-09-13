@@ -84,13 +84,13 @@ export const PopoverAbility: AbilityDefinition = {
         const anchorEl = this.getNodeEl?.(this.anchorNode) ?? this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
-            anchor: anchorEl,
             placement: decl.placement,
         };
         const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
+        overlay.anchor = anchorEl;
         this.setAbilityState('PopoverAbility:instance', overlay);
         this.onCleanup(() => {
             overlay.dispose();
