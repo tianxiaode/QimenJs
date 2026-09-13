@@ -23,6 +23,7 @@
 import type { AbilityDefinition } from '@/composable';
 import { OverlayRoot } from '../../overlay/OverlayRoot';
 import { ZIndexLevel, zIndexManager } from '../../engine';
+import { resolveFloatMask } from './float-shared';
 
 /** 对话框浮层能力，提供 show/hide/toggle/update 快捷方法 */
 export const DialogAbility: AbilityDefinition = {
@@ -53,13 +54,6 @@ export const DialogAbility: AbilityDefinition = {
         };
     },
 
-    _resolveMask(decl: any): any {
-        if (decl.maskMode === 'none') return false;
-        if (decl.maskMode === 'global') return true;
-        if (decl.maskMode === 'scoped') return 'scoped';
-        return decl.mask;
-    },
-
     showDialog(): void {
         const inst = this.abilityState('dialog-instance') as any;
         if (inst) {
@@ -83,7 +77,7 @@ export const DialogAbility: AbilityDefinition = {
             closeOnEscape: decl.closeOnEscape,
             closeOnClickOutside: decl.closeOnClickOutside,
         };
-        const mask = this._resolveMask(decl);
+        const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);

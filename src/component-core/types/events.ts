@@ -499,6 +499,16 @@ export interface FloatDecl {
     [key: string]: any;
 }
 
+/** 浮层 trigger 事件绑定参数（供 float-shared.ts 的 bindFloatTrigger 使用） */
+export interface FloatTriggerSpec {
+    /** abilityState 防重复绑定标记键，如 '&39;TooltipAbility:triggerBound' */
+    stateKey: string;
+    /** handler 前缀（如 'Tooltip' → _onTooltipEnter/_onTooltipLeave/_onTooltipClick） */
+    handlerPrefix: string;
+    /** 默认触发方式，如 'hover' 或 'click' */
+    defaultTrigger: string;
+}
+
 // ══════════════════════════════════════════════════════════════
 // 浮层快捷配置类型（从 init-context 复用）
 // ══════════════════════════════════════════════════════════════

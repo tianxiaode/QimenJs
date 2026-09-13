@@ -21,6 +21,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LoadingOptions } from '../../types';
+import { disposeFloatInstance, resolveFloatAnchor, resolveFloatMask } from './float-shared';
 
 export const LoadingAbility: AbilityDefinition = {
     _onLoadingOptionChange(value: any, old: any): void {
@@ -28,15 +29,7 @@ export const LoadingAbility: AbilityDefinition = {
         if (value) {
             this._ensureLoading();
         } else {
-            this._disposeLoading();
-        }
-    },
-
-    _disposeLoading(): void {
-        const inst = this._getLoadingInstance();
-        if (inst) {
-            inst.dispose();
-            this.setAbilityState('LoadingAbility:instance', undefined);
+            disposeFloatInstance(this, 'LoadingAbility:instance');
         }
     },
 
@@ -50,18 +43,6 @@ export const LoadingAbility: AbilityDefinition = {
             maskMode: cfg.maskMode ?? 'scoped',
             options: { ...(cfg.options ?? {}) },
         };
-    },
-
-    _resolveAnchor(anchor: string | undefined): HTMLElement {
-        if (anchor === 'self' || !anchor) return this.el!;
-        return this.getNodeEl?.(anchor) ?? this.el!;
-    },
-
-    _resolveMask(decl: any): any {
-        if (decl.maskMode === 'none') return false;
-        if (decl.maskMode === 'global') return true;
-        if (decl.maskMode === 'scoped') return 'scoped';
-        return decl.mask;
     },
 
     _getLoadingInstance(): any {
@@ -81,13 +62,13 @@ export const LoadingAbility: AbilityDefinition = {
             return null;
         }
 
-        const anchorEl = this._resolveAnchor(decl.anchor);
+        const anchorEl = resolveFloatAnchor(this, decl.anchor);
         const constr: any = {
             ...decl.options,
             anchor: anchorEl,
             placement: decl.placement,
         };
-        const mask = this._resolveMask(decl);
+        const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);

@@ -24,24 +24,27 @@
 
 import type { AbilityDefinition } from '@/composable';
 import { ZIndexLevel } from '../../engine';
-import { DomEventsEngine } from '../../engine';
-import type { DelegatedEventRule } from '../../types/events';
+import {
+    bindFloatTrigger,
+    disposeFloatInstance,
+    floatTriggerMatches,
+    resolveFloatAnchor,
+    resolveFloatMask,
+} from './float-shared';
+
+const TRIGGER_SPEC = {
+    stateKey: 'TooltipAbility:triggerBound',
+    handlerPrefix: 'Tooltip',
+    defaultTrigger: 'hover',
+} as const;
 
 export const TooltipAbility: AbilityDefinition = {
     _onTooltipOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (value) {
-            this._bindTooltipTrigger();
+            bindFloatTrigger(this, this._getTooltipDecl(), TRIGGER_SPEC);
         } else {
-            this._disposeTooltip();
-        }
-    },
-
-    _disposeTooltip(): void {
-        const inst = this._getTooltipInstance();
-        if (inst) {
-            inst.dispose();
-            this.setAbilityState('TooltipAbility:instance', undefined);
+            disposeFloatInstance(this, 'TooltipAbility:instance');
         }
     },
 
@@ -69,65 +72,6 @@ export const TooltipAbility: AbilityDefinition = {
         };
     },
 
-    _resolveAnchor(anchor: string | undefined): HTMLElement {
-        if (anchor === 'self' || !anchor) return this.el!;
-        return this.getNodeEl?.(anchor) ?? this.el!;
-    },
-
-    _resolveMask(decl: any): any {
-        if (decl.maskMode === 'scoped') return 'scoped';
-        if (decl.maskMode === 'global') return true;
-        if (decl.maskMode === 'none') return false;
-        return decl.mask;
-    },
-
-    _bindTooltipTrigger(): void {
-        if (this.abilityState('TooltipAbility:triggerBound')) return;
-        const decl = this._getTooltipDecl();
-        if (!decl) return;
-
-        const trigger = decl.trigger ?? 'hover';
-        if (trigger === 'manual' || trigger === 'always') return;
-
-        const anchorEl = this._resolveAnchor(decl.anchor);
-        const triggers = Array.isArray(trigger) ? trigger : [trigger];
-        const rules: DelegatedEventRule[] = [];
-        for (const t of triggers) {
-            if (t === 'hover') {
-                rules.push({
-                    event: 'mouseenter',
-                    path: anchorEl,
-                    handler: '_onTooltipEnter',
-                    needsBinding: true,
-                });
-                rules.push({
-                    event: 'mouseleave',
-                    path: anchorEl,
-                    handler: '_onTooltipLeave',
-                    needsBinding: true,
-                });
-            } else if (t === 'click') {
-                rules.push({
-                    event: 'click',
-                    path: anchorEl,
-                    handler: '_onTooltipClick',
-                    needsBinding: true,
-                });
-            }
-        }
-        if (rules.length === 0) return;
-        for (const rule of rules) {
-            DomEventsEngine.addEventRule(this, rule);
-        }
-        this.setAbilityState('TooltipAbility:triggerBound', true);
-        this.onCleanup(() => {
-            for (const rule of rules) {
-                DomEventsEngine.removeEventRule(this, rule);
-            }
-            this.setAbilityState('TooltipAbility:triggerBound', undefined);
-        });
-    },
-
     _getTooltipInstance(): any {
         return this.abilityState('TooltipAbility:instance');
     },
@@ -142,14 +86,14 @@ export const TooltipAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorEl = this._resolveAnchor(decl.anchor);
+        const anchorEl = resolveFloatAnchor(this, decl.anchor);
         const constr: any = {
             ...(decl.options ?? {}),
             anchor: anchorEl,
             placement: decl.placement,
             zIndexLevel: decl.zIndexLevel,
         };
-        const mask = this._resolveMask(decl);
+        const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
@@ -202,24 +146,20 @@ export const TooltipAbility: AbilityDefinition = {
     },
 
     _onTooltipEnter(): void {
-        if (!this._triggerMatches('hover')) return;
+        if (!floatTriggerMatches(this._getTooltipDecl(), 'hover', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.showTooltip();
     },
 
     _onTooltipLeave(): void {
-        if (!this._triggerMatches('hover')) return;
+        if (!floatTriggerMatches(this._getTooltipDecl(), 'hover', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.hideTooltip();
     },
 
     _onTooltipClick(): void {
-        if (!this._triggerMatches('click')) return;
+        if (!floatTriggerMatches(this._getTooltipDecl(), 'click', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.toggleTooltip();
-    },
-
-    _triggerMatches(mode: string): boolean {
-        const decl = this._getTooltipDecl();
-        if (!decl) return false;
-        const triggers = Array.isArray(decl.trigger) ? decl.trigger : [decl.trigger ?? 'hover'];
-        return triggers.includes(mode);
     },
 } satisfies AbilityDefinition;

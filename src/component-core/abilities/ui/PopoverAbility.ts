@@ -23,24 +23,27 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { DomEventsEngine } from '../../engine';
-import type { DelegatedEventRule } from '../../types/events';
+import {
+    bindFloatTrigger,
+    disposeFloatInstance,
+    floatTriggerMatches,
+    resolveFloatAnchor,
+    resolveFloatMask,
+} from './float-shared';
+
+const TRIGGER_SPEC = {
+    stateKey: 'PopoverAbility:triggerBound',
+    handlerPrefix: 'Popover',
+    defaultTrigger: 'click',
+} as const;
 
 export const PopoverAbility: AbilityDefinition = {
     _onPopoverOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (value) {
-            this._bindPopoverTrigger();
+            bindFloatTrigger(this, this._getPopoverDecl(), TRIGGER_SPEC);
         } else {
-            this._disposePopover();
-        }
-    },
-
-    _disposePopover(): void {
-        const inst = this._getPopoverInstance();
-        if (inst) {
-            inst.dispose();
-            this.setAbilityState('PopoverAbility:instance', undefined);
+            disposeFloatInstance(this, 'PopoverAbility:instance');
         }
     },
 
@@ -65,65 +68,6 @@ export const PopoverAbility: AbilityDefinition = {
         };
     },
 
-    _resolveAnchor(anchor: string | undefined): HTMLElement {
-        if (anchor === 'self' || !anchor) return this.el!;
-        return this.getNodeEl?.(anchor) ?? this.el!;
-    },
-
-    _resolveMask(decl: any): any {
-        if (decl.maskMode === 'scoped') return 'scoped';
-        if (decl.maskMode === 'global') return true;
-        if (decl.maskMode === 'none') return false;
-        return decl.mask;
-    },
-
-    _bindPopoverTrigger(): void {
-        if (this.abilityState('PopoverAbility:triggerBound')) return;
-        const decl = this._getPopoverDecl();
-        if (!decl) return;
-
-        const trigger = decl.trigger ?? 'click';
-        if (trigger === 'manual' || trigger === 'always') return;
-
-        const anchorEl = this._resolveAnchor(decl.anchor);
-        const triggers = Array.isArray(trigger) ? trigger : [trigger];
-        const rules: DelegatedEventRule[] = [];
-        for (const t of triggers) {
-            if (t === 'hover') {
-                rules.push({
-                    event: 'mouseenter',
-                    path: anchorEl,
-                    handler: '_onPopoverEnter',
-                    needsBinding: true,
-                });
-                rules.push({
-                    event: 'mouseleave',
-                    path: anchorEl,
-                    handler: '_onPopoverLeave',
-                    needsBinding: true,
-                });
-            } else if (t === 'click') {
-                rules.push({
-                    event: 'click',
-                    path: anchorEl,
-                    handler: '_onPopoverClick',
-                    needsBinding: true,
-                });
-            }
-        }
-        if (rules.length === 0) return;
-        for (const rule of rules) {
-            DomEventsEngine.addEventRule(this, rule);
-        }
-        this.setAbilityState('PopoverAbility:triggerBound', true);
-        this.onCleanup(() => {
-            for (const rule of rules) {
-                DomEventsEngine.removeEventRule(this, rule);
-            }
-            this.setAbilityState('PopoverAbility:triggerBound', undefined);
-        });
-    },
-
     _getPopoverInstance(): any {
         return this.abilityState('PopoverAbility:instance');
     },
@@ -138,13 +82,13 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorEl = this._resolveAnchor(decl.anchor);
+        const anchorEl = resolveFloatAnchor(this, decl.anchor);
         const constr: any = {
             ...(decl.options ?? {}),
             anchor: anchorEl,
             placement: decl.placement,
         };
-        const mask = this._resolveMask(decl);
+        const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
@@ -195,24 +139,20 @@ export const PopoverAbility: AbilityDefinition = {
     },
 
     _onPopoverEnter(): void {
-        if (!this._popoverTriggerMatches('hover')) return;
+        if (!floatTriggerMatches(this._getPopoverDecl(), 'hover', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.showPopover();
     },
 
     _onPopoverLeave(): void {
-        if (!this._popoverTriggerMatches('hover')) return;
+        if (!floatTriggerMatches(this._getPopoverDecl(), 'hover', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.hidePopover();
     },
 
     _onPopoverClick(): void {
-        if (!this._popoverTriggerMatches('click')) return;
+        if (!floatTriggerMatches(this._getPopoverDecl(), 'click', TRIGGER_SPEC.defaultTrigger))
+            return;
         this.togglePopover();
-    },
-
-    _popoverTriggerMatches(mode: string): boolean {
-        const decl = this._getPopoverDecl();
-        if (!decl) return false;
-        const triggers = Array.isArray(decl.trigger) ? decl.trigger : [decl.trigger ?? 'click'];
-        return triggers.includes(mode);
     },
 } satisfies AbilityDefinition;
