@@ -81,7 +81,7 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorEl = this.getNodeEl?.(this.anchorNode) ?? this.el!;
+        const anchorEl = this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
             placement: decl.placement,
