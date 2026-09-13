@@ -104,11 +104,17 @@ class MenuComponent extends ItemGroupStaticComponent {
         return this;
     }
 
+    show(): void {
+        const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
+        this._showOverlay({ anchor });
+    }
+
+    hide(): void {
+        this._hideOverlay();
+    }
+
     open(): void {
         if (this.isOpen) return;
-        if (!this.anchor) {
-            this.setData('anchor', this.el!, true);
-        }
         this.show();
     }
 

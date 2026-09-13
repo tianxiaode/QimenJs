@@ -1,12 +1,13 @@
 /**
  * OverlayAbility — 浮层能力
  *
- * 为浮动组件提供浮层（overlay）操作能力：
- * - show / hide — 挂载到 OverlayRoot + z-index + 定位 + 点击外部关闭
+ * 为浮动组件提供浮层（overlay）操作工具：
+ * - _showOverlay / _hideOverlay — 供组件 show/hide 调用的内部方法
  * - repositionOverlay — 重新定位
  * - mountToOverlay / unmountFromOverlay — 直接操作 OverlayRoot
  *
- * show/hide 自动联动 MaskAbility 的 showMask/hideMask（如果存在）。
+ * 各浮动组件自定义 show/hide 方法，在 show 中读取 anchor 后调用 _showOverlay。
+ * _showOverlay/_hideOverlay 自动联动 MaskAbility（如果存在）。
  * mask 管理已拆分到独立的 MaskAbility，通过 mask option 控制。
  */
 
@@ -29,15 +30,16 @@ export const OverlayAbility: AbilityDefinition = {
         if (el.parentNode) el.parentNode.removeChild(el);
     },
 
-    show(): void {
-        const placement = (this.placement ?? 'bottom') as Placement;
-        const anchor = this.anchor;
+    _showOverlay(opts?: { anchor?: HTMLElement; placement?: Placement }): void {
+        const placement = (opts?.placement ?? this.placement ?? 'bottom') as Placement;
+        const anchor = opts?.anchor ?? this.anchor;
         if (!anchor && placement !== 'center') {
-            this.logger?.warn?.('[OverlayAbility] show() called without anchor option');
+            this.logger?.warn?.('[_showOverlay] called without anchor');
             return;
         }
         if (anchor) {
             this.setAbilityState('OverlayAbility:anchor', anchor);
+            this.setData('anchor', anchor, true);
         }
         this.setAbilityState('OverlayAbility:open', true);
 
@@ -86,7 +88,7 @@ export const OverlayAbility: AbilityDefinition = {
         this._bindOverlayHandlers();
     },
 
-    hide(): void {
+    _hideOverlay(): void {
         this.setAbilityState('OverlayAbility:open', false);
         const el = this.el!;
         const persistent = this.persistent;

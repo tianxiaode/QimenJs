@@ -11,6 +11,16 @@ class LoadingComponent extends Component {
         return LOADING_TPL;
     }
 
+    show(): void {
+        const anchor = this.anchor ?? this.rawOptions?.anchor;
+        if (!anchor) return;
+        this._showOverlay({ anchor });
+    }
+
+    hide(): void {
+        this._hideOverlay();
+    }
+
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, "text");
     }

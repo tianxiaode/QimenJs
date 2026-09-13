@@ -11,6 +11,18 @@ export class TooltipComponent extends Component {
         return TOOLTIP_TPL;
     }
 
+    show(): void {
+        const anchor = this.anchor ?? this.rawOptions?.anchor;
+        if (!anchor) return;
+        this._showOverlay({ anchor });
+        this.open();
+    }
+
+    hide(): void {
+        this._hideOverlay();
+        this.close();
+    }
+
     open(): void {
         this.nextFrame(() => {
             this.nextFrame(() => {
