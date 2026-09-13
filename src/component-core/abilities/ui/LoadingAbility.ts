@@ -21,7 +21,7 @@
 
 import type { AbilityDefinition } from '@/composable';
 import type { LoadingOptions } from '../../types';
-import { disposeFloatInstance, resolveFloatAnchor, resolveFloatMask } from './float-shared';
+import { disposeFloatInstance, resolveFloatMask } from './float-shared';
 
 export const LoadingAbility: AbilityDefinition = {
     _onLoadingOptionChange(value: any, old: any): void {
@@ -62,7 +62,7 @@ export const LoadingAbility: AbilityDefinition = {
             return null;
         }
 
-        const anchorEl = resolveFloatAnchor(this, decl.anchor);
+        const anchorEl = this.el!;
         const constr: any = {
             ...decl.options,
             anchor: anchorEl,

@@ -30,12 +30,15 @@ export const OverlayAbility: AbilityDefinition = {
     },
 
     show(): void {
+        const placement = (this.placement ?? 'bottom') as Placement;
         const anchor = this.anchor;
-        if (!anchor) {
+        if (!anchor && placement !== 'center') {
             this.logger?.warn?.('[OverlayAbility] show() called without anchor option');
             return;
         }
-        this.setAbilityState('OverlayAbility:anchor', anchor);
+        if (anchor) {
+            this.setAbilityState('OverlayAbility:anchor', anchor);
+        }
         this.setAbilityState('OverlayAbility:open', true);
 
         const el = this.el!;
@@ -67,15 +70,16 @@ export const OverlayAbility: AbilityDefinition = {
         el.style.zIndex = String(zIndexManager.acquire(zIndexLevel));
         el.style.pointerEvents = 'auto';
 
-        const placement = (this.placement ?? 'bottom') as Placement;
         if (placement !== 'center' && placement !== 'anchor-center') {
             el.style.position = 'absolute';
         }
 
-        const offset = this.offset ?? 4;
-        const align = (this as any).align ?? 'center';
-        const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
-        this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
+        if (anchor) {
+            const offset = this.offset ?? 4;
+            const align = (this as any).align ?? 'center';
+            const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
+            this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
+        }
 
         this.showMask?.();
 

@@ -27,7 +27,7 @@ const DropdownComponentDefs: Definitions = {
         arrowCls: 'q-arrow--bottom',
     },
     fields: {
-        arrowNode: 'dropIcon',
+        anchorNode: 'dropIcon',
     },
 } as const;
 

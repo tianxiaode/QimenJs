@@ -27,7 +27,6 @@ import {
     bindFloatTrigger,
     disposeFloatInstance,
     floatTriggerMatches,
-    resolveFloatAnchor,
     resolveFloatMask,
 } from './float-shared';
 
@@ -82,7 +81,7 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorEl = resolveFloatAnchor(this, decl.anchor);
+        const anchorEl = this.getNodeEl?.(this.anchorNode) ?? this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
             anchor: anchorEl,

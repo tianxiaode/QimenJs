@@ -78,24 +78,26 @@ class ShowcaseNavbar extends NavbarComponent {
                     ghost: true,
                     popover: {
                         type: 'menu',
-                        placement: 'bottom',
-                        eventKey: 'lang',
-                        items: [
-                            {
-                                text: '中文',
-                                action: 'set-lang-zh',
-                                group: 'lang',
-                                groupMode: 'radio',
-                                checked: lang === 'zh-CN',
-                            },
-                            {
-                                text: 'English',
-                                action: 'set-lang-en',
-                                group: 'lang',
-                                groupMode: 'radio',
-                                checked: lang === 'en-US',
-                            },
-                        ],
+                        options: {
+                            placement: 'bottom',
+                            eventKey: 'lang',
+                            items: [
+                                {
+                                    text: '中文',
+                                    action: 'set-lang-zh',
+                                    group: 'lang',
+                                    groupMode: 'radio',
+                                    checked: lang === 'zh-CN',
+                                },
+                                {
+                                    text: 'English',
+                                    action: 'set-lang-en',
+                                    group: 'lang',
+                                    groupMode: 'radio',
+                                    checked: lang === 'en-US',
+                                },
+                            ],
+                        },
                     },
                 },
                 {
@@ -106,15 +108,17 @@ class ShowcaseNavbar extends NavbarComponent {
                     ghost: true,
                     popover: {
                         type: 'menu',
-                        placement: 'bottom',
-                        eventKey: 'theme',
-                        items: THEME_PRESETS.map(p => ({
-                            text: p.name,
-                            action: `set-theme-${p.key}`,
-                            group: 'theme',
-                            groupMode: 'radio',
-                            checked: preset === p.key,
-                        })),
+                        options: {
+                            placement: 'bottom',
+                            eventKey: 'theme',
+                            items: THEME_PRESETS.map(p => ({
+                                text: p.name,
+                                action: `set-theme-${p.key}`,
+                                group: 'theme',
+                                groupMode: 'radio',
+                                checked: preset === p.key,
+                            })),
+                        },
                     },
                 },
             ],

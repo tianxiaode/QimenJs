@@ -9,12 +9,6 @@
 import { DomEventsEngine } from '../../engine';
 import type { DelegatedEventRule, FloatTriggerSpec } from '../../types/events';
 
-/** 解析浮层锚点元素：'self'/缺省 → 组件自身 el，节点名 → getNodeEl(name) */
-export function resolveFloatAnchor(component: any, anchor?: string): HTMLElement {
-    if (anchor === 'self' || !anchor) return component.el!;
-    return component.getNodeEl?.(anchor) ?? component.el!;
-}
-
 /** 解析 mask 控制字段（maskMode 优先），返回子组件 MaskAbility 可识别的 mask 值 */
 export function resolveFloatMask(decl: any): any {
     if (decl.maskMode === 'none') return false;
@@ -35,7 +29,7 @@ export function bindFloatTrigger(component: any, decl: any, spec: FloatTriggerSp
     const trigger = decl.trigger ?? spec.defaultTrigger;
     if (trigger === 'manual' || trigger === 'always') return;
 
-    const anchorEl = resolveFloatAnchor(component, decl.anchor);
+    const anchorEl = component.el!;
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     const rules: DelegatedEventRule[] = [];
     for (const t of triggers) {

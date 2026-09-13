@@ -77,7 +77,7 @@ export const ComponentDefs: Definitions = {
         zIndexLevel: null,
         /** 遮罩配置 — false/true/'scoped'/'global'/{color,scoped} */
         mask: null,
-        /** 箭头自定义 CSS 类 — 附加到 arrowNode 指定的节点上 */
+        /** 箭头自定义 CSS 类 — 附加到 anchorNode 指定的节点上 */
         arrowCls: null,
         /** 组件尺寸 — sm/md/lg/xl/2xl，走全局 q-size--* CSS 类 */
         size: null,
@@ -159,8 +159,8 @@ export const ComponentDefs: Definitions = {
         /**
          * 是否为容器 — 控制组件是否可容纳其他组件
          */
-        /** 箭头节点名称 — 模板中箭头节点的 name，默认 'arrow' */
-        arrowNode: 'arrow',
+        /** 锚点节点名称 — 模板中箭头/锚点节点的 name，默认 'arrow' */
+        anchorNode: 'arrow',
     },
 
     privateFields: {
