@@ -106,10 +106,6 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     show(): void {
         const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
-        console.log('[MenuComponent.show] this.anchor:', this.anchor?.tagName, 'this.anchor.rect:', this.anchor?.getBoundingClientRect ? JSON.stringify({x: this.anchor.getBoundingClientRect().x, y: this.anchor.getBoundingClientRect().y, w: this.anchor.getBoundingClientRect().width, h: this.anchor.getBoundingClientRect().height}) : 'N/A');
-        console.log('[MenuComponent.show] rawOptions?.anchor:', this.rawOptions?.anchor?.tagName, 'rawOptions?.anchor.rect:', this.rawOptions?.anchor?.getBoundingClientRect ? JSON.stringify({x: this.rawOptions.anchor.getBoundingClientRect().x, y: this.rawOptions.anchor.getBoundingClientRect().y, w: this.rawOptions.anchor.getBoundingClientRect().width, h: this.rawOptions.anchor.getBoundingClientRect().height}) : 'N/A');
-        console.log('[MenuComponent.show] this.el:', this.el?.tagName, 'this.el.rect:', this.el?.getBoundingClientRect ? JSON.stringify({x: this.el.getBoundingClientRect().x, y: this.el.getBoundingClientRect().y, w: this.el.getBoundingClientRect().width, h: this.el.getBoundingClientRect().height}) : 'N/A');
-        console.log('[MenuComponent.show] final anchor:', anchor?.tagName, 'anchor.rect:', anchor?.getBoundingClientRect ? JSON.stringify({x: anchor.getBoundingClientRect().x, y: anchor.getBoundingClientRect().y, w: anchor.getBoundingClientRect().width, h: anchor.getBoundingClientRect().height}) : 'N/A');
         this._showOverlay({ anchor });
     }
 

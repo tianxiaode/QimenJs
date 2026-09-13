@@ -89,7 +89,7 @@ export const LoadingAbility: AbilityDefinition = {
             inst.maskMode = maskMode;
             inst.mask = maskMode === 'scoped' ? 'scoped' : maskMode === 'global' ? true : false;
         }
-        inst.show();
+        inst.ready.then(() => inst.show());
     },
 
     hideLoading(): void {

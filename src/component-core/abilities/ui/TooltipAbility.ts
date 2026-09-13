@@ -106,8 +106,10 @@ export const TooltipAbility: AbilityDefinition = {
     showTooltip(): void {
         const inst = this._ensureTooltip();
         if (inst) {
-            inst.show();
-            inst.open?.();
+            inst.ready.then(() => {
+                inst.show();
+                inst.open?.();
+            });
         }
     },
 

@@ -86,7 +86,6 @@ export const PopoverAbility: AbilityDefinition = {
             anchor: this.el!,
             placement: decl.placement,
         };
-        console.log('[PopoverAbility._ensurePopover] this.el:', this.el?.tagName, 'this.el.rect:', this.el?.getBoundingClientRect ? JSON.stringify({x: this.el.getBoundingClientRect().x, y: this.el.getBoundingClientRect().y, w: this.el.getBoundingClientRect().width, h: this.el.getBoundingClientRect().height}) : 'N/A');
         const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
@@ -102,7 +101,7 @@ export const PopoverAbility: AbilityDefinition = {
     showPopover(): void {
         const inst = this._ensurePopover();
         if (inst) {
-            inst.show();
+            inst.ready.then(() => inst.show());
         }
     },
 

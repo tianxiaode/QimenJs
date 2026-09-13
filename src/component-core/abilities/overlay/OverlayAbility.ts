@@ -33,9 +33,6 @@ export const OverlayAbility: AbilityDefinition = {
     _showOverlay(opts?: { anchor?: HTMLElement; placement?: Placement }): void {
         const placement = (opts?.placement ?? this.placement ?? 'bottom') as Placement;
         const anchor = opts?.anchor ?? this.anchor;
-        console.log('[_showOverlay] opts?.anchor:', opts?.anchor?.tagName, 'opts?.anchor.rect:', opts?.anchor?.getBoundingClientRect ? JSON.stringify({x: opts.anchor.getBoundingClientRect().x, y: opts.anchor.getBoundingClientRect().y, w: opts.anchor.getBoundingClientRect().width, h: opts.anchor.getBoundingClientRect().height}) : 'N/A');
-        console.log('[_showOverlay] this.anchor:', this.anchor?.tagName, 'this.anchor.rect:', this.anchor?.getBoundingClientRect ? JSON.stringify({x: this.anchor.getBoundingClientRect().x, y: this.anchor.getBoundingClientRect().y, w: this.anchor.getBoundingClientRect().width, h: this.anchor.getBoundingClientRect().height}) : 'N/A');
-        console.log('[_showOverlay] final anchor:', anchor?.tagName, 'anchor.rect:', anchor?.getBoundingClientRect ? JSON.stringify({x: anchor.getBoundingClientRect().x, y: anchor.getBoundingClientRect().y, w: anchor.getBoundingClientRect().width, h: anchor.getBoundingClientRect().height}) : 'N/A');
         if (!anchor && placement !== 'center') {
             this.logger?.warn?.('[_showOverlay] called without anchor');
             return;
@@ -82,10 +79,7 @@ export const OverlayAbility: AbilityDefinition = {
         if (anchor) {
             const offset = this.offset ?? 4;
             const align = (this as any).align ?? 'center';
-            console.log('[_showOverlay] before positionOverlay, el rect:', JSON.stringify({x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height}));
-            console.log('[_showOverlay] placement:', placement, 'offset:', offset, 'align:', align);
             const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
-            console.log('[_showOverlay] after positionOverlay, actualPlacement:', actualPlacement, 'el rect:', JSON.stringify({x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height}));
             this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
         }
 
