@@ -104,13 +104,12 @@ export const GroupSelectAbility = {
         const state = this.abilityState(STATE_KEY) as GroupSelectState | undefined;
         if (!state) return;
 
-        const raw = item.rawOptions ?? {};
-        const groupName = item.group ?? raw.group;
+        const groupName = item.group;
         if (!groupName) return;
 
         if (!state.groups[groupName]) {
             state.groups[groupName] = {
-                mode: item.groupMode ?? raw.groupMode ?? state.defaultMode,
+                mode: item.groupMode ?? state.defaultMode,
                 items: [],
             };
         }
