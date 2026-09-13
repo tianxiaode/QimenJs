@@ -85,9 +85,9 @@ export const TooltipAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorEl = this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
+            anchor: this.el!,
             placement: decl.placement,
             zIndexLevel: decl.zIndexLevel,
         };
@@ -95,7 +95,6 @@ export const TooltipAbility: AbilityDefinition = {
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
-        overlay.anchor = anchorEl;
         this.setAbilityState('TooltipAbility:instance', overlay);
         this.onCleanup(() => {
             overlay.dispose();
