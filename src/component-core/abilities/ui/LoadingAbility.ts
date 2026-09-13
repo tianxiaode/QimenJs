@@ -27,6 +27,16 @@ export const LoadingAbility: AbilityDefinition = {
         if (value === old) return;
         if (value) {
             this._ensureLoading();
+        } else {
+            this._disposeLoading();
+        }
+    },
+
+    _disposeLoading(): void {
+        const inst = this._getLoadingInstance();
+        if (inst) {
+            inst.dispose();
+            this.setAbilityState('LoadingAbility:instance', undefined);
         }
     },
 

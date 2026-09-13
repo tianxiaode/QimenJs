@@ -32,6 +32,16 @@ export const TooltipAbility: AbilityDefinition = {
         if (value === old) return;
         if (value) {
             this._bindTooltipTrigger();
+        } else {
+            this._disposeTooltip();
+        }
+    },
+
+    _disposeTooltip(): void {
+        const inst = this._getTooltipInstance();
+        if (inst) {
+            inst.dispose();
+            this.setAbilityState('TooltipAbility:instance', undefined);
         }
     },
 

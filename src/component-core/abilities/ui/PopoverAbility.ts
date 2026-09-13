@@ -31,6 +31,16 @@ export const PopoverAbility: AbilityDefinition = {
         if (value === old) return;
         if (value) {
             this._bindPopoverTrigger();
+        } else {
+            this._disposePopover();
+        }
+    },
+
+    _disposePopover(): void {
+        const inst = this._getPopoverInstance();
+        if (inst) {
+            inst.dispose();
+            this.setAbilityState('PopoverAbility:instance', undefined);
         }
     },
 
