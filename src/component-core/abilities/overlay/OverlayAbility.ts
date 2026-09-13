@@ -82,7 +82,10 @@ export const OverlayAbility: AbilityDefinition = {
         if (anchor) {
             const offset = this.offset ?? 4;
             const align = (this as any).align ?? 'center';
+            console.log('[_showOverlay] before positionOverlay, el rect:', JSON.stringify({x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height}));
+            console.log('[_showOverlay] placement:', placement, 'offset:', offset, 'align:', align);
             const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
+            console.log('[_showOverlay] after positionOverlay, actualPlacement:', actualPlacement, 'el rect:', JSON.stringify({x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height}));
             this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
         }
 
