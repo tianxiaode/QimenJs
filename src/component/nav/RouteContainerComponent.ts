@@ -26,8 +26,11 @@ class RouteContainerComponent extends Component {
     _currentInstance: any = null;
 
     onAfterInit(): void {
-        if (this.defaultComponent) {
-            this._mountComponent(this.defaultComponent);
+        const hash = window.location.hash;
+        const path = hash ? hash.slice(1) : '';
+        const PageClass = this.routeMap[path] || this.defaultComponent;
+        if (PageClass) {
+            this._mountComponent(PageClass);
         }
     }
 
