@@ -17,7 +17,7 @@ export {
 } from './group';
 
 // 尺寸能力
-export { SizeAbility, type SizeConfig } from './size';
+export { SizeAbility } from './size';
 
 // 颜色能力
 export { ColorAbility, type ColorScheme, type ColorValue } from './color';

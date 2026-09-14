@@ -22,7 +22,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
-import { ColorAbility, SizeAbility } from '@qimenjs/component-abilities';
+import { ColorAbility, SizeAbility } from '@/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
 import { Definitions } from '@/composable';
 import './toggle.css';
