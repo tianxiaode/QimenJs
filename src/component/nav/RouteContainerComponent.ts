@@ -26,25 +26,30 @@ class RouteContainerComponent extends Component {
     _currentInstance: any = null;
 
     onAfterInit(): void {
+        console.log('[RouteContainer] onAfterInit, defaultComponent=', this.defaultComponent?.name, 'routeMap keys=', Object.keys(this.routeMap));
         if (this.defaultComponent) {
             this._mountComponent(this.defaultComponent);
         }
     }
 
     onRouteChange(event: any): void {
+        console.log('[RouteContainer] onRouteChange, event=', JSON.stringify(event), 'routeMap keys=', Object.keys(this.routeMap));
         const path = event?.path;
         const PageClass = this.routeMap[path] || this.defaultComponent;
+        console.log('[RouteContainer] path=', path, 'PageClass=', PageClass?.name);
         if (PageClass) {
             this._mountComponent(PageClass);
         }
     }
 
     private _mountComponent(PageClass: new (props?: Record<string, any>) => any): void {
+        console.log('[RouteContainer] _mountComponent, PageClass=', PageClass?.name, 'hasEl=', !!this.el);
         if (this._currentInstance) {
             this._currentInstance.dispose();
             this._currentInstance = null;
         }
         this._currentInstance = new PageClass({ container: this.el });
+        console.log('[RouteContainer] _mountComponent done, instance el=', !!this._currentInstance?.el);
     }
 
     onBeforeDispose(): void {
