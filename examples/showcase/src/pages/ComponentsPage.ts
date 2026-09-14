@@ -108,7 +108,7 @@ const COMPONENTS_TPL: TemplateDecl = {
     classes: 'q-components-page',
     style: { display: 'flex', flexDirection: 'row', minHeight: '100%' },
     children: [
-#         {
+        {
             tag: 'aside',
             name: 'sidebar',
             classes: 'q-components-page__sidebar',
