@@ -185,7 +185,6 @@ export class Router extends ComposableBase {
     private applyRoute(path: string): void {
         const previousPath = this.currentPath;
         this.currentPath = path;
-        console.log('[Router] applyRoute, path=', path, 'previousPath=', previousPath);
 
         const params = this.extractParams(path);
         const eventName = pathToEventName(path);
@@ -228,7 +227,6 @@ export class Router extends ComposableBase {
 
     private handleUrlChange(): void {
         const path = this.getCurrentPath();
-        console.log('[Router] handleUrlChange, path=', path, 'currentPath=', this.currentPath);
         if (path && path !== this.currentPath) {
             this.applyRoute(path);
         }
