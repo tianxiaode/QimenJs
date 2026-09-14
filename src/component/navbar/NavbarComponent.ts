@@ -13,6 +13,7 @@ const NavbarComponentDefs: Definitions = {
         items: null,
         defaultItemOption: null,
         menuToggleIconCls: null,
+        fixed: false,
     },
 } as const;
 
@@ -118,6 +119,10 @@ class NavbarComponent extends Component {
 
     _onMenuToggleIconClsOptionChange(value: string, old: string) {
         this.toggleOptionCls('', value, old, 'menuToggleIcon');
+    }
+
+    _onFixedOptionChange(value: boolean) {
+        this.toggleCls('q-navbar--fixed', value);
     }
 
     _onWindowResize(data: any): void {

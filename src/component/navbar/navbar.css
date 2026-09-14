@@ -10,6 +10,14 @@
     gap: 16px;
 }
 
+.q-navbar--fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
 .q-navbar__toggle {
     display: none;
     width: 32px;

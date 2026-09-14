@@ -2,18 +2,18 @@ import { NavbarComponent } from '@qimenjs/component';
 import { ListenItem } from '@qimenjs/component-core';
 
 const THEME_PRESETS = [
-    { key: 'cinnabar', name: '朱砂红' },
-    { key: 'indigo', name: '黛蓝' },
-    { key: 'pine', name: '松花绿' },
-    { key: 'amber', name: '琥珀黄' },
-    { key: 'rouge', name: '胭脂粉' },
-    { key: 'bamboo', name: '竹青' },
-    { key: 'sienna', name: '缃色' },
-    { key: 'lotus', name: '藕荷紫' },
-    { key: 'navy', name: '藏青' },
-    { key: 'chartreuse', name: '秋香绿' },
-    { key: 'qinghua', name: '青花瓷' },
-    { key: 'skyblue', name: '天青' },
+    { key: 'cinnabar', name: '@theme.cinnabar' },
+    { key: 'indigo', name: '@theme.indigo' },
+    { key: 'pine', name: '@theme.pine' },
+    { key: 'amber', name: '@theme.amber' },
+    { key: 'rouge', name: '@theme.rouge' },
+    { key: 'bamboo', name: '@theme.bamboo' },
+    { key: 'sienna', name: '@theme.sienna' },
+    { key: 'lotus', name: '@theme.lotus' },
+    { key: 'navy', name: '@theme.navy' },
+    { key: 'chartreuse', name: '@theme.chartreuse' },
+    { key: 'qinghua', name: '@theme.qinghua' },
+    { key: 'skyblue', name: '@theme.skyblue' },
 ];
 
 function getCurrentLang(): string {
