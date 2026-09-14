@@ -34,6 +34,94 @@
     border-color: var(--q-color-primary-hover);
 }
 
+/* 幽灵模式（无边框，与背景融合） */
+.q-toggle--ghost {
+    border-color: transparent;
+    background: transparent;
+}
+
+.q-toggle--ghost:hover {
+    background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
+    border-color: transparent;
+}
+
+.q-toggle--ghost:active {
+    background: var(--q-overlay-active, rgba(128, 128, 128, 0.15));
+}
+
+/* 幽灵模式 + 颜色 — 未按下时文字着色 */
+.q-toggle--ghost.q-toggle--color-primary {
+    color: var(--q-color-primary, #0078d4);
+}
+.q-toggle--ghost.q-toggle--color-secondary {
+    color: var(--q-color-secondary, #5b6fc0);
+}
+.q-toggle--ghost.q-toggle--color-success {
+    color: var(--q-color-success, #107c10);
+}
+.q-toggle--ghost.q-toggle--color-warning {
+    color: var(--q-color-warning, #ca5010);
+}
+.q-toggle--ghost.q-toggle--color-error {
+    color: var(--q-color-error, #d13438);
+}
+.q-toggle--ghost.q-toggle--color-info {
+    color: var(--q-color-info, #0078d4);
+}
+
+/* 颜色 — 激活态填充主题色（color = 激活态颜色） */
+.q-toggle--color-primary.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-primary, #0078d4);
+    --q-toggle-active-hover: var(--q-color-primary-hover, var(--q-color-primary));
+    --q-toggle-on-active: var(--q-color-on-primary, #fff);
+}
+.q-toggle--color-secondary.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-secondary, #5b6fc0);
+    --q-toggle-active-hover: var(--q-color-secondary-hover, var(--q-color-secondary));
+    --q-toggle-on-active: var(--q-color-on-secondary, #fff);
+}
+.q-toggle--color-success.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-success, #107c10);
+    --q-toggle-active-hover: var(--q-color-success-hover, var(--q-color-success));
+    --q-toggle-on-active: var(--q-color-on-success, #fff);
+}
+.q-toggle--color-warning.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-warning, #ca5010);
+    --q-toggle-active-hover: var(--q-color-warning-hover, var(--q-color-warning));
+    --q-toggle-on-active: var(--q-color-on-warning, #fff);
+}
+.q-toggle--color-error.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-error, #d13438);
+    --q-toggle-active-hover: var(--q-color-error-hover, var(--q-color-error));
+    --q-toggle-on-active: var(--q-color-on-error, #fff);
+}
+.q-toggle--color-info.q-toggle--pressed {
+    --q-toggle-active: var(--q-color-info, #0078d4);
+    --q-toggle-active-hover: var(--q-color-info-hover, var(--q-color-info));
+    --q-toggle-on-active: var(--q-color-on-info, #fff);
+}
+
+.q-toggle--color-primary.q-toggle--pressed,
+.q-toggle--color-secondary.q-toggle--pressed,
+.q-toggle--color-success.q-toggle--pressed,
+.q-toggle--color-warning.q-toggle--pressed,
+.q-toggle--color-error.q-toggle--pressed,
+.q-toggle--color-info.q-toggle--pressed {
+    background: var(--q-toggle-active);
+    border-color: var(--q-toggle-active);
+    color: var(--q-toggle-on-active);
+}
+
+.q-toggle--color-primary.q-toggle--pressed:hover,
+.q-toggle--color-secondary.q-toggle--pressed:hover,
+.q-toggle--color-success.q-toggle--pressed:hover,
+.q-toggle--color-warning.q-toggle--pressed:hover,
+.q-toggle--color-error.q-toggle--pressed:hover,
+.q-toggle--color-info.q-toggle--pressed:hover {
+    background: var(--q-toggle-active-hover);
+    border-color: var(--q-toggle-active-hover);
+}
+
 .q-toggle--disabled {
     cursor: not-allowed;
     opacity: 0.4;
