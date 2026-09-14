@@ -2,10 +2,13 @@
  * ComponentsPage - 组件展示页
  *
  * 左侧组件导航侧栏 + 右侧组件演示区域。
- * 点击左侧组件名 → 右侧动态切换演示内容。
+ * 点击左侧组件名 → hash 变化 → 路由事件 → 右侧动态切换演示内容。
  */
 
 import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import type { DemoConfig } from '../components/types';
+import { BUTTON_DEMO } from '../components/ButtonDemo';
+import { AVATAR_DEMO } from '../components/AvatarDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -34,183 +37,6 @@ const COMPONENT_CATEGORIES = [
         components: ['Dialog', 'EntityToolbar', 'ItemGroup', 'Toolbar'],
     },
 ];
-
-/** 组件演示配置 */
-interface DemoConfig {
-    title: string;
-    description: string;
-    sections: { label: string; template: TemplateDecl; code?: string }[];
-}
-
-/** Button 演示配置 */
-const BUTTON_DEMO: DemoConfig = {
-    title: 'Button',
-    description: '按钮组件，支持 size/color/outline/disabled/pressed 等 option',
-    sections: [
-        {
-            label: 'Size',
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'button', options: { text: 'Small', size: 'sm' } },
-                    { type: 'button', options: { text: 'Medium', size: 'md' } },
-                    { type: 'button', options: { text: 'Large', size: 'lg' } },
-                ],
-            },
-        },
-        {
-            label: 'Color',
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'button', options: { text: 'Primary', color: 'primary' } },
-                    { type: 'button', options: { text: 'Secondary', color: 'secondary' } },
-                    { type: 'button', options: { text: 'Success', color: 'success' } },
-                    { type: 'button', options: { text: 'Warning', color: 'warning' } },
-                    { type: 'button', options: { text: 'Error', color: 'error' } },
-                ],
-            },
-        },
-        {
-            label: 'Outline',
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'button', options: { text: 'Primary', color: 'primary', outline: true } },
-                    { type: 'button', options: { text: 'Success', color: 'success', outline: true } },
-                    { type: 'button', options: { text: 'Error', color: 'error', outline: true } },
-                ],
-            },
-        },
-        {
-            label: 'Disabled',
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'button', options: { text: 'Disabled', disabled: true } },
-                    { type: 'button', options: { text: 'Disabled Outline', disabled: true, outline: true } },
-                ],
-            },
-        },
-        {
-            label: 'Pressed (两态按钮)',
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'button', options: { text: 'Normal' } },
-                    { type: 'button', options: { text: 'Pressed', pressed: true } },
-                ],
-            },
-        },
-    ],
-};
-
-/** Avatar 演示配置 */
-const AVATAR_DEMO: DemoConfig = {
-    title: 'Avatar',
-    description: '头像组件，支持 src(图片)/text(文字首字母)/iconCls(图标) 三种模式，size/color option',
-    sections: [
-        {
-            label: 'Size',
-            code: `{ type: 'avatar', options: { text: 'A', size: 'sm' } }
-{ type: 'avatar', options: { text: 'A', size: 'md' } }
-{ type: 'avatar', options: { text: 'A', size: 'lg' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { text: 'A', size: 'sm' } },
-                    { type: 'avatar', options: { text: 'A', size: 'md' } },
-                    { type: 'avatar', options: { text: 'A', size: 'lg' } },
-                ],
-            },
-        },
-        {
-            label: 'Color',
-            code: `{ type: 'avatar', options: { text: 'P', color: 'primary' } }
-{ type: 'avatar', options: { text: 'S', color: 'secondary' } }
-{ type: 'avatar', options: { text: 'G', color: 'success' } }
-{ type: 'avatar', options: { text: 'W', color: 'warning' } }
-{ type: 'avatar', options: { text: 'E', color: 'error' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { text: 'P', color: 'primary' } },
-                    { type: 'avatar', options: { text: 'S', color: 'secondary' } },
-                    { type: 'avatar', options: { text: 'G', color: 'success' } },
-                    { type: 'avatar', options: { text: 'W', color: 'warning' } },
-                    { type: 'avatar', options: { text: 'E', color: 'error' } },
-                ],
-            },
-        },
-        {
-            label: 'Image (src)',
-            code: `{ type: 'avatar', options: { src: '/avatar-1.svg', size: 'sm' } }
-{ type: 'avatar', options: { src: '/avatar-2.svg', size: 'md' } }
-{ type: 'avatar', options: { src: '/avatar-3.svg', size: 'lg' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { src: '/avatar-1.svg', size: 'sm' } },
-                    { type: 'avatar', options: { src: '/avatar-2.svg', size: 'md' } },
-                    { type: 'avatar', options: { src: '/avatar-3.svg', size: 'lg' } },
-                ],
-            },
-        },
-        {
-            label: 'Text',
-            code: `{ type: 'avatar', options: { text: 'Alice', size: 'sm' } }
-{ type: 'avatar', options: { text: 'Bob', size: 'md' } }
-{ type: 'avatar', options: { text: 'Charlie', size: 'lg' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { text: 'Alice', size: 'sm' } },
-                    { type: 'avatar', options: { text: 'Bob', size: 'md' } },
-                    { type: 'avatar', options: { text: 'Charlie', size: 'lg' } },
-                ],
-            },
-        },
-        {
-            label: 'Icon (iconCls)',
-            code: `{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } }
-{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } }
-{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } },
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } },
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } },
-                ],
-            },
-        },
-        {
-            label: 'Color + Size',
-            code: `{ type: 'avatar', options: { text: 'A', color: 'primary', size: 'sm' } }
-{ type: 'avatar', options: { text: 'A', color: 'success', size: 'md' } }
-{ type: 'avatar', options: { text: 'A', color: 'error', size: 'lg' } }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__row',
-                children: [
-                    { type: 'avatar', options: { text: 'A', color: 'primary', size: 'sm' } },
-                    { type: 'avatar', options: { text: 'A', color: 'success', size: 'md' } },
-                    { type: 'avatar', options: { text: 'A', color: 'error', size: 'lg' } },
-                ],
-            },
-        },
-    ],
-};
 
 /** 组件演示映射 */
 const DEMO_MAP: Record<string, DemoConfig> = {
