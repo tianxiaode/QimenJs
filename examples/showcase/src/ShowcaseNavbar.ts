@@ -68,6 +68,7 @@ class ShowcaseNavbar extends NavbarComponent {
                     href: '#action/toggle-dark',
                     offIcon: 'fa fa-sun',
                     onIcon: 'fa fa-moon',
+                    eventKey: 'dark',
                     ghost: true,
                     dock: 'right',
                     action: 'toggle-dark',
@@ -130,6 +131,7 @@ class ShowcaseNavbar extends NavbarComponent {
     listens: ListenItem[] = [
         { source: 'lang', events: { select: '_onLangChange' } },
         { source: 'theme', events: { select: '_onThemeChange' } },
+        { source: 'dark', events: { toggle: '_onDarkThemeToggle' } },
     ];
 
     _onLangChange(data: any): void {
@@ -145,6 +147,12 @@ class ShowcaseNavbar extends NavbarComponent {
         const preset = data.action.replace('set-theme-', '');
         document.documentElement.setAttribute('data-theme-preset', preset);
         this._updateMenuChecked('theme', data.action);
+    }
+
+    _onDarkThemeToggle(data: any) {
+        data.pressed
+            ? document.documentElement.setAttribute('data-theme', 'dark')
+            : document.documentElement.setAttribute('data-theme', 'light');
     }
 
     private _updateMenuChecked(eventKey: string, action: string): void {
