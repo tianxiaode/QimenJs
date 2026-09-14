@@ -117,6 +117,19 @@ body {
     height: 100%;
 }
 
+.q-components-page__nav-group {
+    margin-bottom: 8px;
+}
+
+.q-components-page__nav-category {
+    padding: 8px 16px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--q-color-text-tertiary, #999);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .q-components-page__nav-item {
     padding: 8px 16px;
     cursor: pointer;

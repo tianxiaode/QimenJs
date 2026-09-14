@@ -7,19 +7,32 @@
 
 import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
 
-/** 已注册组件列表（按字母排序） */
-const COMPONENTS_LIST = [
-    'Avatar',
-    'Button',
-    'Card',
-    'Dropdown',
-    'Hero',
-    'Href',
-    'Menu',
-    'Navbar',
-    'Tag',
-    'Text',
-    'Toggle',
+/** 组件分类 */
+const COMPONENT_CATEGORIES = [
+    {
+        label: '基础元素',
+        components: ['Avatar', 'Button', 'ButtonGroup', 'Divider', 'Html', 'Icon', 'Label', 'Spacer', 'Text'],
+    },
+    {
+        label: '布局容器',
+        components: ['Card', 'Fieldset', 'Header', 'Hero', 'Panel', 'Tabs'],
+    },
+    {
+        label: '导航',
+        components: ['Breadcrumb', 'Dropdown', 'Menu', 'Nav', 'Navbar', 'TreeNav'],
+    },
+    {
+        label: '数据展示',
+        components: ['Accordion', 'Alert', 'List', 'Progress', 'Statistic', 'Table', 'Tag'],
+    },
+    {
+        label: '表单',
+        components: ['Date', 'Form', 'Toggle'],
+    },
+    {
+        label: '交互工具',
+        components: ['Dialog', 'EntityToolbar', 'ItemGroup', 'Toolbar'],
+    },
 ];
 
 /** 组件演示配置 */
@@ -112,12 +125,23 @@ const COMPONENTS_TPL: TemplateDecl = {
             tag: 'aside',
             name: 'sidebar',
             classes: 'q-components-page__sidebar',
-            children: COMPONENTS_LIST.map(name => ({
+            children: COMPONENT_CATEGORIES.map(cat => ({
                 tag: 'div',
-                classes: 'q-components-page__nav-item',
-                name: `nav-${name.toLowerCase()}`,
-                attributes: { 'data-component': name },
-                options: { text: name },
+                classes: 'q-components-page__nav-group',
+                children: [
+                    {
+                        tag: 'div',
+                        classes: 'q-components-page__nav-category',
+                        options: { text: cat.label },
+                    },
+                    ...cat.components.map(name => ({
+                        tag: 'div',
+                        classes: 'q-components-page__nav-item',
+                        name: `nav-${name.toLowerCase()}`,
+                        attributes: { 'data-component': name },
+                        options: { text: name },
+                    })),
+                ],
             })),
         },
         {
@@ -206,7 +230,7 @@ const COMPONENTS_TPL: TemplateDecl = {
                                 {
                                     tag: 'p',
                                     options: {
-                                        text: '当前已注册 11 个组件：Avatar、Button、Card、Dropdown、Hero、Href、Menu、Navbar、Tag、Text、Toggle。从左侧导航选择组件查看详细演示。',
+                                        text: '当前共 35 个组件，按 6 个分类组织：基础元素（9）、布局容器（6）、导航（6）、数据展示（7）、表单（3）、交互工具（4）。从左侧导航选择组件查看详细演示。',
                                     },
                                 },
                             ],
