@@ -154,6 +154,11 @@ __qimen_i18n_register__('zh-CN', {
         qinghua: '青花瓷',
         skyblue: '天青',
     },
+    footer: {
+        license: 'MIT 协议',
+        github: 'GitHub',
+        docs: '文档',
+    },
     error: {
         network: '网络错误，请稍后重试',
         timeout: '请求超时，请稍后重试',

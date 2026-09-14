@@ -64,3 +64,39 @@ body {
     font-family: 'Font Awesome 7 Free';
     font-weight: 900;
 }
+
+.q-showcase-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-top: 1px solid var(--q-color-border, #dcdfe6);
+    background: var(--q-color-bg, #fff);
+    color: var(--q-color-text-secondary, #666);
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.q-showcase-footer__left,
+.q-showcase-footer__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.q-showcase-footer__divider {
+    color: var(--q-color-text-tertiary, #999);
+}
+
+.q-showcase-footer__divider::before {
+    content: '·';
+}
+
+.q-showcase-footer__link {
+    color: var(--q-color-text-secondary, #666);
+    text-decoration: none;
+}
+
+.q-showcase-footer__link:hover {
+    color: var(--q-color-primary, #0078d4);
+}

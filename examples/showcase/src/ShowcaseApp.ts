@@ -1,5 +1,6 @@
 import { Component, TemplateDecl } from '@qimenjs/component-core';
 import { ShowcaseNavbar } from './ShowcaseNavbar';
+import { ShowcaseFooter } from './ShowcaseFooter';
 import { HomePage } from './pages/HomePage';
 import { ComponentsPage } from './pages/ComponentsPage';
 import { DocsPage } from './pages/DocsPage';
@@ -36,6 +37,10 @@ export class ShowcaseApp extends Component {
                     name: 'pageContainer',
                     classes: 'q-showcase__page',
                     style: { flex: '1' },
+                },
+                {
+                    type: ShowcaseFooter,
+                    name: 'footer',
                 },
             ],
         };

@@ -154,6 +154,11 @@ __qimen_i18n_register__('en-US', {
         qinghua: 'Qinghua',
         skyblue: 'Sky Blue',
     },
+    footer: {
+        license: 'MIT License',
+        github: 'GitHub',
+        docs: 'Docs',
+    },
     error: {
         network: 'Network error, please try again later',
         timeout: 'Request timed out, please try again later',
