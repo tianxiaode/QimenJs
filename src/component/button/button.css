@@ -232,6 +232,18 @@
     flex-direction: column-reverse;
 }
 
+/* 上下布局需要额外 padding 和更小 gap */
+.q-button-layout--icon-top,
+.q-button-layout--icon-bottom {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.q-button-layout--icon-top .q-button__content,
+.q-button-layout--icon-bottom .q-button__content {
+    gap: 2px;
+}
+
 /* 下拉展开箭头 */
 .q-button .q-expand-arrow {
     margin-left: 6px;

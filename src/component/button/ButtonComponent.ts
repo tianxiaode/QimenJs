@@ -84,7 +84,14 @@ class ButtonComponent extends Component {
         this.toggleOptionCls('q-button-layout--icon-', value, old);
     }
 
-    _onBusyOptionChange(value: boolean) {
+    _onArrowClsOptionChange(value: string, old: string) {
+        const nodeName = 'dropIcon';
+        if (old) this.removeCls(old, nodeName);
+        if (value) {
+            this.removeCls('hidden', nodeName);
+            this.addCls(value, nodeName);
+        }
+    }
         const iconNode = 'icon';
         const loadingNode = 'loading';
         this.setNodeHidden(value, iconNode);
