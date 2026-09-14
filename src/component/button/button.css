@@ -232,9 +232,10 @@
     flex-direction: column-reverse;
 }
 
-/* 上下布局需要额外 padding 和更小 gap */
-.q-button-layout--icon-top,
-.q-button-layout--icon-bottom {
+/* 上下布局需要覆盖 q-size--* 的固定 height，让高度由内容决定 */
+.q-button.q-button-layout--icon-top,
+.q-button.q-button-layout--icon-bottom {
+    height: auto;
     padding-top: 6px;
     padding-bottom: 6px;
 }
