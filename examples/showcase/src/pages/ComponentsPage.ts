@@ -39,7 +39,7 @@ const COMPONENT_CATEGORIES = [
 interface DemoConfig {
     title: string;
     description: string;
-    sections: { label: string; template: TemplateDecl }[];
+    sections: { label: string; template: TemplateDecl; code?: string }[];
 }
 
 /** Button 演示配置 */
@@ -117,6 +117,9 @@ const AVATAR_DEMO: DemoConfig = {
     sections: [
         {
             label: 'Size',
+            code: `{ type: 'avatar', options: { text: 'A', size: 'sm' } }
+{ type: 'avatar', options: { text: 'A', size: 'md' } }
+{ type: 'avatar', options: { text: 'A', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -129,6 +132,11 @@ const AVATAR_DEMO: DemoConfig = {
         },
         {
             label: 'Color',
+            code: `{ type: 'avatar', options: { text: 'P', color: 'primary' } }
+{ type: 'avatar', options: { text: 'S', color: 'secondary' } }
+{ type: 'avatar', options: { text: 'G', color: 'success' } }
+{ type: 'avatar', options: { text: 'W', color: 'warning' } }
+{ type: 'avatar', options: { text: 'E', color: 'error' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -143,18 +151,24 @@ const AVATAR_DEMO: DemoConfig = {
         },
         {
             label: 'Image (src)',
+            code: `{ type: 'avatar', options: { src: '/avatar-1.svg', size: 'sm' } }
+{ type: 'avatar', options: { src: '/avatar-2.svg', size: 'md' } }
+{ type: 'avatar', options: { src: '/avatar-3.svg', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'sm' } },
-                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'md' } },
-                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'lg' } },
+                    { type: 'avatar', options: { src: '/avatar-1.svg', size: 'sm' } },
+                    { type: 'avatar', options: { src: '/avatar-2.svg', size: 'md' } },
+                    { type: 'avatar', options: { src: '/avatar-3.svg', size: 'lg' } },
                 ],
             },
         },
         {
             label: 'Text',
+            code: `{ type: 'avatar', options: { text: 'Alice', size: 'sm' } }
+{ type: 'avatar', options: { text: 'Bob', size: 'md' } }
+{ type: 'avatar', options: { text: 'Charlie', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -167,6 +181,9 @@ const AVATAR_DEMO: DemoConfig = {
         },
         {
             label: 'Icon (iconCls)',
+            code: `{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } }
+{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } }
+{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -179,6 +196,9 @@ const AVATAR_DEMO: DemoConfig = {
         },
         {
             label: 'Color + Size',
+            code: `{ type: 'avatar', options: { text: 'A', color: 'primary', size: 'sm' } }
+{ type: 'avatar', options: { text: 'A', color: 'success', size: 'md' } }
+{ type: 'avatar', options: { text: 'A', color: 'error', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -405,6 +425,11 @@ export class ComponentsPage extends Component {
                     children: [
                         { tag: 'h3', classes: 'q-demo__section-label', options: { text: section.label } },
                         section.template,
+                        ...(section.code ? [{
+                            tag: 'pre',
+                            classes: 'q-demo__code',
+                            children: [{ tag: 'code', options: { text: section.code } }],
+                        }] : []),
                     ],
                 })),
             ],
