@@ -175,6 +175,7 @@ const COMPONENTS_TPL: TemplateDecl = {
 export class ComponentsPage extends Component {
     _currentDemo: any = null;
     _currentDemoName: string | null = null;
+    _interactiveInstances: any[] = [];
 
     get tpl(): TemplateDecl {
         return COMPONENTS_TPL;
@@ -226,6 +227,8 @@ export class ComponentsPage extends Component {
             this._currentDemo.dispose();
             this._currentDemo = null;
         }
+        this._interactiveInstances.forEach(inst => inst.dispose());
+        this._interactiveInstances = [];
         contentEl.innerHTML = '';
 
         if (!config) {
@@ -245,12 +248,14 @@ export class ComponentsPage extends Component {
                         { tag: 'p', classes: 'q-demo__desc', options: { text: config.description } },
                     ],
                 },
-                ...config.sections.map(section => ({
+                ...config.sections.map((section, i) => ({
                     tag: 'div',
                     classes: 'q-demo__section',
                     children: [
                         { tag: 'h3', classes: 'q-demo__section-label', options: { text: section.label } },
-                        section.template,
+                        section.component
+                            ? { tag: 'div', name: `section-${i}`, classes: 'q-demo__interactive' }
+                            : section.template,
                         ...(section.code ? [{
                             tag: 'pre',
                             classes: 'q-demo__code',
@@ -265,5 +270,14 @@ export class ComponentsPage extends Component {
             type: 'component-demo',
             tpl: demoTpl,
         }))({ container: contentEl });
+
+        config.sections.forEach((section, i) => {
+            if (section.component) {
+                const containerEl = this._currentDemo.getNodeEl(`section-${i}`);
+                if (containerEl) {
+                    this._interactiveInstances.push(new section.component({ container: containerEl }));
+                }
+            }
+        });
     }
 }

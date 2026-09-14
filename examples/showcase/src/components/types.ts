@@ -1,7 +1,14 @@
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, Component } from '@qimenjs/component-core';
+
+export interface DemoSection {
+    label: string;
+    template?: TemplateDecl;
+    component?: typeof Component;
+    code?: string;
+}
 
 export interface DemoConfig {
     title: string;
     description: string;
-    sections: { label: string; template: TemplateDecl; code?: string }[];
+    sections: DemoSection[];
 }
