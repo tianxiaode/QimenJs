@@ -1,0 +1,62 @@
+/* Switch 开关样式 — 椭圆滑块 */
+.q-switch {
+    --q-switch-width: 44px;
+    --q-switch-height: 24px;
+    position: relative;
+    display: inline-flex;
+    width: var(--q-switch-width);
+    height: var(--q-switch-height);
+    flex-shrink: 0;
+    border-radius: calc(var(--q-switch-height) / 2);
+    background: var(--q-color-border, #dcdfe6);
+    cursor: var(--q-cursor-pointer, pointer);
+    transition: background var(--q-transition-fast);
+    box-sizing: border-box;
+    outline: none;
+    user-select: none;
+}
+
+.q-switch__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(var(--q-switch-height) - 4px);
+    height: calc(var(--q-switch-height) - 4px);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform var(--q-transition-fast);
+}
+
+.q-switch--checked {
+    background: var(--q-color-primary, #0078d4);
+}
+
+.q-switch--checked .q-switch__thumb {
+    transform: translateX(calc(var(--q-switch-width) - var(--q-switch-height)));
+}
+
+.q-switch--disabled {
+    cursor: not-allowed;
+    opacity: var(--q-opacity-disabled, 0.4);
+}
+
+/* 颜色 — 激活态填充主题色 */
+.q-switch--color-primary.q-switch--checked {
+    background: var(--q-color-primary, #0078d4);
+}
+.q-switch--color-secondary.q-switch--checked {
+    background: var(--q-color-secondary, #5b6fc0);
+}
+.q-switch--color-success.q-switch--checked {
+    background: var(--q-color-success, #107c10);
+}
+.q-switch--color-warning.q-switch--checked {
+    background: var(--q-color-warning, #ca5010);
+}
+.q-switch--color-error.q-switch--checked {
+    background: var(--q-color-error, #d13438);
+}
+.q-switch--color-info.q-switch--checked {
+    background: var(--q-color-info, #0078d4);
+}

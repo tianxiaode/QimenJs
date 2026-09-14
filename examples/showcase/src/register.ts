@@ -25,6 +25,7 @@ import {
     MenuComponent,
     MenuItemComponent,
     ToggleComponent,
+    SwitchComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 CardComponent.register();
@@ -38,3 +39,4 @@ DropdownComponent.register();
 MenuComponent.register();
 MenuItemComponent.register();
 ToggleComponent.register();
+SwitchComponent.register();

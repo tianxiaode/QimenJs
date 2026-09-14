@@ -39,6 +39,7 @@ const ButtonComponentDefs: Definitions = {
         text: null,
         size: 'md',
         ghost: false,
+        pressed: false,
         iconAlign: 'left',
         color: null,
         iconCls: null,
@@ -72,6 +73,11 @@ class ButtonComponent extends Component {
 
     _onGhostOptionChange(value: boolean) {
         value ? this.addCls('q-button--ghost') : this.removeCls('q-button--ghost');
+    }
+
+    _onPressedOptionChange(value: boolean) {
+        this.toggleCls('q-button--pressed', value);
+        this.setAttributes({ 'aria-pressed': String(value) });
     }
 
     _onIconAlignOptionChange(value: string, old: string) {

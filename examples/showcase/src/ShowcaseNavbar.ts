@@ -66,9 +66,8 @@ class ShowcaseNavbar extends NavbarComponent {
                 {
                     type: 'toggle',
                     href: '#action/toggle-dark',
-                    iconCls: 'fa fa-sun-o',
-                    pressedIconCls: 'fa fa-moon-o',
-                    ghost: true,
+                    offIcon: 'fa fa-sun-o',
+                    onIcon: 'fa fa-moon-o',
                     dock: 'right',
                     action: 'toggle-dark',
                 },
