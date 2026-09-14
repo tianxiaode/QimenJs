@@ -27,7 +27,7 @@ class ButtonPressedDemo extends Component {
     }
 }
 
-/** Icon Align 演示组件 — 展示 icon 和 text 的位置关系 */
+/** Icon Align 演示组件 — 展示 icon 和 text 的四种位置关系 */
 class ButtonIconAlignDemo extends Component {
     get tpl(): TemplateDecl {
         return {
@@ -38,8 +38,16 @@ class ButtonIconAlignDemo extends Component {
                     tag: 'div',
                     classes: 'q-demo__row',
                     children: [
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Icon Left', iconAlign: 'left' } },
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Icon Right', iconAlign: 'right' } },
+                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Left', iconAlign: 'left' } },
+                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Right', iconAlign: 'right' } },
+                    ],
+                },
+                {
+                    tag: 'div',
+                    classes: 'q-demo__row',
+                    children: [
+                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Top', iconAlign: 'top' } },
+                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Bottom', iconAlign: 'bottom' } },
                     ],
                 },
                 {
@@ -138,10 +146,10 @@ btn.pressed = !btn.pressed;
         },
         {
             label: 'Icon Align (图标位置)',
-            code: `{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Icon Left', iconAlign: 'left' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Icon Right', iconAlign: 'right' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-home' } }
-{ type: 'button', options: { text: 'No Icon' } }`,
+            code: `{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Left', iconAlign: 'left' } }
+{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Right', iconAlign: 'right' } }
+{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Top', iconAlign: 'top' } }
+{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Bottom', iconAlign: 'bottom' } }`,
             component: ButtonIconAlignDemo,
         } satisfies DemoSection,
         {

@@ -81,7 +81,7 @@ class ButtonComponent extends Component {
     }
 
     _onIconAlignOptionChange(value: string, old: string) {
-        this.toggleOptionCls('q-button-layout--icon-', value, old, 'content');
+        this.toggleOptionCls('q-button-layout--icon-', value, old);
     }
 
     _onBusyOptionChange(value: boolean) {
