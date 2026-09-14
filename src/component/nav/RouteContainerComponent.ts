@@ -24,29 +24,50 @@ class RouteContainerComponent extends Component {
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
     _currentInstance: any = null;
+    _currentPageClass: any = null;
 
     onAfterInit(): void {
         const hash = window.location.hash;
         const path = hash ? hash.slice(1) : '';
-        const PageClass = this.routeMap[path] || this.defaultComponent;
-        if (PageClass) {
-            this._mountComponent(PageClass);
+        const match = this._matchRoute(path);
+        if (match) {
+            this._mountComponent(match.PageClass);
+        } else if (this.defaultComponent) {
+            this._mountComponent(this.defaultComponent);
         }
     }
 
     onRouteChange(event: any): void {
         const path = event?.path;
-        const PageClass = this.routeMap[path] || this.defaultComponent;
-        if (PageClass) {
-            this._mountComponent(PageClass);
+        const match = this._matchRoute(path);
+        if (match) {
+            this._mountComponent(match.PageClass);
         }
     }
 
+    private _matchRoute(path: string): { PageClass: any } | null {
+        if (!path) return null;
+        if (this.routeMap[path]) {
+            return { PageClass: this.routeMap[path] };
+        }
+        const sortedKeys = Object.keys(this.routeMap).sort((a, b) => b.length - a.length);
+        for (const key of sortedKeys) {
+            if (path.startsWith(key + '/')) {
+                return { PageClass: this.routeMap[key] };
+            }
+        }
+        return null;
+    }
+
     private _mountComponent(PageClass: new (props?: Record<string, any>) => any): void {
+        if (this._currentPageClass === PageClass) {
+            return;
+        }
         if (this._currentInstance) {
             this._currentInstance.dispose();
             this._currentInstance = null;
         }
+        this._currentPageClass = PageClass;
         this._currentInstance = new PageClass({ container: this.el });
     }
 

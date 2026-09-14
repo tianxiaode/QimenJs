@@ -245,23 +245,50 @@ const COMPONENTS_TPL: TemplateDecl = {
 /** 组件展示页组件 */
 export class ComponentsPage extends Component {
     _currentDemo: any = null;
+    _currentDemoName: string | null = null;
 
     get tpl(): TemplateDecl {
         return COMPONENTS_TPL;
     }
 
+    listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
+
     domEvents: DomEventsMap = {
         click: { path: 'sidebar', handler: '_onNavClick' },
     };
+
+    onAfterInit(): void {
+        const hash = window.location.hash;
+        const path = hash ? hash.slice(1) : '';
+        if (path.startsWith('/components/')) {
+            const componentName = path.slice('/components/'.length);
+            if (componentName) {
+                this._showDemo(componentName);
+            }
+        }
+    }
+
+    onRouteChange(event: any): void {
+        const path: string = event?.path ?? '';
+        if (path.startsWith('/components/')) {
+            const componentName = path.slice('/components/'.length);
+            if (componentName) {
+                this._showDemo(componentName);
+            }
+        }
+    }
 
     _onNavClick(domEvt: any): void {
         const target = domEvt?.data?.originalEvent?.target ?? domEvt?.target;
         const componentName = target?.dataset?.component;
         if (!componentName) return;
-        this._showDemo(componentName);
+        window.location.hash = `/components/${componentName}`;
     }
 
     _showDemo(componentName: string): void {
+        if (this._currentDemoName === componentName) return;
+        this._currentDemoName = componentName;
+
         const config = DEMO_MAP[componentName];
         const contentEl = this.getNodeEl('content');
         if (!contentEl) return;
