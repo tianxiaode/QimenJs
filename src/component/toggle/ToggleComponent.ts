@@ -22,6 +22,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
+import { ColorAbility, SizeAbility } from '@qimenjs/component-abilities';
 import { TOGGLE_TPL } from './toggle-tpl';
 import { Definitions } from '@/composable';
 import './toggle.css';
@@ -31,6 +32,8 @@ const ToggleComponentDefs: Definitions = {
         pressed: false,
         onIcon: null,
         offIcon: null,
+        size: 'md',
+        color: null,
     },
 } as const;
 
@@ -77,6 +80,7 @@ class ToggleComponent extends Component {
 }
 
 ToggleComponent.define(ToggleComponentDefs);
+ToggleComponent.use(SizeAbility, ColorAbility);
 
 export { ToggleComponent };
 export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;

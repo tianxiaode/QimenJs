@@ -158,7 +158,7 @@ class TagComponent extends Component {
         }
 
         this.setNodeHtml(htmlParts.join(''), 'items');
-        this.toggleCls('q-tags--vertical', 'root', this.direction === 'vertical');
+        this.toggleCls('q-tags--vertical', this.direction === 'vertical');
     }
 
     _buildTagHtml(text: string, index: number): string {

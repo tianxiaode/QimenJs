@@ -70,10 +70,17 @@ export const AttributeAbility: AbilityDefinition = {
         this.getCls(nodeName)?.remove(...this._toClsTokens(cls));
     },
 
-    toggleCls(cls: string | string[], nodeName: string = 'root', force?: boolean): void {
+    /**
+     * 按条件切换指定节点的类（force 省略时为纯翻转）
+     *
+     * @param cls - 类名（支持空格分隔多个）
+     * @param force - true 强制加、false 强制移除、省略时翻转
+     * @param nodeName - 节点名称，默认 'root'
+     */
+    toggleCls(cls: string | string[], force?: boolean, nodeName: string = 'root'): void {
         const clsList = this.getCls(nodeName);
         for (const token of this._toClsTokens(cls)) {
-            clsList.toggle(token, force);
+            clsList?.toggle(token, force);
         }
     },
 

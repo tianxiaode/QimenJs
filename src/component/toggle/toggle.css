@@ -34,6 +34,32 @@
     opacity: var(--q-opacity-disabled, 0.4);
 }
 
+/* 颜色 — on 态浅色底 + 图标着色 */
+.q-toggle--color-primary.q-toggle--on {
+    background: var(--q-color-primary-light, rgba(0, 120, 212, 0.1));
+    color: var(--q-color-primary, #0078d4);
+}
+.q-toggle--color-secondary.q-toggle--on {
+    background: var(--q-color-secondary-light, rgba(91, 111, 192, 0.1));
+    color: var(--q-color-secondary, #5b6fc0);
+}
+.q-toggle--color-success.q-toggle--on {
+    background: var(--q-color-success-light, rgba(16, 124, 16, 0.1));
+    color: var(--q-color-success, #107c10);
+}
+.q-toggle--color-warning.q-toggle--on {
+    background: var(--q-color-warning-light, rgba(202, 80, 16, 0.1));
+    color: var(--q-color-warning, #ca5010);
+}
+.q-toggle--color-error.q-toggle--on {
+    background: var(--q-color-error-light, rgba(209, 52, 56, 0.1));
+    color: var(--q-color-error, #d13438);
+}
+.q-toggle--color-info.q-toggle--on {
+    background: var(--q-color-info-light, rgba(0, 120, 212, 0.1));
+    color: var(--q-color-info, #0078d4);
+}
+
 .q-toggle__icon {
     display: flex;
     align-items: center;

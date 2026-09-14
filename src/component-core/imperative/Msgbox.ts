@@ -54,7 +54,7 @@ export class Msgbox extends Component {
         if (type === 'alert') {
             this.addCls('hidden', 'cancel');
         } else if (type === 'prompt') {
-            this.toggleCls('field', 'hidden');
+            this.removeCls('hidden', 'field');
         }
 
         this.el!.style.zIndex = String(this.acquireZIndex());

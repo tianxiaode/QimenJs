@@ -26,7 +26,6 @@ export { TabsComponent } from './tabs/TabsComponent';
 export * from './button';
 export { DropdownComponent } from './dropdown/DropdownComponent';
 export { ToggleComponent } from './toggle/ToggleComponent';
-export { SwitchComponent } from './switch/SwitchComponent';
 export { ButtonGroupComponent } from './button-group/ButtonGroupComponent';
 export { AlertComponent } from './alert/AlertComponent';
 export { BreadcrumbComponent } from './breadcrumb/BreadcrumbComponent';
