@@ -17,6 +17,10 @@ class RouteContainerComponent extends Component {
         return ROUTE_CONTAINER_TPL;
     }
 
+    get earlyOptionKeys(): string[] {
+        return [...super.earlyOptionKeys, 'routeMap'];
+    }
+
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
     _currentInstance: any = null;
@@ -40,8 +44,7 @@ class RouteContainerComponent extends Component {
             this._currentInstance.dispose();
             this._currentInstance = null;
         }
-        this._currentInstance = new PageClass({ parent: this });
-        if (this.el) this.el.appendChild(this._currentInstance.el);
+        this._currentInstance = new PageClass({ container: this.el });
     }
 
     onBeforeDispose(): void {
@@ -56,4 +59,3 @@ class RouteContainerComponent extends Component {
 RouteContainerComponent.define(RouteContainerComponentDefs);
 
 export { RouteContainerComponent };
-export type RouteContainerComponentInstance = InstanceType<typeof RouteContainerComponent>;
