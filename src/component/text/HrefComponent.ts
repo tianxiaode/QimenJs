@@ -36,7 +36,7 @@ class HrefComponent extends Component {
     }
 
     _onHrefOptionChange(value: string) {
-        if (value && this._isExternal(value)) {
+        if (value) {
             this.setNodeAttr('href', value);
         } else {
             this.removeAttributes(['href']);
