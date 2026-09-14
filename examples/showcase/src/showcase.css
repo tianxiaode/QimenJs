@@ -101,6 +101,11 @@ body {
     color: var(--q-color-primary, #0078d4);
 }
 
+.q-components-page {
+    padding-top: 56px;
+    box-sizing: border-box;
+}
+
 .q-components-page__sidebar {
     width: 200px;
     flex-shrink: 0;
