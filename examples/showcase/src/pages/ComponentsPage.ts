@@ -110,9 +110,92 @@ const BUTTON_DEMO: DemoConfig = {
     ],
 };
 
+/** Avatar 演示配置 */
+const AVATAR_DEMO: DemoConfig = {
+    title: 'Avatar',
+    description: '头像组件，支持 src(图片)/text(文字首字母)/iconCls(图标) 三种模式，size/color option',
+    sections: [
+        {
+            label: 'Size',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { text: 'A', size: 'sm' } },
+                    { type: 'avatar', options: { text: 'A', size: 'md' } },
+                    { type: 'avatar', options: { text: 'A', size: 'lg' } },
+                ],
+            },
+        },
+        {
+            label: 'Color',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { text: 'P', color: 'primary' } },
+                    { type: 'avatar', options: { text: 'S', color: 'secondary' } },
+                    { type: 'avatar', options: { text: 'G', color: 'success' } },
+                    { type: 'avatar', options: { text: 'W', color: 'warning' } },
+                    { type: 'avatar', options: { text: 'E', color: 'error' } },
+                ],
+            },
+        },
+        {
+            label: 'Image (src)',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'sm' } },
+                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'md' } },
+                    { type: 'avatar', options: { src: 'https://i.pravatar.cc/150?img=1', size: 'lg' } },
+                ],
+            },
+        },
+        {
+            label: 'Text',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { text: 'Alice', size: 'sm' } },
+                    { type: 'avatar', options: { text: 'Bob', size: 'md' } },
+                    { type: 'avatar', options: { text: 'Charlie', size: 'lg' } },
+                ],
+            },
+        },
+        {
+            label: 'Icon (iconCls)',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } },
+                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } },
+                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } },
+                ],
+            },
+        },
+        {
+            label: 'Color + Size',
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'avatar', options: { text: 'A', color: 'primary', size: 'sm' } },
+                    { type: 'avatar', options: { text: 'A', color: 'success', size: 'md' } },
+                    { type: 'avatar', options: { text: 'A', color: 'error', size: 'lg' } },
+                ],
+            },
+        },
+    ],
+};
+
 /** 组件演示映射 */
 const DEMO_MAP: Record<string, DemoConfig> = {
     Button: BUTTON_DEMO,
+    Avatar: AVATAR_DEMO,
 };
 
 /** 首页模板 */
