@@ -100,7 +100,7 @@ export class Component extends ComposableBase implements IComponent {
     }
 
     get earlyOptionKeys(): string[] {
-        return ['anchor'];
+        return ['anchor', 'action'];
     }
 
     constructor(options?: ComponentCoreOptions) {
