@@ -152,7 +152,7 @@ const COMPONENTS_TPL: TemplateDecl = {
                                 {
                                     tag: 'p',
                                     options: {
-                                        text: '所有组件从 Component 基类派生，通过 withDefinitions 组合 Ability（如 SizeAbility、ColorAbility、OverlayAbility 等）获得对应能力。组件通过 option 配置驱动渲染，支持 string | ComponentClass | TemplateDecl 三路内容模式。',
+                                        text: '所有组件从 Component 基类派生，通过 withAbilities 组合 Ability（如 SizeAbility、ColorAbility、OverlayAbility 等）获得对应能力，通过 withDefinitions 定义 option 及其他成员。组件通过 option 配置驱动渲染，支持 string | ComponentClass | TemplateDecl 三路内容模式。',
                                     },
                                 },
                             ],
