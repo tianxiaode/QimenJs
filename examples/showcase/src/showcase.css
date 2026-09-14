@@ -104,6 +104,8 @@ body {
 .q-components-page {
     padding-top: 56px;
     box-sizing: border-box;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .q-components-page__sidebar {
@@ -112,6 +114,7 @@ body {
     border-right: 1px solid var(--q-color-border, #dcdfe6);
     padding: 16px 0;
     overflow-y: auto;
+    height: 100%;
 }
 
 .q-components-page__nav-item {
