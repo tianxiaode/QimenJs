@@ -132,12 +132,84 @@ const COMPONENTS_TPL: TemplateDecl = {
                         {
                             tag: 'h2',
                             classes: 'q-components-page__overview-title',
-                            options: { text: '组件概览' },
+                            options: { text: 'QimenJS 组件库' },
                         },
                         {
                             tag: 'p',
                             classes: 'q-components-page__overview-desc',
-                            options: { text: '从左侧选择一个组件查看演示和说明' },
+                            options: {
+                                text: 'QimenJS 是一个基于组合式架构的轻量 Web 组件框架，通过 Ability 系统实现功能解耦与按需组合，提供声明式模板、事件委托、option 驱动渲染等核心能力。',
+                            },
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '组件体系' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '所有组件从 Component 基类派生，通过 withDefinitions 组合 Ability（如 SizeAbility、ColorAbility、OverlayAbility 等）获得对应能力。组件通过 option 配置驱动渲染，支持 string | ComponentClass | TemplateDecl 三路内容模式。',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '核心能力' },
+                                },
+                                {
+                                    tag: 'ul',
+                                    classes: 'q-components-page__overview-list',
+                                    children: [
+                                        { tag: 'li', options: { text: '声明式模板（TemplateDecl）—— 类级静态编译缓存' } },
+                                        { tag: 'li', options: { text: '事件委托（DomEventsEngine）—— 路径匹配 + 多 handler 执行' } },
+                                        { tag: 'li', options: { text: 'Option 驱动 —— onXxxOptionChange 响应式更新' } },
+                                        { tag: 'li', options: { text: 'Ability 组合 —— Size/Color/Overlay/Mask/RAF 等按需引入' } },
+                                        { tag: 'li', options: { text: 'i18n 国际化 —— @ 前缀自动翻译 + 语言切换刷新' } },
+                                        { tag: 'li', options: { text: '路由系统 —— hash 模式 + RouteContainerComponent' } },
+                                    ],
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '使用方式' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '在模板中通过 type 引用组件名、options 传递配置；在代码中通过 new ComponentClass({ container }) 实例化。组件支持 extend() 派生子类、define() 注册子节点定义。',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '可用组件' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '当前已注册 11 个组件：Avatar、Button、Card、Dropdown、Hero、Href、Menu、Navbar、Tag、Text、Toggle。从左侧导航选择组件查看详细演示。',
+                                    },
+                                },
+                            ],
                         },
                     ],
                 },

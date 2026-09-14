@@ -125,29 +125,70 @@ body {
 .q-components-page__main {
     flex: 1;
     padding: 24px 32px;
-    overflow-y:; auto;
+    overflow-y: auto;
 }
 
 .q-components-page__overview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 0;
 }
 
 .q-components-page__overview-title {
-    font-size: 24px;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    color: var(--q-color-text, #1a1a1a);
+}
+
+.q-components-page__overview-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--q-color-text-secondary, #666);
+    margin: 0 0 24px 0;
+}
+
+.q-components-page__overview-section {
+    margin-bottom: 24px;
+}
+
+.q-components-page__overview-section h3 {
+    font-size: 18px;
     font-weight: 600;
     margin: 0 0 8px 0;
     color: var(--q-color-text, #1a1a1a);
 }
 
-.q-components-page__overview-desc {
+.q-components-page__overview-section p {
     font-size: 14px;
-    color: var(--q-color-text-tertiary, #999);
+    line-height: 1.7;
+    color: var(--q-color-text-secondary, #666);
     margin: 0;
+}
+
+.q-components-page__overview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.q-components-page__overview-list li {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--q-color-text-secondary, #666);
+    padding-left: 16px;
+    position: relative;
+}
+
+.q-components-page__overview-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--q-color-primary, #0078d4);
 }
 
 .q-components-page__coming-soon {
