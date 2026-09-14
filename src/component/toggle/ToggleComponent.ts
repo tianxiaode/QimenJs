@@ -34,6 +34,7 @@ const ToggleComponentDefs: Definitions = {
         offIcon: null,
         size: 'md',
         color: null,
+        ghost: false,
     },
 } as const;
 
@@ -61,6 +62,10 @@ class ToggleComponent extends Component {
 
     _onOffIconOptionChange(): void {
         this._applyIcon();
+    }
+
+    _onGhostOptionChange(value: boolean): void {
+        this.toggleCls('q-toggle--ghost', value);
     }
 
     /** 应用当前状态对应的图标类（pressed → onIcon，否则 offIcon） */

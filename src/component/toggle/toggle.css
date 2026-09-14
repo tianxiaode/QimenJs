@@ -13,6 +13,11 @@
     background: transparent;
 }
 
+/* 幽灵模式 — 无边框无占位，与 navbar ghost 按钮风格一致 */
+.q-toggle--ghost {
+    border: none;
+}
+
 .q-toggle:hover {
     background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
 }
