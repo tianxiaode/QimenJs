@@ -167,12 +167,14 @@ btn.pressed = !btn.pressed;
         },
         {
             label: 'Arrow (arrowCls)',
-            code: `{ type: 'button', options: { text: 'Dropdown', arrowCls: 'fa-solid fa-chevron-down' } }`,
+            code: `{ type: 'button', options: { text: 'FA Icon', arrowCls: 'fa-solid fa-chevron-down' } }
+{ type: 'dropdown', options: { text: 'Default Arrow' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'button', options: { text: 'Dropdown', arrowCls: 'fa-solid fa-chevron-down' } },
+                    { type: 'button', options: { text: 'FA Icon', arrowCls: 'fa-solid fa-chevron-down' } },
+                    { type: 'dropdown', options: { text: 'Default Arrow' } },
                 ],
             },
         },

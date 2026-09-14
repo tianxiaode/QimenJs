@@ -235,8 +235,8 @@
 /* 上下布局需要额外 padding 和更小 gap */
 .q-button-layout--icon-top,
 .q-button-layout--icon-bottom {
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .q-button-layout--icon-top .q-button__content,
@@ -244,9 +244,16 @@
     gap: 2px;
 }
 
-/* 下拉展开箭头 */
-.q-button .q-expand-arrow {
+/* 下拉箭头（按钮内 flex 子元素，可显示 FontAwesome 图标或自定义箭头） */
+.q-button__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
     margin-left: 6px;
+    flex-shrink: 0;
+    font-size: 0.8em;
 }
 
 /* 下拉按钮模式 */

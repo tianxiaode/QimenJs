@@ -2,14 +2,16 @@
     cursor: pointer;
 }
 
-.q-dropdown .q-arrow {
-    position: static;
-    --q-arrow-color: currentColor;
-    border-width: var(--q-arrow-size) var(--q-arrow-size) 0 var(--q-arrow-size);
+.q-dropdown .q-button__arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) 0 var(--q-arrow-size, 6px);
+    border-color: currentColor transparent transparent transparent;
     margin-left: 4px;
     transition: transform 0.2s ease;
 }
 
-.q-dropdown.q-dropdown--open .q-arrow {
+.q-dropdown.q-dropdown--open .q-button__arrow {
     transform: rotate(180deg);
 }
