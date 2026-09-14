@@ -92,6 +92,8 @@ class ButtonComponent extends Component {
             this.addCls(value, nodeName);
         }
     }
+
+    _onBusyOptionChange(value: boolean) {
         const iconNode = 'icon';
         const loadingNode = 'loading';
         this.setNodeHidden(value, iconNode);
