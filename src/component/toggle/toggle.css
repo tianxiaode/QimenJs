@@ -1,9 +1,9 @@
-/* Toggle 图标切换样式 — 透明底两态图标按钮 */
+/* Toggle 图标切换样式 — 透明底两态图标按钮
+   尺寸由全局 q-size--* 提供（height/padding/font-size），此处不声明冲突属性 */
 .q-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
     border: 2px solid transparent;
     cursor: var(--q-cursor-pointer, pointer);
     transition: background var(--q-transition-fast), border-color var(--q-transition-fast);

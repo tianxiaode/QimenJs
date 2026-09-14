@@ -34,6 +34,10 @@ class NavbarComponent extends Component {
         { system: true, events: { [SYSTEM_EVENTS.WINDOW_RESIZE]: '_onWindowResize' } },
     ];
 
+    get earlyOptionKeys(): string[] {
+        return [...super.earlyOptionKeys, 'defaultItemOption'];
+    }
+
     onAfterInit(): void {
         const logo = this.getData('logo');
         if (logo) {

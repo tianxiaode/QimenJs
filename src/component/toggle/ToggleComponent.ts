@@ -83,4 +83,3 @@ ToggleComponent.define(ToggleComponentDefs);
 ToggleComponent.use(SizeAbility, ColorAbility);
 
 export { ToggleComponent };
-export type ToggleComponentInstance = InstanceType<typeof ToggleComponent>;
