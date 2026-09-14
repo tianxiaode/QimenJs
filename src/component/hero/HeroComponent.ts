@@ -11,6 +11,8 @@ const HeroComponentDefs: Definitions = {
         desc: null,
         actionText: null,
         actionHref: null,
+        image: null,
+        imagePosition: null,
     },
 } as const;
 
@@ -47,6 +49,21 @@ class HeroComponent extends Component {
         if (btn) {
             btn.setData('href', value);
         }
+    }
+
+    _onImageOptionChange(value: string): void {
+        if (value) {
+            this.setNodeAttr('src', value, 'image');
+            this.setNodeHidden(false, 'image');
+            this.toggleCls('q-hero--split', true);
+        } else {
+            this.setNodeHidden(true, 'image');
+            this.toggleCls('q-hero--split', false);
+        }
+    }
+
+    _onImagePositionOptionChange(value: string): void {
+        this.toggleCls('q-hero--split-left', value === 'left');
     }
 }
 
