@@ -45,10 +45,22 @@ class ToggleComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '', handler: true },
+        click: {
+            path: '',
+            handler: true,
+            emits: ['toggle', '[action]'],
+            bridges: ['toggle', '[action]'],
+        },
     };
 
     private _lastIconCls: string | null = null;
+
+    get defaultEventData() {
+        return {
+            ...super.defaultEventData,
+            pressed: this.pressed,
+        };
+    }
 
     _onPressedOptionChange(value: boolean): void {
         this.toggleCls('q-toggle--on', value);
@@ -80,7 +92,6 @@ class ToggleComponent extends Component {
     onClick(): void {
         if (this.disable) return;
         this.pressed = !this.pressed;
-        this.emit('toggle', { pressed: this.pressed });
     }
 }
 

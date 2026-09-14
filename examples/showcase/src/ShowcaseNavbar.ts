@@ -30,6 +30,7 @@ class ShowcaseNavbar extends NavbarComponent {
         const preset = getCurrentPreset();
         return {
             logo: 'Q',
+            fixed: true,
             companyName: 'QimenJS',
             defaultItemOption: { size: 'lg' },
             menuToggleIconCls: 'fa fa-bars',
