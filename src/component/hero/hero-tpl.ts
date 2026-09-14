@@ -11,7 +11,7 @@ export const HERO_TPL: TemplateDecl = {
             tag: 'div',
             name: 'actions',
             classes: 'q-hero__actions hidden',
-            children: [{ tag: 'button', name: 'actionBtn', classes: 'q-hero__action-btn' }],
+            children: [{ type: 'href', name: 'actionBtn', classes: 'q-hero__action-btn' }],
         },
     ],
 };

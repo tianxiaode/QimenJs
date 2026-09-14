@@ -58,6 +58,7 @@ const HOME_TPL: TemplateDecl = {
                 subtitle: '@hero.subtitle',
                 desc: '@hero.desc',
                 actionText: '@hero.action',
+                actionHref: '#/components',
             },
         },
         {
