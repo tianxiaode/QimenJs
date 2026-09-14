@@ -159,7 +159,8 @@ export class ComponentsPage extends Component {
     };
 
     _onNavClick(domEvt: any): void {
-        const componentName = domEvt?.target?.dataset?.component;
+        const target = domEvt?.data?.originalEvent?.target ?? domEvt?.target;
+        const componentName = target?.dataset?.component;
         if (!componentName) return;
         this._showDemo(componentName);
     }
