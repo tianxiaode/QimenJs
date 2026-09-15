@@ -341,12 +341,12 @@
     --q-font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --q-font-family-mono: "SF Mono", "Fira Code", "Consolas", monospace;
 
-    --q-font-size-xs: 0.75rem;
+    --q-font-size-xs: 0.6875rem;
     --q-font-size-sm: 0.8125rem;
-    --q-font-size-md: 0.875rem;
-    --q-font-size-lg: 1rem;
-    --q-font-size-xl: 1.125rem;
-    --q-font-size-2xl: 1.25rem;
+    --q-font-size-md: 0.9375rem;
+    --q-font-size-lg: 1.0625rem;
+    --q-font-size-xl: 1.25rem;
+    --q-font-size-2xl: 1.5rem;
     --q-font-size-3xl: 1.5rem;
     --q-font-size-4xl: 1.875rem;
     --q-font-size-5xl: 2.25rem;
