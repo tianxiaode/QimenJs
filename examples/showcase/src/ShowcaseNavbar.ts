@@ -21,6 +21,13 @@ const LANG_PRESETS = [
     { key: 'en-US', text: 'English', action: 'set-lang-en' },
 ];
 
+const NAV_HREFS: Record<string, string> = {
+    'nav-home': '#/',
+    'nav-components': '#/components',
+    'nav-apps': '#/apps',
+    'nav-docs': '#/docs',
+};
+
 function getCurrentLang(): string {
     return (window as any).__qimen_i18n__?.locale || 'zh-CN';
 }
@@ -59,6 +66,8 @@ class ShowcaseNavbar extends NavbarComponent {
                         placement: 'bottom',
                         align: 'start',
                         eventKey: 'navmenu',
+                        backText: '@nav.back',
+                        backIcon: 'q-menu-back-icon',
                     },
                 },
             },
@@ -101,7 +110,12 @@ class ShowcaseNavbar extends NavbarComponent {
                     ghost: true,
                     dock: 'right',
                     action: 'toggle-dark',
-                    mobileMenu: { text: '暗黑模式', icon: 'fa fa-moon' },
+                    mobileMenu: {
+                        text: '@nav.dark',
+                        group: 'dark',
+                        groupMode: 'checkbox',
+                        checked: () => document.documentElement.getAttribute('data-theme') === 'dark',
+                    },
                 },
                 {
                     type: 'dropdown',
@@ -178,6 +192,10 @@ class ShowcaseNavbar extends NavbarComponent {
     _onNavMenuSelect(data: any): void {
         const action = data.action;
         if (!action) return;
+        if (NAV_HREFS[action]) {
+            window.location.hash = NAV_HREFS[action];
+            return;
+        }
         if (action.startsWith('set-lang-')) {
             this._onLangChange(data);
             return;

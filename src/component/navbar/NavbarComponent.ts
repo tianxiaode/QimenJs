@@ -89,6 +89,9 @@ class NavbarComponent extends Component {
                                 ? { text: hint ?? '', icon: iconCls, action, mobileMenu: { items: subItems } }
                                 : { text: hint ?? '', icon: iconCls, action };
                         }
+                        if (type === 'href') {
+                            return { text, action, ...rest };
+                        }
                         return { type, text, action, ...rest };
                     }
                 )

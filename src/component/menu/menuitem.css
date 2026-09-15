@@ -58,3 +58,13 @@
     right: var(--q-space-xs, 8px);
     color: var(--q-color-text-secondary, #666);
 }
+
+.q-menu-back-icon::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+}
