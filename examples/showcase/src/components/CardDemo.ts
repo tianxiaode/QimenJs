@@ -2,7 +2,7 @@ import type { DemoConfig } from './types';
 
 export const CARD_DEMO: DemoConfig = {
     title: 'Card',
-    description: '卡片组件，由 header（icon + title + action）+ body + footer 三区组成，支持 color 主题色',
+    description: '卡片组件，由 header（iconCls + title + actionCls）+ body + footer 三区组成，支持 color 主题色',
     sections: [
         {
             label: '基础卡片',
@@ -21,14 +21,14 @@ export const CARD_DEMO: DemoConfig = {
         },
         {
             label: '带图标和操作按钮',
-            code: `{ type: 'card', options: { title: '通知', icon: '🔔', action: '✕' } }`,
+            code: `{ type: 'card', options: { title: '通知', iconCls: 'fa-bell', actionCls: 'fa-xmark' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
                     {
                         type: 'card',
-                        options: { title: '通知', icon: '🔔', action: '✕' },
+                        options: { title: '通知', iconCls: 'fa-bell', actionCls: 'fa-xmark' },
                         children: [{ tag: 'p', name: 'body', options: { text: '有3条新消息待处理' } }],
                     },
                 ],
@@ -76,14 +76,14 @@ export const CARD_DEMO: DemoConfig = {
         },
         {
             label: '完整结构',
-            code: `{ type: 'card', options: { title: '完整卡片', icon: '📋', action: '⚙', footer: '更新时间: 2026-01' } }`,
+            code: `{ type: 'card', options: { title: '完整卡片', iconCls: 'fa-clipboard', actionCls: 'fa-gear', footer: '更新时间: 2026-01' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
                     {
                         type: 'card',
-                        options: { title: '完整卡片', icon: '📋', action: '⚙', footer: '更新时间: 2026-01' },
+                        options: { title: '完整卡片', iconCls: 'fa-clipboard', actionCls: 'fa-gear', footer: '更新时间: 2026-01' },
                         children: [
                             {
                                 tag: 'div',

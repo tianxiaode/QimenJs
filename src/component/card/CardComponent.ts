@@ -1,7 +1,7 @@
 /**
  * CardComponent 卡片组件
  *
- * 通用内容容器，由 header（icon + title + action） + body + footer 三区组成。
+ * 通用内容容器，由 header（iconCls + title + actionCls） + body + footer 三区组成。
  * 内联 header 结构，不再依赖 HeaderComponent。
  *
  * 模板节点：
@@ -14,7 +14,7 @@
  * @example
  * ```ts
  * new CardComponent({ title: '用户信息' })
- * new CardComponent({ title: '通知', icon: '🔔', action: '✕' })
+ * new CardComponent({ title: '通知', iconCls: 'fa-bell', actionCls: 'fa-xmark' })
  * ```
  */
 
@@ -29,8 +29,8 @@ import { ColorAbility } from '@/component-abilities';
 const CardComponentDefs: Definitions = {
     options: {
         title: null,
-        icon: null,
-        action: null,
+        iconCls: null,
+        actionCls: null,
         body: null,
         footer: null,
         color: null,
@@ -48,13 +48,13 @@ class CardComponent extends Component {
         this.setNodeHidden(!value, 'headerTitle');
     }
 
-    _onIconOptionChange(value: string, old: string) {
+    _onIconClsOptionChange(value: string, old: string) {
         this.setNodeHidden(!value, 'headerIcon');
         if (value) this.addCls(value, 'headerIcon');
         if (old) this.removeCls(old, 'headerIcon');
     }
 
-    _onActionOptionChange(value: string, old: string) {
+    _onActionClsOptionChange(value: string, old: string) {
         this.setNodeHidden(!value, 'headerAction');
         if (value) this.addCls(value, 'headerAction');
         if (old) this.removeCls(old, 'headerAction');
