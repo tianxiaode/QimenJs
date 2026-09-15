@@ -33,6 +33,15 @@ class ShowcaseNavbar extends NavbarComponent {
             fixed: true,
             companyName: 'QimenJS',
             defaultItemOption: { size: 'lg' },
+            menu: {
+                popover: {
+                    type: 'menu',
+                    options: {
+                        placement: 'bottom',
+                        align: 'start',
+                    },
+                },
+            },
             items: [
                 { type: 'href', href: '#/', text: '@nav.home', dock: 'left', action: 'nav-home' },
                 {

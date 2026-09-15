@@ -1,9 +1,9 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl, DomEventsMap, ListenItem } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { NAVBAR_TPL } from './navbar-tpl';
 import { Definitions } from '@/composable';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
-import { SYSTEM_EVENTS } from '@/events';
+import { DropdownComponent } from '../dropdown/DropdownComponent';
 import './navbar.css';
 
 const NavbarComponentDefs: Definitions = {
@@ -12,7 +12,7 @@ const NavbarComponentDefs: Definitions = {
         logo: null,
         items: null,
         defaultItemOption: null,
-        menuToggleIconCls: null,
+        menu: null,
         fixed: false,
     },
 } as const;
@@ -24,16 +24,7 @@ class NavbarComponent extends Component {
     }
 
     _itemInstances: any[] = [];
-    _menuItemInstances: any[] = [];
-    _menuPanel: HTMLElement | null = null;
-
-    domEvents: DomEventsMap = {
-        click: [{ path: 'menuToggle', handler: '_onMenuToggleClick' }],
-    };
-
-    listens: Array<ListenItem> = [
-        { system: true, events: { [SYSTEM_EVENTS.WINDOW_RESIZE]: '_onWindowResize' } },
-    ];
+    _menuDropdown: InstanceType<typeof DropdownComponent> | null = null;
 
     get earlyOptionKeys(): string[] {
         return [...super.earlyOptionKeys, 'defaultItemOption'];
@@ -55,6 +46,31 @@ class NavbarComponent extends Component {
         if (items && Array.isArray(items)) {
             this._renderItems(items);
         }
+
+        const menuData = this.getData('menu');
+        if (menuData) {
+            this._createMenuDropdown(menuData);
+        }
+    }
+
+    _createMenuDropdown(menuData: any): void {
+        const popover = menuData.popover ? { anchor: 'self', ...menuData.popover } : undefined;
+
+        if (popover && !popover.options?.items) {
+            const items = (this.getData('items') ?? []).map(({ dock: _dock, ...rest }: any) => rest);
+            popover.options = { ...popover.options, items };
+        }
+
+        const config = {
+            ghost: true,
+            iconCls: 'q-navbar__toggle-icon',
+            classes: 'q-navbar__toggle',
+            size: 'sm',
+            popover,
+        };
+        this._menuDropdown = new DropdownComponent(config);
+        this._menuDropdown.setNodeHidden(true, 'dropIcon');
+        this.el!.insertBefore(this._menuDropdown.el!, this.el!.firstChild);
     }
 
     _renderItems(items: any[]): void {
@@ -109,100 +125,15 @@ class NavbarComponent extends Component {
         return null;
     }
 
-    _onMenuToggleClick(): void {
-        if (this._menuPanel) {
-            this._closeMenu();
-        } else {
-            this._openMenu();
-        }
-    }
-
-    _onMenuToggleIconClsOptionChange(value: string, old: string) {
-        this.toggleOptionCls('', value, old, 'menuToggleIcon');
-    }
-
     _onFixedOptionChange(value: boolean) {
         this.toggleCls('q-navbar--fixed', value);
     }
 
-    _onWindowResize(data: any): void {
-        const width = data?.width;
-        if (typeof width !== 'number') return;
-        if (width > 768 && this._menuPanel) {
-            this._closeMenu();
-        }
-    }
-
-    _openMenu(): void {
-        const panel = document.createElement('div');
-        panel.className = 'q-navbar__menu-panel';
-
-        const items = this.getData('items') ?? [];
-        const defaults = this.getData('defaultItemOption') ?? {};
-        const mergedItems = items.map((item: any) => ({ ...defaults, ...item }));
-
-        const groups: Record<string, any[]> = {};
-        for (const item of mergedItems) {
-            const dock = item.dock ?? 'right';
-            if (!groups[dock]) groups[dock] = [];
-            groups[dock].push(item);
-        }
-
-        const dockOrder = ['left', 'center', 'right'];
-        let firstGroup = true;
-        for (const dock of dockOrder) {
-            const groupItems = groups[dock];
-            if (!groupItems || groupItems.length === 0) continue;
-
-            if (!firstGroup) {
-                const separator = document.createElement('div');
-                separator.className = 'q-navbar__menu-separator';
-                panel.appendChild(separator);
-            }
-            firstGroup = false;
-
-            for (const config of groupItems) {
-                const itemEl = this._createMenuItem(config);
-                if (itemEl) panel.appendChild(itemEl);
-            }
-        }
-
-        const toggleEl = this.getNodeEl('menuToggle');
-        if (toggleEl) {
-            const rect = toggleEl.getBoundingClientRect();
-            panel.style.position = 'absolute';
-            panel.style.top = `${rect.bottom}px`;
-            panel.style.left = '0px';
-            panel.style.right = '0px';
-        }
-
-        document.body.appendChild(panel);
-        this._menuPanel = panel;
-    }
-
-    _closeMenu(): void {
-        if (this._menuPanel) {
-            this._menuPanel.remove();
-            this._menuPanel = null;
-        }
-        for (const instance of this._menuItemInstances) {
-            if (typeof instance.dispose === 'function') {
-                instance.dispose();
-            }
-        }
-        this._menuItemInstances = [];
-    }
-
-    _createMenuItem(config: any): HTMLElement | null {
-        const panel = document.createElement('div');
-        const instance = this._instantiateItem(config, panel);
-        if (!instance) return null;
-        this._menuItemInstances.push(instance);
-        return instance.el;
-    }
-
     onBeforeDispose(): void {
-        this._closeMenu();
+        if (this._menuDropdown) {
+            this._menuDropdown.dispose();
+            this._menuDropdown = null;
+        }
         for (const instance of this._itemInstances) {
             if (typeof instance.dispose === 'function') {
                 instance.dispose();
