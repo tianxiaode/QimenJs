@@ -3,6 +3,7 @@ import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { FIELDSET_TPL } from './fieldset-tpl';
 import { Definitions } from '@/composable';
 import { ColorAbility } from '@/component-abilities';
+import type { FieldsetContent } from './types';
 import './fieldset.css';
 
 const FieldsetComponentDefs: Definitions = {
@@ -12,6 +13,7 @@ const FieldsetComponentDefs: Definitions = {
         collapsed: false,
         toggleIconCls: null,
         color: null,
+        content: null,
     },
 } as const;
 
@@ -52,6 +54,10 @@ class FieldsetComponent extends Component {
             this.removeCls('q-fieldset__toggle-icon--custom', 'toggleIcon');
         }
         if (old) this.removeCls(old, 'toggleIcon');
+    }
+
+    _onContentOptionChange(value: FieldsetContent, _old: FieldsetContent): void {
+        this.renderSlot(value, 'content');
     }
 
     onLegendToggleClick(): void {
