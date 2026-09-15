@@ -33,6 +33,20 @@ class ShowcaseNavbar extends NavbarComponent {
     get defaultOptions(): Record<string, any> {
         const lang = getCurrentLang();
         const preset = getCurrentPreset();
+        const langItems = LANG_PRESETS.map(p => ({
+            text: p.text,
+            action: p.action,
+            group: 'lang',
+            groupMode: 'radio',
+            checked: lang === p.key,
+        }));
+        const themeItems = THEME_PRESETS.map(p => ({
+            text: p.name,
+            action: `set-theme-${p.key}`,
+            group: 'theme',
+            groupMode: 'radio',
+            checked: preset === p.key,
+        }));
         return {
             logo: 'Q',
             fixed: true,
@@ -87,6 +101,7 @@ class ShowcaseNavbar extends NavbarComponent {
                     ghost: true,
                     dock: 'right',
                     action: 'toggle-dark',
+                    mobileMenu: { text: '暗黑模式', icon: 'fa fa-moon' },
                 },
                 {
                     type: 'dropdown',
@@ -94,18 +109,17 @@ class ShowcaseNavbar extends NavbarComponent {
                     hint: '@nav.lang',
                     dock: 'right',
                     ghost: true,
+                    mobileMenu: {
+                        text: '@nav.lang',
+                        icon: 'fa fa-globe',
+                        items: langItems,
+                    },
                     popover: {
                         type: 'menu',
                         options: {
                             placement: 'bottom',
                             eventKey: 'lang',
-                            items: LANG_PRESETS.map(p => ({
-                                text: p.text,
-                                action: p.action,
-                                group: 'lang',
-                                groupMode: 'radio',
-                                checked: lang === p.key,
-                            })),
+                            items: langItems,
                         },
                     },
                 },
@@ -115,18 +129,17 @@ class ShowcaseNavbar extends NavbarComponent {
                     hint: '@nav.theme',
                     dock: 'right',
                     ghost: true,
+                    mobileMenu: {
+                        text: '@nav.theme',
+                        icon: 'fa fa-paint-brush',
+                        items: themeItems,
+                    },
                     popover: {
                         type: 'menu',
                         options: {
                             placement: 'bottom',
                             eventKey: 'theme',
-                            items: THEME_PRESETS.map(p => ({
-                                text: p.name,
-                                action: `set-theme-${p.key}`,
-                                group: 'theme',
-                                groupMode: 'radio',
-                                checked: preset === p.key,
-                            })),
+                            items: themeItems,
                         },
                     },
                 },

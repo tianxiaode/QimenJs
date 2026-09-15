@@ -59,35 +59,40 @@ class NavbarComponent extends Component {
             : undefined;
 
         if (popover && !popover.options?.items) {
-            const items = (this.getData('items') ?? []).map(
-                ({
-                    dock: _dock,
-                    type,
-                    offIcon,
-                    onIcon,
-                    iconCls,
-                    hint,
-                    text,
-                    action,
-                    popover: itemPopover,
-                    mobileMenu,
-                    ...rest
-                }: any) => {
-                    if (type === 'toggle') {
-                        return { text: hint ?? '', icon: offIcon ?? onIcon, action, mobileMenu };
+            const items = (this.getData('items') ?? [])
+                .map(
+                    ({
+                        dock: _dock,
+                        type,
+                        offIcon,
+                        onIcon,
+                        iconCls,
+                        hint,
+                        text,
+                        action,
+                        popover: itemPopover,
+                        mobileMenu,
+                        ...rest
+                    }: any) => {
+                        if (mobileMenu === false) return null;
+
+                        if (mobileMenu && typeof mobileMenu === 'object') {
+                            return { ...mobileMenu, action: mobileMenu.action ?? action, mobileMenu };
+                        }
+
+                        if (type === 'toggle') {
+                            return { text: hint ?? '', icon: offIcon ?? onIcon, action };
+                        }
+                        if (type === 'dropdown') {
+                            const subItems = itemPopover?.options?.items;
+                            return subItems
+                                ? { text: hint ?? '', icon: iconCls, action, mobileMenu: { items: subItems } }
+                                : { text: hint ?? '', icon: iconCls, action };
+                        }
+                        return { type, text, action, ...rest };
                     }
-                    if (type === 'dropdown') {
-                        const subItems = itemPopover?.options?.items;
-                        return {
-                            text: hint ?? '',
-                            icon: iconCls,
-                            action,
-                            mobileMenu: mobileMenu ?? (subItems ? { items: subItems } : undefined),
-                        };
-                    }
-                    return { type, text, action, mobileMenu, ...rest };
-                }
-            );
+                )
+                .filter(Boolean);
             popover.options = { ...popover.options, items };
         }
 
