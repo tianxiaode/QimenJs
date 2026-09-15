@@ -96,7 +96,7 @@ class NavbarComponent extends Component {
             iconCls: 'q-navbar__toggle-icon',
             classes: 'q-navbar__toggle',
             size: 'sm',
-            anchorNode: 'root',
+            arrowHidden: true,
             popover,
         };
         this._menuDropdown = new DropdownComponent(config);

@@ -73,10 +73,6 @@
     font-size: 20px;
 }
 
-.q-button.q-navbar__toggle .q-button__arrow {
-    display: none;
-}
-
 .q-navbar__spacer {
     flex: 1;
 }

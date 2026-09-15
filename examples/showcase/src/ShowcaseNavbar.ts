@@ -16,6 +16,11 @@ const THEME_PRESETS = [
     { key: 'skyblue', name: '@theme.skyblue' },
 ];
 
+const LANG_PRESETS = [
+    { key: 'zh-CN', text: '中文', action: 'set-lang-zh' },
+    { key: 'en-US', text: 'English', action: 'set-lang-en' },
+];
+
 function getCurrentLang(): string {
     return (window as any).__qimen_i18n__?.locale || 'zh-CN';
 }
@@ -94,22 +99,13 @@ class ShowcaseNavbar extends NavbarComponent {
                         options: {
                             placement: 'bottom',
                             eventKey: 'lang',
-                            items: [
-                                {
-                                    text: '中文',
-                                    action: 'set-lang-zh',
-                                    group: 'lang',
-                                    groupMode: 'radio',
-                                    checked: lang === 'zh-CN',
-                                },
-                                {
-                                    text: 'English',
-                                    action: 'set-lang-en',
-                                    group: 'lang',
-                                    groupMode: 'radio',
-                                    checked: lang === 'en-US',
-                                },
-                            ],
+                            items: LANG_PRESETS.map(p => ({
+                                text: p.text,
+                                action: p.action,
+                                group: 'lang',
+                                groupMode: 'radio',
+                                checked: lang === p.key,
+                            })),
                         },
                     },
                 },

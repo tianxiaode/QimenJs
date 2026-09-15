@@ -45,6 +45,7 @@ const ButtonComponentDefs: Definitions = {
         iconCls: null,
         busy: false,
         arrowCls: null,
+        arrowHidden: false,
     },
 } as const;
 
@@ -104,6 +105,13 @@ class ButtonComponent extends Component {
         } else {
             this.removeCls('q-button--loading');
             this.disable = false;
+        }
+    }
+
+    _onArrowHiddenOptionChange(value: boolean) {
+        if (value) {
+            this.setNodeHidden(true, 'dropIcon');
+            this.anchorNode = 'root';
         }
     }
 }

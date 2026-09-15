@@ -37,7 +37,9 @@ export class DropdownComponent extends ButtonComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-dropdown');
-        this.setNodeHidden(false, 'dropIcon');
+        if (!this.getData('arrowHidden')) {
+            this.setNodeHidden(false, 'dropIcon');
+        }
     }
 }
 
