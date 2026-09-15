@@ -54,13 +54,19 @@ class NavbarComponent extends Component {
             this._createMenuDropdown(menuData);
         }
 
+        this._syncMenuToggle();
+
         this._unbindWindowResize = systemEventBus.on(SYSTEM_EVENTS.WINDOW_RESIZE, () => {
-            if (!this._menuDropdown) return;
-            const toggle = this._menuDropdown.el;
-            if (toggle && getComputedStyle(toggle).display === 'none') {
-                this._menuDropdown.hidePopover();
-            }
+            this._syncMenuToggle();
         });
+    }
+
+    _syncMenuToggle(): void {
+        const dropdown = this._menuDropdown;
+        if (!dropdown) return;
+        const narrow = window.innerWidth <= 768;
+        dropdown.hidden = !narrow;
+        if (!narrow) dropdown.hidePopover();
     }
 
     _createMenuDropdown(menuData: any): void {

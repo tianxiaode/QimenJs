@@ -19,6 +19,7 @@
 }
 
 .q-navbar__toggle {
+    display: none;
     width: 32px;
     height: 32px;
     align-items: center;
@@ -64,9 +65,7 @@
     top: 6px;
 }
 
-.q-btn.q-navbar__toggle,
 .q-button.q-navbar__toggle {
-    display: none;
     width: 32px;
     height: 32px;
     padding: 0;
