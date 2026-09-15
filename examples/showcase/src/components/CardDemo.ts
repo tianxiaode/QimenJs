@@ -2,7 +2,8 @@ import type { DemoConfig } from './types';
 
 export const CARD_DEMO: DemoConfig = {
     title: 'Card',
-    description: '卡片组件，由 header（iconCls + title + actionCls）+ body + footer 三区组成，支持 color 主题色',
+    description:
+        '卡片组件，由 header（iconCls + title + actionCls）+ body + footer 三区组成，支持 color 主题色',
     sections: [
         {
             label: '基础卡片',
@@ -14,7 +15,9 @@ export const CARD_DEMO: DemoConfig = {
                     {
                         type: 'card',
                         options: { title: '用户信息' },
-                        children: [{ tag: 'p', name: 'body', options: { text: '这里是卡片内容区域' } }],
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: '这里是卡片内容区域' } },
+                        ],
                     },
                 ],
             },
@@ -28,8 +31,11 @@ export const CARD_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'card',
-                        options: { title: '通知', iconCls: 'fa-bell', actionCls: 'fa-xmark' },
-                        children: [{ tag: 'p', name: 'body', options: { text: '有3条新消息待处理' } }],
+                        options: { title: '通知', iconCls: 'fa fa-bell', actionCls: 'fa fa-xmark' },
+                        style: { width: '320px' },
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: '有3条新消息待处理' } },
+                        ],
                     },
                 ],
             },
@@ -44,7 +50,9 @@ export const CARD_DEMO: DemoConfig = {
                     {
                         type: 'card',
                         options: { title: '订单详情', footer: '总计: ¥299' },
-                        children: [{ tag: 'p', name: 'body', options: { text: '商品A × 2, 商品B × 1' } }],
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: '商品A × 2, 商品B × 1' } },
+                        ],
                     },
                 ],
             },
@@ -59,17 +67,23 @@ export const CARD_DEMO: DemoConfig = {
                     {
                         type: 'card',
                         options: { title: 'Primary 卡片', color: 'primary' },
-                        children: [{ tag: 'p', name: 'body', options: { text: 'Primary 主题色卡片' } }],
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: 'Primary 主题色卡片' } },
+                        ],
                     },
                     {
                         type: 'card',
                         options: { title: 'Success 卡片', color: 'success' },
-                        children: [{ tag: 'p', name: 'body', options: { text: 'Success 主题色卡片' } }],
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: 'Success 主题色卡片' } },
+                        ],
                     },
                     {
                         type: 'card',
                         options: { title: 'Warning 卡片', color: 'warning' },
-                        children: [{ tag: 'p', name: 'body', options: { text: 'Warning 主题色卡片' } }],
+                        children: [
+                            { tag: 'p', name: 'body', options: { text: 'Warning 主题色卡片' } },
+                        ],
                     },
                 ],
             },
@@ -83,7 +97,12 @@ export const CARD_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'card',
-                        options: { title: '完整卡片', iconCls: 'fa-clipboard', actionCls: 'fa-gear', footer: '更新时间: 2026-01' },
+                        options: {
+                            title: '完整卡片',
+                            iconCls: 'fa fa-clipboard',
+                            actionCls: 'fa fa-gear',
+                            footer: '更新时间: 2026-01',
+                        },
                         children: [
                             {
                                 tag: 'div',

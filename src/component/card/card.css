@@ -15,7 +15,7 @@
     display: flex;
     align-items: center;
     gap: var(--q-space-sm, 8px);
-    padding: var(--q-space-sm, 8px) var(--q-space-md, 16px);
+    padding: var(--q-space-sm, 8px) var(--q-space-sm, 8px);
     border-bottom: 2px solid var(--q-color-border, #c8bdb0);
     background: var(--q-color-bg-secondary, #f0eadc);
 }
