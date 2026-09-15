@@ -57,6 +57,14 @@
     background: currentColor;
 }
 
+.q-button__icon.q-navbar__toggle-icon::before {
+    top: -6px;
+}
+
+.q-button__icon.q-navbar__toggle-icon::after {
+    top: 6px;
+}
+
 .q-button.q-navbar__toggle {
     width: 32px;
     height: 32px;

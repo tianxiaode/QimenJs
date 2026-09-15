@@ -75,7 +75,10 @@ class MenuItemComponent extends Component {
         this._applyAria();
     }
 
-    _onIconOptionChange(_value: string): void {}
+    _onIconOptionChange(value: string, old: string) {
+        if (old) this.removeCls(old, 'icon');
+        if (value) this.addCls(value, 'icon');
+    }
 
     select(): boolean {
         if (this.disable) return false;

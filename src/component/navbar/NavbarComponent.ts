@@ -54,10 +54,40 @@ class NavbarComponent extends Component {
     }
 
     _createMenuDropdown(menuData: any): void {
-        const popover = menuData.popover ? { anchor: 'self', ...menuData.popover } : undefined;
+        const popover = menuData.popover
+            ? { anchor: 'self', type: 'multi-menu', ...menuData.popover }
+            : undefined;
 
         if (popover && !popover.options?.items) {
-            const items = (this.getData('items') ?? []).map(({ dock: _dock, ...rest }: any) => rest);
+            const items = (this.getData('items') ?? []).map(
+                ({
+                    dock: _dock,
+                    type,
+                    offIcon,
+                    onIcon,
+                    iconCls,
+                    hint,
+                    text,
+                    action,
+                    popover: itemPopover,
+                    mobileMenu,
+                    ...rest
+                }: any) => {
+                    if (type === 'toggle') {
+                        return { text: hint ?? '', icon: offIcon ?? onIcon, action, mobileMenu };
+                    }
+                    if (type === 'dropdown') {
+                        const subItems = itemPopover?.options?.items;
+                        return {
+                            text: hint ?? '',
+                            icon: iconCls,
+                            action,
+                            mobileMenu: mobileMenu ?? (subItems ? { items: subItems } : undefined),
+                        };
+                    }
+                    return { type, text, action, mobileMenu, ...rest };
+                }
+            );
             popover.options = { ...popover.options, items };
         }
 
@@ -66,10 +96,10 @@ class NavbarComponent extends Component {
             iconCls: 'q-navbar__toggle-icon',
             classes: 'q-navbar__toggle',
             size: 'sm',
+            anchorNode: 'root',
             popover,
         };
         this._menuDropdown = new DropdownComponent(config);
-        this._menuDropdown.setNodeHidden(true, 'dropIcon');
         this.el!.insertBefore(this._menuDropdown.el!, this.el!.firstChild);
     }
 

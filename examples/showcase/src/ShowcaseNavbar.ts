@@ -35,10 +35,11 @@ class ShowcaseNavbar extends NavbarComponent {
             defaultItemOption: { size: 'lg' },
             menu: {
                 popover: {
-                    type: 'menu',
+                    type: 'multi-menu',
                     options: {
                         placement: 'bottom',
                         align: 'start',
+                        eventKey: 'navmenu',
                     },
                 },
             },
@@ -141,6 +142,7 @@ class ShowcaseNavbar extends NavbarComponent {
         { source: 'lang', events: { select: '_onLangChange' } },
         { source: 'theme', events: { select: '_onThemeChange' } },
         { source: 'dark', events: { toggle: '_onDarkThemeToggle' } },
+        { source: 'navmenu', events: { select: '_onNavMenuSelect' } },
     ];
 
     _onLangChange(data: any): void {
@@ -162,6 +164,24 @@ class ShowcaseNavbar extends NavbarComponent {
         data.pressed
             ? document.documentElement.setAttribute('data-theme', 'dark')
             : document.documentElement.setAttribute('data-theme', 'light');
+    }
+
+    _onNavMenuSelect(data: any): void {
+        const action = data.action;
+        if (!action) return;
+        if (action.startsWith('set-lang-')) {
+            this._onLangChange(data);
+            return;
+        }
+        if (action.startsWith('set-theme-')) {
+            this._onThemeChange(data);
+            return;
+        }
+        if (action === 'toggle-dark') {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            return;
+        }
     }
 
     private _updateMenuChecked(eventKey: string, action: string): void {

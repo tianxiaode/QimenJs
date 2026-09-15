@@ -45,6 +45,7 @@ export { PasswordStrengthComponent } from './form/PasswordStrengthComponent';
 // 菜单组件
 export { MenuItemComponent } from './menu/MenuItemComponent';
 export { MenuComponent } from './menu/MenuComponent';
+export { MultiMenuComponent } from './menu/MultiMenuComponent';
 
 // 面板组件
 export { PanelComponent } from './panel/PanelComponent';
