@@ -9,8 +9,8 @@ export const FIELDSET_TPL: TemplateDecl = {
             name: 'legend',
             classes: 'q-fieldset__legend',
             children: [
-                { tag: 'span', name: 'toggleIcon', classes: 'q-fieldset__toggle-icon hidden' },
                 { tag: 'span', name: 'legendText', classes: 'q-fieldset__legend-text' },
+                { tag: 'span', name: 'toggleIcon', classes: 'q-fieldset__toggle-icon hidden' },
             ],
         },
         { tag: 'div', name: 'content', classes: 'q-fieldset__content' },

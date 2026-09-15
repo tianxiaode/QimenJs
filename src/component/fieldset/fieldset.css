@@ -20,10 +20,26 @@
 }
 
 .q-fieldset__toggle-icon {
-    font-size: 10px;
-    line-height: 1;
-    color: var(--q-color-text-secondary, #666);
-    transition: transform var(--q-transition-fast);
+    display: inline-flex;
+    align-items: center;
+    width: 12px;
+    height: 12px;
+}
+
+.q-fieldset__toggle-icon::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 4px 0 4px;
+    border-color: var(--q-color-text-secondary, #666) transparent transparent transparent;
+    transition: border-width var(--q-transition-fast), border-color var(--q-transition-fast);
+}
+
+.q-fieldset--collapsed .q-fieldset__toggle-icon::after {
+    border-width: 4px 0 4px 5px;
+    border-color: transparent transparent transparent var(--q-color-text-secondary, #666);
 }
 
 .q-fieldset__legend-text {

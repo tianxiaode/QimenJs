@@ -24,6 +24,7 @@ class FieldsetComponent extends Component {
 
     _onLegendOptionChange(value: string): void {
         this.setNodeText(value, "legendText");
+        this.setNodeHidden(!value, 'legend');
     }
 
     _onCollapsibleOptionChange(value: boolean): void {
@@ -37,8 +38,6 @@ class FieldsetComponent extends Component {
         if (!this.getData('collapsible') && value) return;
         this.toggleCls('q-fieldset--collapsed', value);
         value ? this.addCls('hidden', 'content') : this.removeCls('hidden', 'content');
-        const iconEl = this.getNodeEl('toggleIcon');
-        if (iconEl) iconEl.textContent = value ? '▶' : '▼';
     }
 
     onLegendToggleClick(): void {
