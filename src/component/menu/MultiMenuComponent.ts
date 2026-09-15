@@ -33,10 +33,8 @@ class MultiMenuComponent extends MenuComponent {
     show(): void {
         if (this._mainItems) {
             this._viewStack = [];
-            this._currentItems = this._mainItems;
             this._itemMeta.clear();
-            super.setItems(this._currentItems);
-            this._buildMeta();
+            this._setView(this._mainItems);
         }
         super.show();
     }
