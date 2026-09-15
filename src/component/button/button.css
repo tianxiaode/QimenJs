@@ -278,16 +278,108 @@
     background: var(--q-overlay-active, rgba(128, 128, 128, 0.15));
 }
 
-/* 两态按钮（pressed）— 主色填充，置于 ghost 规则之后使组合态时填充生效 */
+/* 两态按钮（pressed）— 各颜色用对应 active 变体，置于 ghost 规则之后使组合态时填充生效 */
 .q-button--pressed {
-    background: var(--q-color-primary, #0078d4);
-    border-color: var(--q-color-primary, #0078d4);
+    background: var(--q-color-primary-active, #005a9e);
+    border-color: var(--q-color-primary-active, #005a9e);
     color: var(--q-color-on-primary, #fff);
 }
 
 .q-button--pressed:hover {
-    background: var(--q-color-primary-hover, #106ebe);
-    border-color: var(--q-color-primary-hover, #106ebe);
+    background: var(--q-color-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+}
+
+.q-button--color-primary.q-button--pressed {
+    background: var(--q-color-primary-active, #005a9e);
+    border-color: var(--q-color-primary-active, #005a9e);
+    color: var(--q-color-on-primary, #fff);
+}
+.q-button--color-primary.q-button--pressed:hover {
+    background: var(--q-color-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+}
+
+.q-button--color-secondary.q-button--pressed {
+    background: var(--q-color-secondary-active, #5a5a5a);
+    border-color: var(--q-color-secondary-active, #5a5a5a);
+    color: var(--q-color-on-secondary, #fff);
+}
+.q-button--color-secondary.q-button--pressed:hover {
+    background: var(--q-color-secondary, #767676);
+    border-color: var(--q-color-secondary, #767676);
+}
+
+.q-button--color-success.q-button--pressed {
+    background: var(--q-color-success-active, #0e6b0e);
+    border-color: var(--q-color-success-active, #0e6b0e);
+    color: var(--q-color-on-success, #fff);
+}
+.q-button--color-success.q-button--pressed:hover {
+    background: var(--q-color-success, #107c10);
+    border-color: var(--q-color-success, #107c10);
+}
+
+.q-button--color-warning.q-button--pressed {
+    background: var(--q-color-warning-active, #b3450e);
+    border-color: var(--q-color-warning-active, #b3450e);
+    color: var(--q-color-on-warning, #fff);
+}
+.q-button--color-warning.q-button--pressed:hover {
+    background: var(--q-color-warning, #ca5010);
+    border-color: var(--q-color-warning, #ca5010);
+}
+
+.q-button--color-error.q-button--pressed {
+    background: var(--q-color-error-active, #b22c2f);
+    border-color: var(--q-color-error-active, #b22c2f);
+    color: var(--q-color-on-error, #fff);
+}
+.q-button--color-error.q-button--pressed:hover {
+    background: var(--q-color-error, #d13438);
+    border-color: var(--q-color-error, #d13438);
+}
+
+.q-button--color-info.q-button--pressed {
+    background: var(--q-color-info-active, #005a9e);
+    border-color: var(--q-color-info-active, #005a9e);
+    color: var(--q-color-on-info, #fff);
+}
+.q-button--color-info.q-button--pressed:hover {
+    background: var(--q-color-info, #0078d4);
+    border-color: var(--q-color-info, #0078d4);
+}
+
+/* outline + pressed → filled active */
+.q-button--color-primary-outline.q-button--pressed {
+    background: var(--q-color-primary-active, #005a9e);
+    border-color: var(--q-color-primary-active, #005a9e);
+    color: var(--q-color-on-primary, #fff);
+}
+.q-button--color-success-outline.q-button--pressed {
+    background: var(--q-color-success-active, #0e6b0e);
+    border-color: var(--q-color-success-active, #0e6b0e);
+    color: var(--q-color-on-success, #fff);
+}
+.q-button--color-warning-outline.q-button--pressed {
+    background: var(--q-color-warning-active, #b3450e);
+    border-color: var(--q-color-warning-active, #b3450e);
+    color: var(--q-color-on-warning, #fff);
+}
+.q-button--color-error-outline.q-button--pressed {
+    background: var(--q-color-error-active, #b22c2f);
+    border-color: var(--q-color-error-active, #b22c2f);
+    color: var(--q-color-on-error, #fff);
+}
+.q-button--color-info-outline.q-button--pressed {
+    background: var(--q-color-info-active, #005a9e);
+    border-color: var(--q-color-info-active, #005a9e);
+    color: var(--q-color-on-info, #fff);
+}
+.q-button--color-secondary-outline.q-button--pressed {
+    background: var(--q-color-secondary-active, #5a5a5a);
+    border-color: var(--q-color-secondary-active, #5a5a5a);
+    color: var(--q-color-on-secondary, #fff);
 }
 
 /* 幽灵模式 — 主要色 */
