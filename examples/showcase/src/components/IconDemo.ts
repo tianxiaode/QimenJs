@@ -51,9 +51,15 @@ export const ICON_DEMO: DemoConfig = {
                 children: [
                     { type: 'icon', options: { iconCls: 'fa-solid fa-home', color: 'primary' } },
                     { type: 'icon', options: { iconCls: 'fa-solid fa-check', color: 'success' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-triangle-exclamation', color: 'warning' } },
+                    {
+                        type: 'icon',
+                        options: { iconCls: 'fa-solid fa-triangle-exclamation', color: 'warning' },
+                    },
                     { type: 'icon', options: { iconCls: 'fa-solid fa-xmark', color: 'error' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-circle-info', color: 'info' } },
+                    {
+                        type: 'icon',
+                        options: { iconCls: 'fa-solid fa-circle-info', color: 'info' },
+                    },
                 ],
             },
         },
@@ -81,9 +87,18 @@ export const ICON_DEMO: DemoConfig = {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-heart', color: 'error', size: 'xl' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-star', color: 'warning', size: 'lg' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-check', color: 'success', size: 'sm' } },
+                    {
+                        type: 'icon',
+                        options: { iconCls: 'fa-solid fa-heart', color: 'error', size: 'xl' },
+                    },
+                    {
+                        type: 'icon',
+                        options: { iconCls: 'fa-solid fa-star', color: 'warning', size: 'lg' },
+                    },
+                    {
+                        type: 'icon',
+                        options: { iconCls: 'fa-solid fa-check', color: 'success', size: 'sm' },
+                    },
                 ],
             },
         },

@@ -33,6 +33,8 @@ import {
     IconComponent,
     LabelComponent,
     SpacerComponent,
+    FieldsetComponent,
+    HeaderComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -55,3 +57,5 @@ IconComponent.register();
 LabelComponent.register();
 SpacerComponent.register();
 TextComponent.register();
+FieldsetComponent.register();
+HeaderComponent.register();

@@ -28,7 +28,7 @@ class FieldsetComponent extends Component {
     };
 
     _onLegendOptionChange(value: string): void {
-        this.setNodeText(value, "legendText");
+        this.setNodeText(value, 'legendText');
         this.setNodeHidden(!value, 'legend');
     }
 
