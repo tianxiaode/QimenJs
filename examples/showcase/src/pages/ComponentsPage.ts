@@ -12,6 +12,10 @@ import { AVATAR_DEMO } from '../components/AvatarDemo';
 import { BUTTON_GROUP_DEMO } from '../components/ButtonGroupDemo';
 import { DIVIDER_DEMO } from '../components/DividerDemo';
 import { HTML_DEMO } from '../components/HtmlDemo';
+import { ICON_DEMO } from '../components/IconDemo';
+import { LABEL_DEMO } from '../components/LabelDemo';
+import { SPACER_DEMO } from '../components/SpacerDemo';
+import { TEXT_DEMO } from '../components/TextDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -48,6 +52,10 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Avatar: AVATAR_DEMO,
     Divider: DIVIDER_DEMO,
     Html: HTML_DEMO,
+    Icon: ICON_DEMO,
+    Label: LABEL_DEMO,
+    Spacer: SPACER_DEMO,
+    Text: TEXT_DEMO,
 };
 
 /** 首页模板 */
