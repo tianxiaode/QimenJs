@@ -10,6 +10,7 @@ import type { DemoConfig } from '../components/types';
 import { BUTTON_DEMO } from '../components/ButtonDemo';
 import { AVATAR_DEMO } from '../components/AvatarDemo';
 import { BUTTON_GROUP_DEMO } from '../components/ButtonGroupDemo';
+import { DIVIDER_DEMO } from '../components/DividerDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -44,6 +45,7 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Button: BUTTON_DEMO,
     ButtonGroup: BUTTON_GROUP_DEMO,
     Avatar: AVATAR_DEMO,
+    Divider: DIVIDER_DEMO,
 };
 
 /** 首页模板 */
