@@ -9,6 +9,7 @@ import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/compon
 import type { DemoConfig } from '../components/types';
 import { BUTTON_DEMO } from '../components/ButtonDemo';
 import { AVATAR_DEMO } from '../components/AvatarDemo';
+import { BUTTON_GROUP_DEMO } from '../components/ButtonGroupDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -41,6 +42,7 @@ const COMPONENT_CATEGORIES = [
 /** 组件演示映射 */
 const DEMO_MAP: Record<string, DemoConfig> = {
     Button: BUTTON_DEMO,
+    ButtonGroup: BUTTON_GROUP_DEMO,
     Avatar: AVATAR_DEMO,
 };
 

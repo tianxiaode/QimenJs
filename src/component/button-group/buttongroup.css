@@ -1,4 +1,26 @@
 /* ButtonGroup */
 .q-button-group {
-    /* TODO: 添加样式 */
+    display: inline-flex;
+}
+
+/* 按钮组内按钮：去除多余圆角，边框合并 */
+.q-button-group .q-button {
+    border-radius: 0;
+    margin-left: -2px;
+}
+
+.q-button-group .q-button:first-child {
+    border-radius: var(--q-radius-md, 6px) 0 0 var(--q-radius-md, 6px);
+    margin-left: 0;
+}
+
+.q-button-group .q-button:last-child {
+    border-radius: 0 var(--q-radius-md, 6px) var(--q-radius-md, 6px) 0;
+}
+
+/* 选中态（pressed）主色强调 */
+.q-button-group .q-button--pressed {
+    background: var(--q-color-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+    color: var(--q-color-on-primary, #fff);
 }

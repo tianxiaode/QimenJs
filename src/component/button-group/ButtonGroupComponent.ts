@@ -15,12 +15,13 @@ const ButtonGroupComponentDefs: Definitions = {
 } as const;
 
 class ButtonGroupComponent extends ItemGroupPooledComponent {
-    defaultItemType = 'Toggle';
+    static type = 'button-group';
+    defaultItemType = 'button';
     _mode: ButtonGroupMode = 'single';
     _lastToggleIndex: number = -1;
 
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '{Toggle}', handler: '_onToggleClick', emits: ['select'] },
+        click: { path: '{button}', handler: '_onToggleClick', emits: ['select'] },
     };
 
     get defaultEventData(): Record<string, any> {
