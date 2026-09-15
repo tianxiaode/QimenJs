@@ -192,6 +192,8 @@ export class DomEventsEngine {
         if (!target) return;
         if (!eventType) return;
 
+        domEvt.target = target;
+
         if (instance.disable) return;
 
         const rules: DelegatedEventRule[] = instance._eventRules ?? [];
