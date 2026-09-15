@@ -22,7 +22,6 @@ const ItemGroupBaseComponentDefs: Definitions = {
     },
     fields: {
         defaultItemType: '',
-        defaultItem: {},
         indicator: undefined,
         isItemContainer: true,
     },
@@ -66,14 +65,16 @@ class ItemGroupBaseComponent extends Component {
 
     _onItemsOptionChange(value: Record<string, any>[]): void {
         const current = this.items;
-        if (!Array.isArray(current) || (current.length > 0 && typeof current[0]?.update !== 'function')) {
+        if (
+            !Array.isArray(current) ||
+            (current.length > 0 && typeof current[0]?.update !== 'function')
+        ) {
             this.setData('items', [], true);
         }
         if (value) this.setItems([...value]);
     }
 
-    onAfterInit(): void {
-    }
+    onAfterInit(): void {}
 
     get count(): number {
         return (this.items || []).length;
@@ -84,7 +85,7 @@ class ItemGroupBaseComponent extends Component {
         if (!Array.isArray(items)) return null;
         for (let i = 0; i < items.length; i++) {
             const component = items[i];
-            if (this.containsElement('', target) || component.el.contains(target)) {
+            if (component.el.contains(target)) {
                 const type = component.constructor?._type || component.type || '';
                 return { component, type, index: i };
             }

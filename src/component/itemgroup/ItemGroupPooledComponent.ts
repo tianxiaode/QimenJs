@@ -28,7 +28,6 @@ const ItemGroupPooledComponentDefs: Definitions = {
         expandItems: null,
         groupSummaryItems: null,
         tableSummaryItems: null,
-        defaultItemOption: null,
     },
     fields: {
         _hiddenItems: [],
@@ -414,7 +413,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         for (const pool of this._auxPools.values()) {
             for (let i = 0; i < pool.items.length; i++) {
                 const component = pool.items[i];
-                if (component.containsElement('', target) || component.el.contains(target)) {
+                if (component.el.contains(target)) {
                     const type = component.constructor?._type || component.type || '';
                     return { component, type, index: i };
                 }

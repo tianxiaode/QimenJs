@@ -32,7 +32,7 @@ export interface ToolGroupConfig {
     items: Record<string, any>[];
     itemType?: string;
     cls?: string;
-    defaultItem?: Record<string, any>;
+    defaultItemOption?: Record<string, any>;
 }
 
 const PanelComponentDefs: Definitions = {
