@@ -22,7 +22,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 
     domEvents: DomEventsMap | undefined = {
         click: {
-            path: '{button}',
+            path: '[items]',
             handler: '_onToggleClick',
             emits: ['select', '[action]'],
             bridges: ['select', '[action]'],

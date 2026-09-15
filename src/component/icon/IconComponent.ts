@@ -19,7 +19,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
-import { SizeAbility } from '@qimenjs/component-abilities';
+import { ColorAbility, SizeAbility } from '@qimenjs/component-abilities';
 import { ICON_TPL } from './icon-tpl';
 import { Definitions } from '@/composable';
 import './icon.css';
@@ -28,6 +28,7 @@ const IconComponentDefs: Definitions = {
     options: {
         iconCls: null,
         size: 'md',
+        color: null,
     },
 } as const;
 
@@ -44,6 +45,6 @@ class IconComponent extends Component {
 }
 
 IconComponent.define(IconComponentDefs);
-IconComponent.use(SizeAbility);
+IconComponent.use(SizeAbility, ColorAbility);
 
 export { IconComponent };

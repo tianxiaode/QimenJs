@@ -28,6 +28,11 @@ import {
     MultiMenuComponent,
     ToggleComponent,
     RouteContainerComponent,
+    DividerComponent,
+    HtmlComponent,
+    IconComponent,
+    LabelComponent,
+    SpacerComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -44,3 +49,9 @@ MenuItemComponent.register();
 MultiMenuComponent.register();
 ToggleComponent.register();
 RouteContainerComponent.register();
+DividerComponent.register();
+HtmlComponent.register();
+IconComponent.register();
+LabelComponent.register();
+SpacerComponent.register();
+TextComponent.register();

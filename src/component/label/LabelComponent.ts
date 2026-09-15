@@ -37,8 +37,7 @@ class LabelComponent extends Component {
     }
 
     _onTextOptionChange(value: string): void {
-        const el = this.getNodeEl('content');
-        if (el) el.textContent = value ?? '';
+        this.setNodeText(value, 'content');
     }
 
     _onRequiredOptionChange(value: boolean): void {
@@ -50,7 +49,7 @@ class LabelComponent extends Component {
         this._applyRequiredMark();
     }
 
-    _onRequiredMarkPositionOptionChange(value: 'before' | 'after', old: 'before' | 'after'): void {
+    _onRequiredMarkPositionOptionChange(value: 'before' | 'after', _old: 'before' | 'after'): void {
         this.toggleCls('q-label__required-mark--before', value === 'before', 'requiredMark');
         this.toggleCls('q-label__required-mark--after', value === 'after', 'requiredMark');
     }

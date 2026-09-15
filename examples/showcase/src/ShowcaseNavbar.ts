@@ -114,7 +114,8 @@ class ShowcaseNavbar extends NavbarComponent {
                         text: '@nav.dark',
                         group: 'dark',
                         groupMode: 'checkbox',
-                        checked: () => document.documentElement.getAttribute('data-theme') === 'dark',
+                        checked: () =>
+                            document.documentElement.getAttribute('data-theme') === 'dark',
                     },
                 },
                 {

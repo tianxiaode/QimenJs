@@ -60,7 +60,7 @@ class PanelComponent extends Component {
     };
 
     _onTitleOptionChange(value: string, _old: string): void {
-        this.setNodeText(value, "title");
+        this.setNodeText(value, 'title');
         this.setNodeHidden(!value, 'title');
     }
 

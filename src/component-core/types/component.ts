@@ -162,7 +162,7 @@ export interface LifecycleHooks {
     /** 元素尺寸变化（定义此方法才自动绑 ResizeObserver，否则不绑） */
     onResize?: (entry: ResizeObserverEntry) => void;
     /** 更新后（属性或内容变更后） */
-    onUpdated?: () => void;
+    //onUpdated?: () => void;
     /** 卸载前（组件即将从 DOM 移除） */
     onBeforeUnmount?: () => void;
     /** 语言变化 */

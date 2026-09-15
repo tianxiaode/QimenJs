@@ -115,7 +115,7 @@ export const BUTTON_GROUP_DEMO: DemoConfig = {
         {
             label: 'Size',
             code: `{ type: 'button-group', options: {
-    size: 'md',
+    defaultItemOption: { size: 'xs' },
     items: [{ text: 'A' }, { text: 'B' }, { text: 'C' }],
 } }`,
             template: {
@@ -125,22 +125,36 @@ export const BUTTON_GROUP_DEMO: DemoConfig = {
                     {
                         type: 'button-group',
                         options: {
-                            size: 'sm',
+                            defaultItemOption: { size: 'xs' },
+                            items: [{ text: 'XS' }, { text: 'XS' }, { text: 'XS' }],
+                        },
+                    },
+                    {
+                        type: 'button-group',
+                        options: {
+                            defaultItemOption: { size: 'sm' },
                             items: [{ text: 'SM' }, { text: 'SM' }, { text: 'SM' }],
                         },
                     },
                     {
                         type: 'button-group',
                         options: {
-                            size: 'md',
+                            defaultItemOption: { size: 'md' },
                             items: [{ text: 'MD' }, { text: 'MD' }, { text: 'MD' }],
                         },
                     },
                     {
                         type: 'button-group',
                         options: {
-                            size: 'lg',
+                            defaultItemOption: { size: 'lg' },
                             items: [{ text: 'LG' }, { text: 'LG' }, { text: 'LG' }],
+                        },
+                    },
+                    {
+                        type: 'button-group',
+                        options: {
+                            defaultItemOption: { size: 'xl' },
+                            items: [{ text: 'XL' }, { text: 'XL' }, { text: 'XL' }],
                         },
                     },
                 ],
@@ -173,7 +187,7 @@ export const BUTTON_GROUP_DEMO: DemoConfig = {
         {
             label: 'Color',
             code: `{ type: 'button-group', options: {
-    color: 'success',
+    defaultItemOption: { color: 'success' },
     items: [{ text: 'Yes' }, { text: 'No' }],
 } }`,
             template: {
@@ -183,7 +197,7 @@ export const BUTTON_GROUP_DEMO: DemoConfig = {
                     {
                         type: 'button-group',
                         options: {
-                            color: 'success',
+                            defaultItemOption: { color: 'success' },
                             items: [{ text: 'Yes' }, { text: 'No' }],
                         },
                     },
