@@ -16,6 +16,14 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* 颜色（ColorAbility 在根元素添加类名，i.q-icon 继承 color） */
+.q-icon--color-primary { color: var(--q-color-primary, #0078d4); }
+.q-icon--color-secondary { color: var(--q-color-secondary, #767676); }
+.q-icon--color-success { color: var(--q-color-success, #107c10); }
+.q-icon--color-warning { color: var(--q-color-warning, #ca5010); }
+.q-icon--color-error { color: var(--q-color-error, #d13438); }
+.q-icon--color-info { color: var(--q-color-info, #0078d4); }
+
 /* 可点击图标 */
 .q-icon--clickable {
     cursor: pointer;
