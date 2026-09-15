@@ -3,6 +3,35 @@
     display: inline-flex;
 }
 
+/* 未选中按钮 → outline 风格（透明背景+彩色文字），选中按钮 → filled 风格 */
+.q-button-group .q-button:not(.q-button--pressed) {
+    background: transparent;
+}
+
+.q-button-group .q-button--color-primary:not(.q-button--pressed) {
+    color: var(--q-color-primary, #0078d4);
+}
+
+.q-button-group .q-button--color-secondary:not(.q-button--pressed) {
+    color: var(--q-color-secondary, #767676);
+}
+
+.q-button-group .q-button--color-success:not(.q-button--pressed) {
+    color: var(--q-color-success, #107c10);
+}
+
+.q-button-group .q-button--color-warning:not(.q-button--pressed) {
+    color: var(--q-color-warning, #ca5010);
+}
+
+.q-button-group .q-button--color-error:not(.q-button--pressed) {
+    color: var(--q-color-error, #d13438);
+}
+
+.q-button-group .q-button--color-info:not(.q-button--pressed) {
+    color: var(--q-color-info, #0078d4);
+}
+
 /* 水平方向：按钮边框合并 */
 .q-button-group .q-button {
     border-radius: 0;
