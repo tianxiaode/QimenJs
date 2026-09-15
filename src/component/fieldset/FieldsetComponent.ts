@@ -28,6 +28,7 @@ class FieldsetComponent extends Component {
     }
 
     _onCollapsibleOptionChange(value: boolean): void {
+        this.toggleCls('q-fieldset--collapsible', value);
         value ? this.removeCls('hidden', 'toggleIcon') : this.addCls('hidden', 'toggleIcon');
         if (!value && this.getData('collapsed')) {
             this.setData('collapsed', false);

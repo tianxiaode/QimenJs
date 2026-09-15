@@ -1,11 +1,11 @@
 import type { TemplateDecl } from '@/component-core';
 
 export const FIELDSET_TPL: TemplateDecl = {
-    tag: 'fieldset',
+    tag: 'div',
     classes: 'q-fieldset',
     children: [
         {
-            tag: 'legend',
+            tag: 'div',
             name: 'legend',
             classes: 'q-fieldset__legend',
             children: [

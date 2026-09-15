@@ -11,6 +11,7 @@
     align-items: center;
     gap: var(--q-space-xs, 6px);
     padding: 0 var(--q-space-sm, 8px);
+    margin-bottom: var(--q-space-xs, 8px);
     font-size: var(--q-font-size-md, 14px);
     font-weight: var(--q-font-weight-semibold, 600);
     color: var(--q-color-text, #1a1a1a);
@@ -50,14 +51,6 @@
     padding-top: var(--q-space-xs, 8px);
 }
 
-.q-fieldset--collapsed .q-fieldset__legend {
+.q-fieldset--collapsible .q-fieldset__legend {
     cursor: var(--q-cursor-pointer, pointer);
-}
-
-.q-fieldset--collapsed .q-fieldset__toggle-icon {
-    cursor: var(--q-cursor-pointer, pointer);
-}
-
-.q-fieldset:not(.q-fieldset--collapsed) .q-fieldset__legend {
-    cursor: default;
 }
