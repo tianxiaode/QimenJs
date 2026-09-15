@@ -179,6 +179,19 @@ btn.pressed = !btn.pressed;
             },
         },
         {
+            label: 'Arrow Hidden (隐藏箭头)',
+            code: `{ type: 'button', options: { text: 'Hidden Arrow', arrowHidden: true } }
+{ type: 'dropdown', options: { text: 'Dropdown No Arrow', arrowHidden: true } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'button', options: { text: 'Hidden Arrow', arrowHidden: true } },
+                    { type: 'dropdown', options: { text: 'Dropdown No Arrow', arrowHidden: true } },
+                ],
+            },
+        },
+        {
             label: 'Disable',
             code: `{ type: 'button', options: { text: 'Disabled', disable: true } }
 { type: 'button', options: { text: 'Disabled Ghost', disable: true, ghost: true } }`,
