@@ -20,8 +20,13 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     _mode: ButtonGroupMode = 'single';
     _lastToggleIndex: number = -1;
 
-    domEvents?: DomEventsMap | undefined = {
-        click: { path: '{button}', handler: '_onToggleClick', emits: ['select'] },
+    domEvents: DomEventsMap | undefined = {
+        click: {
+            path: '{button}',
+            handler: '_onToggleClick',
+            emits: ['select', '[action]'],
+            bridges: ['select', '[action]'],
+        },
     };
 
     get defaultEventData(): Record<string, any> {
@@ -36,12 +41,12 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     }
 
     _onToggleClick(domEvt: any): void {
-        const item = this.getTargetItem(domEvt.target);
-        if (!item) return;
+        const toggle = domEvt.targetComponent;
+        if (!toggle) return;
 
         const self = this as any;
-        const index = item.index;
-        const toggle = item.component;
+        const index = self.indexOf(toggle);
+        if (index < 0) return;
         self._lastToggleIndex = index;
 
         if (self._mode === 'single') {
@@ -171,5 +176,3 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 ButtonGroupComponent.define(ButtonGroupComponentDefs);
 
 export { ButtonGroupComponent };
-/** 按钮组实例类型 */
-export type ButtonGroupComponentInstance = InstanceType<typeof ButtonGroupComponent>;
