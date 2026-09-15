@@ -4,6 +4,7 @@ import { NAVBAR_TPL } from './navbar-tpl';
 import { Definitions } from '@/composable';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { DropdownComponent } from '../dropdown/DropdownComponent';
+import { SYSTEM_EVENTS, systemEventBus } from '@/events';
 import './navbar.css';
 
 const NavbarComponentDefs: Definitions = {
@@ -25,6 +26,7 @@ class NavbarComponent extends Component {
 
     _itemInstances: any[] = [];
     _menuDropdown: InstanceType<typeof DropdownComponent> | null = null;
+    _unbindWindowResize: (() => void) | null = null;
 
     get earlyOptionKeys(): string[] {
         return [...super.earlyOptionKeys, 'defaultItemOption'];
@@ -51,6 +53,14 @@ class NavbarComponent extends Component {
         if (menuData) {
             this._createMenuDropdown(menuData);
         }
+
+        this._unbindWindowResize = systemEventBus.on(SYSTEM_EVENTS.WINDOW_RESIZE, () => {
+            if (!this._menuDropdown) return;
+            const toggle = this._menuDropdown.el;
+            if (toggle && getComputedStyle(toggle).display === 'none') {
+                this._menuDropdown.hidePopover();
+            }
+        });
     }
 
     _createMenuDropdown(menuData: any): void {
@@ -168,6 +178,8 @@ class NavbarComponent extends Component {
     }
 
     onBeforeDispose(): void {
+        this._unbindWindowResize?.();
+        this._unbindWindowResize = null;
         if (this._menuDropdown) {
             this._menuDropdown.dispose();
             this._menuDropdown = null;
