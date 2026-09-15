@@ -47,7 +47,11 @@
     border-radius: 0 var(--q-radius-md, 6px) var(--q-radius-md, 6px) 0;
 }
 
-/* 垂直方向：按钮垂直并排，边框合并，圆角上下 */
+/* 垂直方向：按钮垂直并排，边框合并，圆角上下，无间距 */
+.q-itemgroup--vertical.q-button-group .q-itemgroup__items {
+    gap: 0 !important;
+}
+
 .q-itemgroup--vertical.q-button-group .q-button {
     margin-left: 0;
     margin-top: -2px;
