@@ -29,6 +29,11 @@
     overflow: visible;
 }
 
+.q-button:hover {
+    background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
+    border-color: var(--q-color-primary, #0078d4);
+}
+
 /* 类型：主要 — 填充模式 */
 .q-button--color-primary {
     background: var(--q-color-primary, #0078d4);
