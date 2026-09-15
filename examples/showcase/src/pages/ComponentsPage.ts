@@ -16,6 +16,12 @@ import { ICON_DEMO } from '../components/IconDemo';
 import { LABEL_DEMO } from '../components/LabelDemo';
 import { SPACER_DEMO } from '../components/SpacerDemo';
 import { TEXT_DEMO } from '../components/TextDemo';
+import { CARD_DEMO } from '../components/CardDemo';
+import { FIELDSET_DEMO } from '../components/FieldsetDemo';
+import { HEADER_DEMO } from '../components/HeaderDemo';
+import { HERO_DEMO } from '../components/HeroDemo';
+import { PANEL_DEMO } from '../components/PanelDemo';
+import { TABS_DEMO } from '../components/TabsDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -56,6 +62,12 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Label: LABEL_DEMO,
     Spacer: SPACER_DEMO,
     Text: TEXT_DEMO,
+    Card: CARD_DEMO,
+    Fieldset: FIELDSET_DEMO,
+    Header: HEADER_DEMO,
+    Hero: HERO_DEMO,
+    Panel: PANEL_DEMO,
+    Tabs: TABS_DEMO,
 };
 
 /** 首页模板 */
