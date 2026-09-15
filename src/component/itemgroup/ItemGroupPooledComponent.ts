@@ -18,13 +18,6 @@ export interface AuxPoolConfig {
     offset: number;
 }
 
-interface AuxPool {
-    items: any[];
-    hiddenItems: any[];
-    itemType: string;
-    offset: number;
-}
-
 const ItemGroupPooledComponentDefs: Definitions = {
     options: {
         groupRowType: null,
@@ -35,6 +28,7 @@ const ItemGroupPooledComponentDefs: Definitions = {
         expandItems: null,
         groupSummaryItems: null,
         tableSummaryItems: null,
+        defaultItemOption: null,
     },
     fields: {
         _hiddenItems: [],
@@ -103,7 +97,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                     `item "${component.name || component.type || i}" missing update(), pooled data change will not reflect`
                 );
             }
-            component.el.hidden = false;
+            component.hidden = false;
         }
 
         for (let i = currentLength; i < newLength; i++) {
@@ -122,7 +116,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         for (let i = newLength; i < currentLength; i++) {
             const component = items[i];
-            component.el.hidden = true;
+            component.hidden = true;
             this._hiddenItems.push(component);
             this._emitItemRemove(i, component);
         }

@@ -31,10 +31,30 @@
 }
 
 .q-navbar__toggle-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    position: relative;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
     pointer-events: none;
+}
+
+.q-navbar__toggle-icon::before,
+.q-navbar__toggle-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+}
+
+.q-navbar__toggle-icon::before {
+    top: -6px;
+}
+
+.q-navbar__toggle-icon::after {
+    top: 6px;
 }
 
 .q-navbar__spacer {

@@ -33,7 +33,6 @@ class ShowcaseNavbar extends NavbarComponent {
             fixed: true,
             companyName: 'QimenJS',
             defaultItemOption: { size: 'lg' },
-            menuToggleIconCls: 'fa fa-bars',
             items: [
                 { type: 'href', href: '#/', text: '@nav.home', dock: 'left', action: 'nav-home' },
                 {
