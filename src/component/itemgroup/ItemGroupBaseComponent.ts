@@ -17,6 +17,8 @@ const ItemGroupBaseComponentDefs: Definitions = {
         overflowMode: 'none',
         step: 100,
         items: null,
+        /** 全部 items 的默认属性 — items 自身属性优先 */
+        defaultItemOption: null,
     },
     fields: {
         defaultItemType: '',
@@ -30,6 +32,10 @@ class ItemGroupBaseComponent extends Component {
     static type = 'itemgroup';
     get tpl(): TemplateDecl {
         return ITEMGROUP_BASE_TPL;
+    }
+
+    get earlyOptionKeys(): string[] {
+        return [...super.earlyOptionKeys, 'defaultItemOption'];
     }
 
     _onDirectionOptionChange(value: string): void {
@@ -144,7 +150,8 @@ class ItemGroupBaseComponent extends Component {
             return null;
         }
 
-        const props = { ...data };
+        const defaults = this.getData('defaultItemOption') ?? {};
+        const props = { ...defaults, ...data };
         delete props.type;
         delete props.events;
 

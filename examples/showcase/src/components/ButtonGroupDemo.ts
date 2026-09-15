@@ -190,5 +190,27 @@ export const BUTTON_GROUP_DEMO: DemoConfig = {
                 ],
             },
         },
+        {
+            label: 'DefaultItemOption (统一子项属性)',
+            code: `{ type: 'button-group', options: {
+    mode: 'multiple',
+    defaultItemOption: { size: 'lg', color: 'primary' },
+    items: [{ text: 'A' }, { text: 'B' }, { text: 'C' }],
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'button-group',
+                        options: {
+                            mode: 'multiple',
+                            defaultItemOption: { size: 'lg', color: 'primary' },
+                            items: [{ text: 'A' }, { text: 'B' }, { text: 'C' }],
+                        },
+                    },
+                ],
+            },
+        },
     ],
 };
