@@ -2,6 +2,7 @@ import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { FIELDSET_TPL } from './fieldset-tpl';
 import { Definitions } from '@/composable';
+import { ColorAbility } from '@/component-abilities';
 import './fieldset.css';
 
 const FieldsetComponentDefs: Definitions = {
@@ -9,6 +10,8 @@ const FieldsetComponentDefs: Definitions = {
         legend: null,
         collapsible: false,
         collapsed: false,
+        toggleIconCls: null,
+        color: null,
     },
 } as const;
 
@@ -41,6 +44,16 @@ class FieldsetComponent extends Component {
         value ? this.addCls('hidden', 'content') : this.removeCls('hidden', 'content');
     }
 
+    _onToggleIconClsOptionChange(value: string, old: string): void {
+        if (value) {
+            this.addCls('q-fieldset__toggle-icon--custom', 'toggleIcon');
+            this.addCls(value, 'toggleIcon');
+        } else {
+            this.removeCls('q-fieldset__toggle-icon--custom', 'toggleIcon');
+        }
+        if (old) this.removeCls(old, 'toggleIcon');
+    }
+
     onLegendToggleClick(): void {
         if (!this.collapsible) return;
         this.collapsed = !this.collapsed;
@@ -55,6 +68,6 @@ class FieldsetComponent extends Component {
 }
 
 FieldsetComponent.define(FieldsetComponentDefs);
-
+FieldsetComponent.use(ColorAbility);
 export { FieldsetComponent };
 export type FieldsetComponentInstance = InstanceType<typeof FieldsetComponent>;
