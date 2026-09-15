@@ -43,6 +43,7 @@
         transparent 16px
     );
     width: 2px;
+    height: 100%;
 }
 
 /* 文字标签 */
