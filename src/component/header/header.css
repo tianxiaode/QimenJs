@@ -21,6 +21,7 @@
 
 .q-header .q-icon-wrap {
     width: var(--q-header-tool-w);
+    height: auto;
     min-height: auto;
     padding: 0;
     flex-shrink: 0;
