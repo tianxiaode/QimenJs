@@ -5,6 +5,7 @@ import { resolveI18nValue } from '@qimenjs/i18n';
 import { Definitions } from '@/composable';
 import { DIALOG_TPL } from './dialog-tpl';
 import { ButtonComponent } from '../button/ButtonComponent';
+import { IconComponent } from '../icon/IconComponent';
 import './dialog.css';
 
 type DialogActionKey = 'confirm' | 'cancel' | 'ok' | 'save' | 'close' | 'apply' | 'reset';
@@ -31,14 +32,16 @@ const DIALOG_ACTION_DEFS: Record<DialogActionKey, DialogActionDef> = {
     close: { text: '@dialog.close', action: 'close', order: 300 },
 };
 
+const ICON_ORDER = 0;
+const CLOSE_ORDER = 20000;
+
 const DialogComponentDefs: Definitions = {
     options: {
         title: null,
         icon: null,
         subtitle: null,
         width: null,
-        toolsLeft: null,
-        toolsRight: null,
+        closable: true,
     },
     fields: {
         confirm: undefined,
@@ -63,8 +66,7 @@ class DialogComponent extends Component {
 
     domEvents?: DomEventsMap | undefined = {
         click: [
-            { path: 'header.action', handler: true, emits: ['[action]'] },
-            { path: 'header.toolsLeft,header.toolsRight', handler: true, emits: ['[action]'] },
+            { path: 'header.[items]', handler: true, emits: ['[action]'] },
             { path: 'footer', handler: true, emits: ['[action]'] },
         ],
     };
@@ -79,32 +81,13 @@ class DialogComponent extends Component {
         if (headerComp) headerComp.title = value;
     }
 
-    _onIconOptionChange(value: string): void {
-        if (!value) return;
-        const headerComp = this.getComponent('header') as any;
-        if (headerComp) headerComp.icon = value;
-    }
-
     _onSubtitleOptionChange(value: string): void {
-        if (!value) return;
         const headerComp = this.getComponent('header') as any;
         if (headerComp) headerComp.subtitle = value;
     }
 
     _onWidthOptionChange(value: string): void {
         if (value) this.el?.style.setProperty('--q-dialog-width', value);
-    }
-
-    _onToolsLeftOptionChange(value: Record<string, any>): void {
-        if (!value) return;
-        const headerComp = this.getComponent('header') as any;
-        if (headerComp) headerComp.toolsLeft = value;
-    }
-
-    _onToolsRightOptionChange(value: Record<string, any>): void {
-        if (!value) return;
-        const headerComp = this.getComponent('header') as any;
-        if (headerComp) headerComp.toolsRight = value;
     }
 
     onHeaderActionCloseClick(): void {
@@ -115,10 +98,21 @@ class DialogComponent extends Component {
     onAfterInit(): void {
         const headerComp = this.getComponent('header') as any;
         if (headerComp) {
-            headerComp.setNodeHidden(false, 'action');
-            const actionComp = headerComp.getComponent('action');
-            if (actionComp && typeof actionComp.update === 'function') {
-                actionComp.update({ icon: 'close', action: 'close' });
+            if (this.icon) {
+                headerComp.add({
+                    type: IconComponent,
+                    iconCls: this.icon,
+                    order: ICON_ORDER,
+                });
+            }
+            if (this.closable) {
+                headerComp.add({
+                    type: IconComponent,
+                    iconCls: 'q-icon-close',
+                    action: 'close',
+                    order: CLOSE_ORDER,
+                    clickable: true,
+                });
             }
         }
 

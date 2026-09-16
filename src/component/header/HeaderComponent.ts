@@ -1,31 +1,22 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
-import { IconComponent } from '../icon/IconComponent';
 import { HtmlComponent } from '../html/HtmlComponent';
 import { SpacerComponent } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
 
-const ICON_ORDER = 0;
 const LEFT_SPACER_ORDER = 9500;
 const TITLE_ORDER = 10000;
 const RIGHT_SPACER_ORDER = 10500;
-const ACTION_ORDER = 20000;
 
 const HeaderComponentDefs: Definitions = {
     options: {
-        iconCls: null,
-        iconColor: null,
         title: null,
         subtitle: null,
         titleCls: null,
         titleStyle: null,
-        actionCls: null,
-        actionColor: null,
     },
     fields: {
-        _iconComp: undefined,
         _titleComp: undefined,
-        _actionComp: undefined,
         _leftSpacers: [],
         _rightSpacers: [],
     },
@@ -33,19 +24,14 @@ const HeaderComponentDefs: Definitions = {
 
 class HeaderComponent extends ItemGroupStaticComponent {
     static type = 'header';
-    defaultItemType = 'icon';
 
     get earlyOptionKeys(): string[] {
         return [
             ...super.earlyOptionKeys,
-            'iconCls',
-            'iconColor',
             'title',
             'subtitle',
             'titleCls',
             'titleStyle',
-            'actionCls',
-            'actionColor',
         ];
     }
 
@@ -58,20 +44,6 @@ class HeaderComponent extends ItemGroupStaticComponent {
     _refreshFixedElements(): void {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
-
-        const iconCls = this.getData('iconCls');
-        if (iconCls && !this._iconComp) {
-            this._iconComp = new IconComponent({
-                iconCls,
-                color: this.iconColor,
-            });
-            this._iconComp.addCls('q-header__icon');
-            this._iconComp.order = String(ICON_ORDER);
-            container.appendChild(this._iconComp.el);
-        } else if (!iconCls && this._iconComp) {
-            this._iconComp.dispose();
-            this._iconComp = undefined;
-        }
 
         const title = this.getData('title');
         if (title && !this._titleComp) {
@@ -86,20 +58,6 @@ class HeaderComponent extends ItemGroupStaticComponent {
         } else if (!title && this._titleComp) {
             this._titleComp.dispose();
             this._titleComp = undefined;
-        }
-
-        const actionCls = this.getData('actionCls');
-        if (actionCls && !this._actionComp) {
-            this._actionComp = new IconComponent({
-                iconCls: actionCls,
-                color: this.getData('actionColor'),
-            });
-            this._actionComp.addCls('q-header__action');
-            this._actionComp.el.style.order = String(ACTION_ORDER);
-            container.appendChild(this._actionComp.el);
-        } else if (!actionCls && this._actionComp) {
-            this._actionComp.dispose();
-            this._actionComp = undefined;
         }
 
         this._rebalanceSpacers();
@@ -123,12 +81,12 @@ class HeaderComponent extends ItemGroupStaticComponent {
         this._leftSpacers = [];
         this._rightSpacers = [];
 
-        const nL = (this._iconComp ? 1 : 0) + this._countLeftItems();
-        const nR = this._countRightItems() + (this._actionComp ? 1 : 0);
+        const nL = this._countLeftItems();
+        const nR = this._countRightItems();
         const diff = Math.abs(nL - nR);
         if (diff === 0) return;
 
-        const spacerWidth = 'var(--q-header-tool-w, 24px)';
+        const spacerWidth = 'var(--q-header-tool-w, 36px)';
         if (nL > nR) {
             for (let i = 0; i < diff; i++) {
                 const spacer = new SpacerComponent({ width: spacerWidth });
@@ -207,16 +165,6 @@ class HeaderComponent extends ItemGroupStaticComponent {
         this._rebalanceSpacers();
     }
 
-    _onIconClsOptionChange(): void {
-        this._refreshFixedElements();
-    }
-
-    _onIconColorOptionChange(): void {
-        if (this._iconComp) {
-            this._iconComp.color = this.iconColor;
-        }
-    }
-
     _onTitleOptionChange(): void {
         if (this._titleComp) {
             this._titleComp.setData('content', this._buildTitleContent());
@@ -242,20 +190,8 @@ class HeaderComponent extends ItemGroupStaticComponent {
         }
     }
 
-    _onActionClsOptionChange(): void {
-        this._refreshFixedElements();
-    }
-
-    _onActionColorOptionChange(): void {
-        if (this._actionComp) {
-            this._actionComp.setData('color', this.getData('actionColor'));
-        }
-    }
-
     onBeforeDispose(): void {
-        this._iconComp?.dispose();
         this._titleComp?.dispose();
-        this._actionComp?.dispose();
         for (const s of this._leftSpacers) s.dispose();
         for (const s of this._rightSpacers) s.dispose();
         this._leftSpacers = [];
