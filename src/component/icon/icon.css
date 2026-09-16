@@ -27,13 +27,14 @@
 /* 可点击图标 */
 .q-icon--clickable {
     cursor: pointer;
-    transition: color var(--q-transition-fast);
+    border-radius: var(--q-radius-sm, 4px);
+    transition: background-color var(--q-transition-fast);
 }
 
 .q-icon--clickable:hover {
-    color: var(--q-color-primary);
+    background-color: var(--q-color-hover, rgba(0, 0, 0, 0.06));
 }
 
 .q-icon--clickable:active {
-    opacity: 0.7;
+    background-color: var(--q-color-active, rgba(0, 0, 0, 0.12));
 }

@@ -28,7 +28,7 @@
     flex-shrink: 0;
 }
 
-.q-header .q-icon-wrap:not([class*="q-icon--color"]):not(.q-icon--clickable) {
+.q-header .q-icon-wrap:not([class*="q-icon--color"]) {
     color: var(--q-color-text-secondary);
 }
 
