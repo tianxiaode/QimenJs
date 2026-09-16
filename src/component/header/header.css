@@ -25,6 +25,7 @@
     min-height: auto;
     padding: 0;
     line-height: 1.2;
+    color: var(--q-color-text-secondary);
     flex-shrink: 0;
 }
 
