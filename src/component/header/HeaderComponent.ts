@@ -1,65 +1,291 @@
-import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@/component-core';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { IconComponent } from '../icon/IconComponent';
+import { HtmlComponent } from '../html/HtmlComponent';
+import { SpacerComponent } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { HEADER_TPL } from './header-tpl';
 import './header.css';
+
+const ICON_ORDER = 0;
+const LEFT_SPACER_ORDER = 9500;
+const TITLE_ORDER = 10000;
+const RIGHT_SPACER_ORDER = 10500;
+const ACTION_ORDER = 20000;
 
 const HeaderComponentDefs: Definitions = {
     options: {
-        title: null,
         iconCls: null,
+        iconColor: null,
+        title: null,
         subtitle: null,
-        toolsLeft: null,
-        toolsRight: null,
+        titleCls: null,
+        titleStyle: null,
         actionCls: null,
+        actionColor: null,
+    },
+    fields: {
+        _iconComp: undefined,
+        _titleComp: undefined,
+        _actionComp: undefined,
+        _leftSpacers: [],
+        _rightSpacers: [],
     },
 } as const;
 
-class HeaderComponent extends Component {
+class HeaderComponent extends ItemGroupStaticComponent {
     static type = 'header';
 
-    get tpl(): TemplateDecl {
-        return HEADER_TPL;
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.addCls('q-header');
+        this._initFixedElements();
+        this._rebalanceSpacers();
     }
 
-    _onTitleOptionChange(value: string): void {
-        this.setNodeText(value, 'title');
+    _initFixedElements(): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+
+        const iconCls = this.getData('iconCls');
+        if (iconCls) {
+            this._iconComp = new IconComponent({
+                iconCls,
+                color: this.getData('iconColor'),
+            });
+            this._iconComp.addCls('q-header__icon');
+            this._iconComp.el.style.order = String(ICON_ORDER);
+            container.appendChild(this._iconComp.el);
+        }
+
+        const title = this.getData('title');
+        if (title) {
+            this._titleComp = new HtmlComponent({ content: this._buildTitleContent() });
+            this._titleComp.addCls('q-header__title');
+            const titleCls = this.getData('titleCls');
+            if (titleCls) this._titleComp.addCls(titleCls);
+            const titleStyle = this.getData('titleStyle');
+            if (titleStyle) this._titleComp.setStyles(titleStyle);
+            this._titleComp.el.style.order = String(TITLE_ORDER);
+            container.appendChild(this._titleComp.el);
+        }
+
+        const actionCls = this.getData('actionCls');
+        if (actionCls) {
+            this._actionComp = new IconComponent({
+                iconCls: actionCls,
+                color: this.getData('actionColor'),
+            });
+            this._actionComp.addCls('q-header__action');
+            this._actionComp.el.style.order = String(ACTION_ORDER);
+            container.appendChild(this._actionComp.el);
+        }
+    }
+
+    _buildTitleContent(): string {
+        const title = this.getData('title') ?? '';
+        const subtitle = this.getData('subtitle');
+        if (subtitle) {
+            return `${title} <span class="q-header__subtitle">${subtitle}</span>`;
+        }
+        return title;
+    }
+
+    _rebalanceSpacers(): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+
+        for (const s of this._leftSpacers) s.dispose();
+        for (const s of this._rightSpacers) s.dispose();
+        this._leftSpacers = [];
+        this._rightSpacers = [];
+
+        const nL = (this._iconComp ? 1 : 0) + this._countLeftItems();
+        const nR = this._countRightItems() + (this._actionComp ? 1 : 0);
+        const diff = Math.abs(nL - nR);
+        if (diff === 0) return;
+
+        const spacerWidth = 'var(--q-header-tool-w, 24px)';
+        if (nL > nR) {
+            for (let i = 0; i < diff; i++) {
+                const spacer = new SpacerComponent({ width: spacerWidth });
+                spacer.el.style.order = String(RIGHT_SPACER_ORDER);
+                container.appendChild(spacer.el);
+                this._rightSpacers.push(spacer);
+            }
+        } else {
+            for (let i = 0; i < diff; i++) {
+                const spacer = new SpacerComponent({ width: spacerWidth });
+                spacer.el.style.order = String(LEFT_SPACER_ORDER);
+                container.appendChild(spacer.el);
+                this._leftSpacers.push(spacer);
+            }
+        }
+    }
+
+    _countLeftItems(): number {
+        const items = this.items;
+        if (!Array.isArray(items)) return 0;
+        return items.filter((item: any) => (item.order ?? 0) < TITLE_ORDER).length;
+    }
+
+    _countRightItems(): number {
+        const items = this.items;
+        if (!Array.isArray(items)) return 0;
+        return items.filter((item: any) => (item.order ?? 0) > TITLE_ORDER).length;
+    }
+
+    _createItem(data: Record<string, any>): any {
+        const component = super._createItem(data);
+        if (component) {
+            const order = data.order ?? 0;
+            component.order = order;
+            component.el.style.order = String(order);
+        }
+        return component;
+    }
+
+    _reorderDOM(): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const component of items) {
+            component.el.style.order = String(component.order ?? 0);
+            container.appendChild(component.el);
+        }
+    }
+
+    add(data: Record<string, any>): any {
+        const result = super.add(data);
+        this._rebalanceSpacers();
+        return result;
+    }
+
+    insert(index: number, data: Record<string, any>): any {
+        const result = super.insert(index, data);
+        this._rebalanceSpacers();
+        return result;
+    }
+
+    removeAt(index: number): any {
+        const result = super.removeAt(index);
+        this._rebalanceSpacers();
+        return result;
+    }
+
+    clear(): void {
+        super.clear();
+        this._rebalanceSpacers();
+    }
+
+    setItems(datas: Record<string, any>[]): void {
+        super.setItems(datas);
+        this._rebalanceSpacers();
     }
 
     _onIconClsOptionChange(value: string, old: string): void {
-        this.setNodeHidden(!!value, 'icon');
-        if (value) this.addCls(value, 'icon');
-        if (old) this.removeCls(old, 'icon');
-    }
-
-    _onSubtitleOptionChange(value: string): void {
-        if (value) {
-            this.setNodeHidden(false, 'subtitle');
-            const el = this.getNodeEl('subtitle');
-            if (el) el.textContent = value;
+        if (!this._iconComp && value) {
+            this._createIcon();
+            return;
+        }
+        if (this._iconComp && !value) {
+            this._iconComp.dispose();
+            this._iconComp = undefined;
+            this._rebalanceSpacers();
+            return;
+        }
+        if (this._iconComp) {
+            this._iconComp.setData('iconCls', value);
         }
     }
 
-    _onToolsLeftOptionChange(value: Record<string, any>): void {
-        if (value) {
-            this.setNodeHidden(false, 'toolsLeft');
-            const comp = this.getComponent('toolsLeft');
-            if (comp) comp._initItemGroupComponent(value);
+    _onIconColorOptionChange(value: string): void {
+        if (this._iconComp) {
+            this._iconComp.setData('color', value);
         }
     }
 
-    _onToolsRightOptionChange(value: Record<string, any>): void {
-        if (value) {
-            this.setNodeHidden(false, 'toolsRight');
-            const comp = this.getComponent('toolsRight');
-            if (comp) comp._initItemGroupComponent(value);
+    _onTitleOptionChange(): void {
+        if (this._titleComp) {
+            this._titleComp.setData('content', this._buildTitleContent());
+        }
+    }
+
+    _onSubtitleOptionChange(): void {
+        if (this._titleComp) {
+            this._titleComp.setData('content', this._buildTitleContent());
+        }
+    }
+
+    _onTitleClsOptionChange(value: string, old: string): void {
+        if (this._titleComp) {
+            if (old) this._titleComp.removeCls(old);
+            if (value) this._titleComp.addCls(value);
+        }
+    }
+
+    _onTitleStyleOptionChange(value: Record<string, string>): void {
+        if (this._titleComp) {
+            this._titleComp.setStyles(value);
         }
     }
 
     _onActionClsOptionChange(value: string, old: string): void {
-        this.setNodeHidden(!value, 'action');
-        if (old) this.removeCls(old, 'action');
-        if (value) this.addCls(value, 'action');
+        if (!this._actionComp && value) {
+            this._createAction();
+            return;
+        }
+        if (this._actionComp && !value) {
+            this._actionComp.dispose();
+            this._actionComp = undefined;
+            this._rebalanceSpacers();
+            return;
+        }
+        if (this._actionComp) {
+            this._actionComp.setData('iconCls', value);
+        }
+    }
+
+    _onActionColorOptionChange(value: string): void {
+        if (this._actionComp) {
+            this._actionComp.setData('color', value);
+        }
+    }
+
+    _createIcon(): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+        this._iconComp = new IconComponent({
+            iconCls: this.getData('iconCls'),
+            color: this.getData('iconColor'),
+        });
+        this._iconComp.addCls('q-header__icon');
+        this._iconComp.el.style.order = String(ICON_ORDER);
+        container.appendChild(this._iconComp.el);
+        this._rebalanceSpacers();
+    }
+
+    _createAction(): void {
+        const container = this.getNodeEl('itemContainer');
+        if (!container) return;
+        this._actionComp = new IconComponent({
+            iconCls: this.getData('actionCls'),
+            color: this.getData('actionColor'),
+        });
+        this._actionComp.addCls('q-header__action');
+        this._actionComp.el.style.order = String(ACTION_ORDER);
+        container.appendChild(this._actionComp.el);
+        this._rebalanceSpacers();
+    }
+
+    onBeforeDispose(): void {
+        this._iconComp?.dispose();
+        this._titleComp?.dispose();
+        this._actionComp?.dispose();
+        for (const s of this._leftSpacers) s.dispose();
+        for (const s of this._rightSpacers) s.dispose();
+        this._leftSpacers = [];
+        this._rightSpacers = [];
+        super.onBeforeDispose();
     }
 }
 
