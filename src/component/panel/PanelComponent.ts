@@ -1,48 +1,21 @@
-/**
- * PanelComponent 面板组件
- *
- * 通用内容容器，header 内联化（toolsLeft + title + toolsRight + expandAction + closeAction），
- * 不再依赖 HeaderComponent。
- *
- * 模板节点：
- * - toolsLeft     — 左侧工具区（ItemGroupPooledComponent，默认隐藏）
- * - title         — 标题
- * - toolsRight    — 右侧工具区（ItemGroupPooledComponent，默认隐藏）
- * - expandAction  — 折叠/展开按钮（默认隐藏，CSS ::before 内容）
- * - closeAction   — 关闭按钮（默认隐藏，CSS ::before 内容）
- * - body          — 内容区
- *
- * @example
- * ```ts
- * new PanelComponent({ title: '数据面板' })
- * new PanelComponent({ title: '面板', expandable: true, closable: true })
- * new PanelComponent({ title: '工具面板', toolsLeft: { items: [...] } })
- * ```
- */
-
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
+import { IconComponent } from '../icon/IconComponent';
 import { PANEL_TPL } from './panel-tpl';
 import { Definitions } from '@/composable';
 import './panel.css';
 
-/** 工具组配置 */
-export interface ToolGroupConfig {
-    items: Record<string, any>[];
-    itemType?: string;
-    cls?: string;
-    defaultItemOption?: Record<string, any>;
-}
+const EXPAND_ORDER = 10600;
+const CLOSE_ORDER = 10700;
 
 const PanelComponentDefs: Definitions = {
     options: {
         title: null,
+        header: null,
         expandable: false,
         closable: false,
         resizable: false,
-        toolsLeft: null,
-        toolsRight: null,
     },
 } as const;
 
@@ -54,45 +27,67 @@ class PanelComponent extends Component {
 
     domEvents?: DomEventsMap | undefined = {
         click: [
-            { path: 'expandAction', handler: true },
-            { path: 'closeAction', handler: true },
+            { path: 'header.[items]', handler: true, emits: ['[action]'] },
         ],
     };
 
-    _onTitleOptionChange(value: string, _old: string): void {
-        this.setNodeText(value, 'title');
-        this.setNodeHidden(!value, 'title');
+    _onTitleOptionChange(value: string): void {
+        const headerComp = this.getComponent('header') as any;
+        if (headerComp) headerComp.title = value;
+    }
+
+    _onHeaderOptionChange(value: Record<string, any>): void {
+        const headerComp = this.getComponent('header') as any;
+        if (!headerComp) return;
+        if (value) headerComp.update(value);
     }
 
     _onExpandableOptionChange(value: boolean): void {
-        this.setNodeHidden(!value, 'expandAction');
+        const headerComp = this.getComponent('header') as any;
+        if (!headerComp) return;
+        if (value) {
+            headerComp.add({
+                type: IconComponent,
+                iconCls: 'q-icon-down',
+                action: 'expand',
+                order: EXPAND_ORDER,
+                clickable: true,
+            });
+        } else {
+            const items = headerComp.items ?? [];
+            for (let i = items.length - 1; i >= 0; i--) {
+                if (items[i]?.action === 'expand') {
+                    headerComp.removeAt(i);
+                    break;
+                }
+            }
+        }
     }
 
     _onClosableOptionChange(value: boolean): void {
-        this.setNodeHidden(!value, 'closeAction');
+        const headerComp = this.getComponent('header') as any;
+        if (!headerComp) return;
+        if (value) {
+            headerComp.add({
+                type: IconComponent,
+                iconCls: 'q-icon-close',
+                action: 'close',
+                order: CLOSE_ORDER,
+                clickable: true,
+            });
+        } else {
+            const items = headerComp.items ?? [];
+            for (let i = items.length - 1; i >= 0; i--) {
+                if (items[i]?.action === 'close') {
+                    headerComp.removeAt(i);
+                    break;
+                }
+            }
+        }
     }
 
     _onResizableOptionChange(value: boolean): void {
         if (value) this.initResize({ edges: ['e', 's', 'se'] });
-    }
-
-    _onToolsLeftOptionChange(value: ToolGroupConfig | null): void {
-        this._initTools('toolsLeft', value);
-    }
-
-    _onToolsRightOptionChange(value: ToolGroupConfig | null): void {
-        this._initTools('toolsRight', value);
-    }
-
-    _initTools(nodeName: string, config: ToolGroupConfig | null): void {
-        this.setNodeHidden(!config, nodeName);
-        if (!config) return;
-        const el = this.getNodeEl(nodeName);
-        if (el) el.classList.add('q-panel__tools');
-        const comp = this.getComponent(nodeName);
-        if (comp && typeof (comp as any)._initItemGroupComponent === 'function') {
-            (comp as any)._initItemGroupComponent(config);
-        }
     }
 
     onExpandActionClick(): void {
@@ -112,8 +107,17 @@ class PanelComponent extends Component {
     }
 
     onAfterInit(): void {
-        this._initTools('toolsLeft', this.toolsLeft ?? null);
-        this._initTools('toolsRight', this.toolsRight ?? null);
+        const headerComp = this.getComponent('header') as any;
+        if (headerComp) {
+            if (this.header) headerComp.update(this.header);
+            if (this.title) headerComp.title = this.title;
+        }
+        if (this.expandable) {
+            this._onExpandableOptionChange(true);
+        }
+        if (this.closable) {
+            this._onClosableOptionChange(true);
+        }
     }
 }
 
@@ -121,5 +125,4 @@ PanelComponent.define(PanelComponentDefs);
 PanelComponent.use(ResizeAbility);
 
 export { PanelComponent };
-/** 面板实例类型 */
 export type PanelComponentInstance = InstanceType<typeof PanelComponent>;

@@ -2,7 +2,7 @@ import type { DemoConfig } from './types';
 
 export const PANEL_DEMO: DemoConfig = {
     title: 'Panel',
-    description: '面板组件，支持 title + expandable/closable/resizable + toolsLeft/toolsRight',
+    description: '面板组件，支持 title + expandable/closable/resizable + header 高级配置',
     sections: [
         {
             label: '基础面板',
@@ -14,6 +14,21 @@ export const PANEL_DEMO: DemoConfig = {
                     {
                         type: 'panel',
                         options: { title: '数据面板' },
+                        children: [{ tag: 'p', name: 'body', options: { text: '面板内容区域' } }],
+                    },
+                ],
+            },
+        },
+        {
+            label: '带图标 (header 配置)',
+            code: `{ type: 'panel', options: { title: '数据面板', header: { iconCls: 'q-icon-dashboard' } } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'panel',
+                        options: { title: '数据面板', header: { iconCls: 'q-icon-dashboard' } },
                         children: [{ tag: 'p', name: 'body', options: { text: '面板内容区域' } }],
                     },
                 ],
@@ -66,14 +81,14 @@ export const PANEL_DEMO: DemoConfig = {
         },
         {
             label: '完整面板',
-            code: `{ type: 'panel', options: { title: '完整面板', expandable: true, closable: true, resizable: true } }`,
+            code: `{ type: 'panel', options: { title: '完整面板', header: { iconCls: 'q-icon-dashboard' }, expandable: true, closable: true, resizable: true } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
                     {
                         type: 'panel',
-                        options: { title: '完整面板', expandable: true, closable: true, resizable: true },
+                        options: { title: '完整面板', header: { iconCls: 'q-icon-dashboard' }, expandable: true, closable: true, resizable: true },
                         children: [{ tag: 'p', name: 'body', options: { text: '同时支持折叠、关闭和缩放的面板' } }],
                     },
                 ],

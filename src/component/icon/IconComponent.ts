@@ -29,6 +29,7 @@ const IconComponentDefs: Definitions = {
         iconCls: null,
         size: 'md',
         color: null,
+        clickable: false,
     },
 } as const;
 
@@ -41,6 +42,10 @@ class IconComponent extends Component {
     _onIconClsOptionChange(value: string, old: string): void {
         if (value) this.addCls(value, 'icon');
         if (old) this.removeCls(old, 'icon');
+    }
+
+    _onClickableOptionChange(value: boolean): void {
+        this.toggleCls('q-icon--clickable', value);
     }
 }
 
