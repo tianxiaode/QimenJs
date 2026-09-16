@@ -178,8 +178,8 @@ export const HEADER_DEMO: DemoConfig = {
             },
         },
         {
-            label: '左右数量相等 → 无补位',
-            code: `{ type: 'header', options: { title: '自动居中', iconCls: 'fa fa-home', items: [{ iconCls: 'fa fa-search', order: 100 }, { iconCls: 'fa fa-filter', order: 10600 }] } }`,
+            label: '左右数量相等 (icon+1 left = 1 right + action)',
+            code: `{ type: 'header', options: { title: '自动居中', iconCls: 'fa fa-home', actionCls: 'fa fa-cog', items: [{ iconCls: 'fa fa-search', order: 100 }, { iconCls: 'fa fa-filter', order: 10600 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -189,6 +189,7 @@ export const HEADER_DEMO: DemoConfig = {
                         options: {
                             title: '自动居中',
                             iconCls: 'fa fa-home',
+                            actionCls: 'fa fa-cog',
                             items: [
                                 { iconCls: 'fa fa-search', order: 100 },
                                 { iconCls: 'fa fa-filter', order: 10600 },

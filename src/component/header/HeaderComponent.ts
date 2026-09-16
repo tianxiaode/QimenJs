@@ -36,7 +36,17 @@ class HeaderComponent extends ItemGroupStaticComponent {
     defaultItemType = 'icon';
 
     get earlyOptionKeys(): string[] {
-        return [...super.earlyOptionKeys, 'iconCls', 'iconColor', 'title', 'subtitle', 'titleCls', 'titleStyle', 'actionCls', 'actionColor'];
+        return [
+            ...super.earlyOptionKeys,
+            'iconCls',
+            'iconColor',
+            'title',
+            'subtitle',
+            'titleCls',
+            'titleStyle',
+            'actionCls',
+            'actionColor',
+        ];
     }
 
     onAfterInit(): void {

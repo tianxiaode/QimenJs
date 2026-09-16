@@ -1,5 +1,5 @@
 .q-header {
-    --q-header-tool-w: 24px;
+    --q-header-tool-w: 36px;
     padding: 8px 12px;
     min-height: 40px;
     box-sizing: border-box;
@@ -9,7 +9,7 @@
 .q-header .q-itemgroup__items {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     flex: 1;
 }
 
@@ -19,7 +19,10 @@
     display: none !important;
 }
 
-.q-header__icon {
+.q-header .q-icon-wrap {
+    width: var(--q-header-tool-w);
+    min-height: auto;
+    padding: 0;
     flex-shrink: 0;
 }
 
