@@ -45,38 +45,44 @@ class HeaderComponent extends ItemGroupStaticComponent {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
-        const iconCls = this.getData('iconCls');
-        if (iconCls) {
-            this._iconComp = new IconComponent({
-                iconCls,
-                color: this.getData('iconColor'),
-            });
-            this._iconComp.addCls('q-header__icon');
-            this._iconComp.el.style.order = String(ICON_ORDER);
-            container.appendChild(this._iconComp.el);
+        if (!this._iconComp) {
+            const iconCls = this.getData('iconCls');
+            if (iconCls) {
+                this._iconComp = new IconComponent({
+                    iconCls,
+                    color: this.getData('iconColor'),
+                });
+                this._iconComp.addCls('q-header__icon');
+                this._iconComp.el.style.order = String(ICON_ORDER);
+                container.appendChild(this._iconComp.el);
+            }
         }
 
-        const title = this.getData('title');
-        if (title) {
-            this._titleComp = new HtmlComponent({ content: this._buildTitleContent() });
-            this._titleComp.addCls('q-header__title');
-            const titleCls = this.getData('titleCls');
-            if (titleCls) this._titleComp.addCls(titleCls);
-            const titleStyle = this.getData('titleStyle');
-            if (titleStyle) this._titleComp.setStyles(titleStyle);
-            this._titleComp.el.style.order = String(TITLE_ORDER);
-            container.appendChild(this._titleComp.el);
+        if (!this._titleComp) {
+            const title = this.getData('title');
+            if (title) {
+                this._titleComp = new HtmlComponent({ content: this._buildTitleContent() });
+                this._titleComp.addCls('q-header__title');
+                const titleCls = this.getData('titleCls');
+                if (titleCls) this._titleComp.addCls(titleCls);
+                const titleStyle = this.getData('titleStyle');
+                if (titleStyle) this._titleComp.setStyles(titleStyle);
+                this._titleComp.el.style.order = String(TITLE_ORDER);
+                container.appendChild(this._titleComp.el);
+            }
         }
 
-        const actionCls = this.getData('actionCls');
-        if (actionCls) {
-            this._actionComp = new IconComponent({
-                iconCls: actionCls,
-                color: this.getData('actionColor'),
-            });
-            this._actionComp.addCls('q-header__action');
-            this._actionComp.el.style.order = String(ACTION_ORDER);
-            container.appendChild(this._actionComp.el);
+        if (!this._actionComp) {
+            const actionCls = this.getData('actionCls');
+            if (actionCls) {
+                this._actionComp = new IconComponent({
+                    iconCls: actionCls,
+                    color: this.getData('actionColor'),
+                });
+                this._actionComp.addCls('q-header__action');
+                this._actionComp.el.style.order = String(ACTION_ORDER);
+                container.appendChild(this._actionComp.el);
+            }
         }
     }
 
@@ -182,7 +188,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
         this._rebalanceSpacers();
     }
 
-    _onIconClsOptionChange(value: string, old: string): void {
+    _onIconClsOptionChange(value: string, _old: string): void {
         if (!this._iconComp && value) {
             this._createIcon();
             return;
@@ -229,7 +235,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
         }
     }
 
-    _onActionClsOptionChange(value: string, old: string): void {
+    _onActionClsOptionChange(value: string, _old: string): void {
         if (!this._actionComp && value) {
             this._createAction();
             return;
