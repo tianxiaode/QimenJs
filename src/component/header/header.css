@@ -32,8 +32,11 @@
     color: var(--q-color-text-secondary);
 }
 
-.q-header .q-icon-wrap .q-icon {
-    margin-top: 1px;
+.q-header .q-icon-wrap.q-icon--clickable {
+    min-height: var(--q-header-tool-w);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .q-header__title {
