@@ -48,7 +48,7 @@ class PanelComponent extends Component {
         if (value) {
             headerComp.add({
                 type: IconComponent,
-                iconCls: 'q-icon-down',
+                iconCls: 'fa fa-chevron-down',
                 action: 'expand',
                 order: EXPAND_ORDER,
                 clickable: true,
@@ -70,7 +70,7 @@ class PanelComponent extends Component {
         if (value) {
             headerComp.add({
                 type: IconComponent,
-                iconCls: 'q-icon-close',
+                iconCls: 'fa fa-close',
                 action: 'close',
                 order: CLOSE_ORDER,
                 clickable: true,

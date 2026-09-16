@@ -16,7 +16,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '带图标 (left item, order=0)',
-            code: `{ type: 'header', options: { title: '通知中心', items: [{ type: 'icon', iconCls: 'q-icon-notification', order: 0 }] } }`,
+            code: `{ type: 'header', options: { title: '通知中心', items: [{ type: 'icon', iconCls: 'fa fa-bell', order: 0 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -25,7 +25,7 @@ export const HEADER_DEMO: DemoConfig = {
                         type: 'header',
                         options: {
                             title: '通知中心',
-                            items: [{ type: 'icon', iconCls: 'q-icon-notification', order: 0 }],
+                            items: [{ type: 'icon', iconCls: 'fa fa-bell', order: 0 }],
                         },
                     },
                 ],
@@ -44,7 +44,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '带操作按钮 (right item, order=20000)',
-            code: `{ type: 'header', options: { title: '用户管理', items: [{ type: 'icon', iconCls: 'q-icon-add', order: 20000, clickable: true }] } }`,
+            code: `{ type: 'header', options: { title: '用户管理', items: [{ type: 'icon', iconCls: 'fa fa-plus', order: 20000, clickable: true }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -53,7 +53,7 @@ export const HEADER_DEMO: DemoConfig = {
                         type: 'header',
                         options: {
                             title: '用户管理',
-                            items: [{ type: 'icon', iconCls: 'q-icon-add', order: 20000, clickable: true }],
+                            items: [{ type: 'icon', iconCls: 'fa fa-plus', order: 20000, clickable: true }],
                         },
                     },
                 ],
@@ -61,7 +61,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '完整结构 (icon + title + subtitle + action)',
-            code: `{ type: 'header', options: { title: '项目设置', subtitle: '配置管理', items: [{ type: 'icon', iconCls: 'q-icon-settings', order: 0 }, { type: 'icon', iconCls: 'q-icon-save', order: 20000, clickable: true }] } }`,
+            code: `{ type: 'header', options: { title: '项目设置', subtitle: '配置管理', items: [{ type: 'icon', iconCls: 'fa fa-cog', order: 0 }, { type: 'icon', iconCls: 'fa fa-floppy-o', order: 20000, clickable: true }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -72,8 +72,8 @@ export const HEADER_DEMO: DemoConfig = {
                             title: '项目设置',
                             subtitle: '配置管理',
                             items: [
-                                { type: 'icon', iconCls: 'q-icon-settings', order: 0 },
-                                { type: 'icon', iconCls: 'q-icon-save', order: 20000, clickable: true },
+                                { type: 'icon', iconCls: 'fa fa-cog', order: 0 },
+                                { type: 'icon', iconCls: 'fa fa-floppy-o', order: 20000, clickable: true },
                             ],
                         },
                     },
@@ -82,7 +82,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '带左侧 tools (order=100)',
-            code: `{ type: 'header', options: { title: '居中标题', items: [{ type: 'icon', iconCls: 'q-icon-search', order: 100 }] } }`,
+            code: `{ type: 'header', options: { title: '居中标题', items: [{ type: 'icon', iconCls: 'fa fa-search', order: 100 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -91,7 +91,7 @@ export const HEADER_DEMO: DemoConfig = {
                         type: 'header',
                         options: {
                             title: '居中标题',
-                            items: [{ type: 'icon', iconCls: 'q-icon-search', order: 100 }],
+                            items: [{ type: 'icon', iconCls: 'fa fa-search', order: 100 }],
                         },
                     },
                 ],
@@ -99,7 +99,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '带右侧 tools (order=10600)',
-            code: `{ type: 'header', options: { title: '居中标题', items: [{ type: 'icon', iconCls: 'q-icon-filter', order: 10600 }] } }`,
+            code: `{ type: 'header', options: { title: '居中标题', items: [{ type: 'icon', iconCls: 'fa fa-filter', order: 10600 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -108,7 +108,7 @@ export const HEADER_DEMO: DemoConfig = {
                         type: 'header',
                         options: {
                             title: '居中标题',
-                            items: [{ type: 'icon', iconCls: 'q-icon-filter', order: 10600 }],
+                            items: [{ type: 'icon', iconCls: 'fa fa-filter', order: 10600 }],
                         },
                     },
                 ],
@@ -116,7 +116,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '右侧多 → 左侧补位 (nR>nL)',
-            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'q-icon-filter', order: 10600 }, { type: 'icon', iconCls: 'q-icon-more', order: 10700 }] } }`,
+            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'fa fa-filter', order: 10600 }, { type: 'icon', iconCls: 'fa fa-ellipsis-h', order: 10700 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -126,8 +126,8 @@ export const HEADER_DEMO: DemoConfig = {
                         options: {
                             title: '自动居中',
                             items: [
-                                { type: 'icon', iconCls: 'q-icon-filter', order: 10600 },
-                                { type: 'icon', iconCls: 'q-icon-more', order: 10700 },
+                                { type: 'icon', iconCls: 'fa fa-filter', order: 10600 },
+                                { type: 'icon', iconCls: 'fa fa-ellipsis-h', order: 10700 },
                             ],
                         },
                     },
@@ -136,7 +136,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '左侧多 → 右侧补位 (nL>nR)',
-            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'q-icon-home', order: 0 }, { type: 'icon', iconCls: 'q-icon-search', order: 100 }, { type: 'icon', iconCls: 'q-icon-edit', order: 200 }] } }`,
+            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'fa fa-home', order: 0 }, { type: 'icon', iconCls: 'fa fa-search', order: 100 }, { type: 'icon', iconCls: 'fa fa-pencil', order: 200 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -146,9 +146,9 @@ export const HEADER_DEMO: DemoConfig = {
                         options: {
                             title: '自动居中',
                             items: [
-                                { type: 'icon', iconCls: 'q-icon-home', order: 0 },
-                                { type: 'icon', iconCls: 'q-icon-search', order: 100 },
-                                { type: 'icon', iconCls: 'q-icon-edit', order: 200 },
+                                { type: 'icon', iconCls: 'fa fa-home', order: 0 },
+                                { type: 'icon', iconCls: 'fa fa-search', order: 100 },
+                                { type: 'icon', iconCls: 'fa fa-pencil', order: 200 },
                             ],
                         },
                     },
@@ -157,7 +157,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '左右数量相等 (2 left = 2 right)',
-            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'q-icon-home', order: 0 }, { type: 'icon', iconCls: 'q-icon-search', order: 100 }, { type: 'icon', iconCls: 'q-icon-filter', order: 10600 }, { type: 'icon', iconCls: 'q-icon-settings', order: 20000 }] } }`,
+            code: `{ type: 'header', options: { title: '自动居中', items: [{ type: 'icon', iconCls: 'fa fa-home', order: 0 }, { type: 'icon', iconCls: 'fa fa-search', order: 100 }, { type: 'icon', iconCls: 'fa fa-filter', order: 10600 }, { type: 'icon', iconCls: 'fa fa-cog', order: 20000 }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -167,10 +167,10 @@ export const HEADER_DEMO: DemoConfig = {
                         options: {
                             title: '自动居中',
                             items: [
-                                { type: 'icon', iconCls: 'q-icon-home', order: 0 },
-                                { type: 'icon', iconCls: 'q-icon-search', order: 100 },
-                                { type: 'icon', iconCls: 'q-icon-filter', order: 10600 },
-                                { type: 'icon', iconCls: 'q-icon-settings', order: 20000 },
+                                { type: 'icon', iconCls: 'fa fa-home', order: 0 },
+                                { type: 'icon', iconCls: 'fa fa-search', order: 100 },
+                                { type: 'icon', iconCls: 'fa fa-filter', order: 10600 },
+                                { type: 'icon', iconCls: 'fa fa-cog', order: 20000 },
                             ],
                         },
                     },
