@@ -47,7 +47,6 @@ class SpacerComponent extends ComposableBase {
     dispose(): void {
         this.el?.remove();
         (this as any).el = null;
-        super.dispose();
     }
 }
 
