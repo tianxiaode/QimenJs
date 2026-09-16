@@ -24,19 +24,25 @@
     height: auto;
     min-height: auto;
     padding: 0;
+    line-height: 1.2;
     flex-shrink: 0;
+}
+
+.q-header .q-icon-wrap .q-icon {
+    margin-top: 1px;
 }
 
 .q-header__title {
     flex: 1;
     font-size: var(--q-font-size-md);
     font-weight: var(--q-font-weight-semibold);
-    line-height: 1.4;
+    line-height: 1.2;
     color: var(--q-color-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: center;
+    padding-bottom: 1px;
 }
 
 .q-header__subtitle {
