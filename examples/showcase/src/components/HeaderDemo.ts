@@ -53,7 +53,14 @@ export const HEADER_DEMO: DemoConfig = {
                         type: 'header',
                         options: {
                             title: '用户管理',
-                            items: [{ type: 'icon', iconCls: 'fa fa-plus', order: 20000, clickable: true }],
+                            items: [
+                                {
+                                    type: 'icon',
+                                    iconCls: 'fa fa-plus',
+                                    order: 20000,
+                                    clickable: true,
+                                },
+                            ],
                         },
                     },
                 ],
@@ -73,7 +80,12 @@ export const HEADER_DEMO: DemoConfig = {
                             subtitle: '配置管理',
                             items: [
                                 { type: 'icon', iconCls: 'fa fa-cog', order: 0 },
-                                { type: 'icon', iconCls: 'fa fa-floppy-o', order: 20000, clickable: true },
+                                {
+                                    type: 'icon',
+                                    iconCls: 'fa fa-floppy-o',
+                                    order: 20000,
+                                    clickable: true,
+                                },
                             ],
                         },
                     },

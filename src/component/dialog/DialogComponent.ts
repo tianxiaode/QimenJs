@@ -108,7 +108,7 @@ class DialogComponent extends Component {
             if (this.closable) {
                 headerComp.add({
                     type: IconComponent,
-                    iconCls: 'fa fa-close',
+                    iconCls: 'q-close',
                     action: 'close',
                     order: CLOSE_ORDER,
                     clickable: true,
