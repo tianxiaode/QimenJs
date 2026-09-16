@@ -8,10 +8,18 @@ export const HEADER_TPL: TemplateDecl = {
     classes: 'q-header',
     children: [
         { tag: 'i', name: 'icon', classes: 'q-header__icon hidden' },
-        { name: 'toolsLeft', type: ItemGroupPooledComponent, classes: 'q-header__tools q-header__tools--left hidden' },
+        {
+            name: 'toolsLeft',
+            type: ItemGroupPooledComponent,
+            classes: 'q-header__tools q-header__tools--left hidden',
+        },
         { tag: 'div', name: 'title', classes: 'q-header__title' },
         { tag: 'span', name: 'subtitle', classes: 'q-header__subtitle hidden' },
-        { name: 'toolsRight', type: ItemGroupPooledComponent, classes: 'q-header__tools q-header__tools--right hidden' },
+        {
+            name: 'toolsRight',
+            type: ItemGroupPooledComponent,
+            classes: 'q-header__tools q-header__tools--right hidden',
+        },
         { name: 'action', type: ButtonComponent, classes: 'q-header__action hidden' },
     ],
 };

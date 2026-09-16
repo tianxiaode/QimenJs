@@ -93,7 +93,11 @@ class NavbarComponent extends Component {
                         if (mobileMenu === false) return null;
 
                         if (mobileMenu && typeof mobileMenu === 'object') {
-                            return { ...mobileMenu, action: mobileMenu.action ?? action, mobileMenu };
+                            return {
+                                ...mobileMenu,
+                                action: mobileMenu.action ?? action,
+                                mobileMenu,
+                            };
                         }
 
                         if (type === 'toggle') {
@@ -102,7 +106,12 @@ class NavbarComponent extends Component {
                         if (type === 'dropdown') {
                             const subItems = itemPopover?.options?.items;
                             return subItems
-                                ? { text: hint ?? '', icon: iconCls, action, mobileMenu: { items: subItems } }
+                                ? {
+                                      text: hint ?? '',
+                                      icon: iconCls,
+                                      action,
+                                      mobileMenu: { items: subItems },
+                                  }
                                 : { text: hint ?? '', icon: iconCls, action };
                         }
                         if (type === 'href') {

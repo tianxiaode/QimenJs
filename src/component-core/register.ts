@@ -12,6 +12,7 @@ import { Toast } from './imperative';
 import { Msgbox } from './imperative';
 import { LoadingComponent } from './loading';
 import { TooltipComponent } from './tooltip';
+import './spacer';
 
 Component.register();
 Toast.register();

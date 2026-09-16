@@ -156,9 +156,6 @@ export const ComponentDefs: Definitions = {
          * }
          */
         drop: null,
-        /**
-         * 是否为容器 — 控制组件是否可容纳其他组件
-         */
         /** 锚点节点名称 — 模板中箭头/锚点节点的 name，默认 'arrow' */
         anchorNode: 'arrow',
     },

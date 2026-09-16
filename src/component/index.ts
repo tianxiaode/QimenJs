@@ -32,7 +32,6 @@ export { BreadcrumbComponent } from './breadcrumb/BreadcrumbComponent';
 export { DividerComponent } from './divider/DividerComponent';
 export { HeroComponent } from './hero/HeroComponent';
 export { ProgressComponent } from './progress/ProgressComponent';
-export { SpacerComponent } from './spacer/SpacerComponent';
 export * from './tag';
 export * from './html';
 

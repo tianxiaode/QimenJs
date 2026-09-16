@@ -32,9 +32,9 @@ import {
     HtmlComponent,
     IconComponent,
     LabelComponent,
-    SpacerComponent,
     FieldsetComponent,
     HeaderComponent,
+    PanelComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -55,7 +55,7 @@ DividerComponent.register();
 HtmlComponent.register();
 IconComponent.register();
 LabelComponent.register();
-SpacerComponent.register();
 TextComponent.register();
 FieldsetComponent.register();
 HeaderComponent.register();
+PanelComponent.register();

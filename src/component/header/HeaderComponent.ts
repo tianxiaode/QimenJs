@@ -7,11 +7,11 @@ import './header.css';
 const HeaderComponentDefs: Definitions = {
     options: {
         title: null,
-        icon: null,
+        iconCls: null,
         subtitle: null,
         toolsLeft: null,
         toolsRight: null,
-        action: null,
+        actionCls: null,
     },
 } as const;
 
@@ -23,15 +23,13 @@ class HeaderComponent extends Component {
     }
 
     _onTitleOptionChange(value: string): void {
-        this.setNodeText(value, "title");
+        this.setNodeText(value, 'title');
     }
 
-    _onIconOptionChange(value: string): void {
-        if (value) {
-            this.setNodeHidden(false, 'icon');
-            const el = this.getNodeEl('icon');
-            if (el) el.innerHTML = value;
-        }
+    _onIconClsOptionChange(value: string, old: string): void {
+        this.setNodeHidden(!!value, 'icon');
+        if (value) this.addCls(value, 'icon');
+        if (old) this.removeCls(old, 'icon');
     }
 
     _onSubtitleOptionChange(value: string): void {
@@ -58,18 +56,13 @@ class HeaderComponent extends Component {
         }
     }
 
-    _onActionOptionChange(value: Record<string, any>): void {
-        if (value) {
-            this.setNodeHidden(false, 'action');
-            const comp = this.getComponent('action');
-            if (comp && typeof comp.update === 'function') {
-                comp.update(value);
-            }
-        }
+    _onActionClsOptionChange(value: string, old: string): void {
+        this.setNodeHidden(!value, 'action');
+        if (old) this.removeCls(old, 'action');
+        if (value) this.addCls(value, 'action');
     }
 }
 
 HeaderComponent.define(HeaderComponentDefs);
 
 export { HeaderComponent };
-export type HeaderComponentInstance = InstanceType<typeof HeaderComponent>;

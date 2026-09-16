@@ -1,0 +1,5 @@
+/* Spacer 占位符组件样式 */
+.q-spacer {
+    display: block;
+    box-sizing: border-box;
+}

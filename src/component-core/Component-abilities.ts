@@ -9,7 +9,6 @@ import {
 } from '@/system-abilities';
 import {
     AnimationAbility,
-    ArrowAbility,
     AttributeAbility,
     BadgeAbility,
     TooltipAbility,
@@ -56,7 +55,6 @@ export const COMPONENT_ABILITIES = [
     DragAbility,
     DropAbility,
     AnimationAbility,
-    ArrowAbility,
     PermissionAbility,
     EntityAbility,
 
