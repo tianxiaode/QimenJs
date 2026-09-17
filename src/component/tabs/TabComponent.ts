@@ -23,11 +23,11 @@ class TabComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: { path: 'close', handler: '_onCloseClick', emits: ['close'] },
+        click: { path: 'close', handler: '_onCloseClick', emits: ['close'], bridges: ['close'] },
     };
 
     _onLabelOptionChange(value: string): void {
-        this.setNodeText(value, "label");
+        this.setNodeText(value, 'label');
     }
 
     _onIconClsOptionChange(value: string, old: string): void {
