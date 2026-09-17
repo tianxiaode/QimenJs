@@ -55,25 +55,26 @@ class TabBarComponent extends ItemGroupPooledComponent {
     };
 
     _onTabClick(domEvt: any): void {
-        const target = domEvt?.data?.originalEvent?.target as Element;
-        if (!target) return;
-        const found = this.getTargetItem(target);
-        if (!found) return;
-
-        const item = found.component as TabComponent;
-        if (item.disabled) return;
-
-        this.selectAt(found.index);
+        const item = domEvt.targetComponent as TabComponent;
+        if (!item || item.disabled) return;
+        const index = this.indexOf(item);
+        if (index < 0) return;
+        this.selectAt(index);
     }
 
     _onTabClose(domEvt: any): void {
-        const target = domEvt?.data?.originalEvent?.target as Element;
-        if (!target) return;
-        const found = this.getTargetItem(target);
-        if (!found) return;
-
-        const item = found.component as TabComponent;
-        item.dispose();
+        const closeEl = domEvt.targetComponent?.el as Element | undefined;
+        if (!closeEl) return;
+        const tabEl = closeEl.closest('.q-tab');
+        if (!tabEl) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i]?.el === tabEl) {
+                items[i].dispose();
+                return;
+            }
+        }
     }
 
     onAfterInit(): void {
