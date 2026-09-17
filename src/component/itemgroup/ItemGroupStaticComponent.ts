@@ -18,6 +18,9 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     add(data: Record<string, any>): any {
         const component = this._createItem(data);
         if (component) {
+            if (!Array.isArray(this.items)) {
+                this.setData('items', [], true);
+            }
             this.items.push(component);
             this.sort();
             this._emitItemAdd(this.items.length - 1, component);
@@ -29,6 +32,9 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
     insert(index: number, data: Record<string, any>): any {
         const component = this._createItem(data);
         if (!component) return null;
+        if (!Array.isArray(this.items)) {
+            this.setData('items', [], true);
+        }
         const clampedIndex = Math.min(Math.max(0, index), this.items.length);
 
         if (this.items.length === 0) {
