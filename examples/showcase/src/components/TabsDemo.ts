@@ -2,6 +2,78 @@ import type { DemoConfig } from './types';
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import { TabsComponent, type TabPaneItem } from '@/component/tabs/TabsComponent';
 
+const DYNAMIC_TABS_TPL: TemplateDecl = {
+    tag: 'div',
+    classes: 'q-demo__row',
+    style: { flexDirection: 'column', gap: '8px' },
+    children: [
+        {
+            tag: 'div',
+            style: { display: 'flex', gap: '8px' },
+            children: [
+                {
+                    tag: 'button',
+                    name: 'addBtn',
+                    classes: 'q-demo__btn',
+                    options: { text: '+ 添加标签' },
+                },
+                {
+                    tag: 'button',
+                    name: 'removeBtn',
+                    classes: 'q-demo__btn',
+                    options: { text: '- 移除当前' },
+                },
+            ],
+        },
+        {
+            type: 'tabs',
+            name: 'tabs',
+            options: {
+                selectedIndex: 0,
+                items: [
+                    { label: 'Tab 1', content: '<p>标签 1 内容</p>' },
+                    { label: 'Tab 2', content: '<p>标签 2 内容</p>' },
+                ],
+            },
+        },
+    ],
+};
+
+class DynamicTabsDemo extends Component {
+    static type = 'dynamic-tabs-demo';
+    get tpl(): TemplateDecl {
+        return DYNAMIC_TABS_TPL;
+    }
+
+    private _tabCounter: number = 3;
+    private _tabs: TabsComponent | null = null;
+
+    domEvents = {
+        click: [
+            { path: 'addBtn', handler: '_onAddClick' },
+            { path: 'removeBtn', handler: '_onRemoveClick' },
+        ],
+    };
+
+    onAfterInit(): void {
+        this._tabs = this.getComponent('tabs') as TabsComponent;
+    }
+
+    _onAddClick(): void {
+        if (!this._tabs) return;
+        const label = `Tab ${this._tabCounter++}`;
+        this._tabs.addTab({ label, content: `<p>${label} 内容</p>` });
+    }
+
+    _onRemoveClick(): void {
+        if (!this._tabs) return;
+        const idx = this._tabs.selectedIndex;
+        if (this._tabs.items.length > 1) {
+            this._tabs.removeTab(idx);
+        }
+    }
+}
+
 export const TABS_DEMO: DemoConfig = {
     title: 'Tabs',
     description:
@@ -230,75 +302,3 @@ tabs.removeTab(0)`,
         },
     ],
 };
-
-const DYNAMIC_TABS_TPL: TemplateDecl = {
-    tag: 'div',
-    classes: 'q-demo__row',
-    style: { flexDirection: 'column', gap: '8px' },
-    children: [
-        {
-            tag: 'div',
-            style: { display: 'flex', gap: '8px' },
-            children: [
-                {
-                    tag: 'button',
-                    name: 'addBtn',
-                    classes: 'q-demo__btn',
-                    options: { text: '+ 添加标签' },
-                },
-                {
-                    tag: 'button',
-                    name: 'removeBtn',
-                    classes: 'q-demo__btn',
-                    options: { text: '- 移除当前' },
-                },
-            ],
-        },
-        {
-            type: 'tabs',
-            name: 'tabs',
-            options: {
-                selectedIndex: 0,
-                items: [
-                    { label: 'Tab 1', content: '<p>标签 1 内容</p>' },
-                    { label: 'Tab 2', content: '<p>标签 2 内容</p>' },
-                ],
-            },
-        },
-    ],
-};
-
-class DynamicTabsDemo extends Component {
-    static type = 'dynamic-tabs-demo';
-    get tpl(): TemplateDecl {
-        return DYNAMIC_TABS_TPL;
-    }
-
-    private _tabCounter: number = 3;
-    private _tabs: TabsComponent | null = null;
-
-    domEvents = {
-        click: [
-            { path: 'addBtn', handler: '_onAddClick' },
-            { path: 'removeBtn', handler: '_onRemoveClick' },
-        ],
-    };
-
-    onAfterInit(): void {
-        this._tabs = this.getComponent('tabs') as TabsComponent;
-    }
-
-    _onAddClick(): void {
-        if (!this._tabs) return;
-        const label = `Tab ${this._tabCounter++}`;
-        this._tabs.addTab({ label, content: `<p>${label} 内容</p>` });
-    }
-
-    _onRemoveClick(): void {
-        if (!this._tabs) return;
-        const idx = this._tabs.selectedIndex;
-        if (this._tabs.items.length > 1) {
-            this._tabs.removeTab(idx);
-        }
-    }
-}
