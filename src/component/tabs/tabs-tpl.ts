@@ -12,7 +12,7 @@ export const TABS_TPL: TemplateDecl = {
     tag: 'div',
     classes: 'q-tabs',
     children: [
-        { tag: 'div', name: 'tabBar', classes: 'q-tabs__bar' },
+        { tag: 'div', name: 'tabBar', classes: 'q-tabs__bar', type: 'tab-bar' },
         { tag: 'div', name: 'content', classes: 'q-tabs__content' },
     ],
 };

@@ -25,7 +25,6 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import { ListensEngine } from '@/component-core/engine';
 import type { ListenItem } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
@@ -67,13 +66,22 @@ class TabsComponent extends Component {
 
     onAfterInit(): void {
         this._applyPosition();
-        this._createTabBar();
 
-        if (this.nodeMap?.tabBar) {
-            this.nodeMap.tabBar.component = this._tabBar;
-            this.nodeMap.tabBar.el = this._tabBar?.el;
+        // TabBar 由模板 createChildren 自动创建，获取实例并传入动态数据
+        const tabBar = this.getComponent('tabBar') as InstanceType<typeof TabBarComponent> | undefined;
+        this._tabBar = tabBar ?? null;
+        if (this._tabBar) {
+            this._tabBar.update({
+                items: this.items.map((item: TabPaneItem) => ({
+                    label: item.label,
+                    iconCls: item.iconCls,
+                    closable: item.closable,
+                    disabled: item.disabled,
+                })),
+                selectedIndex: this.selectedIndex,
+                position: this.position,
+            });
         }
-        ListensEngine.bindNodeEvents(this, this.listens);
 
         this._renderContent();
         this._applyActive();
@@ -107,24 +115,6 @@ class TabsComponent extends Component {
     private _applyPosition(): void {
         this.removeCls('q-tabs--top q-tabs--bottom q-tabs--left q-tabs--right');
         this.addCls(`q-tabs--${this.position}`);
-    }
-
-    private _createTabBar(): void {
-        const barEl = this.getNodeEl('tabBar');
-        if (!barEl) return;
-
-        this._tabBar = new TabBarComponent({
-            items: this.items.map((item: TabPaneItem) => ({
-                label: item.label,
-                iconCls: item.iconCls,
-                closable: item.closable,
-                disabled: item.disabled,
-            })),
-            selectedIndex: this.selectedIndex,
-            position: this.position,
-        });
-
-        barEl.appendChild(this._tabBar.el);
     }
 
     private _closeTab(index: number): void {
