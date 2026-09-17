@@ -11,6 +11,7 @@ const TabComponentDefs: Definitions = {
         iconCls: null,
         closable: false,
         pressed: false,
+        size: 'md',
     },
     fields: {
         index: 0,

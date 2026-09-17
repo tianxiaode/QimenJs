@@ -46,9 +46,7 @@ const TabsComponentDefs: Definitions = {
     options: {
         selectedIndex: 0,
         position: 'top',
-    },
-    fields: {
-        items: [],
+        items: null,
     },
 } as const;
 
@@ -116,7 +114,6 @@ class TabsComponent extends Component {
         const item = this.items[index];
         this.emit('close', { index, item });
 
-        // 销毁内容实例
         const contentInstance = this._contentInstances[index];
         if (contentInstance && typeof contentInstance.dispose === 'function') {
             contentInstance.dispose();
@@ -125,17 +122,6 @@ class TabsComponent extends Component {
         this.items.splice(index, 1);
         this._contentInstances.splice(index, 1);
 
-        // 更新 TabBar
-        this._tabBar?.update({
-                items: this.items.map((i: TabPaneItem) => ({
-                    label: i.label,
-                    iconCls: i.iconCls,
-                    closable: i.closable,
-                    disabled: i.disabled,
-                })),
-            });
-
-            // 调整 selectedIndex
         if (this.selectedIndex >= this.items.length) {
             this.selectedIndex = Math.max(0, this.items.length - 1);
         } else if (index < this.selectedIndex && this.selectedIndex > 0) {

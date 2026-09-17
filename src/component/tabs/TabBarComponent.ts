@@ -33,6 +33,7 @@ const TabBarComponentDefs: Definitions = {
     options: {
         position: 'top',
         selectedIndex: null,
+        size: 'md',
     },
 } as const;
 
@@ -50,7 +51,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
                 emits: ['select', '[action]'],
                 bridges: ['select', '[action]'],
             },
-            { path: '[items].close', handler: '_onTabClose', emits: ['close'], bridges: ['close'] },
+            { path: '[items].close', handler: '_onTabClose' },
         ],
     };
 
@@ -71,9 +72,40 @@ class TabBarComponent extends ItemGroupPooledComponent {
         if (!Array.isArray(items)) return;
         for (let i = 0; i < items.length; i++) {
             if (items[i]?.el === tabEl) {
-                items[i].dispose();
+                this.closeAt(i);
                 return;
             }
+        }
+    }
+
+    closeAt(index: number): void {
+        if (index < 0 || index >= this.count) return;
+        const item = this.removeAt(index);
+        if (item) {
+            const poolIdx = this._hiddenItems.indexOf(item);
+            if (poolIdx >= 0) this._hiddenItems.splice(poolIdx, 1);
+            item.dispose();
+        }
+        if (this._selectedIndex === index) {
+            this._selectedIndex = Math.min(index, this.count - 1);
+            if (this._selectedIndex < 0) this._selectedIndex = 0;
+        } else if (index < this._selectedIndex) {
+            this._selectedIndex--;
+        }
+        this._applySelection();
+        this.emit('close', { index });
+    }
+
+    _onSizeOptionChange(value: string): void {
+        this._propagateSize();
+    }
+
+    private _propagateSize(): void {
+        const size = this.getData('size');
+        if (!size) return;
+        for (let i = 0; i < this.count; i++) {
+            const item = this.getAt(i);
+            if (item) item.size = size;
         }
     }
 
@@ -86,6 +118,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
         this._position = this.getData('position') ?? 'top';
         this._applyPosition();
+        this._propagateSize();
 
         const selectedIndex = this.getData('selectedIndex');
         if (selectedIndex !== undefined && selectedIndex >= 0) {
