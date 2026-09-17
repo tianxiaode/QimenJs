@@ -131,9 +131,9 @@ class TabBarComponent extends ItemGroupPooledComponent {
         this.removeCls('q-tab-bar--top q-tab-bar--bottom q-tab-bar--left q-tab-bar--right');
         this.addCls(`q-tab-bar--${this._position}`);
 
-        // 根据 position 设置 direction
         const isVertical = this._position === 'left' || this._position === 'right';
         this._direction = isVertical ? 'vertical' : 'horizontal';
+        this._applyOrders();
     }
 
     private _applySelection(): void {

@@ -146,7 +146,6 @@ class TabsComponent extends Component {
             const item = this.items[i];
             const pane = document.createElement('div');
             pane.className = 'q-tabs__pane';
-            pane.hidden = true;
 
             if (item.disabled) {
                 pane.classList.add('q-tabs__pane--disabled');
@@ -177,7 +176,7 @@ class TabsComponent extends Component {
 
         const panes = contentEl.children;
         for (let i = 0; i < panes.length; i++) {
-            (panes[i] as HTMLElement).hidden = i !== this.selectedIndex;
+            panes[i].classList.toggle('q-tabs__pane--active', i === this.selectedIndex);
         }
     }
 

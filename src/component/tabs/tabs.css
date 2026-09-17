@@ -83,6 +83,10 @@
 }
 
 .q-tabs__pane {
+    display: none;
+}
+
+.q-tabs__pane--active {
     display: block;
 }
 
