@@ -63,7 +63,13 @@ class TabsComponent extends Component {
     }
 
     listens: ListenItem[] = [
-        { node: 'tabBar', events: { select: 'onTabBarSelect', close: 'onTabBarClose' } },
+        {
+            node: 'tabBar',
+            events: {
+                select: { handler: 'onTabBarSelect', bridges: ['select'] },
+                close: { handler: 'onTabBarClose', bridges: ['close'] },
+            },
+        },
         { route: 'router', events: { change: 'onRouteChange' } },
     ];
 
