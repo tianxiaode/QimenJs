@@ -170,27 +170,7 @@ class TabsComponent extends Component {
     }
 
     private _closeTab(index: number): void {
-        if (index < 0 || index >= this.items.length) return;
-
-        const item = this.items[index];
-        this.emit('close', { index, item });
-
-        const contentInstance = this._contentInstances[index];
-        if (contentInstance && typeof contentInstance.dispose === 'function') {
-            contentInstance.dispose();
-        }
-
-        this.items.splice(index, 1);
-        this._contentInstances.splice(index, 1);
-
-        if (this.selectedIndex >= this.items.length) {
-            this.selectedIndex = Math.max(0, this.items.length - 1);
-        } else if (index < this.selectedIndex && this.selectedIndex > 0) {
-            this.selectedIndex--;
-        }
-
-        this._renderContent();
-        this._applyActive();
+        this.removeTab(index);
     }
 
     private _renderContent(): void {
@@ -243,6 +223,64 @@ class TabsComponent extends Component {
 
     get tabBar(): InstanceType<typeof TabBarComponent> | null {
         return this._tabBar;
+    }
+
+    addTab(item: TabPaneItem, index?: number): void {
+        const insertIndex = index ?? this.items.length;
+        if (insertIndex < 0 || insertIndex > this.items.length) return;
+
+        this.items.splice(insertIndex, 0, item);
+        this._buildRouteIndex();
+
+        this._tabBar?.update({
+            items: this.items.map((i: TabPaneItem) => ({
+                label: i.label,
+                iconCls: i.iconCls,
+                closable: i.closable,
+                disabled: i.disabled,
+            })),
+        });
+
+        this._renderContent();
+
+        if (insertIndex <= this.selectedIndex) {
+            this.selectedIndex++;
+        }
+        this._applyActive();
+    }
+
+    removeTab(index: number): void {
+        if (index < 0 || index >= this.items.length) return;
+
+        const item = this.items[index];
+        this.emit('close', { index, item });
+
+        const contentInstance = this._contentInstances[index];
+        if (contentInstance && typeof contentInstance.dispose === 'function') {
+            contentInstance.dispose();
+        }
+
+        this.items.splice(index, 1);
+        this._contentInstances.splice(index, 1);
+        this._buildRouteIndex();
+
+        this._tabBar?.update({
+            items: this.items.map((i: TabPaneItem) => ({
+                label: i.label,
+                iconCls: i.iconCls,
+                closable: i.closable,
+                disabled: i.disabled,
+            })),
+        });
+
+        if (this.selectedIndex >= this.items.length) {
+            this.selectedIndex = Math.max(0, this.items.length - 1);
+        } else if (index < this.selectedIndex && this.selectedIndex > 0) {
+            this.selectedIndex--;
+        }
+
+        this._renderContent();
+        this._applyActive();
     }
 
     update(props?: Record<string, any>): void {
