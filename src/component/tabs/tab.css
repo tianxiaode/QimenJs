@@ -59,4 +59,5 @@
     min-height: auto;
     padding: var(--q-space-xs, 8px) var(--q-space-md, 16px);
     white-space: normal;
+    border-radius: 0;
 }

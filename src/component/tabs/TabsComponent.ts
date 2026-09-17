@@ -81,7 +81,7 @@ class TabsComponent extends Component {
     }
 
     private _createTabBar(): void {
-        const barEl = this.nodeMap?.tabBar?.el;
+        const barEl = this.getNodeEl('tabBar');
         if (!barEl) return;
 
         this._tabBar = new TabBarComponent({
@@ -133,7 +133,7 @@ class TabsComponent extends Component {
     }
 
     private _renderContent(): void {
-        const contentEl = this.nodeMap?.content?.el;
+        const contentEl = this.getNodeEl('content');
         if (!contentEl) return;
 
         for (const inst of this._contentInstances) {
@@ -158,7 +158,11 @@ class TabsComponent extends Component {
             } else if (typeof content === 'function') {
                 const inst = new content({ container: pane });
                 this._contentInstances.push(inst);
-            } else if (content && typeof content === 'object' && ('tag' in content || 'children' in content)) {
+            } else if (
+                content &&
+                typeof content === 'object' &&
+                ('tag' in content || 'children' in content)
+            ) {
                 const inst = this._createSlotComponent(content as TemplateDecl, pane);
                 this._contentInstances.push(inst);
             }
@@ -168,7 +172,7 @@ class TabsComponent extends Component {
     }
 
     private _applyActive(): void {
-        const contentEl = this.nodeMap?.content?.el;
+        const contentEl = this.getNodeEl('content');
         if (!contentEl) return;
 
         const panes = contentEl.children;

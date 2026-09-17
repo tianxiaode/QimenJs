@@ -96,7 +96,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
         this.emit('close', { index });
     }
 
-    _onSizeOptionChange(value: string): void {
+    _onSizeOptionChange(_value: string): void {
         this._propagateSize();
     }
 
