@@ -28,7 +28,14 @@ class PanelComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: [{ path: 'header.[items]', handler: true, emits: ['[action]'] }],
+        click: [
+            {
+                path: 'header.[items]',
+                handler: { expand: 'onExpandActionClick', close: 'onCloseActionClick' },
+                emits: ['[action]'],
+                bridges: ['[action]'],
+            },
+        ],
     };
 
     _onTitleOptionChange(value: string): void {

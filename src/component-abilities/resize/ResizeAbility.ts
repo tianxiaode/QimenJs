@@ -189,5 +189,4 @@ export const ResizeAbility = {
         }
         this.el.classList.toggle('q-resizable--disabled', !value);
     },
-
 } satisfies AbilityDefinition;
