@@ -133,6 +133,34 @@ export const TABS_DEMO: DemoConfig = {
             },
         },
         {
+            label: '路由切换 (route)',
+            code: `{ type: 'tabs', options: {
+    selectedIndex: 0,
+    items: [
+        { label: '首页', route: '/tabs/home', content: '<p>首页 - 路由 /tabs/home</p>' },
+        { label: '设置', route: '/tabs/settings', content: '<p>设置 - 路由 /tabs/settings</p>' },
+        { label: '关于', content: '<p>关于 - 无路由，纯事件切换</p>' },
+    ],
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'tabs',
+                        options: {
+                            selectedIndex: 0,
+                            items: [
+                                { label: '首页', route: '/tabs/home', content: '<p>首页 - 路由 /tabs/home</p>' },
+                                { label: '设置', route: '/tabs/settings', content: '<p>设置 - 路由 /tabs/settings</p>' },
+                                { label: '关于', content: '<p>关于 - 无路由，纯事件切换</p>' },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
             label: '底部位置 (bottom)',
             code: `{ type: 'tab-bar', options: { position: 'bottom', items: [{ label: 'A' }, { label: 'B' }] } }`,
             template: {
