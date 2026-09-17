@@ -238,13 +238,11 @@ class TabsComponent extends Component {
         this.items.splice(insertIndex, 0, item);
         this._buildRouteIndex();
 
-        this._tabBar?.update({
-            items: this.items.map((i: TabPaneItem) => ({
-                label: i.label,
-                iconCls: i.iconCls,
-                closable: i.closable,
-                disabled: i.disabled,
-            })),
+        this._tabBar?.insert(insertIndex, {
+            label: item.label,
+            iconCls: item.iconCls,
+            closable: item.closable,
+            disabled: item.disabled,
         });
 
         this._renderContent();
@@ -270,14 +268,7 @@ class TabsComponent extends Component {
         this._contentInstances.splice(index, 1);
         this._buildRouteIndex();
 
-        this._tabBar?.update({
-            items: this.items.map((i: TabPaneItem) => ({
-                label: i.label,
-                iconCls: i.iconCls,
-                closable: i.closable,
-                disabled: i.disabled,
-            })),
-        });
+        this._tabBar?.removeAt(index);
 
         if (this.selectedIndex >= this.items.length) {
             this.selectedIndex = Math.max(0, this.items.length - 1);
