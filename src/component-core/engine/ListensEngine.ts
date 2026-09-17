@@ -204,9 +204,9 @@ export class ListensEngine {
         nodeName: string,
         events: Record<string, EventMapping>
     ): void {
-        const child = instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName];
+        const child = instance.getComponent?.(nodeName) ?? instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName];
         if (!child || typeof child.on !== 'function') {
-            console.warn(`ListensEngine: nodeMap["${nodeName}"] not found or not a component`);
+            console.warn(`ListensEngine: node "${nodeName}" not found or not a component`);
             return;
         }
 

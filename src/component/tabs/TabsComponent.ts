@@ -67,8 +67,9 @@ class TabsComponent extends Component {
     onAfterInit(): void {
         this._applyPosition();
 
-        // TabBar 由模板 createChildren 自动创建，获取实例并传入动态数据
-        const tabBar = this.getComponent('tabBar') as InstanceType<typeof TabBarComponent> | undefined;
+        const tabBar = this.getComponent('tabBar') as
+            | InstanceType<typeof TabBarComponent>
+            | undefined;
         this._tabBar = tabBar ?? null;
         if (this._tabBar) {
             this._tabBar.update({
