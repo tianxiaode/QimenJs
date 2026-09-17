@@ -75,6 +75,7 @@ class TabsComponent extends Component {
     onAfterInit(): void {
         this._applyPosition();
         this._buildRouteIndex();
+        this._syncFromRoute();
 
         const tabBar = this.getComponent('tabBar') as
             | InstanceType<typeof TabBarComponent>
@@ -155,6 +156,16 @@ class TabsComponent extends Component {
         for (let i = 0; i < this.items.length; i++) {
             const route = this.items[i]?.route;
             if (route) this._routeIndex[route] = i;
+        }
+    }
+
+    private _syncFromRoute(): void {
+        const hash = typeof window !== 'undefined' ? window.location.hash : '';
+        if (!hash) return;
+        const path = hash.slice(1);
+        const index = this._routeIndex[path];
+        if (index !== undefined && index !== this.selectedIndex) {
+            this.selectedIndex = index;
         }
     }
 
