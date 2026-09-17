@@ -219,14 +219,18 @@ export class ListensEngine {
                 const onceHandler = (...args: any[]) => {
                     if (called) return;
                     called = true;
-                    child.off(eventName, onceHandler);
+                    if (typeof child.off === 'function') child.off(eventName, onceHandler);
                     return handler(...args);
                 };
                 child.on(eventName, onceHandler);
-                instance.onCleanup(() => child.off(eventName, onceHandler));
+                instance.onCleanup(() => {
+                    if (typeof child.off === 'function') child.off(eventName, onceHandler);
+                });
             } else {
                 child.on(eventName, handler);
-                instance.onCleanup(() => child.off(eventName, handler));
+                instance.onCleanup(() => {
+                    if (typeof child.off === 'function') child.off(eventName, handler);
+                });
             }
         }
     }
