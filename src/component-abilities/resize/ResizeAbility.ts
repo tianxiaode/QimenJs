@@ -109,7 +109,20 @@ export const ResizeAbility = {
             this._onResizeDrag(ctx);
         });
 
-        this.onCleanup(() => this._cleanupHandles());
+        const onUp = () => {
+            const s = this.abilityState(STATE_KEY) as ResizeState | undefined;
+            if (!s || !s.activeEdge) return;
+            s.activeEdge = null;
+            this.el.classList.remove('q-resizable--active');
+        };
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('mouseup', onUp);
+
+        this.onCleanup(() => {
+            this._cleanupHandles();
+            document.removeEventListener('pointerup', onUp);
+            document.removeEventListener('mouseup', onUp);
+        });
 
         this.addCls('q-resizable');
     },

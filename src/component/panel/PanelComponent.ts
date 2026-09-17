@@ -115,12 +115,6 @@ class PanelComponent extends Component {
         if (headerComp && this.title) {
             headerComp.title = this.title;
         }
-        if (this.expandable) {
-            this._onExpandableOptionChange(true);
-        }
-        if (this.closable) {
-            this._onClosableOptionChange(true);
-        }
     }
 }
 
