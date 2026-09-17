@@ -78,7 +78,7 @@ export class ListensEngine {
      * 绑定子组件节点事件订阅（依赖子组件已实例化，FINALIZE 晚期调用）
      */
     static bindNodeEvents(instance: any, listens: ListenItem[]): void {
-        if (!listens?.length || !instance.nodeMap) return;
+        if (!listens?.length) return;
 
         for (const item of listens) {
             if (isNodeListen(item)) {
