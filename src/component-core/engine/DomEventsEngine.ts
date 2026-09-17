@@ -117,7 +117,8 @@ export class DomEventsEngine {
 
         const ctor = instance.constructor;
         ctor._domEventRules = rules;
-        instance._eventRules = rules;
+        if (!instance._eventRules) instance._eventRules = [];
+        instance._eventRules.push(...rules);
 
         const allEventTypes = new Set<string>();
         for (const rule of rules) {

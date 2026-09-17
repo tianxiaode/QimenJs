@@ -31,9 +31,7 @@ export const PANEL_DEMO: DemoConfig = {
                         options: {
                             title: '数据面板',
                             header: {
-                                items: [
-                                    { type: 'icon', iconCls: 'fa fa-dashboard', order: 0 },
-                                ],
+                                items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }],
                             },
                             body: '面板内容区域',
                         },
@@ -50,7 +48,11 @@ export const PANEL_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'panel',
-                        options: { title: '折叠面板', expandable: true, body: '点击展开/收起按钮可切换内容显示' },
+                        options: {
+                            title: '折叠面板',
+                            expandable: true,
+                            body: '点击展开/收起按钮可切换内容显示',
+                        },
                     },
                 ],
             },
@@ -64,7 +66,11 @@ export const PANEL_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'panel',
-                        options: { title: '可关闭面板', closable: true, body: '点击关闭按钮可隐藏面板内容' },
+                        options: {
+                            title: '可关闭面板',
+                            closable: true,
+                            body: '点击关闭按钮可隐藏面板内容',
+                        },
                     },
                 ],
             },
@@ -78,7 +84,11 @@ export const PANEL_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'panel',
-                        options: { title: '可缩放面板', resizable: true, body: '拖拽边缘可调整面板大小' },
+                        options: {
+                            title: '可缩放面板',
+                            resizable: true,
+                            body: '拖拽边缘可调整面板大小',
+                        },
                     },
                 ],
             },
@@ -95,9 +105,7 @@ export const PANEL_DEMO: DemoConfig = {
                         options: {
                             title: '完整面板',
                             header: {
-                                items: [
-                                    { type: 'icon', iconCls: 'fa fa-dashboard', order: 0 },
-                                ],
+                                items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }],
                             },
                             expandable: true,
                             closable: true,
