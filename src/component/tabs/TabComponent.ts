@@ -1,5 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
+import { SizeAbility } from '@/component-abilities';
 import { TAB_TPL } from './tab-tpl';
 import { Definitions } from '@/composable';
 import './tab.css';
@@ -65,6 +66,7 @@ class TabComponent extends Component {
 }
 
 TabComponent.define(TabComponentDefs);
+TabComponent.use(SizeAbility);
 
 export { TabComponent };
 export type TabComponentInstance = InstanceType<typeof TabComponent>;

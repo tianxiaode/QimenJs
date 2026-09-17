@@ -36,8 +36,8 @@ import './tabs.css';
 export interface TabPaneItem {
     label: string;
     iconCls?: string;
-    /** 内容：HTML 字符串 或 组件类 */
-    content?: string | (new (props?: Record<string, any>) => any);
+    /** 内容：HTML 字符串、组件类、或模板声明 */
+    content?: string | (new (props?: Record<string, any>) => any) | TemplateDecl;
     closable?: boolean;
     disabled?: boolean;
 }
@@ -87,7 +87,7 @@ class TabsComponent extends Component {
         if (!barEl) return;
 
         this._tabBar = new TabBarComponent({
-            items: this.items.map(item => ({
+            items: this.items.map((item: TabPaneItem) => ({
                 label: item.label,
                 iconCls: item.iconCls,
                 closable: item.closable,
@@ -127,15 +127,15 @@ class TabsComponent extends Component {
 
         // 更新 TabBar
         this._tabBar?.update({
-            items: this.items.map(i => ({
-                label: i.label,
-                icon: i.icon,
-                closable: i.closable,
-                disabled: i.disabled,
-            })),
-        });
+                items: this.items.map((i: TabPaneItem) => ({
+                    label: i.label,
+                    iconCls: i.iconCls,
+                    closable: i.closable,
+                    disabled: i.disabled,
+                })),
+            });
 
-        // 调整 selectedIndex
+            // 调整 selectedIndex
         if (this.selectedIndex >= this.items.length) {
             this.selectedIndex = Math.max(0, this.items.length - 1);
         } else if (index < this.selectedIndex && this.selectedIndex > 0) {
@@ -150,6 +150,9 @@ class TabsComponent extends Component {
         const contentEl = this.nodeMap?.content?.el;
         if (!contentEl) return;
 
+        for (const inst of this._contentInstances) {
+            if (inst && typeof inst.dispose === 'function') inst.dispose();
+        }
         contentEl.innerHTML = '';
         this._contentInstances = [];
 
@@ -163,17 +166,15 @@ class TabsComponent extends Component {
                 pane.classList.add('q-tabs__pane--disabled');
             }
 
-            if (item.content) {
-                if (typeof item.content === 'string') {
-                    if (item.content.startsWith('<')) {
-                        pane.innerHTML = item.content;
-                    }
-                } else {
-                    // 组件类
-                    const instance = new item.content();
-                    pane.appendChild(instance.el);
-                    this._contentInstances.push(instance);
-                }
+            const content = item.content;
+            if (typeof content === 'string') {
+                pane.innerHTML = content;
+            } else if (typeof content === 'function') {
+                const inst = new content({ container: pane });
+                this._contentInstances.push(inst);
+            } else if (content && typeof content === 'object' && ('tag' in content || 'children' in content)) {
+                const inst = this._createSlotComponent(content as TemplateDecl, pane);
+                this._contentInstances.push(inst);
             }
 
             contentEl.appendChild(pane);
@@ -198,9 +199,9 @@ class TabsComponent extends Component {
         if (props?.items !== undefined) {
             this.items = props.items;
             this._tabBar?.update({
-                items: this.items.map(i => ({
+                items: this.items.map((i: TabPaneItem) => ({
                     label: i.label,
-                    icon: i.icon,
+                    iconCls: i.iconCls,
                     closable: i.closable,
                     disabled: i.disabled,
                 })),
