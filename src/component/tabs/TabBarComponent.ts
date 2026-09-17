@@ -45,12 +45,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
     domEvents?: DomEventsMap | undefined = {
         click: [
-            {
-                path: '[items]',
-                handler: '_onTabClick',
-                emits: ['select', '[action]'],
-                bridges: ['select', '[action]'],
-            },
+            { path: '[items]', handler: '_onTabClick' },
             { path: '[items].close', handler: '_onTabClose' },
         ],
     };
@@ -133,7 +128,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
         const isVertical = this._position === 'left' || this._position === 'right';
         this._direction = isVertical ? 'vertical' : 'horizontal';
-        this._applyOrders();
+        this.direction = this._direction;
     }
 
     private _applySelection(): void {
