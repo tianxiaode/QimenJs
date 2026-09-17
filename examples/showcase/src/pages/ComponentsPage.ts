@@ -217,7 +217,7 @@ export class ComponentsPage extends Component {
         const hash = window.location.hash;
         const path = hash ? hash.slice(1) : '';
         if (path.startsWith('/components/')) {
-            const componentName = path.slice('/components/'.length);
+            const componentName = path.slice('/components/'.length).split('/')[0];
             if (componentName) {
                 this._showDemo(componentName);
             }
@@ -227,7 +227,7 @@ export class ComponentsPage extends Component {
     onRouteChange(event: any): void {
         const path: string = event?.path ?? '';
         if (path.startsWith('/components/')) {
-            const componentName = path.slice('/components/'.length);
+            const componentName = path.slice('/components/'.length).split('/')[0];
             if (componentName) {
                 this._showDemo(componentName);
             }
