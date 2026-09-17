@@ -5,8 +5,8 @@ export const TAB_TPL: TemplateDecl = {
     classes: 'q-tab',
     attributes: { role: 'tab' },
     children: [
-        { tag: 'span', name: 'icon', classes: 'q-tab__icon hidden' },
+        { tag: 'span', name: 'icon', classes: 'q-tab__icon q-icon hidden' },
         { tag: 'span', name: 'label', classes: 'q-tab__label' },
-        { tag: 'span', name: 'close', classes: 'q-tab__close hidden' },
+        { tag: 'span', name: 'close', classes: 'q-tab__close q-close hidden' },
     ],
 };

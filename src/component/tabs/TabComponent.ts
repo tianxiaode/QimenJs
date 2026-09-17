@@ -7,7 +7,7 @@ import './tab.css';
 const TabComponentDefs: Definitions = {
     options: {
         label: null,
-        icon: null,
+        iconCls: null,
         closable: false,
         pressed: false,
     },
@@ -30,10 +30,15 @@ class TabComponent extends Component {
         this.setNodeText(value, "label");
     }
 
-    _onIconOptionChange(value: string): void {
-        const el = this.getNodeEl('icon');
-        if (el) el.textContent = value ?? '';
-        value ? this.removeCls('hidden', 'icon') : this.addCls('hidden', 'icon');
+    _onIconClsOptionChange(value: string, old: string): void {
+        const nodeName = 'icon';
+        if (old) this.removeCls(old, nodeName);
+        if (value) {
+            this.addCls(value, nodeName);
+            this.removeCls('hidden', nodeName);
+        } else {
+            this.addCls('hidden', nodeName);
+        }
     }
 
     _onClosableOptionChange(value: boolean): void {

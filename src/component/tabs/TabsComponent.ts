@@ -35,7 +35,7 @@ import './tabs.css';
 /** 标签页项 */
 export interface TabPaneItem {
     label: string;
-    icon?: string;
+    iconCls?: string;
     /** 内容：HTML 字符串 或 组件类 */
     content?: string | (new (props?: Record<string, any>) => any);
     closable?: boolean;
@@ -53,6 +53,7 @@ const TabsComponentDefs: Definitions = {
 } as const;
 
 class TabsComponent extends Component {
+    static type = 'tabs';
     get tpl(): TemplateDecl {
         return TABS_TPL;
     }
@@ -88,7 +89,7 @@ class TabsComponent extends Component {
         this._tabBar = new TabBarComponent({
             items: this.items.map(item => ({
                 label: item.label,
-                icon: item.icon,
+                iconCls: item.iconCls,
                 closable: item.closable,
                 disabled: item.disabled,
             })),
@@ -228,5 +229,3 @@ class TabsComponent extends Component {
 TabsComponent.define(TabsComponentDefs);
 
 export { TabsComponent };
-/** 标签页集实例类型 */
-export type TabsComponentInstance = InstanceType<typeof TabsComponent>;

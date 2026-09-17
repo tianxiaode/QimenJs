@@ -38,11 +38,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
-    height: 16px;
-    font-size: var(--q-font-size-md, 14px);
-    line-height: 1;
-    color: var(--q-color-text-secondary, #666);
     border-radius: var(--q-radius-md);
     transition: color var(--q-transition-fast), background var(--q-transition-fast);
 }

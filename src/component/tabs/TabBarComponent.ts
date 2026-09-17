@@ -37,14 +37,20 @@ const TabBarComponentDefs: Definitions = {
 } as const;
 
 class TabBarComponent extends ItemGroupPooledComponent {
-    defaultItemType = 'Tab';
+    static type = 'tab-bar'; // 组件类型
+    defaultItemType = 'tab';
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
 
     domEvents?: DomEventsMap | undefined = {
         click: [
-            { path: '{Tab}', handler: '_onTabClick', emits: ['select'] },
-            { path: '{Tab}.close', handler: '_onTabClose', emits: ['close'] },
+            {
+                path: '{tab}',
+                handler: '_onTabClick',
+                emits: ['select', '[action]'],
+                bridges: ['select', '[action]'],
+            },
+            { path: '{tab}.close', handler: '_onTabClose', emits: ['close'] },
         ],
     };
 
@@ -59,10 +65,11 @@ class TabBarComponent extends ItemGroupPooledComponent {
     }
 
     _onTabClose(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
+        const target = this.getTargetItem(domEvt.targetComponent);
         if (!target) return;
 
         const item = target.component as TabComponent;
+        item.dispose();
     }
 
     onAfterInit(): void {

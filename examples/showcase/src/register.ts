@@ -35,6 +35,9 @@ import {
     FieldsetComponent,
     HeaderComponent,
     PanelComponent,
+    TabComponent,
+    TabBarComponent,
+    TabsComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -59,3 +62,6 @@ TextComponent.register();
 FieldsetComponent.register();
 HeaderComponent.register();
 PanelComponent.register();
+TabComponent.register();
+TabBarComponent.register();
+TabsComponent.register();
