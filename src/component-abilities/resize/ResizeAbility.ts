@@ -28,6 +28,7 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
+import './resize.css';
 
 export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 

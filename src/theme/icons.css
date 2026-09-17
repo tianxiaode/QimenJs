@@ -74,11 +74,11 @@
 /* -------- 下箭头 (chevron-down) -------- */
 .q-chevron-down {
     display: inline-block;
-    width: calc(var(--q-icon-size) * 0.43);
-    height: calc(var(--q-icon-size) * 0.43);
-    border: solid var(--q-icon-color);
-    border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
-    transform: rotate(45deg);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: calc(var(--q-icon-size) * 0.6) calc(var(--q-icon-size) * 0.35) 0 calc(var(--q-icon-size) * 0.35);
+    border-color: var(--q-icon-color) transparent transparent transparent;
 }
 
 /* -------- 菱形 (diamond) -------- */

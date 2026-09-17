@@ -4,6 +4,7 @@ import { ResizeAbility } from '@qimenjs/component-abilities';
 import { IconComponent } from '../icon/IconComponent';
 import { PANEL_TPL } from './panel-tpl';
 import { Definitions } from '@/composable';
+import type { PanelContent } from './types';
 import './panel.css';
 
 const EXPAND_ORDER = 10600;
@@ -13,6 +14,7 @@ const PanelComponentDefs: Definitions = {
     options: {
         title: null,
         header: null,
+        body: null,
         expandable: false,
         closable: false,
         resizable: false,
@@ -26,9 +28,7 @@ class PanelComponent extends Component {
     }
 
     domEvents?: DomEventsMap | undefined = {
-        click: [
-            { path: 'header.[items]', handler: true, emits: ['[action]'] },
-        ],
+        click: [{ path: 'header.[items]', handler: true, emits: ['[action]'] }],
     };
 
     _onTitleOptionChange(value: string): void {
@@ -40,6 +40,10 @@ class PanelComponent extends Component {
         const headerComp = this.getComponent('header') as any;
         if (!headerComp) return;
         if (value) headerComp.update(value);
+    }
+
+    _onBodyOptionChange(value: PanelContent, _old: PanelContent): void {
+        this.renderSlot(value, 'body');
     }
 
     _onExpandableOptionChange(value: boolean): void {
@@ -125,4 +129,3 @@ PanelComponent.define(PanelComponentDefs);
 PanelComponent.use(ResizeAbility);
 
 export { PanelComponent };
-export type PanelComponentInstance = InstanceType<typeof PanelComponent>;

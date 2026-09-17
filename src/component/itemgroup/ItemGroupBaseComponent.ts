@@ -219,4 +219,3 @@ ItemGroupBaseComponent.use([OverflowAbility]);
 ItemGroupBaseComponent.define(ItemGroupBaseComponentDefs);
 
 export { ItemGroupBaseComponent };
-export type ItemGroupBaseComponentType = InstanceType<typeof ItemGroupBaseComponent>;

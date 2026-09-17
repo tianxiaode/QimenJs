@@ -1,0 +1,46 @@
+.q-resizable {
+    position: relative;
+}
+
+.q-resize-handle {
+    position: absolute;
+    z-index: 9;
+    touch-action: none;
+}
+
+.q-resize-handle--n,
+.q-resize-handle--s {
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.q-resize-handle--n { top: -2px; }
+.q-resize-handle--s { bottom: -2px; }
+
+.q-resize-handle--e,
+.q-resize-handle--w {
+    top: 0;
+    bottom: 0;
+    width: 4px;
+}
+
+.q-resize-handle--e { right: -2px; }
+.q-resize-handle--w { left: -2px; }
+
+.q-resize-handle--ne,
+.q-resize-handle--nw,
+.q-resize-handle--se,
+.q-resize-handle--sw {
+    width: 8px;
+    height: 8px;
+}
+
+.q-resize-handle--ne { top: -4px; right: -4px; }
+.q-resize-handle--nw { top: -4px; left: -4px; }
+.q-resize-handle--se { bottom: -4px; right: -4px; }
+.q-resize-handle--sw { bottom: -4px; left: -4px; }
+
+.q-resizable--active {
+    user-select: none;
+}

@@ -321,7 +321,7 @@ export class ComposableBase implements IComposableBase {
 
     private ClearProperties(): void {
         const self = this as any;
-        const keys = self.getDataMap().propertyClearKeys;
+        const keys = self.getDataMap().propertyClearKeys ?? {};
         for (const key of keys) {
             delete self[key];
         }
