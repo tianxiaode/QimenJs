@@ -137,8 +137,8 @@ export const TABS_DEMO: DemoConfig = {
             code: `{ type: 'tabs', options: {
     selectedIndex: 0,
     items: [
-        { label: '首页', route: '/tabs/home', content: '<p>首页 - 路由 /tabs/home</p>' },
-        { label: '设置', route: '/tabs/settings', content: '<p>设置 - 路由 /tabs/settings</p>' },
+        { label: '首页', route: '/components/Tabs/home', content: '<p>首页 - 路由 /components/Tabs/home</p>' },
+        { label: '设置', route: '/components/Tabs/settings', content: '<p>设置 - 路由 /components/Tabs/settings</p>' },
         { label: '关于', content: '<p>关于 - 无路由，纯事件切换</p>' },
     ],
 } }`,
@@ -151,8 +151,8 @@ export const TABS_DEMO: DemoConfig = {
                         options: {
                             selectedIndex: 0,
                             items: [
-                                { label: '首页', route: '/tabs/home', content: '<p>首页 - 路由 /tabs/home</p>' },
-                                { label: '设置', route: '/tabs/settings', content: '<p>设置 - 路由 /tabs/settings</p>' },
+                                { label: '首页', route: '/components/Tabs/home', content: '<p>首页 - 路由 /components/Tabs/home</p>' },
+                                { label: '设置', route: '/components/Tabs/settings', content: '<p>设置 - 路由 /components/Tabs/settings</p>' },
                                 { label: '关于', content: '<p>关于 - 无路由，纯事件切换</p>' },
                             ],
                         },
