@@ -25,6 +25,8 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import { ListensEngine } from '@/component-core/engine';
+import type { ListenItem } from '@qimenjs/component-core';
 import type { TabBarPosition } from './TabBarComponent';
 import { TabBarComponent } from './TabBarComponent';
 import type { TemplateDecl } from '@qimenjs/component-core';
@@ -55,14 +57,41 @@ class TabsComponent extends Component {
     get tpl(): TemplateDecl {
         return TABS_TPL;
     }
+
+    listens: ListenItem[] = [
+        { node: 'tabBar', events: { select: 'onTabBarSelect', close: 'onTabBarClose' } },
+    ];
+
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;
     private _contentInstances: any[] = [];
 
     onAfterInit(): void {
         this._applyPosition();
         this._createTabBar();
+
+        if (this.nodeMap?.tabBar) {
+            this.nodeMap.tabBar.component = this._tabBar;
+            this.nodeMap.tabBar.el = this._tabBar?.el;
+        }
+        ListensEngine.bindNodeEvents(this, this.listens);
+
         this._renderContent();
         this._applyActive();
+    }
+
+    onTabBarSelect(ctx: any): void {
+        const data = ctx?.data ?? {};
+        const index = data.index ?? data.selectedIndex;
+        if (index === undefined || index === this.selectedIndex) return;
+        this.selectedIndex = index;
+        this.emit('change', { index, item: this.items[index] });
+    }
+
+    onTabBarClose(ctx: any): void {
+        const data = ctx?.data ?? {};
+        const index = data.index;
+        if (index === undefined) return;
+        this._closeTab(index);
     }
 
     _onSelectedIndexOptionChange(value: number): void {
@@ -96,16 +125,6 @@ class TabsComponent extends Component {
         });
 
         barEl.appendChild(this._tabBar.el);
-
-        // 监听 TabBar 事件
-        this._tabBar.on('select', ({ index }: any) => {
-            this.selectedIndex = index;
-            this.emit('change', { index, item: this.items[index] });
-        });
-
-        this._tabBar.on('close', ({ index }: any) => {
-            this._closeTab(index);
-        });
     }
 
     private _closeTab(index: number): void {

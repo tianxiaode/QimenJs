@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { DomEventsMap, TemplateDecl } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { SizeAbility } from '@/component-abilities';
 import { TAB_TPL } from './tab-tpl';
 import { Definitions } from '@/composable';
@@ -24,10 +24,6 @@ class TabComponent extends Component {
         return TAB_TPL;
     }
 
-    domEvents?: DomEventsMap | undefined = {
-        click: { path: 'close', handler: '_onCloseClick', emits: ['close'], bridges: ['close'] },
-    };
-
     _onLabelOptionChange(value: string): void {
         this.setNodeText(value, 'label');
     }
@@ -49,10 +45,6 @@ class TabComponent extends Component {
 
     _onPressedOptionChange(value: boolean): void {
         this.toggleCls('q-tab--pressed', value);
-    }
-
-    _onCloseClick(): void {
-        if (this.disable) return;
     }
 
     get defaultEventData(): Record<string, any> {

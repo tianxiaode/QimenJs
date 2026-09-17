@@ -42,10 +42,11 @@ class TabBarComponent extends ItemGroupPooledComponent {
     defaultItemType = 'tab';
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
+    _lastToggleIndex: number = -1;
 
     domEvents?: DomEventsMap | undefined = {
         click: [
-            { path: '[items]', handler: '_onTabClick' },
+            { path: '[items]', handler: '_onTabClick', emits: ['select'], bridges: ['select'] },
             { path: '[items].close', handler: '_onTabClose' },
         ],
     };
@@ -55,6 +56,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
         if (!item || item.disabled) return;
         const index = this.indexOf(item);
         if (index < 0) return;
+        this._lastToggleIndex = index;
         this.selectAt(index);
     }
 
@@ -170,6 +172,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
             ...super.defaultEventData,
             selectedIndex: this._selectedIndex,
             position: this._position,
+            lastToggleIndex: this._lastToggleIndex,
         };
     }
 
