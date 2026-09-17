@@ -72,13 +72,15 @@
 }
 
 /* -------- 下箭头 (chevron-down) -------- */
-.q-chevron-down {
+.q-icon.q-chevron-down {
     display: inline-block;
     width: 0;
     height: 0;
     border-style: solid;
     border-width: calc(var(--q-icon-size) * 0.6) calc(var(--q-icon-size) * 0.35) 0 calc(var(--q-icon-size) * 0.35);
     border-color: var(--q-icon-color) transparent transparent transparent;
+    font-size: inherit;
+    vertical-align: middle;
 }
 
 /* -------- 菱形 (diamond) -------- */

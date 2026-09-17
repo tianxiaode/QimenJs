@@ -133,22 +133,23 @@ export const ResizeAbility = {
         const state = this.abilityState(STATE_KEY) as ResizeState | undefined;
         if (!state || !state.enabled) return;
 
-        const target = ctx?.originalEvent?.target as HTMLElement | null;
+        const gesture = ctx?.data ?? ctx;
+        const target = gesture?.originalEvent?.target as HTMLElement | null;
         const edge = target?.dataset?.resizeEdge as ResizeEdge | undefined;
         if (!edge || !state.handles.has(edge)) return;
 
-        const phase = ctx?.phase;
+        const phase = gesture?.phase;
 
         if (phase === 'start') {
-            state.startX = ctx.dx ?? 0;
-            state.startY = ctx.dy ?? 0;
+            state.startX = gesture.dx ?? 0;
+            state.startY = gesture.dy ?? 0;
             state.startWidth = this.el.offsetWidth;
             state.startHeight = this.el.offsetHeight;
             state.activeEdge = edge;
             this.el.classList.add('q-resizable--active');
         } else if (phase === 'move' && state.activeEdge) {
-            const dx = (ctx.dx ?? 0) - state.startX;
-            const dy = (ctx.dy ?? 0) - state.startY;
+            const dx = (gesture.dx ?? 0) - state.startX;
+            const dy = (gesture.dy ?? 0) - state.startY;
 
             let newWidth = state.startWidth;
             let newHeight = state.startHeight;

@@ -112,9 +112,8 @@ class PanelComponent extends Component {
 
     onAfterInit(): void {
         const headerComp = this.getComponent('header') as any;
-        if (headerComp) {
-            if (this.header) headerComp.update(this.header);
-            if (this.title) headerComp.title = this.title;
+        if (headerComp && this.title) {
+            headerComp.title = this.title;
         }
         if (this.expandable) {
             this._onExpandableOptionChange(true);
