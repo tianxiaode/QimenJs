@@ -2,8 +2,8 @@
  * ResizeAbility — 四边/四角拖动调整大小能力
  *
  * 为组件提供可拖拽的边缘和角点手柄，通过拖动改变组件宽高。
- * 内部使用 component.bind(el, 'drag') 走 DragProcessor，
- * 自管理手柄 DOM 和拖拽逻辑。
+ * 使用 DomEventsEngine 添加 press 规则替代 DragProcessor 手势绑定，
+ * 拖动期间在 document 上监听 move/up，释放时自动清理。
  *
  * 使用方式：
  * 1. 组件声明 .with([ResizeAbility])
@@ -13,21 +13,13 @@
  *
  * @example
  * ```ts
- * const Dialog = class extends Component {};
- * Dialog.useTemplate(TPL);
- * Dialog.with([ResizeAbility]);
- *
- * // body 中
- * onAfterInit(props) {
- *     this.initResize({ edges: ['n', 's', 'e', 'w', 'se'] });
- * }
- *
- * // 监听
+ * this.initResize({ edges: ['s', 'se', 'e'] });
  * this.on('resize', ({ width, height }) => { ... });
  * ```
  */
 
 import type { AbilityDefinition } from '@/composable';
+import { DomEventsEngine } from '@/component-core/engine';
 import './resize.css';
 
 export type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -48,8 +40,8 @@ interface ResizeState {
     maxHeight: number;
     handles: Map<string, HTMLElement>;
     enabled: boolean;
-    startX: number;
-    startY: number;
+    startMouseX: number;
+    startMouseY: number;
     startWidth: number;
     startHeight: number;
     activeEdge: ResizeEdge | null;
@@ -84,8 +76,8 @@ export const ResizeAbility = {
             maxHeight: config?.maxHeight ?? Infinity,
             handles: new Map(),
             enabled: true,
-            startX: 0,
-            startY: 0,
+            startMouseX: 0,
+            startMouseY: 0,
             startWidth: 0,
             startHeight: 0,
             activeEdge: null,
@@ -93,6 +85,7 @@ export const ResizeAbility = {
 
         this.setAbilityState(STATE_KEY, state);
 
+        const rules: { rule: any; handle: HTMLElement }[] = [];
         for (const edge of state.edges) {
             const handle = document.createElement('div');
             handle.className = `q-resize-handle q-resize-handle--${edge}`;
@@ -102,29 +95,84 @@ export const ResizeAbility = {
             this.el.appendChild(handle);
             state.handles.set(edge, handle);
 
-            this.bind(handle, 'drag');
+            const rule = {
+                event: 'press',
+                path: handle,
+                handler: '_onResizePress',
+                needsBinding: true,
+            } as const;
+            rules.push({ rule, handle });
+            DomEventsEngine.addEventRule(this, rule);
         }
 
-        this.on('dom:drag', (ctx: any) => {
-            this._onResizeDrag(ctx);
+        this.addCls('q-resizable');
+
+        this.onCleanup(() => {
+            for (const { rule, handle } of rules) {
+                DomEventsEngine.removeEventRule(this, rule);
+                handle.remove();
+            }
+            state.handles.clear();
         });
+    },
+
+    _onResizePress(domEvt: any): void {
+        const state = this.abilityState(STATE_KEY) as ResizeState | undefined;
+        if (!state || !state.enabled) return;
+
+        const oe = domEvt?.data?.originalEvent as PointerEvent | MouseEvent | undefined;
+        if (!oe) return;
+        const target = oe.target as HTMLElement | null;
+        const edge = target?.dataset?.resizeEdge as ResizeEdge | undefined;
+        if (!edge || !state.handles.has(edge)) return;
+
+        state.startMouseX = oe.clientX;
+        state.startMouseY = oe.clientY;
+        state.startWidth = this.el.offsetWidth;
+        state.startHeight = this.el.offsetHeight;
+        state.activeEdge = edge;
+        this.el.classList.add('q-resizable--active');
+
+        const onMove = (e: PointerEvent | MouseEvent) => {
+            const s = this.abilityState(STATE_KEY) as ResizeState | undefined;
+            if (!s || !s.enabled || !s.activeEdge) return;
+
+            const dx = e.clientX - s.startMouseX;
+            const dy = e.clientY - s.startMouseY;
+
+            let newWidth = s.startWidth;
+            let newHeight = s.startHeight;
+
+            if (edge.includes('e')) newWidth = s.startWidth + dx;
+            if (edge.includes('w')) newWidth = s.startWidth - dx;
+            if (edge.includes('s')) newHeight = s.startHeight + dy;
+            if (edge.includes('n')) newHeight = s.startHeight - dy;
+
+            newWidth = Math.max(s.minWidth, Math.min(s.maxWidth, newWidth));
+            newHeight = Math.max(s.minHeight, Math.min(s.maxHeight, newHeight));
+
+            this.el.style.width = `${newWidth}px`;
+            this.el.style.height = `${newHeight}px`;
+
+            this.emit('resize', { width: newWidth, height: newHeight, edge });
+        };
 
         const onUp = () => {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.removeEventListener('mouseup', onUp);
+
             const s = this.abilityState(STATE_KEY) as ResizeState | undefined;
             if (!s || !s.activeEdge) return;
             s.activeEdge = null;
             this.el.classList.remove('q-resizable--active');
         };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('mousemove', onMove);
         document.addEventListener('pointerup', onUp);
         document.addEventListener('mouseup', onUp);
-
-        this.onCleanup(() => {
-            this._cleanupHandles();
-            document.removeEventListener('pointerup', onUp);
-            document.removeEventListener('mouseup', onUp);
-        });
-
-        this.addCls('q-resizable');
     },
 
     get resizable(): boolean {
@@ -142,55 +190,4 @@ export const ResizeAbility = {
         this.el.classList.toggle('q-resizable--disabled', !value);
     },
 
-    _onResizeDrag(ctx: any): void {
-        const state = this.abilityState(STATE_KEY) as ResizeState | undefined;
-        if (!state || !state.enabled) return;
-
-        const gesture = ctx?.data ?? ctx;
-        const target = gesture?.originalEvent?.target as HTMLElement | null;
-        const edge = target?.dataset?.resizeEdge as ResizeEdge | undefined;
-        if (!edge || !state.handles.has(edge)) return;
-
-        const phase = gesture?.phase;
-
-        if (phase === 'start') {
-            state.startX = gesture.dx ?? 0;
-            state.startY = gesture.dy ?? 0;
-            state.startWidth = this.el.offsetWidth;
-            state.startHeight = this.el.offsetHeight;
-            state.activeEdge = edge;
-            this.el.classList.add('q-resizable--active');
-        } else if (phase === 'move' && state.activeEdge) {
-            const dx = (gesture.dx ?? 0) - state.startX;
-            const dy = (gesture.dy ?? 0) - state.startY;
-
-            let newWidth = state.startWidth;
-            let newHeight = state.startHeight;
-
-            if (edge.includes('e')) newWidth = state.startWidth + dx;
-            if (edge.includes('w')) newWidth = state.startWidth - dx;
-            if (edge.includes('s')) newHeight = state.startHeight + dy;
-            if (edge.includes('n')) newHeight = state.startHeight - dy;
-
-            newWidth = Math.max(state.minWidth, Math.min(state.maxWidth, newWidth));
-            newHeight = Math.max(state.minHeight, Math.min(state.maxHeight, newHeight));
-
-            this.el.style.width = `${newWidth}px`;
-            this.el.style.height = `${newHeight}px`;
-
-            this.emit('resize', { width: newWidth, height: newHeight, edge });
-        } else if (phase === 'end' || phase === 'cancel') {
-            state.activeEdge = null;
-            this.el.classList.remove('q-resizable--active');
-        }
-    },
-
-    _cleanupHandles(): void {
-        const state = this.abilityState(STATE_KEY) as ResizeState | undefined;
-        if (!state) return;
-        for (const [, handle] of state.handles) {
-            handle.remove();
-        }
-        state.handles.clear();
-    },
 } satisfies AbilityDefinition;
