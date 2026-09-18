@@ -47,12 +47,9 @@ interface InternalState {
     step: number;
     rafId: number;
     clickRulesBound: boolean;
-    scrollHandler: (() => void) | null;
+    scrollUnbind: (() => void) | null;
     resizeObserver: ResizeObserver | null;
     mutationObserver: MutationObserver | null;
-    prevClickHandler: (() => void) | null;
-    nextClickHandler: (() => void) | null;
-    moreClickHandler: (() => void) | null;
     overflowItems: OverflowItem[];
 }
 
@@ -83,12 +80,9 @@ export const OverflowAbility = {
             step: config.step ?? 100,
             rafId: 0,
             clickRulesBound: false,
-            scrollHandler: null,
+            scrollUnbind: null,
             resizeObserver: null,
             mutationObserver: null,
-            prevClickHandler: null,
-            nextClickHandler: null,
-            moreClickHandler: null,
             overflowItems: [],
         } as InternalState);
 
@@ -304,31 +298,8 @@ export const OverflowAbility = {
             state.rafId = 0;
         }
 
-        if (state.scrollHandler) {
-            const container = this.getNodeEl('itemContainer');
-            if (container) {
-                container.removeEventListener('scroll', state.scrollHandler);
-            }
-            state.scrollHandler = null;
-        }
-
-        if (state.prevClickHandler) {
-            const prevEl = this.getNodeEl('overflowPrev');
-            if (prevEl) prevEl.removeEventListener('click', state.prevClickHandler);
-            state.prevClickHandler = null;
-        }
-
-        if (state.nextClickHandler) {
-            const nextEl = this.getNodeEl('overflowNext');
-            if (nextEl) nextEl.removeEventListener('click', state.nextClickHandler);
-            state.nextClickHandler = null;
-        }
-
-        if (state.moreClickHandler) {
-            const moreEl = this.getNodeEl('overflowMore');
-            if (moreEl) moreEl.removeEventListener('click', state.moreClickHandler);
-            state.moreClickHandler = null;
-        }
+        state.scrollUnbind?.();
+        state.scrollUnbind = null;
 
         state.resizeObserver?.disconnect();
         state.resizeObserver = null;
@@ -361,11 +332,10 @@ export const OverflowAbility = {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
-        if (state.scrollHandler) {
-            container.removeEventListener('scroll', state.scrollHandler);
-        }
-        state.scrollHandler = () => this._scheduleOverflowUpdate();
-        container.addEventListener('scroll', state.scrollHandler);
+        state.scrollUnbind?.();
+        const unbind = this.bind(container, 'scroll');
+        const off = this.on('dom:scroll', () => this._scheduleOverflowUpdate());
+        state.scrollUnbind = () => { unbind(); off(); };
 
         state.resizeObserver?.disconnect();
         state.resizeObserver = new ResizeObserver(() => this._scheduleOverflowUpdate());
