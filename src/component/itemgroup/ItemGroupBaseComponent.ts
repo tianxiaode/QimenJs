@@ -33,10 +33,6 @@ class ItemGroupBaseComponent extends Component {
         return ITEMGROUP_BASE_TPL;
     }
 
-    get earlyOptionKeys(): string[] {
-        return [...super.earlyOptionKeys, 'defaultItemOption'];
-    }
-
     _onDirectionOptionChange(value: string): void {
         this.removeCls(['q-itemgroup--horizontal', 'q-itemgroup--vertical']);
         this.addCls(`q-itemgroup--${value}`);

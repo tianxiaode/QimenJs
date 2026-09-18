@@ -17,10 +17,6 @@ class RouteContainerComponent extends Component {
         return ROUTE_CONTAINER_TPL;
     }
 
-    get earlyOptionKeys(): string[] {
-        return [...super.earlyOptionKeys, 'routeMap'];
-    }
-
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
     _currentInstance: any = null;

@@ -28,10 +28,6 @@ class NavbarComponent extends Component {
     _menuDropdown: InstanceType<typeof DropdownComponent> | null = null;
     _unbindWindowResize: (() => void) | null = null;
 
-    get earlyOptionKeys(): string[] {
-        return [...super.earlyOptionKeys, 'defaultItemOption'];
-    }
-
     onAfterInit(): void {
         const logo = this.getData('logo');
         if (logo) {

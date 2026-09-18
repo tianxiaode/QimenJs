@@ -26,10 +26,6 @@ class HeaderComponent extends ItemGroupStaticComponent {
     static type = 'header';
     defaultItemType = 'icon';
 
-    get earlyOptionKeys(): string[] {
-        return [...super.earlyOptionKeys, 'title', 'subtitle', 'titleCls', 'titleStyle'];
-    }
-
     get defaultOptions(): Record<string, any> {
         return {
             ...super.defaultOptions,

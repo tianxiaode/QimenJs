@@ -224,26 +224,6 @@ export class ComposableBase implements IComposableBase {
         return undefined;
     }
 
-    /**
-     * 派生类可覆写：声明需要在 _applyOptions 之前提取的 option key。
-     *
-     * 这些 option 的值会在 applyOptionDefaults 之后、_applyOptions 之前
-     * 通过 setData(key, value, true) 直接写入（绕过 change 机制），并从 options 中删除。
-     * 适用于 DOM 引用类数据（如 anchor），避免走 change 机制的复杂性。
-     *
-     * @example
-     * ```ts
-     * class TooltipComponent extends Component {
-     *     get earlyOptionKeys() {
-     *         return [...super.earlyOptionKeys, 'placement', 'offset'];
-     *     }
-     * }
-     * ```
-     */
-    get earlyOptionKeys(): string[] {
-        return [];
-    }
-
     _onOptionChange(_key: string, _value: any, _old: any): void {}
 
     /**
@@ -315,7 +295,25 @@ export class ComposableBase implements IComposableBase {
     private applyOptionDefaults(): void {
         const overrides = { ...this.getDataMap().defaultValues, ...this.defaultOptions };
         for (const [key, value] of Object.entries(overrides)) {
-            this.setData(key, value);
+            this.setData(key, value, true);
+        }
+    }
+
+    /**
+     * 初始化阶段触发所有 option 的 change handler
+     *
+     * 在 applyOptionDefaults 静默复制默认值 + rawOptions 静默覆盖之后调用，
+     * 确保每个 handler 执行时 this.xxx 已是最终值（用户值 > 默认值）。
+     */
+    initOptions(): void {
+        const optionsKeys = this.optionsKeys;
+        for (const key of optionsKeys) {
+            const value = this.getData(key);
+            const changeKey = `_on${string.capitalize(key)}OptionChange`;
+            if (typeof (this as any)[changeKey] === 'function') {
+                (this as any)[changeKey](value, undefined);
+            }
+            this._onOptionChange(key, value, undefined);
         }
     }
 
