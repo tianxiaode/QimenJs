@@ -81,7 +81,6 @@ export const InitAbility = {
                 this.addCls(classes, name);
             }
         }
-        this._applyInitOptions(options);
         this.logger.debug(`[prepare:apply property keys]`, `[${this.type}]:[${this.id}]`);
     },
 

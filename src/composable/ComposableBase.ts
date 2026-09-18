@@ -33,6 +33,7 @@ export class ComposableBase implements IComposableBase {
         if (options) {
             this.setData('_rawOptions', { ...options }, true);
         }
+        this._applyInitOptions(options);
     }
 
     get rawOptions(): Record<string, any> | undefined {
@@ -290,6 +291,35 @@ export class ComposableBase implements IComposableBase {
         this.ClearProperties();
         this.clearData();
         this.onDisposed();
+    }
+
+    /**
+     * 初始化阶段静默复制所有配置值（不触发 change handler）
+     *
+     * 在构造函数中调用：默认值 → 用户传入值（覆盖默认值）→ propertyKeys 直接赋值
+     * 之后由 initOptions() 统一触发所有 change handler
+     */
+    _applyInitOptions(options?: Record<string, any>) {
+        const dataMap = (this.constructor as any)[DATA_MAP_SYMBOL];
+        if (!dataMap) return;
+
+        const defaults = { ...dataMap.defaultValues, ...this.defaultOptions };
+        for (const [key, value] of Object.entries(defaults)) {
+            this.setData(key, value, true);
+        }
+
+        if (options) {
+            const optionsKeys: Set<string> = dataMap.optionsKeys;
+            const propertyKeys: Set<string> = dataMap.propertyKeys;
+            for (const [key, value] of Object.entries(options)) {
+                if (key === 'id') continue;
+                if (optionsKeys.has(key)) {
+                    this.setData(key, value, true);
+                } else if (propertyKeys.has(key)) {
+                    (this as any)[key] = value;
+                }
+            }
+        }
     }
 
     /**
