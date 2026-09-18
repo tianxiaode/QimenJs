@@ -196,7 +196,8 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             }
             pool.items = [];
         }
-        this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
+        const container = this.getNodeEl('itemContainer');
+        if (container) container.innerHTML = '';
         this._emitItemsChange('clear');
     }
 
@@ -379,7 +380,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     _applyOrders(): void {
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
         container.style.display = 'flex';

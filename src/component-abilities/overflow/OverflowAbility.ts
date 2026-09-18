@@ -109,7 +109,7 @@ export const OverflowAbility = {
                 overflowing: false,
             };
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container)
             return {
                 canScrollPrev: false,
@@ -170,7 +170,7 @@ export const OverflowAbility = {
         if (items.length === 0) return;
 
         this.emit('overflowmenutoggle', {
-            anchor: this.nodeMap?.overflowMore?.el,
+            anchor: this.getNodeEl('overflowMore'),
             items: items.map(item => ({
                 key: item.key,
                 label: item.label,
@@ -188,7 +188,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
         const delta = which === 'prev' ? -state.step : state.step;
@@ -207,7 +207,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
         if (state.direction === 'horizontal') {
@@ -224,7 +224,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container || !child) return;
 
         const containerRect = container.getBoundingClientRect();
@@ -264,7 +264,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const mode = this._overflowMode ?? state.mode;
+        const mode = state.mode;
         state.mode = mode;
 
         if (mode === 'none') {
@@ -305,7 +305,7 @@ export const OverflowAbility = {
         }
 
         if (state.scrollHandler) {
-            const container = this.itemContainer?.el;
+            const container = this.getNodeEl('itemContainer');
             if (container) {
                 container.removeEventListener('scroll', state.scrollHandler);
             }
@@ -313,19 +313,19 @@ export const OverflowAbility = {
         }
 
         if (state.prevClickHandler) {
-            const prevEl = this.nodeMap?.overflowPrev?.el;
+            const prevEl = this.getNodeEl('overflowPrev');
             if (prevEl) prevEl.removeEventListener('click', state.prevClickHandler);
             state.prevClickHandler = null;
         }
 
         if (state.nextClickHandler) {
-            const nextEl = this.nodeMap?.overflowNext?.el;
+            const nextEl = this.getNodeEl('overflowNext');
             if (nextEl) nextEl.removeEventListener('click', state.nextClickHandler);
             state.nextClickHandler = null;
         }
 
         if (state.moreClickHandler) {
-            const moreEl = this.nodeMap?.overflowMore?.el;
+            const moreEl = this.getNodeEl('overflowMore');
             if (moreEl) moreEl.removeEventListener('click', state.moreClickHandler);
             state.moreClickHandler = null;
         }
@@ -358,7 +358,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
         if (state.scrollHandler) {
@@ -385,9 +385,9 @@ export const OverflowAbility = {
         if (!state || state.clickRulesBound) return;
         state.clickRulesBound = true;
 
-        const prevEl = this.nodeMap?.overflowPrev?.el;
-        const nextEl = this.nodeMap?.overflowNext?.el;
-        const moreEl = this.nodeMap?.overflowMore?.el;
+        const prevEl = this.getNodeEl('overflowPrev');
+        const nextEl = this.getNodeEl('overflowNext');
+        const moreEl = this.getNodeEl('overflowMore');
 
         const rules: DelegatedEventRule[] = [];
         if (prevEl) {
@@ -451,7 +451,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        const container = this.itemContainer?.el;
+        const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
         if (state.mode === 'menu') {
@@ -547,8 +547,8 @@ export const OverflowAbility = {
         if (!this.abilityState(STATE_KEY)) {
             this.initOverflow({
                 mode: value,
-                direction: this.direction,
-                step: this.step,
+                direction: this.direction ?? 'horizontal',
+                step: this.step ?? 100,
             });
             this._bindOverflowClickRules();
             this.onCleanup(() => this._teardownOverflow());
@@ -565,7 +565,7 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state) return;
 
-        state.direction = this.direction;
+        state.direction = this.direction ?? 'horizontal';
         this._scheduleOverflowUpdate();
     },
 

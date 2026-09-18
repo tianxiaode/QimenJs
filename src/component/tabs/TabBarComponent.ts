@@ -109,7 +109,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
     onAfterInit(): void {
         this.addCls('q-tab-bar');
-        const container = (this as any).itemContainer?.el as HTMLElement | undefined;
+        const container = this.getNodeEl('itemContainer');
         if (container) container.classList.add('q-tab-bar__items');
 
         super.onAfterInit();

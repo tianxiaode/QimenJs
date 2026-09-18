@@ -244,9 +244,9 @@
     height: 18px;
 }
 
-.q-itemgroup__overflow-prev[hidden],
-.q-itemgroup__overflow-next[hidden],
-.q-itemgroup__overflow-more[hidden] {
+.q-itemgroup__overflow-prev.hidden,
+.q-itemgroup__overflow-next.hidden,
+.q-itemgroup__overflow-more.hidden {
     display: none !important;
 }
 

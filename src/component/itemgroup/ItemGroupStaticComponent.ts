@@ -77,7 +77,8 @@ export class ItemGroupStaticComponent extends ItemGroupBaseComponent {
             }
             items.length = 0;
         }
-        this.itemContainer?.el && (this.itemContainer.el.innerHTML = '');
+        const container = this.getNodeEl('itemContainer');
+        if (container) container.innerHTML = '';
         this._emitItemsChange('clear');
     }
 
