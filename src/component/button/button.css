@@ -150,6 +150,7 @@
 .q-button--disabled {
     cursor: not-allowed;
     opacity: var(--q-opacity-disabled, 0.4);
+    pointer-events: none;
 }
 
 /* 内容容器（icon + text） */
