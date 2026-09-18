@@ -97,7 +97,10 @@
 .q-avatar__icon.fa,
 .q-avatar__icon.fas,
 .q-avatar__icon.far,
-.q-avatar__icon.fab {
+.q-avatar__icon.fab,
+.q-avatar__icon.fa-solid,
+.q-avatar__icon.fa-regular,
+.q-avatar__icon.fa-brands {
     display: inline-block;
 }
 
