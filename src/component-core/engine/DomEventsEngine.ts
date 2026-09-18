@@ -157,20 +157,22 @@ export class DomEventsEngine {
         instance._domEventDispatchers = dispatchers;
 
         for (const eventType of allEventTypes) {
+            if (!instance._boundEventTypes) instance._boundEventTypes = new Map();
+            let eventTypesOnEl = instance._boundEventTypes.get(instance.el);
+            if (eventTypesOnEl?.has(eventType)) continue;
+
+            if (!eventTypesOnEl) {
+                eventTypesOnEl = new Set();
+                instance._boundEventTypes.set(instance.el, eventTypesOnEl);
+            }
+            eventTypesOnEl.add(eventType);
+
             const useCapture = eventType === 'focus' || eventType === 'blur';
 
             instance.bind(instance.el, eventType as any, {
                 capture: useCapture,
                 delegated: true,
             });
-
-            if (!instance._boundEventTypes) instance._boundEventTypes = new Map();
-            let eventTypesOnEl = instance._boundEventTypes.get(instance.el);
-            if (!eventTypesOnEl) {
-                eventTypesOnEl = new Set();
-                instance._boundEventTypes.set(instance.el, eventTypesOnEl);
-            }
-            eventTypesOnEl.add(eventType);
 
             const domEventKey = `${DOM_EVENT_PREFIX}${eventType}`;
             const handler = (domEvt: any) => {

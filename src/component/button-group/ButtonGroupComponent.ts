@@ -42,6 +42,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     _onToggleClick(domEvt: any): void {
         const toggle = domEvt.targetComponent;
         if (!toggle) return;
+        this.logger.info('[button-group] _onToggleClick', toggle);
 
         const self = this as any;
         const index = self.indexOf(toggle);
