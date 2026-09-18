@@ -17,7 +17,6 @@ const ButtonGroupComponentDefs: Definitions = {
 class ButtonGroupComponent extends ItemGroupPooledComponent {
     static type = 'button-group';
     defaultItemType = 'button';
-    _mode: ButtonGroupMode = 'single';
     _lastToggleIndex: number = -1;
 
     domEvents: DomEventsMap | undefined = {
@@ -49,7 +48,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         if (index < 0) return;
         self._lastToggleIndex = index;
 
-        if (self._mode === 'single') {
+        if (self.mode === 'single') {
             if (!toggle.pressed) {
                 self.selectAt(index);
             }
@@ -64,7 +63,6 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 
     onAfterInit(): void {
         const self = this as any;
-        self._mode = this.getData('mode') ?? 'single';
 
         this.toggleCls('q-button-group--multiple', self._mode === 'multiple');
         this.addCls('q-button-group');
@@ -72,7 +70,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
 
         super.onAfterInit();
 
-        if (self._mode === 'single') {
+        if (self.mode === 'single') {
             const selectedIndex = this.getData('selectedIndex');
             if (selectedIndex !== undefined) {
                 self.selectAt(selectedIndex, true);
@@ -85,11 +83,6 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
                 }
             }
         }
-    }
-
-    get mode(): ButtonGroupMode {
-        const self = this as any;
-        return self._mode;
     }
 
     get selectedIndex(): number {
@@ -147,9 +140,9 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
             target.pressed = true;
         }
 
-        if (!silent && prevIndex !== index) {
-            self.emit('select', { index, prevIndex });
-        }
+        // if (!silent && prevIndex !== index) {
+        //     self.emit('select', { index, prevIndex });
+        // }
     }
 
     pressAt(index: number, pressed: boolean): void {
@@ -158,17 +151,6 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
         const item = self.getAt(index);
         if (item) {
             item.pressed = pressed;
-        }
-    }
-
-    onUpdated(props?: Record<string, any>): void {
-        const self = this as any;
-        if (props?.mode !== undefined) {
-            self._mode = props.mode;
-            this.toggleCls('q-button-group--multiple', self._mode === 'multiple');
-        }
-        if (props?.selectedIndex !== undefined) {
-            self.selectAt(props.selectedIndex);
         }
     }
 }
