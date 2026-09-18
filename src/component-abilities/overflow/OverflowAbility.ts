@@ -385,31 +385,27 @@ export const OverflowAbility = {
         if (!state || state.clickRulesBound) return;
         state.clickRulesBound = true;
 
-        const prevEl = this.getNodeEl('overflowPrev');
-        const nextEl = this.getNodeEl('overflowNext');
-        const moreEl = this.getNodeEl('overflowMore');
-
         const rules: DelegatedEventRule[] = [];
-        if (prevEl) {
+        if (this.getNodeEl('overflowPrev')) {
             rules.push({
                 event: 'click',
-                path: prevEl,
+                path: 'overflowPrev',
                 handler: '_onOverflowPrevClick',
                 needsBinding: true,
             });
         }
-        if (nextEl) {
+        if (this.getNodeEl('overflowNext')) {
             rules.push({
                 event: 'click',
-                path: nextEl,
+                path: 'overflowNext',
                 handler: '_onOverflowNextClick',
                 needsBinding: true,
             });
         }
-        if (moreEl) {
+        if (this.getNodeEl('overflowMore')) {
             rules.push({
                 event: 'click',
-                path: moreEl,
+                path: 'overflowMore',
                 handler: '_onOverflowMoreClick',
                 needsBinding: true,
             });
