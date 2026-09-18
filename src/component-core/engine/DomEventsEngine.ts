@@ -211,6 +211,7 @@ export class DomEventsEngine {
 
         for (const rule of rules) {
             if (rule.event !== eventType) continue;
+            if (rule.path instanceof HTMLElement) continue;
 
             const matched = DomEventsEngine._matchPath(instance, rule.path, target);
             if (!matched) continue;
@@ -464,7 +465,11 @@ export class DomEventsEngine {
 
             const domEventKey = `${DOM_EVENT_PREFIX}${rule.event}`;
             const handler = (domEvt: any) => {
-                DomEventsEngine.handleDelegatedEvent(instance, domEvt);
+                if (isDirect) {
+                    DomEventsEngine._dispatchRule(instance, rule, domEvt);
+                } else {
+                    DomEventsEngine.handleDelegatedEvent(instance, domEvt);
+                }
             };
             const off = instance.on(domEventKey, handler);
             instance.onCleanup(() => {
