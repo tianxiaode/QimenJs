@@ -19,6 +19,8 @@
  */
 
 import type { AbilityDefinition } from '@/composable';
+import { DomEventsEngine } from '@/component-core/engine';
+import type { DelegatedEventRule } from '@/component-core/types/events';
 
 export type OverflowMode = 'none' | 'scroll' | 'menu';
 
@@ -44,6 +46,7 @@ interface InternalState {
     direction: 'horizontal' | 'vertical';
     step: number;
     rafId: number;
+    clickRulesBound: boolean;
     scrollHandler: (() => void) | null;
     resizeObserver: ResizeObserver | null;
     mutationObserver: MutationObserver | null;
@@ -79,6 +82,7 @@ export const OverflowAbility = {
             direction: config.direction ?? 'horizontal',
             step: config.step ?? 100,
             rafId: 0,
+            clickRulesBound: false,
             scrollHandler: null,
             resizeObserver: null,
             mutationObserver: null,
@@ -370,27 +374,59 @@ export const OverflowAbility = {
         state.mutationObserver?.disconnect();
         state.mutationObserver = new MutationObserver(() => this._scheduleOverflowUpdate());
         state.mutationObserver.observe(container, { childList: true });
+    },
+
+    /**
+     * 绑定溢出节点点击规则（只绑一次，走 DomEventsEngine，onCleanup 移除）
+     * 参照 float-shared.bindFloatTrigger 模式
+     */
+    _bindOverflowClickRules(): void {
+        const state = this.abilityState(STATE_KEY) as InternalState | undefined;
+        if (!state || state.clickRulesBound) return;
+        state.clickRulesBound = true;
 
         const prevEl = this.nodeMap?.overflowPrev?.el;
-        if (prevEl) {
-            if (state.prevClickHandler) prevEl.removeEventListener('click', state.prevClickHandler);
-            state.prevClickHandler = () => this._onOverflowPrevClick();
-            prevEl.addEventListener('click', state.prevClickHandler);
-        }
-
         const nextEl = this.nodeMap?.overflowNext?.el;
+        const moreEl = this.nodeMap?.overflowMore?.el;
+
+        const rules: DelegatedEventRule[] = [];
+        if (prevEl) {
+            rules.push({
+                event: 'click',
+                path: prevEl,
+                handler: '_onOverflowPrevClick',
+                needsBinding: true,
+            });
+        }
         if (nextEl) {
-            if (state.nextClickHandler) nextEl.removeEventListener('click', state.nextClickHandler);
-            state.nextClickHandler = () => this._onOverflowNextClick();
-            nextEl.addEventListener('click', state.nextClickHandler);
+            rules.push({
+                event: 'click',
+                path: nextEl,
+                handler: '_onOverflowNextClick',
+                needsBinding: true,
+            });
+        }
+        if (moreEl) {
+            rules.push({
+                event: 'click',
+                path: moreEl,
+                handler: '_onOverflowMoreClick',
+                needsBinding: true,
+            });
+        }
+        if (rules.length === 0) {
+            state.clickRulesBound = false;
+            return;
         }
 
-        const moreEl = this.nodeMap?.overflowMore?.el;
-        if (moreEl) {
-            if (state.moreClickHandler) moreEl.removeEventListener('click', state.moreClickHandler);
-            state.moreClickHandler = () => this._onOverflowMoreClick();
-            moreEl.addEventListener('click', state.moreClickHandler);
+        for (const rule of rules) {
+            DomEventsEngine.addEventRule(this, rule);
         }
+        this.onCleanup(() => {
+            for (const rule of rules) {
+                DomEventsEngine.removeEventRule(this, rule);
+            }
+        });
     },
 
     /**
@@ -448,14 +484,14 @@ export const OverflowAbility = {
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             if (i >= firstOverflowIndex) {
-                child.hidden = true;
+                child.classList.add('hidden');
                 overflowItems.push({
                     key: child.getAttribute('data-key') ?? `item-${i}`,
                     label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
                     element: child,
                 });
             } else {
-                child.hidden = false;
+                child.classList.remove('hidden');
             }
         }
 
@@ -465,7 +501,7 @@ export const OverflowAbility = {
     _detectScrollOverflow(container: HTMLElement, state: InternalState): void {
         const children = Array.from(container.children) as HTMLElement[];
         for (const child of children) {
-            child.hidden = false;
+            child.classList.remove('hidden');
         }
         state.overflowItems = [];
     },
@@ -514,10 +550,12 @@ export const OverflowAbility = {
                 direction: this.direction,
                 step: this.step,
             });
+            this._bindOverflowClickRules();
             this.onCleanup(() => this._teardownOverflow());
             return;
         }
         this._applyOverflowMode();
+        this._bindOverflowClickRules();
     },
 
     /**

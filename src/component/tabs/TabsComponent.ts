@@ -246,10 +246,7 @@ class TabsComponent extends Component {
         });
 
         this._renderContent();
-
-        if (insertIndex <= this.selectedIndex) {
-            this.selectedIndex++;
-        }
+        this._tabBar?.selectAt(insertIndex);
         this._applyActive();
     }
 

@@ -34,6 +34,7 @@ const TabBarComponentDefs: Definitions = {
         position: 'top',
         selectedIndex: null,
         size: 'md',
+        overflowMode: 'scroll',
     },
 } as const;
 
@@ -121,6 +122,10 @@ class TabBarComponent extends ItemGroupPooledComponent {
         if (selectedIndex !== undefined && selectedIndex >= 0) {
             this._selectedIndex = selectedIndex;
             this._applySelection();
+        }
+
+        if (!this.abilityState('OverflowAbility:state')) {
+            this._onOverflowModeOptionChange('scroll');
         }
     }
 
