@@ -193,24 +193,30 @@ export const OptionAbility: AbilityDefinition = {
         return new SlotCls({ container });
     },
 
-    _applyPropertyKeys(options?: Record<string, any>) {
-        if (!options) return;
-        const propertyKeys: Map<string, any> = this.propertyKeys;
-        for (const [key, value] of Object.entries(options)) {
-            if (key === 'id') continue;
-            if (propertyKeys.has(key)) {
-                this[key] = value;
-            }
-        }
-    },
-
-    _applyOptionKeys(options?: Record<string, any>) {
-        if (!options) return;
+    /**
+     * 初始化阶段静默复制所有配置值（不触发 change handler）
+     *
+     * 执行顺序：默认值 → 用户传入值（覆盖默认值）→ propertyKeys 直接赋值
+     * 之后由 initOptions() 统一触发所有 change handler
+     */
+    _applyInitOptions(options?: Record<string, any>) {
+        const dataMap = this.getDataMap();
         const optionsKeys: Map<string, any> = this.optionsKeys;
-        for (const [key, value] of Object.entries(options)) {
-            if (key === 'id') continue;
-            if (optionsKeys.has(key)) {
-                this.setData(key, value, true);
+        const propertyKeys: Map<string, any> = this.propertyKeys;
+
+        const defaults = { ...dataMap.defaultValues, ...this.defaultOptions };
+        for (const [key, value] of Object.entries(defaults)) {
+            this.setData(key, value, true);
+        }
+
+        if (options) {
+            for (const [key, value] of Object.entries(options)) {
+                if (key === 'id') continue;
+                if (optionsKeys.has(key)) {
+                    this.setData(key, value, true);
+                } else if (propertyKeys.has(key)) {
+                    this[key] = value;
+                }
             }
         }
     },

@@ -81,9 +81,7 @@ export const InitAbility = {
                 this.addCls(classes, name);
             }
         }
-        this._applyPropertyKeys(options);
-        this.applyOptionDefaults();
-        this._applyOptionKeys(this.rawOptions);
+        this._applyInitOptions(options);
         this.logger.debug(`[prepare:apply property keys]`, `[${this.type}]:[${this.id}]`);
     },
 

@@ -209,7 +209,7 @@ export class ComposableBase implements IComposableBase {
      * 派生类可覆写（prototype getter，类似 tpl）：为 option 提供默认值覆盖。
      *
      * getter 定义在原型链上，实例化即可读取（不依赖字段初始化顺序），
-     * 在 applyOptionDefaults 应用默认值时合并。
+     * 在 _applyInitOptions 静默复制默认值时合并。
      *
      * @example
      * ```ts
@@ -292,17 +292,10 @@ export class ComposableBase implements IComposableBase {
         this.onDisposed();
     }
 
-    private applyOptionDefaults(): void {
-        const overrides = { ...this.getDataMap().defaultValues, ...this.defaultOptions };
-        for (const [key, value] of Object.entries(overrides)) {
-            this.setData(key, value, true);
-        }
-    }
-
     /**
      * 初始化阶段触发所有 option 的 change handler
      *
-     * 在 applyOptionDefaults 静默复制默认值 + rawOptions 静默覆盖之后调用，
+     * 在 _applyInitOptions 静默复制默认值 + 用户传入值之后调用，
      * 确保每个 handler 执行时 this.xxx 已是最终值（用户值 > 默认值）。
      */
     initOptions(): void {
