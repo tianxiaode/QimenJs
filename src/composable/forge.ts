@@ -127,9 +127,7 @@ export function withDefinitions(target: any, definitions: Definitions): void {
         for (const [key, value] of Object.entries(definitions.options)) {
             if (BUILTIN_KEYS.has(key)) continue;
             dataMap.optionsKeys.add(key);
-            if (value) {
-                dataMap.defaultValues[key] = value;
-            }
+            dataMap.defaultValues[key] = value;
 
             defineGetterSetter(proto, key);
         }
