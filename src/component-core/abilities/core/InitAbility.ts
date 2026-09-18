@@ -18,25 +18,20 @@
 import type { AbilityDefinition } from '@/composable';
 import { TemplateManager, ListensEngine, DomEventsEngine } from '../../engine';
 import { SKELETON_CLS } from '../../constants';
-import { ComponentCoreOptions, IComponentCore } from '../../types';
+import { IComponentCore } from '../../types';
 import { string } from '@/utils';
 
 /** 组件初始化能力 */
 export const InitAbility = {
-    _initialize(options?: ComponentCoreOptions) {
+    _initialize() {
         this.logger.debug(`[initialize][${this.id}]`, '开始初始化');
-        this.id = this.id ?? options?.id ?? string.getId(`cmp-${this.type}`);
-        this.hasParent = options?.hasParent ?? false;
-        this.container = options?.container;
-        delete options?.id;
-        delete options?.hasParent;
-        delete options?.container;
+        this.id = this.id ?? string.getId(`cmp-${this.type}`);
 
         this._initializing = true;
         this.isInstance = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));
-        this.onBeforeInit(options);
-        this._buildDOM(options);
+        this.onBeforeInit();
+        this._buildDOM();
     },
 
     /**
@@ -44,7 +39,7 @@ export const InitAbility = {
      *
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
-    _buildDOM(options?: ComponentCoreOptions): void {
+    _buildDOM(): void {
         this._setCache(TemplateManager.get(this.tpl));
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
@@ -55,7 +50,7 @@ export const InitAbility = {
         this.el = el;
         this._setNodeEl('root', el);
         this.logger.debug(`[prepare:build html]`, `[${this.type}]:[${this.id}]`);
-        this._applyNodeMeta(options);
+        this._applyNodeMeta();
 
         if (!this.hasParent) {
             if (this.container) {
@@ -66,7 +61,7 @@ export const InitAbility = {
         this._templateInitialized = true;
     },
 
-    _applyNodeMeta(options?: ComponentCoreOptions): void {
+    _applyNodeMeta(): void {
         const names = this._getCache().names;
         this.logger.debug(`[prepare:apply node meta]`, `[${this.type}]:[${this.id}]`);
         for (const name of names) {

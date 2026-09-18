@@ -206,5 +206,4 @@ export const OptionAbility: AbilityDefinition = {
             }
         }
     },
-
 } satisfies AbilityDefinition;
