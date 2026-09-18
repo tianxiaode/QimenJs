@@ -99,13 +99,7 @@ class ButtonComponent extends Component {
         const loadingNode = 'loading';
         this.setNodeHidden(value, iconNode);
         this.setNodeHidden(!value, loadingNode);
-        if (value) {
-            this.addCls('q-button--loading');
-            this.disable = true;
-        } else {
-            this.removeCls('q-button--loading');
-            this.disable = false;
-        }
+        value ? this.addCls('q-button--loading') : this.removeCls('q-button--loading');
     }
 
     _onArrowHiddenOptionChange(value: boolean) {

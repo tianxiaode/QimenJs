@@ -202,6 +202,10 @@
     animation: q-button-spin 0.6s linear infinite;
 }
 
+.q-button--loading {
+    pointer-events: none;
+}
+
 @keyframes q-button-spin {
     to {
         transform: rotate(360deg);
@@ -388,7 +392,7 @@
     color: var(--q-color-on-secondary, #fff);
 }
 
-/* 幽灵模式 — 主要色 */
+/* 幽灵模式 — 各颜色 */
 .q-button--ghost.q-button--color-primary {
     color: var(--q-color-primary, #0078d4);
     background: transparent;
@@ -397,5 +401,60 @@
 
 .q-button--ghost.q-button--color-primary:hover {
     background: var(--q-color-primary-hover, rgba(0, 120, 212, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-secondary {
+    color: var(--q-color-secondary, #767676);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-secondary:hover {
+    background: var(--q-color-secondary-hover, rgba(118, 118, 118, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-success {
+    color: var(--q-color-success, #107c10);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-success:hover {
+    background: var(--q-color-success-hover, rgba(16, 124, 16, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-warning {
+    color: var(--q-color-warning, #ca5010);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-warning:hover {
+    background: var(--q-color-warning-hover, rgba(202, 80, 16, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-error {
+    color: var(--q-color-error, #d13438);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-error:hover {
+    background: var(--q-color-error-hover, rgba(209, 52, 56, 0.1));
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-info {
+    color: var(--q-color-info, #0078d4);
+    background: transparent;
+    border-color: transparent;
+}
+
+.q-button--ghost.q-button--color-info:hover {
+    background: var(--q-color-info-hover, rgba(0, 120, 212, 0.1));
     border-color: transparent;
 }

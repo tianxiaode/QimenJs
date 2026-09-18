@@ -391,14 +391,17 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!Array.isArray(items)) return;
 
         for (let i = 0; i < items.length; i++) {
+            const el = items[i]?.el;
+            if (!el) continue;
             const customOrder = items[i]?.order;
-            items[i].el.style.order =
+            el.style.order =
                 customOrder !== undefined ? String(customOrder) : String((i + 1) * step);
         }
 
         for (const pool of this._auxPools.values()) {
             for (let i = 0; i < pool.items.length; i++) {
                 const component = pool.items[i];
+                if (!component?.el) continue;
                 const orderIndex = component?.orderIndex ?? 0;
                 component.el.style.order = String(
                     Math.floor(orderIndex * step + step * pool.offset)
