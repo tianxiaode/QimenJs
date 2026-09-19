@@ -93,6 +93,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
             this._selectedIndex--;
         }
         this._applySelection();
+        this._scrollToItem(this.getAt(this._selectedIndex) as TabComponent);
         this.emit('close', { index });
     }
 
@@ -160,10 +161,19 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
         this._selectedIndex = index;
         this._applySelection();
+        this._scrollToItem(newItem);
 
         if (!silent) {
             this.emit('select', { index });
         }
+    }
+
+    /** 滚动到指定标签，确保选中标签可见 */
+    private _scrollToItem(item: TabComponent | null): void {
+        if (!item?.el || !this.abilityState('OverflowAbility:state')) return;
+        requestAnimationFrame(() => {
+            this.overflowScrollToChild(item.el!);
+        });
     }
 
     get position(): TabBarPosition {

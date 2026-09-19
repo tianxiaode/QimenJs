@@ -95,6 +95,18 @@
     align-self: stretch;
 }
 
+.q-tab-bar--top .q-itemgroup__overflow-prev,
+.q-tab-bar--top .q-itemgroup__overflow-next {
+    padding-bottom: 2px;
+    margin-bottom: -2px;
+}
+
+.q-tab-bar--bottom .q-itemgroup__overflow-prev,
+.q-tab-bar--bottom .q-itemgroup__overflow-next {
+    padding-top: 2px;
+    margin-top: -2px;
+}
+
 .q-tab-bar--left .q-itemgroup__overflow-prev,
 .q-tab-bar--left .q-itemgroup__overflow-next,
 .q-tab-bar--right .q-itemgroup__overflow-prev,
@@ -102,6 +114,18 @@
     height: 16px;
     width: auto;
     align-self: stretch;
+}
+
+.q-tab-bar--left .q-itemgroup__overflow-prev,
+.q-tab-bar--left .q-itemgroup__overflow-next {
+    padding-right: 2px;
+    margin-right: -2px;
+}
+
+.q-tab-bar--right .q-itemgroup__overflow-prev,
+.q-tab-bar--right .q-itemgroup__overflow-next {
+    padding-left: 2px;
+    margin-left: -2px;
 }
 
 .q-tabs {
