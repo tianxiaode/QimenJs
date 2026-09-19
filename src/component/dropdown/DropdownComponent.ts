@@ -24,7 +24,7 @@ import './dropdown.css';
 
 const DropdownComponentDefs: Definitions = {
     options: {
-        arrowCls: 'q-arrow--bottom',
+        arrowCls: 'q-caret',
     },
     fields: {
         anchorNode: 'dropIcon',

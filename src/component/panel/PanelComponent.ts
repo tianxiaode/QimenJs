@@ -72,6 +72,10 @@ class PanelComponent extends Component {
             this.addCls('q-panel--collapsed');
             this.setNodeHidden(true, 'body');
         }
+        const headerComp = this.getComponent('header') as any;
+        if (headerComp?.setExpandState) {
+            headerComp.setExpandState(collapsed);
+        }
     }
 
     onCloseActionClick(): void {

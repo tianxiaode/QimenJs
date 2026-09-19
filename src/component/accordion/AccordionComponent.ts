@@ -131,8 +131,8 @@ class AccordionComponent extends ItemGroupPooledComponent {
         const panel = self.getAt(index);
         if (!panel) return;
         panel.setNodeHidden(false, 'body');
-        panel.addCls('q-expand-arrow--expanded', 'expand');
-        panel.removeCls('q-expand-arrow--collapsed', 'expand');
+        const headerComp = panel.getComponent?.('header') as any;
+        if (headerComp?.setExpandState) headerComp.setExpandState(true);
         panel.removeCls('q-panel--collapsed');
     }
 
@@ -141,8 +141,8 @@ class AccordionComponent extends ItemGroupPooledComponent {
         const panel = self.getAt(index);
         if (!panel) return;
         panel.setNodeHidden(true, 'body');
-        panel.addCls('q-expand-arrow--collapsed', 'expand');
-        panel.removeCls('q-expand-arrow--expanded', 'expand');
+        const headerComp = panel.getComponent?.('header') as any;
+        if (headerComp?.setExpandState) headerComp.setExpandState(false);
         panel.addCls('q-panel--collapsed');
     }
 

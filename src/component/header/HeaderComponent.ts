@@ -26,6 +26,7 @@ const HeaderComponentDefs: Definitions = {
         _titleComp: undefined,
         _leftSpacers: [],
         _rightSpacers: [],
+        _expandState: false,
     },
 } as const;
 
@@ -223,16 +224,30 @@ class HeaderComponent extends ItemGroupStaticComponent {
     _onExpandableOptionChange(value: boolean, old?: boolean): void {
         if (value) {
             if (!this._findFixedItem('expand')) {
-                this.add({
-                    iconCls: 'q-chevron-down',
+                const item = this.add({
+                    iconCls: 'q-caret',
                     action: 'expand',
                     order: EXPAND_ORDER,
                     clickable: true,
                 });
+                this._applyExpandState(item);
             }
         } else if (old) {
             this._removeFixedItem('expand');
         }
+    }
+
+    /**
+     * 同步折叠/展开箭头方向（展开朝上、折叠朝下），供父级（Panel/Accordion）调用
+     */
+    setExpandState(expanded: boolean): void {
+        this._expandState = expanded;
+        this._applyExpandState(this._findFixedItem('expand') as any);
+    }
+
+    _applyExpandState(item: any): void {
+        if (!item) return;
+        item.toggleCls('q-caret--top', !!this._expandState, 'icon');
     }
 
     _findFixedItem(kind: 'icon' | 'close' | 'expand'): any {

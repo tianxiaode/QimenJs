@@ -73,3 +73,33 @@
 .q-arrow.hidden {
     display: none;
 }
+
+/* ========================================
+   🔻 通用 caret 三角 - 下拉/折叠方向指示箭头
+   border 三角绘制，方向用类切换（不旋转，避免偏移对齐）
+   颜色跟随 currentColor，尺寸跟随 --q-arrow-size
+   ======================================== */
+
+.q-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-style: solid;
+    border-width: var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) 0 var(--q-arrow-size, 6px);
+    border-color: currentColor transparent transparent transparent;
+}
+
+.q-caret--top {
+    border-width: 0 var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) var(--q-arrow-size, 6px);
+    border-color: transparent transparent currentColor transparent;
+}
+
+/* 覆盖宿主基础样式（button 的 dropIcon / icon 的 i 元素），保证三角形态稳定 */
+.q-button__arrow.q-caret,
+.q-icon.q-caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    font-size: 0;
+}

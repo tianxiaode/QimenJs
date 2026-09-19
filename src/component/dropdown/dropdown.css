@@ -2,16 +2,7 @@
     cursor: pointer;
 }
 
+/* 下拉箭头走通用 .q-caret（theme/arrow.css），这里仅保留间距 */
 .q-dropdown .q-button__arrow {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) 0 var(--q-arrow-size, 6px);
-    border-color: currentColor transparent transparent transparent;
     margin-left: 4px;
-    transition: transform 0.2s ease;
-}
-
-.q-dropdown.q-dropdown--open .q-button__arrow {
-    transform: rotate(180deg);
 }
