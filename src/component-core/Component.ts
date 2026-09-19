@@ -112,7 +112,6 @@ export class Component extends ComposableBase implements IComponent {
     onAfterInit(): void {}
 
     override onBeforeDispose(): void {
-        console.warn(`[DISPOSE] id=${(this as any).id} type=${(this as any).type} dbg=${(this as any).__dbg} hasOwnNE=${this.hasOwnProperty?.('nodeElements')} _disposing=${(this as any)._disposing}`);
         this._disposing = true;
 
         if (typeof this.onBeforeUnmount === 'function') {

@@ -24,7 +24,6 @@ import { string } from '@/utils';
 /** 组件初始化能力 */
 export const InitAbility = {
     _initialize() {
-        (this as any).__dbg = Math.random().toString(36).slice(2, 8);
         this.logger.debug(`[initialize][${this.id}]`, '开始初始化');
         this.id = this.id ?? string.getId(`cmp-${this.type}`);
 
@@ -41,10 +40,7 @@ export const InitAbility = {
      * 合并编译模板和构建 DOM 的逻辑，同步执行，el 立即可用。
      */
     _buildDOM(): void {
-        const tplCache = TemplateManager.get(this.tpl);
-        console.warn(`[_buildDOM ENTRY] id=${this.id} type=${this.type} hasOwnNodeEl=${this.hasOwnProperty?.('nodeElements')} _disposing=${(this as any)._disposing} hasP=${this.hasParent} dbg=${(this as any).__dbg}`);
-        console.warn(`[_buildDOM] ${this.id} (${this.type}) setCache begin`, `tplCache:`, !!tplCache);
-        this._setCache(tplCache);
+        this._setCache(TemplateManager.get(this.tpl));
         this.logger.debug(`[prepare:compile template]`, `[${this.type}]:[${this.id}]`);
         this.nodeElements = {};
         this.nodeInstances = {};
@@ -144,11 +140,7 @@ export const InitAbility = {
      */
     _continueInit(childReady?: () => void) {
         if (this._disposing) return;
-        console.warn(`[_continueInit ENTRY] id=${this.id} type=${this.type} dbg=${(this as any).__dbg} hasTP=${'__tplCache' in this._getData()} ownNE=${this.hasOwnProperty?.('nodeElements')}`);
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
-        if (!this._getCache()) {
-            console.warn(`[_continueInit NO_CACHE] ${this.id} (${this.type}) ctor=${(this as any).constructor?.name} nodeElOwn=${(this as any).hasOwnProperty?.('nodeElements')} id=${this.id} disp=${this._disposing}`);
-        }
         this.initOptions();
 
         this._initPermission();
