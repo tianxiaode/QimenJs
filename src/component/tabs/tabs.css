@@ -15,6 +15,7 @@
 
 .q-tab-bar--top > .q-tab-bar__items {
     padding-bottom: 2px;
+    margin-bottom: -2px;
 }
 
 .q-tab-bar--bottom {
@@ -24,6 +25,7 @@
 
 .q-tab-bar--bottom > .q-tab-bar__items {
     padding-top: 2px;
+    margin-top: -2px;
 }
 
 .q-tab-bar--bottom .q-tab {
@@ -45,6 +47,7 @@
 
 .q-tab-bar--left > .q-tab-bar__items {
     padding-right: 2px;
+    margin-right: -2px;
 }
 
 .q-tab-bar--left .q-tab {
@@ -67,6 +70,7 @@
 
 .q-tab-bar--right > .q-tab-bar__items {
     padding-left: 2px;
+    margin-left: -2px;
 }
 
 .q-tab-bar--right .q-tab {
