@@ -165,7 +165,25 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     _getCache() {
-        return this.getData('__tplCache');
+        const cache = this.getData('__tplCache');
+        if (!cache) {
+            if (!(this as any)._getData) {
+                console.error(`[_getCache FATAL] ${this.id} (${this.type}): _getData not found on instance`);
+                return cache;
+            }
+            const data = (this as any)._getData();
+            const ctorName = (this as any).constructor?.name;
+            const stackLines = new Error().stack?.split('\n')?.slice(0,8)?.join('|') || '';
+            console.warn(
+                `[_getCache FAIL] id=${this.id} type=${this.type} ctor=${ctorName} dbg=${(this as any).__dbg}`,
+                `| disposing:${(this as any)._disposing}`,
+                `| data keys:`, Object.keys(data),
+                `| data has __tplCache:`, '__tplCache' in data,
+                `| nodeElements own:`, (this as any).hasOwnProperty?.('nodeElements'),
+                `| stack:`, stackLines
+            );
+        }
+        return cache;
     },
 
     _setCache(cache: any) {
