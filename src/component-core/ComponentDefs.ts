@@ -163,7 +163,6 @@ export const ComponentDefs: Definitions = {
     privateFields: {
         _initializing: false,
         _templateInitialized: false,
-        _disposing: false,
     },
 
     overrides: {

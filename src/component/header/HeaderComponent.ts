@@ -195,17 +195,17 @@ class HeaderComponent extends ItemGroupStaticComponent {
         }
     }
 
-    _onIconClsOptionChange(value: string): void {
+    _onIconClsOptionChange(value: string, old?: string): void {
         if (value) {
             if (!this._findFixedItem('icon')) {
                 this.add({ iconCls: value, order: ICON_ORDER });
             }
-        } else {
+        } else if (old) {
             this._removeFixedItem('icon');
         }
     }
 
-    _onClosableOptionChange(value: boolean): void {
+    _onClosableOptionChange(value: boolean, old?: boolean): void {
         if (value) {
             if (!this._findFixedItem('close')) {
                 this.add({
@@ -215,12 +215,12 @@ class HeaderComponent extends ItemGroupStaticComponent {
                     clickable: true,
                 });
             }
-        } else {
+        } else if (old) {
             this._removeFixedItem('close');
         }
     }
 
-    _onExpandableOptionChange(value: boolean): void {
+    _onExpandableOptionChange(value: boolean, old?: boolean): void {
         if (value) {
             if (!this._findFixedItem('expand')) {
                 this.add({
@@ -230,7 +230,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
                     clickable: true,
                 });
             }
-        } else {
+        } else if (old) {
             this._removeFixedItem('expand');
         }
     }
