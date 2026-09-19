@@ -42,7 +42,6 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     _onToggleClick(domEvt: any): void {
         const toggle = domEvt.targetComponent;
         if (!toggle) return;
-        this.logger.info('[button-group] _onToggleClick', toggle);
 
         const self = this as any;
         const index = self.indexOf(toggle);
@@ -141,9 +140,9 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
             target.pressed = true;
         }
 
-        // if (!silent && prevIndex !== index) {
-        //     self.emit('select', { index, prevIndex });
-        // }
+        if (!silent && prevIndex !== index) {
+            self.emit('select', { index, prevIndex });
+        }
     }
 
     pressAt(index: number, pressed: boolean): void {

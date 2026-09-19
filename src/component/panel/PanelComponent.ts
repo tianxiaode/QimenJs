@@ -1,14 +1,10 @@
 import { Component } from '@qimenjs/component-core';
 import type { DomEventsMap, TemplateDecl } from '@/component-core';
 import { ResizeAbility } from '@qimenjs/component-abilities';
-import { IconComponent } from '../icon/IconComponent';
 import { PANEL_TPL } from './panel-tpl';
 import { Definitions } from '@/composable';
 import type { PanelContent } from './types';
 import './panel.css';
-
-const EXPAND_ORDER = 10600;
-const CLOSE_ORDER = 10700;
 
 const PanelComponentDefs: Definitions = {
     options: {
@@ -55,46 +51,12 @@ class PanelComponent extends Component {
 
     _onExpandableOptionChange(value: boolean): void {
         const headerComp = this.getComponent('header') as any;
-        if (!headerComp) return;
-        if (value) {
-            headerComp.add({
-                type: IconComponent,
-                iconCls: 'q-chevron-down',
-                action: 'expand',
-                order: EXPAND_ORDER,
-                clickable: true,
-            });
-        } else {
-            const items = headerComp.items ?? [];
-            for (let i = items.length - 1; i >= 0; i--) {
-                if (items[i]?.action === 'expand') {
-                    headerComp.removeAt(i);
-                    break;
-                }
-            }
-        }
+        if (headerComp) headerComp.setData('expandable', value);
     }
 
     _onClosableOptionChange(value: boolean): void {
         const headerComp = this.getComponent('header') as any;
-        if (!headerComp) return;
-        if (value) {
-            headerComp.add({
-                type: IconComponent,
-                iconCls: 'q-close',
-                action: 'close',
-                order: CLOSE_ORDER,
-                clickable: true,
-            });
-        } else {
-            const items = headerComp.items ?? [];
-            for (let i = items.length - 1; i >= 0; i--) {
-                if (items[i]?.action === 'close') {
-                    headerComp.removeAt(i);
-                    break;
-                }
-            }
-        }
+        if (headerComp) headerComp.setData('closable', value);
     }
 
     _onResizableOptionChange(value: boolean): void {

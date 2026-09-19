@@ -1,12 +1,16 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { HtmlComponent } from '../html/HtmlComponent';
+import { IconComponent } from '../icon/IconComponent';
 import { SpacerComponent } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
 
 const LEFT_SPACER_ORDER = 9500;
+const ICON_ORDER = 9600;
 const TITLE_ORDER = 10000;
 const RIGHT_SPACER_ORDER = 10500;
+const EXPAND_ORDER = 10600;
+const CLOSE_ORDER = 10700;
 
 const HeaderComponentDefs: Definitions = {
     options: {
@@ -14,6 +18,9 @@ const HeaderComponentDefs: Definitions = {
         subtitle: null,
         titleCls: null,
         titleStyle: null,
+        iconCls: null,
+        closable: false,
+        expandable: false,
     },
     fields: {
         _titleComp: undefined,
@@ -185,6 +192,65 @@ class HeaderComponent extends ItemGroupStaticComponent {
     _onTitleStyleOptionChange(value: Record<string, string>): void {
         if (this._titleComp) {
             this._titleComp.setStyles(value);
+        }
+    }
+
+    _onIconClsOptionChange(value: string): void {
+        if (value) {
+            if (!this._findFixedItem('icon')) {
+                this.add({ iconCls: value, order: ICON_ORDER });
+            }
+        } else {
+            this._removeFixedItem('icon');
+        }
+    }
+
+    _onClosableOptionChange(value: boolean): void {
+        if (value) {
+            if (!this._findFixedItem('close')) {
+                this.add({
+                    iconCls: 'q-close',
+                    action: 'close',
+                    order: CLOSE_ORDER,
+                    clickable: true,
+                });
+            }
+        } else {
+            this._removeFixedItem('close');
+        }
+    }
+
+    _onExpandableOptionChange(value: boolean): void {
+        if (value) {
+            if (!this._findFixedItem('expand')) {
+                this.add({
+                    iconCls: 'q-chevron-down',
+                    action: 'expand',
+                    order: EXPAND_ORDER,
+                    clickable: true,
+                });
+            }
+        } else {
+            this._removeFixedItem('expand');
+        }
+    }
+
+    _findFixedItem(kind: 'icon' | 'close' | 'expand'): any {
+        const items = this.items;
+        if (!Array.isArray(items)) return undefined;
+        const order = kind === 'icon' ? ICON_ORDER : kind === 'close' ? CLOSE_ORDER : EXPAND_ORDER;
+        return items.find((item: any) => item.order === order);
+    }
+
+    _removeFixedItem(kind: 'icon' | 'close' | 'expand'): void {
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        const order = kind === 'icon' ? ICON_ORDER : kind === 'close' ? CLOSE_ORDER : EXPAND_ORDER;
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (items[i]?.order === order) {
+                this.removeAt(i);
+                return;
+            }
         }
     }
 

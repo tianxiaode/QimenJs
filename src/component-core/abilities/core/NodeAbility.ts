@@ -169,6 +169,6 @@ export const NodeAbility: AbilityDefinition = {
     },
 
     _setCache(cache: any) {
-        this.setData('__tplCache', cache);
+        this.setData('__tplCache', cache, true);
     },
 } satisfies AbilityDefinition;

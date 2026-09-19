@@ -44,8 +44,8 @@ export const OptionAbility: AbilityDefinition = {
         hidden ? this.addCls(cls) : this.removeCls(cls);
     },
 
-    _onDisableOptionChange(_value: any, _old: any) {
-        if (this.disable) {
+    _onDisableOptionChange(value: any, _old: any) {
+        if (value) {
             this.addCls(`${this._cssPrefix}--disabled`);
             this.addCls('q-disabled');
         } else {
@@ -67,7 +67,7 @@ export const OptionAbility: AbilityDefinition = {
         if (value) {
             this.setNodeAttr('title', String(value));
         } else {
-            this.el?.removeAttribute('title');
+            this.removeAttributes(['title']);
             this._unregisterI18nNode('root', 'title');
         }
     },

@@ -139,6 +139,7 @@ export const InitAbility = {
      * （option 默认值和用户传入值已在 _applyNodeMeta 同步阶段静默复制完成）
      */
     _continueInit(childReady?: () => void) {
+        if (this._disposing) return;
         this.logger.debug(`[_continueInit][${this.id}]`, '开始后续初始化');
         this.initOptions();
 

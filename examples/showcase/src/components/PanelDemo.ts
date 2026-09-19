@@ -21,7 +21,7 @@ export const PANEL_DEMO: DemoConfig = {
         },
         {
             label: '带图标 (header items)',
-            code: `{ type: 'panel', options: { title: '数据面板', header: { items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }] }, body: '面板内容区域' } }`,
+            code: `{ type: 'panel', options: { title: '数据面板', header: { items: [{  iconCls: 'fa fa-dashboard', order: 0 }] }, body: '面板内容区域' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -31,7 +31,7 @@ export const PANEL_DEMO: DemoConfig = {
                         options: {
                             title: '数据面板',
                             header: {
-                                items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }],
+                                items: [{ iconCls: 'fa fa-dashboard', order: 0 }],
                             },
                             body: '面板内容区域',
                         },
@@ -95,7 +95,7 @@ export const PANEL_DEMO: DemoConfig = {
         },
         {
             label: '完整面板',
-            code: `{ type: 'panel', options: { title: '完整面板', header: { items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }] }, expandable: true, closable: true, resizable: true, body: '同时支持折叠、关闭和缩放的面板' } }`,
+            code: `{ type: 'panel', options: { title: '完整面板', header: { items: [{  iconCls: 'fa fa-dashboard', order: 0 }] }, expandable: true, closable: true, resizable: true, body: '同时支持折叠、关闭和缩放的面板' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -105,7 +105,7 @@ export const PANEL_DEMO: DemoConfig = {
                         options: {
                             title: '完整面板',
                             header: {
-                                items: [{ type: 'icon', iconCls: 'fa fa-dashboard', order: 0 }],
+                                items: [{ iconCls: 'fa fa-dashboard', order: 0 }],
                             },
                             expandable: true,
                             closable: true,
