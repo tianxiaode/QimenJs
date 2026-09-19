@@ -55,6 +55,8 @@ class TabBarComponent extends ItemGroupPooledComponent {
     _onTabClick(domEvt: any): void {
         const item = domEvt.targetComponent as TabComponent;
         if (!item || item.disabled) return;
+        const target = domEvt?.data?.originalEvent?.target ?? domEvt?.target;
+        if (target?.closest?.('.q-tab__close')) return;
         const index = this.indexOf(item);
         if (index < 0) return;
         this._lastToggleIndex = index;
