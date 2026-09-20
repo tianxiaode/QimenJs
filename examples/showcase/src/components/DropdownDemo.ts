@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl } from '@qimenjs/component-core';
+import { Component, type TemplateDecl, type ListenItem } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** Dropdown 选中项交互演示 */
@@ -30,16 +30,17 @@ class DropdownSelectDemo extends Component {
         };
     }
 
-    onAfterInit(): void {
-        super.onAfterInit();
-        this.getNode('dd')?.on('popoverselect', (ctx: any) => {
-            const data = ctx?.data ?? ctx;
-            const action = data?.action;
-            const result = this.getNodeEl('result');
-            if (result && action) {
-                result.textContent = `选中: ${action}`;
-            }
-        });
+    listens: ListenItem[] = [
+        { node: 'dd', events: { popoverselect: '_onDdSelect' } },
+    ];
+
+    _onDdSelect(ctx: any): void {
+        const data = ctx?.data ?? ctx;
+        const action = data?.action;
+        const result = this.getNodeEl('result');
+        if (result && action) {
+            result.textContent = `选中: ${action}`;
+        }
     }
 }
 
