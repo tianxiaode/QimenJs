@@ -30,11 +30,11 @@ class BreadcrumbComponent extends ItemGroupStaticComponent {
         super.onAfterInit();
         this.addCls('q-breadcrumb');
         const separator = this.getData('separator') ?? '/';
-        this.el.style.setProperty('--q-breadcrumb-separator', `"${separator}"`);
+        this.el?.style.setProperty('--q-breadcrumb-separator', `"${separator}"`);
     }
 
     _onSeparatorOptionChange(value: string): void {
-        this.el.style.setProperty('--q-breadcrumb-separator', `"${value}"`);
+        this.el?.style.setProperty('--q-breadcrumb-separator', `"${value}"`);
     }
 }
 

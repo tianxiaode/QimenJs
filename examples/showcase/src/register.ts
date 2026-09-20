@@ -38,6 +38,9 @@ import {
     TabComponent,
     TabBarComponent,
     TabsComponent,
+    BreadcrumbComponent,
+    NavItemComponent,
+    NavComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -65,3 +68,6 @@ PanelComponent.register();
 TabComponent.register();
 TabBarComponent.register();
 TabsComponent.register();
+BreadcrumbComponent.register();
+NavItemComponent.register();
+NavComponent.register();
