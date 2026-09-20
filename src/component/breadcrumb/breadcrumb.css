@@ -33,12 +33,12 @@
     text-decoration: underline;
 }
 
-.q-breadcrumb__list > *:last-child .q-href {
+.q-breadcrumb__list > *:last-child {
     color: var(--q-color-text, #1a1a1a);
     font-weight: var(--q-font-weight-semibold, 600);
     cursor: default;
 }
 
-.q-breadcrumb__list > *:last-child .q-href:hover {
+.q-breadcrumb__list > *:last-child:hover {
     text-decoration: none;
 }

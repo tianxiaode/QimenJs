@@ -29,15 +29,16 @@ class BreadcrumbClickDemo extends Component {
     }
 
     domEvents: DomEventsMap = {
-        navigate: { path: 'bc', handler: '_onBcNavigate' },
+        click: { path: 'bc', handler: '_onBcClick' },
     };
 
-    _onBcNavigate(domEvt: any): void {
-        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
-        const href = data?.href;
+    _onBcClick(domEvt: any): void {
+        const target = domEvt?.data?.originalEvent?.target ?? domEvt?.target;
+        const anchor = target?.closest?.('a');
+        const href = anchor?.getAttribute('href');
         const result = this.getNodeEl('result');
-        if (result && href) {
-            result.textContent = `导航到: ${href}`;
+        if (result) {
+            result.textContent = href ? `导航到: ${href}` : '点击了最后一项（当前页面）';
         }
     }
 }
@@ -97,10 +98,8 @@ export const BREADCRUMB_DEMO: DemoConfig = {
         {
             label: '点击交互',
             code: `// HrefComponent 自带 router: 'navigate'
-// 监听 navigate 事件获取 href
-bc.on('navigate', (data) => {
-    console.log(data.href);
-})`,
+// 点击非最后一项自动触发路由导航
+// 最后一项无 href，为当前页面 active 状态`,
             component: BreadcrumbClickDemo,
         } satisfies DemoSection,
     ],
