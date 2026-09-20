@@ -178,6 +178,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
         this.setData('selectedIndex', index, true);
         this._applySelection();
         this._scrollToItem(newItem);
+        this.refreshOverflow?.();
 
         if (!silent) {
             this.emit('select', { index });

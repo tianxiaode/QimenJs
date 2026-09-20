@@ -81,9 +81,10 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorSource = decl.anchor && decl.anchor !== 'self'
-            ? (this.getNodeEl?.(decl.anchor) ?? this.el!)
-            : this.el!;
+        const anchorSource =
+            decl.anchor && decl.anchor !== 'self'
+                ? (this.getNodeEl?.(decl.anchor) ?? this.el!)
+                : this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
             anchor: anchorSource,
@@ -94,8 +95,8 @@ export const PopoverAbility: AbilityDefinition = {
 
         const overlay = new OverlayClass(constr);
         if (typeof overlay.on === 'function') {
-            overlay.on('select', (data: any) => {
-                this.emit('popoverselect', data);
+            overlay.on('select', (ctx: any) => {
+                this.emit('popoverselect', ctx?.data ?? ctx);
             });
         }
         this.setAbilityState('PopoverAbility:instance', overlay);

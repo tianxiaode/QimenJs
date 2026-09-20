@@ -267,6 +267,16 @@ export const OverflowAbility = {
         } else if (mode === 'menu') {
             this.el.classList.add('q-itemgroup--overflow-menu');
             this.el.classList.remove('q-itemgroup--overflow-scroll');
+
+            const container = this.getNodeEl('itemContainer');
+            if (container) {
+                if (state.direction === 'horizontal') {
+                    container.scrollLeft = 0;
+                } else {
+                    container.scrollTop = 0;
+                }
+            }
+
             this.setNodeHidden(false, 'overflowPrev');
             this.setNodeHidden(true, 'overflowNext');
             this.setNodeHidden(false, 'overflowMore');
@@ -333,7 +343,10 @@ export const OverflowAbility = {
         state.scrollUnbind?.();
         const unbind = this.bind(container, 'scroll');
         const off = this.on('dom:scroll', () => this._scheduleOverflowUpdate());
-        state.scrollUnbind = () => { unbind(); off(); };
+        state.scrollUnbind = () => {
+            unbind();
+            off();
+        };
 
         state.resizeObserver?.disconnect();
         state.resizeObserver = new ResizeObserver(() => this._scheduleOverflowUpdate());
@@ -428,16 +441,14 @@ export const OverflowAbility = {
     _detectMenuOverflow(container: HTMLElement, state: InternalState): void {
         const children = Array.from(container.children) as HTMLElement[];
 
-        // 先移除所有 hidden，确保检测基于真实布局（避免 hidden 项不占空间导致循环检测）
         for (const child of children) {
             child.classList.remove('hidden');
         }
 
         const containerRect = container.getBoundingClientRect();
+        const selectedIndex = this.getData?.('selectedIndex') ?? -1;
 
-        const overflowItems: OverflowItem[] = [];
         let firstOverflowIndex = children.length;
-
         for (let i = 0; i < children.length; i++) {
             const childRect = children[i].getBoundingClientRect();
             const isOverflowing =
@@ -451,10 +462,31 @@ export const OverflowAbility = {
             }
         }
 
+        // 从溢出位置开始 hidden，但跳过选中标签（确保选中态可见）
+        for (let i = firstOverflowIndex; i < children.length; i++) {
+            if (i !== selectedIndex) {
+                children[i].classList.add('hidden');
+            }
+        }
+
+        // 选中标签在溢出区域时，它可见后可能仍超出容器
+        // 从溢出位置前一个开始往前逐个 hidden，直到选中标签不溢出
+        if (selectedIndex >= firstOverflowIndex && selectedIndex < children.length) {
+            for (let i = firstOverflowIndex - 1; i >= 0; i--) {
+                const selectedRect = children[selectedIndex].getBoundingClientRect();
+                const isOverflowing =
+                    state.direction === 'horizontal'
+                        ? selectedRect.right > containerRect.right
+                        : selectedRect.bottom > containerRect.bottom;
+                if (!isOverflowing) break;
+                children[i].classList.add('hidden');
+            }
+        }
+
+        const overflowItems: OverflowItem[] = [];
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            if (i >= firstOverflowIndex) {
-                child.classList.add('hidden');
+            if (child.classList.contains('hidden')) {
                 overflowItems.push({
                     key: child.getAttribute('data-key') ?? `item-${i}`,
                     label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,

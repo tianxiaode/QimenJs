@@ -110,6 +110,7 @@ const OVERFLOW_SWITCH_TPL: TemplateDecl = {
             options: {
                 overflowMode: 'scroll',
                 selectedIndex: 0,
+                maxWidth: '400px',
                 items: [
                     { label: 'Tab 1' },
                     { label: 'Tab 2' },
@@ -121,7 +122,6 @@ const OVERFLOW_SWITCH_TPL: TemplateDecl = {
                     { label: 'Tab 8' },
                 ],
             },
-            style: { maxWidth: '400px' },
         },
     ],
 };
@@ -316,8 +316,16 @@ tabs.removeTab(0)`,
                         options: {
                             selectedIndex: 0,
                             items: [
-                                { label: '首页', route: '/components/Tabs/home', content: '<p>首页 - 路由 /components/Tabs/home</p>' },
-                                { label: '设置', route: '/components/Tabs/settings', content: '<p>设置 - 路由 /components/Tabs/settings</p>' },
+                                {
+                                    label: '首页',
+                                    route: '/components/Tabs/home',
+                                    content: '<p>首页 - 路由 /components/Tabs/home</p>',
+                                },
+                                {
+                                    label: '设置',
+                                    route: '/components/Tabs/settings',
+                                    content: '<p>设置 - 路由 /components/Tabs/settings</p>',
+                                },
                                 { label: '关于', content: '<p>关于 - 无路由，纯事件切换</p>' },
                             ],
                         },
@@ -397,9 +405,9 @@ tabs.removeTab(0)`,
                 children: [
                     {
                         type: 'tab-bar',
-                        style: { maxWidth: '400px' },
                         options: {
                             overflowMode: 'scroll',
+                            maxWidth: '400px',
                             selectedIndex: 0,
                             items: [
                                 { label: 'Tab 1' },
@@ -428,10 +436,10 @@ tabs.removeTab(0)`,
                 children: [
                     {
                         type: 'tab-bar',
-                        style: { maxWidth: '400px' },
                         options: {
                             overflowMode: 'menu',
                             selectedIndex: 0,
+                            maxWidth: '400px',
                             items: [
                                 { label: 'Tab 1' },
                                 { label: 'Tab 2' },
