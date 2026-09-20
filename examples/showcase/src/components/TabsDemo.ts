@@ -1,6 +1,7 @@
 import type { DemoConfig } from './types';
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import { TabsComponent, type TabPaneItem } from '@/component/tabs/TabsComponent';
+import { TabBarComponent } from '@/component/tabs/TabBarComponent';
 
 const DYNAMIC_TABS_TPL: TemplateDecl = {
     tag: 'div',
@@ -71,6 +72,89 @@ class DynamicTabsDemo extends Component {
         if (this._tabs.items.length > 1) {
             this._tabs.removeTab(idx);
         }
+    }
+}
+
+const OVERFLOW_SWITCH_TPL: TemplateDecl = {
+    tag: 'div',
+    classes: 'q-demo__row',
+    style: { flexDirection: 'column', gap: '8px' },
+    children: [
+        {
+            tag: 'div',
+            style: { display: 'flex', gap: '8px' },
+            children: [
+                {
+                    tag: 'button',
+                    name: 'scrollBtn',
+                    classes: 'q-demo__btn',
+                    options: { text: 'scroll 模式' },
+                },
+                {
+                    tag: 'button',
+                    name: 'menuBtn',
+                    classes: 'q-demo__btn',
+                    options: { text: 'menu 模式' },
+                },
+                {
+                    tag: 'button',
+                    name: 'noneBtn',
+                    classes: 'q-demo__btn',
+                    options: { text: 'none (关闭溢出)' },
+                },
+            ],
+        },
+        {
+            type: 'tab-bar',
+            name: 'tabBar',
+            options: {
+                overflowMode: 'scroll',
+                selectedIndex: 0,
+                items: [
+                    { label: 'Tab 1' },
+                    { label: 'Tab 2' },
+                    { label: 'Tab 3' },
+                    { label: 'Tab 4' },
+                    { label: 'Tab 5' },
+                    { label: 'Tab 6' },
+                    { label: 'Tab 7' },
+                    { label: 'Tab 8' },
+                ],
+            },
+        },
+    ],
+};
+
+class OverflowSwitchDemo extends Component {
+    static type = 'overflow-switch-demo';
+    get tpl(): TemplateDecl {
+        return OVERFLOW_SWITCH_TPL;
+    }
+
+    private _tabBar: TabBarComponent | null = null;
+
+    domEvents = {
+        click: [
+            { path: 'scrollBtn', handler: '_onScrollClick' },
+            { path: 'menuBtn', handler: '_onMenuClick' },
+            { path: 'noneBtn', handler: '_onNoneClick' },
+        ],
+    };
+
+    onAfterInit(): void {
+        this._tabBar = this.getComponent('tabBar') as TabBarComponent;
+    }
+
+    _onScrollClick(): void {
+        this._tabBar?.update({ overflowMode: 'scroll' });
+    }
+
+    _onMenuClick(): void {
+        this._tabBar?.update({ overflowMode: 'menu' });
+    }
+
+    _onNoneClick(): void {
+        this._tabBar?.update({ overflowMode: 'none' });
     }
 }
 
@@ -299,6 +383,73 @@ tabs.removeTab(0)`,
                     },
                 ],
             },
+        },
+        {
+            label: '溢出模式 - scroll (滚动8标签)',
+            code: `{ type: 'tab-bar', options: {
+    overflowMode: 'scroll',
+    items: [{ label: 'Tab 1' }, ..., { label: 'Tab 8' }],
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'tab-bar',
+                        options: {
+                            overflowMode: 'scroll',
+                            selectedIndex: 0,
+                            items: [
+                                { label: 'Tab 1' },
+                                { label: 'Tab 2' },
+                                { label: 'Tab 3' },
+                                { label: 'Tab 4' },
+                                { label: 'Tab 5' },
+                                { label: 'Tab 6' },
+                                { label: 'Tab 7' },
+                                { label: 'Tab 8' },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '溢出模式 - menu (8标签)',
+            code: `{ type: 'tab-bar', options: {
+    overflowMode: 'menu',
+    items: [{ label: 'Tab 1' }, ..., { label: 'Tab 8' }],
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'tab-bar',
+                        options: {
+                            overflowMode: 'menu',
+                            selectedIndex: 0,
+                            items: [
+                                { label: 'Tab 1' },
+                                { label: 'Tab 2' },
+                                { label: 'Tab 3' },
+                                { label: 'Tab 4' },
+                                { label: 'Tab 5' },
+                                { label: 'Tab 6' },
+                                { label: 'Tab 7' },
+                                { label: 'Tab 8' },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '动态切换溢出模式',
+            code: `tabBar.overflowMode = 'menu'  // 切换为菜单模式
+tabBar.overflowMode = 'scroll' // 切换为滚动模式
+tabBar.overflowMode = 'none'   // 关闭溢出`,
+            component: OverflowSwitchDemo,
         },
     ],
 };
