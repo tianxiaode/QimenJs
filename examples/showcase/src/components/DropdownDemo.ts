@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** Dropdown 选中项交互演示 */
@@ -30,17 +30,16 @@ class DropdownSelectDemo extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        popoverselect: { path: 'dd', handler: '_onDdSelect' },
-    };
-
-    _onDdSelect(domEvt: any): void {
-        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
-        const action = data?.action;
-        const result = this.getNodeEl('result');
-        if (result && action) {
-            result.textContent = `选中: ${action}`;
-        }
+    onAfterInit(): void {
+        super.onAfterInit();
+        this.getNode('dd')?.on('popoverselect', (ctx: any) => {
+            const data = ctx?.data ?? ctx;
+            const action = data?.action;
+            const result = this.getNodeEl('result');
+            if (result && action) {
+                result.textContent = `选中: ${action}`;
+            }
+        });
     }
 }
 
