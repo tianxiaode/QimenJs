@@ -22,12 +22,28 @@ import { HEADER_DEMO } from '../components/HeaderDemo';
 import { HERO_DEMO } from '../components/HeroDemo';
 import { PANEL_DEMO } from '../components/PanelDemo';
 import { TABS_DEMO } from '../components/TabsDemo';
+import { BREADCRUMB_DEMO } from '../components/BreadcrumbDemo';
+import { DROPDOWN_DEMO } from '../components/DropdownDemo';
+import { MENU_DEMO } from '../components/MenuDemo';
+import { NAV_DEMO } from '../components/NavDemo';
+import { NAVBAR_DEMO } from '../components/NavbarDemo';
+import { TREENAV_DEMO } from '../components/TreeNavDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
     {
         label: '基础元素',
-        components: ['Avatar', 'Button', 'ButtonGroup', 'Divider', 'Html', 'Icon', 'Label', 'Spacer', 'Text'],
+        components: [
+            'Avatar',
+            'Button',
+            'ButtonGroup',
+            'Divider',
+            'Html',
+            'Icon',
+            'Label',
+            'Spacer',
+            'Text',
+        ],
     },
     {
         label: '布局容器',
@@ -68,6 +84,12 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Hero: HERO_DEMO,
     Panel: PANEL_DEMO,
     Tabs: TABS_DEMO,
+    Breadcrumb: BREADCRUMB_DEMO,
+    Dropdown: DROPDOWN_DEMO,
+    Menu: MENU_DEMO,
+    Nav: NAV_DEMO,
+    Navbar: NAVBAR_DEMO,
+    TreeNav: TREENAV_DEMO,
 };
 
 /** 首页模板 */
@@ -148,12 +170,42 @@ const COMPONENTS_TPL: TemplateDecl = {
                                     tag: 'ul',
                                     classes: 'q-components-page__overview-list',
                                     children: [
-                                        { tag: 'li', options: { text: '声明式模板（TemplateDecl）—— 类级静态编译缓存' } },
-                                        { tag: 'li', options: { text: '事件委托（DomEventsEngine）—— 路径匹配 + 多 handler 执行' } },
-                                        { tag: 'li', options: { text: 'Option 驱动 —— onXxxOptionChange 响应式更新' } },
-                                        { tag: 'li', options: { text: 'Ability 组合 —— Size/Color/Overlay/Mask/RAF 等按需引入' } },
-                                        { tag: 'li', options: { text: 'i18n 国际化 —— @ 前缀自动翻译 + 语言切换刷新' } },
-                                        { tag: 'li', options: { text: '路由系统 —— hash 模式 + RouteContainerComponent' } },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '声明式模板（TemplateDecl）—— 类级静态编译缓存',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '事件委托（DomEventsEngine）—— 路径匹配 + 多 handler 执行',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'Option 驱动 —— onXxxOptionChange 响应式更新',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'Ability 组合 —— Size/Color/Overlay/Mask/RAF 等按需引入',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'i18n 国际化 —— @ 前缀自动翻译 + 语言切换刷新',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '路由系统 —— hash 模式 + RouteContainerComponent',
+                                            },
+                                        },
                                     ],
                                 },
                             ],
@@ -271,22 +323,34 @@ export class ComponentsPage extends Component {
                     classes: 'q-demo__header',
                     children: [
                         { tag: 'h2', classes: 'q-demo__title', options: { text: config.title } },
-                        { tag: 'p', classes: 'q-demo__desc', options: { text: config.description } },
+                        {
+                            tag: 'p',
+                            classes: 'q-demo__desc',
+                            options: { text: config.description },
+                        },
                     ],
                 },
                 ...config.sections.map((section, i) => ({
                     tag: 'div',
                     classes: 'q-demo__section',
                     children: [
-                        { tag: 'h3', classes: 'q-demo__section-label', options: { text: section.label } },
+                        {
+                            tag: 'h3',
+                            classes: 'q-demo__section-label',
+                            options: { text: section.label },
+                        },
                         section.component
                             ? { tag: 'div', name: `section-${i}`, classes: 'q-demo__interactive' }
                             : section.template,
-                        ...(section.code ? [{
-                            tag: 'pre',
-                            classes: 'q-demo__code',
-                            children: [{ tag: 'code', options: { text: section.code } }],
-                        }] : []),
+                        ...(section.code
+                            ? [
+                                  {
+                                      tag: 'pre',
+                                      classes: 'q-demo__code',
+                                      children: [{ tag: 'code', options: { text: section.code } }],
+                                  },
+                              ]
+                            : []),
                     ],
                 })),
             ],
@@ -301,7 +365,9 @@ export class ComponentsPage extends Component {
             if (section.component) {
                 const containerEl = this._currentDemo.getNodeEl(`section-${i}`);
                 if (containerEl) {
-                    this._interactiveInstances.push(new section.component({ container: containerEl }));
+                    this._interactiveInstances.push(
+                        new section.component({ container: containerEl })
+                    );
                 }
             }
         });
