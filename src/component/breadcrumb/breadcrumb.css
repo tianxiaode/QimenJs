@@ -15,12 +15,13 @@
 
 .q-breadcrumb__list > *:not(:last-child)::after {
     content: var(--q-breadcrumb-separator);
-    margin: 0 var(--q-space-sm, 8px);
+    margin-left: var(--q-space-sm, 8px);
     color: var(--q-color-text-secondary, #666);
     user-select: none;
 }
 
 .q-breadcrumb .q-href {
+    padding: 0;
     color: var(--q-color-primary, #0078d4);
     text-decoration: none;
     cursor: var(--q-cursor-pointer, pointer);
