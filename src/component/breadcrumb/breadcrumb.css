@@ -15,7 +15,7 @@
 
 .q-breadcrumb__list > *:not(:last-child)::after {
     content: var(--q-breadcrumb-separator);
-    margin-left: var(--q-space-sm, 8px);
+    margin: 0 var(--q-space-sm, 8px);
     color: var(--q-color-text-secondary, #666);
     user-select: none;
 }
