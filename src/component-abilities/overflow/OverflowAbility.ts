@@ -428,8 +428,14 @@ export const OverflowAbility = {
     },
 
     _detectMenuOverflow(container: HTMLElement, state: InternalState): void {
-        const containerRect = container.getBoundingClientRect();
         const children = Array.from(container.children) as HTMLElement[];
+
+        // 先移除所有 hidden，确保检测基于真实布局（避免 hidden 项不占空间导致循环检测）
+        for (const child of children) {
+            child.classList.remove('hidden');
+        }
+
+        const containerRect = container.getBoundingClientRect();
 
         const overflowItems: OverflowItem[] = [];
         let firstOverflowIndex = children.length;
@@ -456,8 +462,6 @@ export const OverflowAbility = {
                     label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
                     element: child,
                 });
-            } else {
-                child.classList.remove('hidden');
             }
         }
 
