@@ -32,7 +32,7 @@ export class DropdownComponent extends ButtonComponent {
             this.setData('popover', {
                 type: 'menu',
                 trigger: 'click',
-                anchor: this.anchorNode ?? 'dropIcon',
+                anchor: 'self',
                 placement: 'bottom',
                 options: { items: value },
             });
