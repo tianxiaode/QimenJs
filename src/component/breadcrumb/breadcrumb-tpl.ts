@@ -4,5 +4,5 @@ export const BREADCRUMB_TPL: TemplateDecl = {
     tag: 'nav',
     classes: 'q-breadcrumb',
     attributes: { 'aria-label': 'Breadcrumb' },
-    children: [{ tag: 'ol', name: 'items', classes: 'q-breadcrumb__list' }],
+    children: [{ tag: 'div', name: 'itemContainer', classes: 'q-breadcrumb__list' }],
 };

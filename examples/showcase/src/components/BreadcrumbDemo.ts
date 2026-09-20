@@ -1,7 +1,6 @@
 import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
-/** Breadcrumb 点击交互演示 */
 class BreadcrumbClickDemo extends Component {
     get tpl(): TemplateDecl {
         return {
@@ -13,9 +12,9 @@ class BreadcrumbClickDemo extends Component {
                     name: 'bc',
                     options: {
                         items: [
-                            { text: '首页', key: 'home' },
-                            { text: '产品', key: 'product' },
-                            { text: '详情', key: 'detail' },
+                            { text: '首页', href: '#/home' },
+                            { text: '产品', href: '#/product' },
+                            { text: '详情' },
                         ],
                     },
                 },
@@ -30,22 +29,22 @@ class BreadcrumbClickDemo extends Component {
     }
 
     domEvents: DomEventsMap = {
-        click: { path: 'bc', handler: '_onBcClick' },
+        navigate: { path: 'bc', handler: '_onBcNavigate' },
     };
 
-    _onBcClick(domEvt: any): void {
-        const key = domEvt?.data?.key;
-        const index = domEvt?.data?.index;
+    _onBcNavigate(domEvt: any): void {
+        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
+        const href = data?.href;
         const result = this.getNodeEl('result');
-        if (result && key !== undefined) {
-            result.textContent = `点击了: ${key} (index=${index})`;
+        if (result && href) {
+            result.textContent = `导航到: ${href}`;
         }
     }
 }
 
 export const BREADCRUMB_DEMO: DemoConfig = {
     title: 'Breadcrumb',
-    description: '面包屑导航组件，支持 items 配置和自定义分隔符',
+    description: '面包屑导航组件，从 ItemGroup 派生，子项用 HrefComponent 实现导航',
     sections: [
         {
             label: '基本用法',
@@ -53,9 +52,9 @@ export const BREADCRUMB_DEMO: DemoConfig = {
     type: 'breadcrumb',
     options: {
         items: [
-            { text: '首页', key: 'home' },
-            { text: '产品', key: 'product' },
-            { text: '详情', key: 'detail' },
+            { text: '首页', href: '#/home' },
+            { text: '产品', href: '#/product' },
+            { text: '详情' },
         ],
     }
 }`,
@@ -63,9 +62,9 @@ export const BREADCRUMB_DEMO: DemoConfig = {
                 type: 'breadcrumb',
                 options: {
                     items: [
-                        { text: '首页', key: 'home' },
-                        { text: '产品', key: 'product' },
-                        { text: '详情', key: 'detail' },
+                        { text: '首页', href: '#/home' },
+                        { text: '产品', href: '#/product' },
+                        { text: '详情' },
                     ],
                 },
             },
@@ -77,9 +76,9 @@ export const BREADCRUMB_DEMO: DemoConfig = {
     options: {
         separator: '>',
         items: [
-            { text: 'Step 1', key: 's1' },
-            { text: 'Step 2', key: 's2' },
-            { text: 'Step 3', key: 's3' },
+            { text: 'Step 1', href: '#/s1' },
+            { text: 'Step 2', href: '#/s2' },
+            { text: 'Step 3' },
         ],
     }
 }`,
@@ -88,19 +87,19 @@ export const BREADCRUMB_DEMO: DemoConfig = {
                 options: {
                     separator: '>',
                     items: [
-                        { text: 'Step 1', key: 's1' },
-                        { text: 'Step 2', key: 's2' },
-                        { text: 'Step 3', key: 's3' },
+                        { text: 'Step 1', href: '#/s1' },
+                        { text: 'Step 2', href: '#/s2' },
+                        { text: 'Step 3' },
                     ],
                 },
             },
         },
         {
             label: '点击交互',
-            code: `// 点击面包屑项触发 navigate 事件
-// domEvt.data 包含 key 和 index
+            code: `// HrefComponent 自带 router: 'navigate'
+// 监听 navigate 事件获取 href
 bc.on('navigate', (data) => {
-    console.log(data.key, data.index);
+    console.log(data.href);
 })`,
             component: BreadcrumbClickDemo,
         } satisfies DemoSection,
