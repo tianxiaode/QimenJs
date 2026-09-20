@@ -38,6 +38,16 @@ export class DropdownComponent extends ButtonComponent {
             });
         }
     }
+
+    showPopover(): void {
+        super.showPopover();
+        const inst = this._getPopoverInstance();
+        if (inst) {
+            inst.ready.then(() => {
+                inst.el?.style.setProperty('min-width', `${this.el?.offsetWidth ?? 0}px`);
+            });
+        }
+    }
 }
 
 DropdownComponent.define(DropdownComponentDefs);
