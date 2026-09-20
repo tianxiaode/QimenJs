@@ -249,9 +249,10 @@ class TabsComponent extends Component {
 
     removeTab(index: number): void {
         if (index < 0 || index >= this.items.length) return;
+        // 先同步 TabBar：删除对应标签并修正 TabBar 内部选中态
+        this._tabBar?.removeTabAt(index);
+        // 再移除数据层
         this._removeTabData(index);
-        // 外部直接调用 removeTab 时 TabBar 尚未删除，需同步移除对应 tab
-        this._tabBar?.removeAt(index);
     }
 
     /**

@@ -80,6 +80,13 @@ class TabBarComponent extends ItemGroupPooledComponent {
 
     closeAt(index: number): void {
         if (index < 0 || index >= this.count) return;
+        this.removeTabAt(index);
+        this.emit('close', { index });
+    }
+
+    /** 删除标签并修正选中态（不 emit close，供 closeAt 与外部同步复用） */
+    removeTabAt(index: number): void {
+        if (index < 0 || index >= this.count) return;
         const item = this.removeAt(index);
         if (item) {
             const poolIdx = this._hiddenItems.indexOf(item);
@@ -92,9 +99,9 @@ class TabBarComponent extends ItemGroupPooledComponent {
         } else if (index < this._selectedIndex) {
             this._selectedIndex--;
         }
+        this.setData('selectedIndex', this._selectedIndex, true);
         this._applySelection();
         this._scrollToItem(this.getAt(this._selectedIndex) as TabComponent);
-        this.emit('close', { index });
     }
 
     _onSizeOptionChange(_value: string): void {
@@ -160,6 +167,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
         if (newItem.disabled) return;
 
         this._selectedIndex = index;
+        this.setData('selectedIndex', index, true);
         this._applySelection();
         this._scrollToItem(newItem);
 
