@@ -81,15 +81,23 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
+        const anchorSource = decl.anchor && decl.anchor !== 'self'
+            ? (this.getNodeEl?.(decl.anchor) ?? this.el!)
+            : this.el!;
         const constr: any = {
             ...(decl.options ?? {}),
-            anchor: this.el!,
+            anchor: anchorSource,
             placement: decl.placement,
         };
         const mask = resolveFloatMask(decl);
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
+        if (typeof overlay.on === 'function') {
+            overlay.on('select', (data: any) => {
+                this.emit('popoverselect', data);
+            });
+        }
         this.setAbilityState('PopoverAbility:instance', overlay);
         this.onCleanup(() => {
             overlay.dispose();

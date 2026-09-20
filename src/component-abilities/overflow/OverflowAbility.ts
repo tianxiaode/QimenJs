@@ -52,8 +52,6 @@ interface InternalState {
     resizeObserver: ResizeObserver | null;
     mutationObserver: MutationObserver | null;
     overflowItems: OverflowItem[];
-    menuEl: HTMLElement | null;
-    menuOutsideClickHandler: ((e: Event) => void) | null;
 }
 
 function getScrollPos(el: HTMLElement, direction: 'horizontal' | 'vertical'): number {
@@ -87,8 +85,6 @@ export const OverflowAbility = {
             resizeObserver: null,
             mutationObserver: null,
             overflowItems: [],
-            menuEl: null,
-            menuOutsideClickHandler: null,
         } as InternalState);
 
         this._applyOverflowMode();
@@ -159,72 +155,13 @@ export const OverflowAbility = {
     },
 
     /**
-     * more 按钮点击处理（menu 模式）
+     * more 按钮点击处理（menu 模式）— 通过 popover toggle 显示/隐藏菜单
      */
     _onOverflowMoreClick(): void {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state || state.mode !== 'menu') return;
-
-        const items = state.overflowItems;
-        if (items.length === 0) return;
-
-        const moreEl = this.getNodeEl('overflowMore');
-        if (!moreEl) return;
-
-        this._showOverflowMenu(moreEl, items);
-    },
-
-    _showOverflowMenu(anchorEl: HTMLElement, items: OverflowItem[]): void {
-        this._hideOverflowMenu();
-
-        const menu = document.createElement('div');
-        menu.className = 'q-itemgroup__overflow-menu';
-
-        for (const item of items) {
-            const menuItem = document.createElement('div');
-            menuItem.className = 'q-itemgroup__overflow-menu-item';
-            menuItem.textContent = item.label;
-            menuItem.addEventListener('click', () => {
-                this.emit('overflowselect', { index: item.index, key: item.key });
-                this._hideOverflowMenu();
-            });
-            menu.appendChild(menuItem);
-        }
-
-        document.body.appendChild(menu);
-
-        const anchorRect = anchorEl.getBoundingClientRect();
-        menu.style.position = 'fixed';
-        menu.style.top = `${anchorRect.bottom + 4}px`;
-        menu.style.left = `${anchorRect.left}px`;
-        menu.style.zIndex = '9999';
-
-        const state = this.abilityState(STATE_KEY) as InternalState;
-        state.menuEl = menu;
-
-        const outsideClickHandler = (e: Event) => {
-            if (!menu.contains(e.target as Node) &&
-                !anchorEl.contains(e.target as Node)) {
-                this._hideOverflowMenu();
-            }
-        };
-        state.menuOutsideClickHandler = outsideClickHandler;
-
-        setTimeout(() => {
-            document.addEventListener('click', outsideClickHandler, true);
-        }, 0);
-    },
-
-    _hideOverflowMenu(): void {
-        const state = this.abilityState(STATE_KEY) as InternalState | undefined;
-        if (!state?.menuEl) return;
-
-        state.menuEl.remove();
-        state.menuEl = null;
-        if (state.menuOutsideClickHandler) {
-            document.removeEventListener('click', state.menuOutsideClickHandler, true);
-            state.menuOutsideClickHandler = null;
-        }
+        if (state.overflowItems.length === 0) return;
+        this.togglePopover();
     },
 
     /**
@@ -326,12 +263,19 @@ export const OverflowAbility = {
             this.setNodeHidden(false, 'overflowPrev');
             this.setNodeHidden(false, 'overflowNext');
             this.setNodeHidden(true, 'overflowMore');
+            this.setData('popover', null);
         } else if (mode === 'menu') {
             this.el.classList.add('q-itemgroup--overflow-menu');
             this.el.classList.remove('q-itemgroup--overflow-scroll');
             this.setNodeHidden(false, 'overflowPrev');
             this.setNodeHidden(true, 'overflowNext');
             this.setNodeHidden(false, 'overflowMore');
+            this.setData('popover', {
+                type: 'menu',
+                anchor: 'overflowMore',
+                trigger: 'click',
+                placement: 'bottom',
+            });
         }
 
         this._setupOverflowListeners();
@@ -359,7 +303,7 @@ export const OverflowAbility = {
         state.mutationObserver?.disconnect();
         state.mutationObserver = null;
 
-        this._hideOverflowMenu();
+        this.setData('popover', null);
 
         this.el.classList.remove(
             'q-itemgroup--overflow',
@@ -554,6 +498,15 @@ export const OverflowAbility = {
 
             this.el.classList.toggle('q-itemgroup--can-prev', overflowState.canScrollPrev);
             this.el.classList.toggle('q-itemgroup--has-overflow', hasOverflow);
+
+            if (hasOverflow) {
+                this.updatePopover({
+                    items: state.overflowItems.map(item => ({
+                        text: item.label,
+                        action: String(item.index),
+                    })),
+                });
+            }
         }
     },
 

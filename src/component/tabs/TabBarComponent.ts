@@ -139,9 +139,10 @@ class TabBarComponent extends ItemGroupPooledComponent {
             this._onOverflowModeOptionChange(mode);
         }
 
-        this.on('overflowselect', (data: { index: number }) => {
-            if (data?.index !== undefined) {
-                this.selectAt(data.index);
+        this.on('popoverselect', (data: any) => {
+            const index = parseInt(data?.action ?? '-1', 10);
+            if (index >= 0) {
+                this.selectAt(index);
             }
         });
     }

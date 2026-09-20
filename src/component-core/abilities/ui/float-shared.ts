@@ -29,7 +29,9 @@ export function bindFloatTrigger(component: any, decl: any, spec: FloatTriggerSp
     const trigger = decl.trigger ?? spec.defaultTrigger;
     if (trigger === 'manual' || trigger === 'always') return;
 
-    const anchorEl = component.el!;
+    const anchorEl = decl.anchor && decl.anchor !== 'self'
+        ? (component.getNodeEl?.(decl.anchor) ?? component.el!)
+        : component.el!;
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     const rules: DelegatedEventRule[] = [];
     for (const t of triggers) {
