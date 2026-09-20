@@ -394,10 +394,10 @@ tabs.removeTab(0)`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
-                style: { maxWidth: '400px' },
                 children: [
                     {
                         type: 'tab-bar',
+                        style: { maxWidth: '400px' },
                         options: {
                             overflowMode: 'scroll',
                             selectedIndex: 0,
@@ -425,10 +425,10 @@ tabs.removeTab(0)`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
-                style: { maxWidth: '400px' },
                 children: [
                     {
                         type: 'tab-bar',
+                        style: { maxWidth: '400px' },
                         options: {
                             overflowMode: 'menu',
                             selectedIndex: 0,
