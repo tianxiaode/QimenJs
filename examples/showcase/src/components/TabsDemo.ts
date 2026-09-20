@@ -121,6 +121,7 @@ const OVERFLOW_SWITCH_TPL: TemplateDecl = {
                     { label: 'Tab 8' },
                 ],
             },
+            style: { maxWidth: '400px' },
         },
     ],
 };
@@ -393,6 +394,7 @@ tabs.removeTab(0)`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
+                style: { maxWidth: '400px' },
                 children: [
                     {
                         type: 'tab-bar',
@@ -423,6 +425,7 @@ tabs.removeTab(0)`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
+                style: { maxWidth: '400px' },
                 children: [
                     {
                         type: 'tab-bar',
