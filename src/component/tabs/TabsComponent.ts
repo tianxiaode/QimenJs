@@ -139,7 +139,8 @@ class TabsComponent extends Component {
         const data = ctx?.data ?? {};
         const index = data.index;
         if (index === undefined) return;
-        this._closeTab(index);
+        // TabBar.closeAt 内部已 removeAt，这里仅移除数据层，避免二次删除错位
+        this._removeTabData(index);
     }
 
     _onSelectedIndexOptionChange(value: number): void {
@@ -173,10 +174,6 @@ class TabsComponent extends Component {
         if (index !== undefined && index !== this.selectedIndex) {
             this.selectedIndex = index;
         }
-    }
-
-    private _closeTab(index: number): void {
-        this.removeTab(index);
     }
 
     private _renderContent(): void {
@@ -252,6 +249,17 @@ class TabsComponent extends Component {
 
     removeTab(index: number): void {
         if (index < 0 || index >= this.items.length) return;
+        this._removeTabData(index);
+        // 外部直接调用 removeTab 时 TabBar 尚未删除，需同步移除对应 tab
+        this._tabBar?.removeAt(index);
+    }
+
+    /**
+     * 仅移除数据层（items + content）并调整选中态，不操作 TabBar。
+     * 点 × 关闭时 TabBar.closeAt 内部已 removeAt，再操作会索引错位。
+     */
+    private _removeTabData(index: number): void {
+        if (index < 0 || index >= this.items.length) return;
 
         const item = this.items[index];
         this.emit('close', { index, item });
@@ -264,8 +272,6 @@ class TabsComponent extends Component {
         this.items.splice(index, 1);
         this._contentInstances.splice(index, 1);
         this._buildRouteIndex();
-
-        this._tabBar?.removeAt(index);
 
         if (this.selectedIndex >= this.items.length) {
             this.selectedIndex = Math.max(0, this.items.length - 1);
