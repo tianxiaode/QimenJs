@@ -36,6 +36,7 @@ export interface OverflowItem {
     key: string;
     label: string;
     element: HTMLElement;
+    index: number;
     data?: any;
 }
 
@@ -51,6 +52,7 @@ interface InternalState {
     resizeObserver: ResizeObserver | null;
     mutationObserver: MutationObserver | null;
     overflowItems: OverflowItem[];
+    menuEl: HTMLElement | null;
 }
 
 function getScrollPos(el: HTMLElement, direction: 'horizontal' | 'vertical'): number {
@@ -84,6 +86,7 @@ export const OverflowAbility = {
             resizeObserver: null,
             mutationObserver: null,
             overflowItems: [],
+            menuEl: null,
         } as InternalState);
 
         this._applyOverflowMode();
@@ -163,16 +166,64 @@ export const OverflowAbility = {
         const items = state.overflowItems;
         if (items.length === 0) return;
 
-        this.emit('overflowmenutoggle', {
-            anchor: this.getNodeEl('overflowMore'),
-            items: items.map(item => ({
-                key: item.key,
-                label: item.label,
-                data: item.element.getAttribute('data-data')
-                    ? JSON.parse(item.element.getAttribute('data-data')!)
-                    : undefined,
-            })),
-        });
+        const moreEl = this.getNodeEl('overflowMore');
+        if (!moreEl) return;
+
+        this._showOverflowMenu(moreEl, items);
+    },
+
+    _showOverflowMenu(anchorEl: HTMLElement, items: OverflowItem[]): void {
+        this._hideOverflowMenu();
+
+        const menu = document.createElement('div');
+        menu.className = 'q-itemgroup__overflow-menu';
+
+        for (const item of items) {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'q-itemgroup__overflow-menu-item';
+            menuItem.textContent = item.label;
+            menuItem.addEventListener('click', () => {
+                this.emit('overflowselect', { index: item.index, key: item.key });
+                this._hideOverflowMenu();
+            });
+            menu.appendChild(menuItem);
+        }
+
+        document.body.appendChild(menu);
+
+        const anchorRect = anchorEl.getBoundingClientRect();
+        menu.style.position = 'fixed';
+        menu.style.top = `${anchorRect.bottom + 4}px`;
+        menu.style.left = `${anchorRect.left}px`;
+        menu.style.zIndex = '9999';
+
+        this.setAbilityState(STATE_KEY, {
+            ...(this.abilityState(STATE_KEY) as InternalState),
+            menuEl: menu,
+        } as InternalState);
+
+        setTimeout(() => {
+            document.addEventListener('click', this._onOverflowMenuOutsideClick, true);
+        }, 0);
+    },
+
+    _hideOverflowMenu(): void {
+        const state = this.abilityState(STATE_KEY) as InternalState | undefined;
+        if (!state?.menuEl) return;
+
+        state.menuEl.remove();
+        state.menuEl = null;
+        document.removeEventListener('click', this._onOverflowMenuOutsideClick, true);
+    },
+
+    _onOverflowMenuOutsideClick(e: Event): void {
+        const state = this.abilityState(STATE_KEY) as InternalState | undefined;
+        if (!state?.menuEl) return;
+
+        if (!state.menuEl.contains(e.target as Node) &&
+            !this.getNodeEl('overflowMore')?.contains(e.target as Node)) {
+            this._hideOverflowMenu();
+        }
     },
 
     /**
@@ -306,6 +357,8 @@ export const OverflowAbility = {
 
         state.mutationObserver?.disconnect();
         state.mutationObserver = null;
+
+        this._hideOverflowMenu();
 
         this.el.classList.remove(
             'q-itemgroup--overflow',
@@ -461,6 +514,7 @@ export const OverflowAbility = {
                     key: child.getAttribute('data-key') ?? `item-${i}`,
                     label: child.getAttribute('data-label') ?? child.textContent ?? `项 ${i + 1}`,
                     element: child,
+                    index: i,
                 });
             }
         }
@@ -524,6 +578,8 @@ export const OverflowAbility = {
             this.onCleanup(() => this._teardownOverflow());
             return;
         }
+        const state = this.abilityState(STATE_KEY) as InternalState;
+        state.mode = value;
         this._applyOverflowMode();
         this._bindOverflowClickRules();
     },

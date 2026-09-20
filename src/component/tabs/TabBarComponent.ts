@@ -135,8 +135,15 @@ class TabBarComponent extends ItemGroupPooledComponent {
         }
 
         if (!this.abilityState('OverflowAbility:state')) {
-            this._onOverflowModeOptionChange('scroll');
+            const mode = this.getData('overflowMode') ?? 'scroll';
+            this._onOverflowModeOptionChange(mode);
         }
+
+        this.on('overflowselect', (data: { index: number }) => {
+            if (data?.index !== undefined) {
+                this.selectAt(data.index);
+            }
+        });
     }
 
     private _applyPosition(): void {
