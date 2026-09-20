@@ -53,6 +53,7 @@ interface InternalState {
     mutationObserver: MutationObserver | null;
     overflowItems: OverflowItem[];
     menuEl: HTMLElement | null;
+    menuOutsideClickHandler: ((e: Event) => void) | null;
 }
 
 function getScrollPos(el: HTMLElement, direction: 'horizontal' | 'vertical'): number {
@@ -87,6 +88,7 @@ export const OverflowAbility = {
             mutationObserver: null,
             overflowItems: [],
             menuEl: null,
+            menuOutsideClickHandler: null,
         } as InternalState);
 
         this._applyOverflowMode();
@@ -197,13 +199,19 @@ export const OverflowAbility = {
         menu.style.left = `${anchorRect.left}px`;
         menu.style.zIndex = '9999';
 
-        this.setAbilityState(STATE_KEY, {
-            ...(this.abilityState(STATE_KEY) as InternalState),
-            menuEl: menu,
-        } as InternalState);
+        const state = this.abilityState(STATE_KEY) as InternalState;
+        state.menuEl = menu;
+
+        const outsideClickHandler = (e: Event) => {
+            if (!menu.contains(e.target as Node) &&
+                !anchorEl.contains(e.target as Node)) {
+                this._hideOverflowMenu();
+            }
+        };
+        state.menuOutsideClickHandler = outsideClickHandler;
 
         setTimeout(() => {
-            document.addEventListener('click', this._onOverflowMenuOutsideClick, true);
+            document.addEventListener('click', outsideClickHandler, true);
         }, 0);
     },
 
@@ -213,16 +221,9 @@ export const OverflowAbility = {
 
         state.menuEl.remove();
         state.menuEl = null;
-        document.removeEventListener('click', this._onOverflowMenuOutsideClick, true);
-    },
-
-    _onOverflowMenuOutsideClick(e: Event): void {
-        const state = this.abilityState(STATE_KEY) as InternalState | undefined;
-        if (!state?.menuEl) return;
-
-        if (!state.menuEl.contains(e.target as Node) &&
-            !this.getNodeEl('overflowMore')?.contains(e.target as Node)) {
-            this._hideOverflowMenu();
+        if (state.menuOutsideClickHandler) {
+            document.removeEventListener('click', state.menuOutsideClickHandler, true);
+            state.menuOutsideClickHandler = null;
         }
     },
 
