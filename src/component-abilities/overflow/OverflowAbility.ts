@@ -285,6 +285,9 @@ export const OverflowAbility = {
                 anchor: 'overflowMore',
                 trigger: 'click',
                 placement: 'bottom',
+                options: {
+                    eventKey: 'more',
+                },
             });
         }
 

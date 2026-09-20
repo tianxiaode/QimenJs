@@ -94,11 +94,6 @@ export const PopoverAbility: AbilityDefinition = {
         if (mask) constr.mask = mask;
 
         const overlay = new OverlayClass(constr);
-        if (typeof overlay.on === 'function') {
-            overlay.on('select', (ctx: any) => {
-                this.emit('popoverselect', ctx?.data ?? ctx);
-            });
-        }
         this.setAbilityState('PopoverAbility:instance', overlay);
         this.onCleanup(() => {
             overlay.dispose();

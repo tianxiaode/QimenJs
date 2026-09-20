@@ -13,11 +13,20 @@ class DropdownSelectDemo extends Component {
                     name: 'dd',
                     options: {
                         text: '选择操作',
-                        items: [
-                            { text: '编辑', action: 'edit' },
-                            { text: '复制', action: 'copy' },
-                            { text: '删除', action: 'delete' },
-                        ],
+                        popover: {
+                            type: 'menu',
+                            trigger: 'click',
+                            anchor: 'self',
+                            placement: 'bottom',
+                            options: {
+                                eventKey: 'dd-select',
+                                items: [
+                                    { text: '编辑', action: 'edit' },
+                                    { text: '复制', action: 'copy' },
+                                    { text: '删除', action: 'delete' },
+                                ],
+                            },
+                        },
                     },
                 },
                 {
@@ -30,12 +39,9 @@ class DropdownSelectDemo extends Component {
         };
     }
 
-    listens: ListenItem[] = [
-        { node: 'dd', events: { popoverselect: '_onDdSelect' } },
-    ];
+    listens: ListenItem[] = [{ source: 'dd-select', events: { select: '_onDdSelect' } }];
 
-    _onDdSelect(ctx: any): void {
-        const data = ctx?.data ?? ctx;
+    _onDdSelect(data: any): void {
         const action = data?.action;
         const result = this.getNodeEl('result');
         if (result && action) {
@@ -176,11 +182,10 @@ export const DROPDOWN_DEMO: DemoConfig = {
         },
         {
             label: '选中项交互',
-            code: `// items 中每项可设置 action 字段
-// popoverselect 事件中通过 data.action 获取选中项
-dd.on('popoverselect', (data) => {
-    console.log(data.action);
-})`,
+            code: `// popover 配置 eventKey，items 中每项可设置 action 字段
+// 通过 listens 监听 select 事件，data.action 获取选中项
+listens: [{ source: 'my-dd', events: { select: 'onSelect' } }]
+onSelect(data) { console.log(data.action); }`,
             component: DropdownSelectDemo,
         } satisfies DemoSection,
         {
