@@ -22,7 +22,8 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { TabComponent } from './TabComponent';
-import { DomEventsMap, type ListenItem } from '@qimenjs/component-core';
+import { DomEventsMap } from '@qimenjs/component-core';
+import { ListensEngine } from '@/component-core/engine';
 import { Definitions } from '@/composable';
 import './tabbar.css';
 
@@ -44,10 +45,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
     _lastToggleIndex: number = -1;
-
-    listens: ListenItem[] = [
-        { source: 'more', events: { select: '_onOverflowSelect' } },
-    ];
 
     _onOverflowSelect(data: any): void {
         const index = parseInt(data?.action ?? '-1', 10);
@@ -149,6 +146,10 @@ class TabBarComponent extends ItemGroupPooledComponent {
             const mode = this.getData('overflowMode') ?? 'scroll';
             this._onOverflowModeOptionChange(mode);
         }
+
+        ListensEngine.bindListens(this, [
+            { source: this.id, events: { select: '_onOverflowSelect' } },
+        ]);
     }
 
     private _applyPosition(): void {

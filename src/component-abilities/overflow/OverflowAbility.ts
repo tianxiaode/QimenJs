@@ -286,7 +286,7 @@ export const OverflowAbility = {
                 trigger: 'click',
                 placement: 'bottom',
                 options: {
-                    eventKey: 'more',
+                    eventKey: this.id,
                 },
             });
         }
