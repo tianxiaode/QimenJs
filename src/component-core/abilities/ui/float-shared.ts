@@ -37,13 +37,13 @@ export function bindFloatTrigger(component: any, decl: any, spec: FloatTriggerSp
     for (const t of triggers) {
         if (t === 'hover') {
             rules.push({
-                event: 'mouseenter',
+                event: 'enter',
                 path: anchorEl,
                 handler: `_on${spec.handlerPrefix}Enter`,
                 needsBinding: true,
             });
             rules.push({
-                event: 'mouseleave',
+                event: 'leave',
                 path: anchorEl,
                 handler: `_on${spec.handlerPrefix}Leave`,
                 needsBinding: true,
