@@ -107,7 +107,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         if (!item) return;
         if (!this._isOwnItem(item)) return;
 
-        if (item._hasSubmenu) {
+        if (item._submenu) {
             item.setExpandArrow('collapsed');
             this._scheduleClose(item);
         }
@@ -122,13 +122,6 @@ class MenuComponent extends ItemGroupStaticComponent {
                 item._submenu = data.submenu;
                 item.addCls('q-menu-item--has-submenu');
                 item.removeCls('hidden', 'expand');
-                item.setExpandArrow('collapsed');
-            }
-        }
-        this.initGroupSelect({ defaultMode: 'radio' });
-        this.registerGroupItems(this.items);
-    }
-        if (item._submenu) {
                 item.setExpandArrow('collapsed');
             }
         }
