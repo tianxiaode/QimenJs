@@ -73,11 +73,7 @@
 
 .q-nav-item--collapsed .q-nav-item__content {
     justify-content: center;
-    padding: 10px 0;
-}
-
-.q-nav-item--collapsed .q-nav-item__icon {
-    margin: 0 auto;
+    padding: 10px 8px;
 }
 
 .q-nav-item--collapsed .q-nav-item__expand {
