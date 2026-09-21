@@ -89,9 +89,6 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     _onItemEnter(domEvt: any): void {
         const item = domEvt.targetComponent;
-        console.log(
-            `[ENTER] item=${item?.getData?.('text')} isOwn=${this._isOwnItem(item)} openKey=${this._openSubmenuKey === item} hasSub=${!!item?._submenu}`
-        );
         if (!item) return;
 
         window.clearTimeout(this._leaveTimer);
@@ -110,15 +107,14 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     _onItemLeave(domEvt: any): void {
         const item = domEvt.targetComponent;
-        console.log(
-            `[LEAVE] item=${item?.getData?.('text')} isOwn=${this._isOwnItem(item)} hasSub=${!!item?._submenu}`
-        );
         if (!item) return;
         if (!this._isOwnItem(item)) return;
 
         if (item._submenu) {
             item.setExpandArrow('collapsed');
-            this._scheduleClose(item);
+            if (item !== this._openSubmenuKey) {
+                this._scheduleClose(item);
+            }
         }
     }
 
@@ -174,7 +170,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     private _scheduleClose(item: any): void {
-        console.log(`[SCHED_CLOSE] item=${item?.getData?.('text')}`);
         window.clearTimeout(this._enterTimer);
         this._leaveTimer = window.setTimeout(() => this._closeSubmenu(item), 300);
     }
@@ -217,9 +212,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     private _closeSubmenu(item: any): void {
-        console.log(
-            `[CLOSE_SUB] item=${item?.getData?.('text')} hasParent=${!!this._submenuMap.get(item)?.el?.parentNode}`
-        );
         const sub = this._submenuMap.get(item);
         if (sub) {
             sub.closeAllSubmenus();
