@@ -115,9 +115,12 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     setItems(datas: Record<string, any>[]): void {
         super.setItems(datas);
-        for (const item of this.items) {
-            if (item._submenu && !item._hasSubmenu) {
+        for (let i = 0; i < this.items.length; i++) {
+            const item = this.items[i];
+            const data = datas[i];
+            if (data?.submenu && !item._hasSubmenu) {
                 item._hasSubmenu = true;
+                item._submenu = data.submenu;
                 item.addCls('q-menu-item--has-submenu');
                 item.removeCls('hidden', 'expand');
             }
