@@ -40,6 +40,9 @@ class MenuComponent extends ItemGroupStaticComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-menu');
+        if (this._parentMenu) {
+            window.clearTimeout(this._parentMenu._leaveTimer);
+        }
     }
 
     domEvents?: DomEventsMap | undefined = {
@@ -203,9 +206,13 @@ class MenuComponent extends ItemGroupStaticComponent {
             });
         }
 
-        const placement = this.direction === 'horizontal' ? 'bottom' : 'right';
-        sub._showOverlay({ anchor: item.el, placement });
         this._openSubmenuKey = item;
+        const placement = this.direction === 'horizontal' ? 'bottom' : 'right';
+        sub.ready.then(() => {
+            if (this._openSubmenuKey === item) {
+                sub._showOverlay({ anchor: item.el, placement });
+            }
+        });
     }
 
     private _closeSubmenu(item: any): void {
