@@ -163,19 +163,19 @@ export const MENU_DEMO: DemoConfig = {
     type: 'menu',
     options: {
         items: [
-            { text: '文件', submenu: [
-                { text: '新建', submenu: [
+            { text: '文件', popover: { options: { items: [
+                { text: '新建', popover: { options: { items: [
                     { text: '文档' },
                     { text: '图片' },
                     { text: '项目' },
-                ]},
+                ]}}},
                 { text: '打开' },
                 { text: '保存' },
-            ]},
-            { text: '编辑', submenu: [
+            ]}},
+            { text: '编辑', popover: { options: { items: [
                 { text: '撤销' },
                 { text: '重做' },
-            ]},
+            ]}},
             { text: '帮助' },
         ],
     }
@@ -187,27 +187,39 @@ export const MENU_DEMO: DemoConfig = {
                         {
                             text: '文件',
                             action: 'file',
-                            submenu: [
-                                {
-                                    text: '新建',
-                                    action: 'new',
-                                    submenu: [
-                                        { text: '文档', action: 'new-doc' },
-                                        { text: '图片', action: 'new-image' },
-                                        { text: '项目', action: 'new-project' },
+                            popover: {
+                                options: {
+                                    items: [
+                                        {
+                                            text: '新建',
+                                            action: 'new',
+                                            popover: {
+                                                options: {
+                                                    items: [
+                                                        { text: '文档', action: 'new-doc' },
+                                                        { text: '图片', action: 'new-image' },
+                                                        { text: '项目', action: 'new-project' },
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                        { text: '打开', action: 'open' },
+                                        { text: '保存', action: 'save' },
                                     ],
                                 },
-                                { text: '打开', action: 'open' },
-                                { text: '保存', action: 'save' },
-                            ],
+                            },
                         },
                         {
                             text: '编辑',
                             action: 'edit',
-                            submenu: [
-                                { text: '撤销', action: 'undo' },
-                                { text: '重做', action: 'redo' },
-                            ],
+                            popover: {
+                                options: {
+                                    items: [
+                                        { text: '撤销', action: 'undo' },
+                                        { text: '重做', action: 'redo' },
+                                    ],
+                                },
+                            },
                         },
                         { text: '帮助', action: 'help' },
                     ],

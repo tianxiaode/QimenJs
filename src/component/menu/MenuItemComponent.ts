@@ -11,20 +11,14 @@ const MenuItemComponentDefs: Definitions = {
         text: null,
         shortcut: null,
         icon: null,
-        hasSubmenu: false,
-        submenu: null,
         group: null,
         groupMode: 'radio',
         checked: false,
-    },
-    fields: {
-        submenuProps: null,
     },
 } as const;
 
 class MenuItemComponent extends Component {
     static type = 'menu-item';
-    _submenu: Record<string, any>[] | null = null;
 
     get tpl(): TemplateDecl {
         return MENU_ITEM_TPL;
@@ -32,7 +26,7 @@ class MenuItemComponent extends Component {
 
     onAfterInit(): void {
         super.onAfterInit();
-        if (this._submenu) {
+        if (this.popover) {
             this.addCls('q-menu-item--has-submenu');
             this.removeCls('hidden', 'expand');
         }
@@ -51,17 +45,6 @@ class MenuItemComponent extends Component {
             ? this.addCls('q-menu-item--has-submenu')
             : this.removeCls('q-menu-item--has-submenu');
         value ? this.removeCls('hidden', 'expand') : this.addCls('hidden', 'expand');
-    }
-
-    _onSubmenuOptionChange(value: Record<string, any>[] | null): void {
-        this._submenu = value;
-        if (value) {
-            this.addCls('q-menu-item--has-submenu');
-            this.removeCls('hidden', 'expand');
-        } else {
-            this.removeCls('q-menu-item--has-submenu');
-            this.addCls('hidden', 'expand');
-        }
     }
 
     _onGroupOptionChange(value: string): void {
@@ -100,7 +83,7 @@ class MenuItemComponent extends Component {
 
     select(): boolean {
         if (this.disable) return false;
-        if (this._submenu) return false;
+        if (this.popover) return false;
 
         if (this.group) {
             if (this.groupMode === 'checkbox') {

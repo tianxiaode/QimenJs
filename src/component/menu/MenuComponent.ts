@@ -7,8 +7,10 @@
  * domEvents 路径：
  * - 'MenuItem' → 点击菜单项、鼠标进入/离开菜单项
  *
- * 子菜单支持（桌面 hover 浮层）：
- * - item 配置 submenu: [...] 时，hover 该菜单项在右侧（水平菜单在下方）弹出子菜单
+ * 子菜单支持（hover 浮层，trigger:'manual' + enter/leave timer）：
+ * - item 配置 popover: { options: { items: [...] } } 时，hover 该菜单项弹出子菜单
+ * - MenuComponent 通过 showPopover/hidePopover 手动控制 PopoverAbility 的浮层显隐
+ * - 保留 120ms open delay / 300ms close delay，防止鼠标移动误关
  * - 支持任意层嵌套（demo 演示 3 层）
  */
 
@@ -21,7 +23,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     static type = 'menu';
     defaultItemType: string = 'menu-item';
 
-    _submenuMap: Map<any, any> = new Map();
     _openSubmenuKey: any = null;
     _pendingItem: any = null;
     _enterTimer: any = null;
@@ -65,7 +66,6 @@ class MenuComponent extends ItemGroupStaticComponent {
         };
     }
 
-    /** 是否本层直接子项（过滤子菜单的项，避免父层处理子菜单事件） */
     private _isOwnItem(item: any): boolean {
         return (this.items || []).includes(item);
     }
@@ -82,7 +82,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         (this as any).notifyGroupSelect(item);
 
-        if (!item._submenu) {
+        if (!item.popover) {
             this.close();
         }
     }
@@ -97,7 +97,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         if (item === this._openSubmenuKey) return;
 
-        if (item._submenu && !item._disabled) {
+        if (item.popover && !item.disable) {
             item.setExpandArrow('expanded');
             this._scheduleOpen(item);
         } else {
@@ -110,7 +110,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         if (!item) return;
         if (!this._isOwnItem(item)) return;
 
-        if (item._submenu) {
+        if (item.popover) {
             item.setExpandArrow('collapsed');
             if (item !== this._openSubmenuKey) {
                 this._scheduleClose(item);
@@ -119,17 +119,33 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     setItems(datas: Record<string, any>[]): void {
-        super.setItems(datas);
+        const defaultPlacement =
+            this.direction === 'horizontal' ? 'bottom-start' : 'right-start';
+        const processedDatas = datas.map((data) => {
+            if (!data?.popover) return data;
+            return {
+                ...data,
+                popover: {
+                    type: 'menu',
+                    trigger: 'manual',
+                    anchor: 'self',
+                    placement: defaultPlacement,
+                    ...data.popover,
+                },
+            };
+        });
+
+        super.setItems(processedDatas);
+
         for (let i = 0; i < this.items.length; i++) {
             const item = this.items[i];
-            const data = datas[i];
-            if (data?.submenu) {
-                item._submenu = data.submenu;
+            if (processedDatas[i]?.popover) {
                 item.addCls('q-menu-item--has-submenu');
                 item.removeCls('hidden', 'expand');
                 item.setExpandArrow('collapsed');
             }
         }
+
         this.initGroupSelect({ defaultMode: 'radio' });
         this.registerGroupItems(this.items);
     }
@@ -182,79 +198,54 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     private _openSubmenu(item: any): void {
-        if (!item._submenu) return;
+        if (!item.popover) return;
         if (this._openSubmenuKey === item) return;
 
-        let sub = this._submenuMap.get(item);
-        if (!sub) {
-            sub = new MenuComponent({
-                items: item._submenu,
-                direction: this.direction,
-            });
-            this._submenuMap.set(item, sub);
+        this._openSubmenuKey = item;
+        item.showPopover();
+
+        const sub = item._getPopoverInstance?.();
+        if (sub && !sub._chainSelectBound) {
+            sub._chainSelectBound = true;
             sub.on('select', (data: any) => {
                 const payload = data?.data ?? data;
                 this.emit('select', payload);
-                this._closeSubmenuChain(sub);
+                this._closeSubmenuChain(item);
             });
         }
-
-        this._openSubmenuKey = item;
-        const submenuCls =
-            this.direction === 'horizontal' ? 'q-menu--submenu-bottom' : 'q-menu--submenu-right';
-        sub.ready.then(() => {
-            if (this._openSubmenuKey === item) {
-                sub.addCls(['q-menu--submenu', submenuCls]);
-                item.el.appendChild(sub.el);
-                sub.el.style.display = '';
-            }
-        });
     }
 
     private _closeSubmenu(item: any): void {
-        const sub = this._submenuMap.get(item);
+        const sub = item._getPopoverInstance?.();
         if (sub) {
             sub.closeAllSubmenus();
-            if (sub.el?.parentNode) {
-                sub.el.parentNode.removeChild(sub.el);
-            }
         }
+        item.hidePopover();
         if (this._openSubmenuKey === item) {
             this._openSubmenuKey = null;
         }
     }
 
-    /** 关闭当前菜单的全部子菜单链（含递归层级） */
     closeAllSubmenus(): void {
-        for (const item of Array.from(this._submenuMap.keys())) {
-            this._closeSubmenu(item);
+        for (let i = 0; i < this.items.length; i++) {
+            const item = this.items[i];
+            if (item.popover) {
+                this._closeSubmenu(item);
+            }
         }
         this._pendingItem = null;
     }
 
-    /** 从指定子菜单向上关闭整条链 */
-    private _closeSubmenuChain(sub: any): void {
-        sub.closeAllSubmenus();
+    private _closeSubmenuChain(item: any): void {
+        const sub = item._getPopoverInstance?.();
+        if (sub) {
+            sub.closeAllSubmenus();
+        }
+        item.hidePopover();
         this.closeAllSubmenus();
         if (this.isOpen) {
             this.close();
-        } else if (this.el?.parentNode) {
-            this.el.parentNode.removeChild(this.el);
         }
-    }
-
-    private _disposeSubmenuOf(item: any): void {
-        const sub = this._submenuMap.get(item);
-        if (sub) {
-            sub.dispose();
-            this._submenuMap.delete(item);
-        }
-        if (this._openSubmenuKey === item) this._openSubmenuKey = null;
-    }
-
-    _destroyItem(component: any): void {
-        this._disposeSubmenuOf(component);
-        super._destroyItem(component);
     }
 
     onBeforeDispose(): void {
