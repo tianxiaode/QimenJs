@@ -31,7 +31,19 @@ export const OverlayAbility: AbilityDefinition = {
     },
 
     _showOverlay(opts?: { anchor?: HTMLElement; placement?: Placement }): void {
-        const placement = (opts?.placement ?? this.placement ?? 'bottom') as Placement;
+        let placement = (opts?.placement ?? this.placement ?? 'bottom') as Placement;
+        let align = (this as any).align ?? 'center';
+
+        if (typeof placement === 'string') {
+            if (placement.endsWith('-start')) {
+                align = 'start';
+                placement = placement.replace('-start', '') as Placement;
+            } else if (placement.endsWith('-end')) {
+                align = 'end';
+                placement = placement.replace('-end', '') as Placement;
+            }
+        }
+
         const anchor = opts?.anchor ?? this.anchor;
         if (!anchor && placement !== 'center') {
             this.logger?.warn?.('[_showOverlay] called without anchor');
@@ -78,7 +90,6 @@ export const OverlayAbility: AbilityDefinition = {
 
         if (anchor) {
             const offset = this.offset ?? 4;
-            const align = (this as any).align ?? 'center';
             const actualPlacement = positionOverlay(el, anchor, placement, offset, true, align);
             this.setAbilityState('OverlayAbility:actualPlacement', actualPlacement);
         }

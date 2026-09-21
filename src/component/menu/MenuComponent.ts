@@ -156,7 +156,8 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     show(): void {
         const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
-        this._showOverlay({ anchor });
+        const placement = this.placement ?? this.rawOptions?.placement;
+        this._showOverlay({ anchor, placement });
     }
 
     hide(): void {
