@@ -5,8 +5,11 @@
  * 委托 MenuItemComponent.select() / setExpandArrow() 执行状态变更。
  *
  * domEvents 路径：
- * - 'MenuItem.content' → 点击菜单项内容区域
- * - 'MenuItem'        → 鼠标进入/离开菜单项（子菜单箭头反馈）
+ * - 'MenuItem' → 点击菜单项、鼠标进入/离开菜单项
+ *
+ * 子菜单支持（桌面 hover 浮层）：
+ * - item 配置 submenu: [...] 时，hover 该菜单项在右侧（水平菜单在下方）弹出子菜单
+ * - 支持任意层嵌套（demo 演示 3 层）
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
@@ -17,6 +20,12 @@ import './menu.css';
 class MenuComponent extends ItemGroupStaticComponent {
     static type = 'menu';
     defaultItemType: string = 'menu-item';
+
+    _submenuMap: Map<any, any> = new Map();
+    _openSubmenuKey: any = null;
+    _pendingItem: any = null;
+    _enterTimer: any = null;
+    _leaveTimer: any = null;
 
     get defaultOptions(): Record<string, any> {
         return {
@@ -56,9 +65,15 @@ class MenuComponent extends ItemGroupStaticComponent {
         };
     }
 
+    /** 是否本层直接子项（过滤子菜单的项，避免父层处理子菜单事件） */
+    private _isOwnItem(item: any): boolean {
+        return (this.items || []).includes(item);
+    }
+
     _onItemClick(domEvt: any): void {
         const item = domEvt.targetComponent;
         if (!item) return;
+        if (!this._isOwnItem(item)) return;
 
         const action = item.getData?.('action');
         if (action) domEvt.action = action;
@@ -75,26 +90,39 @@ class MenuComponent extends ItemGroupStaticComponent {
     _onItemEnter(domEvt: any): void {
         const item = domEvt.targetComponent;
         if (!item) return;
+        if (!this._isOwnItem(item)) return;
+
+        if (item === this._openSubmenuKey) return;
 
         if (item._hasSubmenu && !item._disabled) {
             item.setExpandArrow('expanded');
+            this._scheduleOpen(item);
+        } else {
+            this._closeOtherSubmenus(item);
         }
     }
 
     _onItemLeave(domEvt: any): void {
         const item = domEvt.targetComponent;
         if (!item) return;
+        if (!this._isOwnItem(item)) return;
 
         if (item._hasSubmenu) {
             item.setExpandArrow('collapsed');
+            this._scheduleClose(item);
         }
     }
 
     setItems(datas: Record<string, any>[]): void {
         super.setItems(datas);
         for (const item of this.items) {
-            if ((item as any)._hasSubmenu) {
-                (item as any).setExpandArrow('collapsed');
+            if (item._submenu && !item._hasSubmenu) {
+                item._hasSubmenu = true;
+                item.addCls('q-menu-item--has-submenu');
+                item.removeCls('hidden', 'expand');
+            }
+            if (item._hasSubmenu) {
+                item.setExpandArrow('collapsed');
             }
         }
         this.initGroupSelect({ defaultMode: 'radio' });
@@ -124,7 +152,97 @@ class MenuComponent extends ItemGroupStaticComponent {
         this.hide();
     }
 
+    // ─── 子菜单浮层管理 ───
+
+    private _scheduleOpen(item: any): void {
+        if (this._pendingItem !== item) {
+            this._closeOtherSubmenus(item);
+            this._pendingItem = item;
+        }
+        window.clearTimeout(this._enterTimer);
+        window.clearTimeout(this._leaveTimer);
+        this._enterTimer = window.setTimeout(() => this._openSubmenu(item), 120);
+    }
+
+    private _scheduleClose(item: any): void {
+        window.clearTimeout(this._enterTimer);
+        this._leaveTimer = window.setTimeout(() => this._closeSubmenu(item), 160);
+    }
+
+    private _closeOtherSubmenus(exceptItem: any): void {
+        if (this._openSubmenuKey && this._openSubmenuKey !== exceptItem) {
+            this._closeSubmenu(this._openSubmenuKey);
+            this._pendingItem = exceptItem;
+        }
+    }
+
+    private _openSubmenu(item: any): void {
+        if (!item._submenu) return;
+        if (this._openSubmenuKey === item) return;
+
+        let sub = this._submenuMap.get(item);
+        if (!sub) {
+            sub = new MenuComponent({
+                items: item._submenu,
+                direction: this.direction,
+            });
+            sub.el.classList.add('q-menu-item__submenu', 'q-menu');
+            item.el.appendChild(sub.el);
+            this._submenuMap.set(item, sub);
+            sub.on('select', (data: any) => {
+                const payload = data?.data ?? data;
+                this.emit('select', payload);
+                this._closeSubmenuChain(sub);
+            });
+        }
+
+        sub.el.style.display = '';
+        sub.el.classList.remove('hidden');
+        this._openSubmenuKey = item;
+    }
+
+    private _closeSubmenu(item: any): void {
+        const sub = this._submenuMap.get(item);
+        if (sub) {
+            sub.closeAllSubmenus();
+            sub.el.classList.add('hidden');
+            sub.el.style.display = 'none';
+        }
+        if (this._openSubmenuKey === item) {
+            this._openSubmenuKey = null;
+        }
+    }
+
+    /** 关闭当前菜单的全部子菜单链（含递归层级） */
+    closeAllSubmenus(): void {
+        for (const item of Array.from(this._submenuMap.keys())) {
+            this._closeSubmenu(item);
+        }
+        this._pendingItem = null;
+    }
+
+    /** 从指定子菜单向上关闭整条链 */
+    private _closeSubmenuChain(sub: any): void {
+        sub.closeAllSubmenus();
+        this.closeAllSubmenus();
+    }
+
+    private _disposeSubmenuOf(item: any): void {
+        const sub = this._submenuMap.get(item);
+        if (sub) {
+            sub.dispose();
+            this._submenuMap.delete(item);
+        }
+        if (this._openSubmenuKey === item) this._openSubmenuKey = null;
+    }
+
+    _destroyItem(component: any): void {
+        this._disposeSubmenuOf(component);
+        super._destroyItem(component);
+    }
+
     onBeforeDispose(): void {
+        this.closeAllSubmenus();
         this.close();
         (this as any).clearGroups();
     }

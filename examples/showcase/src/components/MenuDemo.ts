@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl, type ListenItem } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** Menu 选中项交互演示 */
@@ -30,12 +30,9 @@ class MenuSelectDemo extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        select: { path: 'menu', handler: '_onMenuSelect' },
-    };
+    listens: ListenItem[] = [{ node: 'menu', events: { select: '_onMenuSelect' } }];
 
-    _onMenuSelect(domEvt: any): void {
-        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
+    _onMenuSelect(data: any): void {
         const action = data?.action;
         const result = this.getNodeEl('result');
         if (result && action) {
@@ -160,13 +157,24 @@ export const MENU_DEMO: DemoConfig = {
             },
         },
         {
-            label: '带子菜单',
+            label: '3层嵌套子菜单',
             code: `{
     type: 'menu',
     options: {
         items: [
-            { text: '文件', hasSubmenu: true },
-            { text: '编辑', hasSubmenu: true },
+            { text: '文件', submenu: [
+                { text: '新建', submenu: [
+                    { text: '文档' },
+                    { text: '图片' },
+                    { text: '项目' },
+                ]},
+                { text: '打开' },
+                { text: '保存' },
+            ]},
+            { text: '编辑', submenu: [
+                { text: '撤销' },
+                { text: '重做' },
+            ]},
             { text: '帮助' },
         ],
     }
@@ -175,9 +183,32 @@ export const MENU_DEMO: DemoConfig = {
                 type: 'menu',
                 options: {
                     items: [
-                        { text: '文件', hasSubmenu: true },
-                        { text: '编辑', hasSubmenu: true },
-                        { text: '帮助' },
+                        {
+                            text: '文件',
+                            action: 'file',
+                            submenu: [
+                                {
+                                    text: '新建',
+                                    action: 'new',
+                                    submenu: [
+                                        { text: '文档', action: 'new-doc' },
+                                        { text: '图片', action: 'new-image' },
+                                        { text: '项目', action: 'new-project' },
+                                    ],
+                                },
+                                { text: '打开', action: 'open' },
+                                { text: '保存', action: 'save' },
+                            ],
+                        },
+                        {
+                            text: '编辑',
+                            action: 'edit',
+                            submenu: [
+                                { text: '撤销', action: 'undo' },
+                                { text: '重做', action: 'redo' },
+                            ],
+                        },
+                        { text: '帮助', action: 'help' },
                     ],
                 },
             },

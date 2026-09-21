@@ -12,6 +12,7 @@ const MenuItemComponentDefs: Definitions = {
         shortcut: null,
         icon: null,
         hasSubmenu: false,
+        submenu: null,
         group: null,
         groupMode: 'radio',
         checked: false,
@@ -23,8 +24,19 @@ const MenuItemComponentDefs: Definitions = {
 
 class MenuItemComponent extends Component {
     static type = 'menu-item';
+    _hasSubmenu: boolean = false;
+    _submenu: Record<string, any>[] | null = null;
+
     get tpl(): TemplateDecl {
         return MENU_ITEM_TPL;
+    }
+
+    onAfterInit(): void {
+        super.onAfterInit();
+        if (this._hasSubmenu) {
+            this.addCls('q-menu-item--has-submenu');
+            this.removeCls('hidden', 'expand');
+        }
     }
 
     _onTextOptionChange(value: string): void {
@@ -36,10 +48,24 @@ class MenuItemComponent extends Component {
     }
 
     _onHasSubmenuOptionChange(value: boolean): void {
+        this._hasSubmenu = value;
         value
             ? this.addCls('q-menu-item--has-submenu')
             : this.removeCls('q-menu-item--has-submenu');
         value ? this.removeCls('hidden', 'expand') : this.addCls('hidden', 'expand');
+    }
+
+    _onSubmenuOptionChange(value: Record<string, any>[] | null): void {
+        this._submenu = value;
+        if (value && !this._hasSubmenu) {
+            this._hasSubmenu = true;
+            this.addCls('q-menu-item--has-submenu');
+            this.removeCls('hidden', 'expand');
+        } else if (!value && this._hasSubmenu && !this.getData('hasSubmenu')) {
+            this._hasSubmenu = false;
+            this.removeCls('q-menu-item--has-submenu');
+            this.addCls('hidden', 'expand');
+        }
     }
 
     _onGroupOptionChange(value: string): void {

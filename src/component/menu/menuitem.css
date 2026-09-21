@@ -1,4 +1,5 @@
 .q-menu-item {
+    position: relative;
     display: flex;
     align-items: center;
     padding: var(--q-space-xs, 8px) var(--q-space-md, 16px);
