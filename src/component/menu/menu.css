@@ -13,3 +13,18 @@
     display: flex;
     flex-direction: column;
 }
+
+.q-menu--submenu {
+    position: absolute;
+    z-index: 1;
+}
+
+.q-menu--submenu-right {
+    left: 100%;
+    top: 0;
+}
+
+.q-menu--submenu-bottom {
+    top: 100%;
+    left: 0;
+}

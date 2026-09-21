@@ -26,8 +26,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     _pendingItem: any = null;
     _enterTimer: any = null;
     _leaveTimer: any = null;
-    _parentMenu: any = null;
-    _parentItem: any = null;
 
     get defaultOptions(): Record<string, any> {
         return {
@@ -40,9 +38,6 @@ class MenuComponent extends ItemGroupStaticComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-menu');
-        if (this._parentMenu) {
-            window.clearTimeout(this._parentMenu._leaveTimer);
-        }
     }
 
     domEvents?: DomEventsMap | undefined = {
@@ -98,9 +93,6 @@ class MenuComponent extends ItemGroupStaticComponent {
         if (!this._isOwnItem(item)) return;
 
         window.clearTimeout(this._leaveTimer);
-        if (this._parentMenu) {
-            window.clearTimeout(this._parentMenu._leaveTimer);
-        }
 
         if (item === this._openSubmenuKey) return;
 
@@ -197,8 +189,6 @@ class MenuComponent extends ItemGroupStaticComponent {
                 direction: this.direction,
             });
             this._submenuMap.set(item, sub);
-            sub._parentMenu = this;
-            sub._parentItem = item;
             sub.on('select', (data: any) => {
                 const payload = data?.data ?? data;
                 this.emit('select', payload);
@@ -207,10 +197,13 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
 
         this._openSubmenuKey = item;
-        const placement = this.direction === 'horizontal' ? 'bottom' : 'right';
+        const submenuCls =
+            this.direction === 'horizontal' ? 'q-menu--submenu-bottom' : 'q-menu--submenu-right';
         sub.ready.then(() => {
             if (this._openSubmenuKey === item) {
-                sub._showOverlay({ anchor: item.el, placement });
+                sub.addCls('q-menu--submenu', submenuCls);
+                item.el.appendChild(sub.el);
+                sub.el.style.display = '';
             }
         });
     }
@@ -219,7 +212,9 @@ class MenuComponent extends ItemGroupStaticComponent {
         const sub = this._submenuMap.get(item);
         if (sub) {
             sub.closeAllSubmenus();
-            sub._hideOverlay();
+            if (sub.el?.parentNode) {
+                sub.el.parentNode.removeChild(sub.el);
+            }
         }
         if (this._openSubmenuKey === item) {
             this._openSubmenuKey = null;
@@ -238,7 +233,11 @@ class MenuComponent extends ItemGroupStaticComponent {
     private _closeSubmenuChain(sub: any): void {
         sub.closeAllSubmenus();
         this.closeAllSubmenus();
-        this.close();
+        if (this.isOpen) {
+            this.close();
+        } else if (this.el?.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
     }
 
     private _disposeSubmenuOf(item: any): void {
