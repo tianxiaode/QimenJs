@@ -144,6 +144,15 @@ class NavComponent extends ItemGroupPooledComponent {
 
         this._syncItemConfig();
 
+        const hash = typeof window !== 'undefined' ? window.location.hash : '';
+        if (hash) {
+            const routePath = hash.slice(1);
+            const routeIndex = this.pathIndex?.[routePath];
+            if (routeIndex !== undefined && routeIndex !== this.activeIndex) {
+                this.selectAt(routeIndex, true);
+            }
+        }
+
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
         }

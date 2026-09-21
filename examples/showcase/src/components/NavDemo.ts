@@ -124,6 +124,51 @@ export const NAV_DEMO: DemoConfig = {
             },
         },
         {
+            label: '嵌套子菜单',
+            code: `{
+    type: 'nav',
+    options: {
+        activeIndex: 0,
+        items: [
+            { text: '组件', iconCls: 'fa-solid fa-cube', children: [
+                { text: 'Button', href: '/components/Button' },
+                { text: 'Card', href: '/components/Card' },
+            ]},
+            { text: '布局', iconCls: 'fa-solid fa-table-cells', children: [
+                { text: 'Panel', href: '/components/Panel' },
+                { text: 'Tabs', href: '/components/Tabs' },
+            ]},
+            { text: '设置', iconCls: 'fa-solid fa-gear' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    activeIndex: 0,
+                    items: [
+                        {
+                            text: '组件',
+                            iconCls: 'fa-solid fa-cube',
+                            children: [
+                                { text: 'Button', href: '/components/Button' },
+                                { text: 'Card', href: '/components/Card' },
+                            ],
+                        },
+                        {
+                            text: '布局',
+                            iconCls: 'fa-solid fa-table-cells',
+                            children: [
+                                { text: 'Panel', href: '/components/Panel' },
+                                { text: 'Tabs', href: '/components/Tabs' },
+                            ],
+                        },
+                        { text: '设置', iconCls: 'fa-solid fa-gear' },
+                    ],
+                },
+            },
+        },
+        {
             label: '选中项交互',
             code: `// select 事件中通过 data.index 获取选中项索引
 nav.on('select', (data) => {
