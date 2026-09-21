@@ -90,9 +90,10 @@ class MenuComponent extends ItemGroupStaticComponent {
     _onItemEnter(domEvt: any): void {
         const item = domEvt.targetComponent;
         if (!item) return;
-        if (!this._isOwnItem(item)) return;
 
         window.clearTimeout(this._leaveTimer);
+
+        if (!this._isOwnItem(item)) return;
 
         if (item === this._openSubmenuKey) return;
 
