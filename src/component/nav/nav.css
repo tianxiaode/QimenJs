@@ -23,6 +23,14 @@
     align-items: center;
 }
 
+.q-nav--submenu .q-nav__collapse-toggle {
+    display: none;
+}
+
+.q-nav--submenu {
+    min-width: 160px;
+}
+
 .q-nav__collapse-toggle {
     display: flex;
     align-items: center;

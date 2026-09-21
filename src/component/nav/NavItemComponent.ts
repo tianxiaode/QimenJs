@@ -1,7 +1,6 @@
 import { HrefComponent } from '../text/HrefComponent';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { PopoverAbility } from '@/component-abilities';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 import './nav-item.css';
 
@@ -60,7 +59,7 @@ class NavItemComponent extends HrefComponent {
         this._updateIconDisplay();
     }
 
-    _onIconClsOptionChange(value: string): void {
+    _onIconClsOptionChange(_value: string): void {
         this._updateIconDisplay();
     }
 
@@ -107,7 +106,7 @@ class NavItemComponent extends HrefComponent {
         } else {
             const options = this.overlayOptions ?? {};
             this.popover = {
-                type: this.overlayComponent ?? 'NavOverlay',
+                type: this.overlayComponent ?? 'nav',
                 trigger: 'manual',
                 anchor: 'self',
                 placement: options.placement ?? 'right-start',
@@ -221,7 +220,6 @@ class NavItemComponent extends HrefComponent {
 }
 
 NavItemComponent.define(NavItemComponentDefs);
-NavItemComponent.use(PopoverAbility);
 
 export { NavItemComponent };
 export type NavItemComponentInstance = InstanceType<typeof NavItemComponent>;

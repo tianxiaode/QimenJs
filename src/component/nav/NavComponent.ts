@@ -34,6 +34,7 @@ const NavComponentDefs: Definitions = {
         mode: 'expanded',
         maxDepth: 3,
         activeIndex: -1,
+        depth: 0,
         pathIndex: null,
         indexPath: null,
         overlayOptions: null,
@@ -135,6 +136,7 @@ class NavComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
 
         this.addCls('q-nav');
+        if (this.depth > 0) this.addCls('q-nav--submenu');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-nav__items');
 
