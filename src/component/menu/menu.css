@@ -1,5 +1,6 @@
 .q-menu {
     position: relative;
+    width: fit-content;
     min-width: 120px;
     padding: 4px 0;
     background: var(--q-color-bg, #fff);
@@ -11,16 +12,4 @@
 .q-menu__content {
     display: flex;
     flex-direction: column;
-}
-
-.q-menu-item__submenu {
-    position: absolute;
-    top: -2px;
-    left: 100%;
-    z-index: var(--q-z-index-menu, 2000);
-}
-
-.q-menu--horizontal .q-menu-item__submenu {
-    top: 100%;
-    left: -2px;
 }

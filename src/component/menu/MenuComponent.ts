@@ -166,7 +166,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     private _scheduleClose(item: any): void {
         window.clearTimeout(this._enterTimer);
-        this._leaveTimer = window.setTimeout(() => this._closeSubmenu(item), 160);
+        this._leaveTimer = window.setTimeout(() => this._closeSubmenu(item), 300);
     }
 
     private _closeOtherSubmenus(exceptItem: any): void {
@@ -186,8 +186,6 @@ class MenuComponent extends ItemGroupStaticComponent {
                 items: item._submenu,
                 direction: this.direction,
             });
-            sub.el.classList.add('q-menu-item__submenu', 'q-menu');
-            item.el.appendChild(sub.el);
             this._submenuMap.set(item, sub);
             sub.on('select', (data: any) => {
                 const payload = data?.data ?? data;
@@ -196,8 +194,8 @@ class MenuComponent extends ItemGroupStaticComponent {
             });
         }
 
-        sub.el.style.display = '';
-        sub.el.classList.remove('hidden');
+        const placement = this.direction === 'horizontal' ? 'bottom' : 'right';
+        sub._showOverlay({ anchor: item.el, placement });
         this._openSubmenuKey = item;
     }
 
@@ -205,8 +203,7 @@ class MenuComponent extends ItemGroupStaticComponent {
         const sub = this._submenuMap.get(item);
         if (sub) {
             sub.closeAllSubmenus();
-            sub.el.classList.add('hidden');
-            sub.el.style.display = 'none';
+            sub._hideOverlay();
         }
         if (this._openSubmenuKey === item) {
             this._openSubmenuKey = null;
