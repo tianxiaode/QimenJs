@@ -167,7 +167,11 @@ export class DomEventsEngine {
             }
             eventTypesOnEl.add(eventType);
 
-            const useCapture = eventType === 'focus' || eventType === 'blur';
+            const useCapture =
+                eventType === 'focus' ||
+                eventType === 'blur' ||
+                eventType === 'enter' ||
+                eventType === 'leave';
 
             instance.bind(instance.el, eventType as any, {
                 capture: useCapture,
