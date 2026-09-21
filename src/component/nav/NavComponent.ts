@@ -1,5 +1,5 @@
 /**
- * NavItemGroupComponent 导航项组组件
+ * NavComponent 导航项组组件
  *
  * 从 ItemGroupPooledComponent 派生（池化，CSS order 布局，复用隐藏项），
  * 通过 domEvents 集中处理子项事件，委托 NavItemComponent.select() /
@@ -33,7 +33,7 @@ const NavComponentDefs: Definitions = {
         direction: 'vertical',
         mode: 'expanded',
         maxDepth: 3,
-        activeIndex: null,
+        activeIndex: -1,
         pathIndex: null,
         indexPath: null,
         overlayOptions: null,
@@ -49,13 +49,6 @@ class NavComponent extends ItemGroupPooledComponent {
         return NAV_TPL;
     }
 
-    _activeIndex: number = -1;
-    _navMode: 'expanded' | 'collapsed' = 'expanded';
-    _maxDepth: number = 3;
-    _overlayOptions: NavOverlayOptions | undefined = undefined;
-    _overlayComponent: any = undefined;
-    _pathIndex: Record<string, number> = {};
-    _indexPath: string[] = [];
     _lastNavigatedPath: string | null = null;
     _currentNavData: { path: string; index: number } | null = null;
 
@@ -114,15 +107,15 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 
     _onCollapseToggle(): void {
-        this.setMode(this._navMode === 'expanded' ? 'collapsed' : 'expanded');
+        this.setMode(this.mode === 'expanded' ? 'collapsed' : 'expanded');
     }
 
     get defaultEventData(): Record<string, any> {
         return {
             ...super.defaultEventData,
-            navMode: this._navMode,
-            activeIndex: this._activeIndex,
-            maxDepth: this._maxDepth,
+            navMode: this.mode,
+            activeIndex: this.activeIndex,
+            maxDepth: this.maxDepth,
             ...this._currentNavData,
         };
     }
@@ -134,7 +127,7 @@ class NavComponent extends ItemGroupPooledComponent {
             this._lastNavigatedPath = null;
             return;
         }
-        const index = this._pathIndex[path];
+        const index = this.pathIndex?.[path];
         if (index !== undefined) this.selectAt(index);
     }
 
@@ -145,33 +138,23 @@ class NavComponent extends ItemGroupPooledComponent {
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-nav__items');
 
-        this._navMode = this.getData('mode') ?? 'expanded';
-        this._maxDepth = this.getData('maxDepth') ?? 3;
-        this._overlayOptions = this.getData('overlayOptions');
-        this._overlayComponent = this.getData('overlayComponent');
+        if (!this.pathIndex) this._buildPathIndex(this.getData('items'));
 
-        const pathIndex = this.getData('pathIndex');
-        if (pathIndex) this._pathIndex = pathIndex;
-        else this._buildPathIndex(this.getData('items'));
-        const indexPath = this.getData('indexPath');
-        if (indexPath) this._indexPath = indexPath;
-
-        this.toggleCls('q-nav--collapsed', this._navMode === 'collapsed');
+        this.toggleCls('q-nav--collapsed', this.mode === 'collapsed');
 
         this._syncItemConfig();
 
-        const activeIndex = this.getData('activeIndex');
-        if (activeIndex !== undefined && activeIndex >= 0) {
-            this.selectAt(activeIndex, true);
+        if (this.activeIndex >= 0) {
+            this.selectAt(this.activeIndex, true);
         }
     }
 
     private _buildPathIndex(items?: Record<string, any>[]): void {
-        this._pathIndex = {};
+        this.pathIndex = {};
         if (!items?.length) return;
         for (let i = 0; i < items.length; i++) {
             const path = items[i]?.path;
-            if (path) this._pathIndex[path] = i;
+            if (path) this.pathIndex[path] = i;
         }
     }
 
@@ -179,36 +162,26 @@ class NavComponent extends ItemGroupPooledComponent {
         for (let i = 0; i < this.count; i++) {
             const item = this.getAt(i) as NavItemComponent;
             item.update({
-                maxDepth: this._maxDepth,
-                mode: this._navMode,
-                overlayOptions: this._overlayOptions,
-                overlayComponent: this._overlayComponent,
+                maxDepth: this.maxDepth,
+                mode: this.mode,
+                overlayOptions: this.overlayOptions,
+                overlayComponent: this.overlayComponent,
             });
         }
     }
 
-    get activeIndex(): number {
-        return this._activeIndex;
-    }
-    get mode(): 'expanded' | 'collapsed' {
-        return this._navMode;
-    }
-    get maxDepth(): number {
-        return this._maxDepth;
-    }
-
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
-        if (index === this._activeIndex) return;
+        if (index === this.activeIndex) return;
 
-        if (this._activeIndex >= 0 && this._activeIndex < this.count) {
-            const prevItem = this.getAt(this._activeIndex) as NavItemComponent;
+        if (this.activeIndex >= 0 && this.activeIndex < this.count) {
+            const prevItem = this.getAt(this.activeIndex) as NavItemComponent;
             prevItem.setActive(false);
         }
 
         const newItem = this.getAt(index) as NavItemComponent;
         newItem.setActive(true);
-        this._activeIndex = index;
+        this.activeIndex = index;
 
         if (!silent) {
             this.emit('select', { index });
@@ -216,15 +189,15 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 
     clearSelection(): void {
-        if (this._activeIndex >= 0 && this._activeIndex < this.count) {
-            const item = this.getAt(this._activeIndex) as NavItemComponent;
+        if (this.activeIndex >= 0 && this.activeIndex < this.count) {
+            const item = this.getAt(this.activeIndex) as NavItemComponent;
             item.setActive(false);
         }
-        this._activeIndex = -1;
+        this.activeIndex = -1;
     }
 
     setMode(value: 'expanded' | 'collapsed'): void {
-        this._navMode = value;
+        this.mode = value;
         this.toggleCls('q-nav--collapsed', value === 'collapsed');
 
         for (let i = 0; i < this.count; i++) {
@@ -234,7 +207,7 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 
     setOverlayOptions(options: NavOverlayOptions): void {
-        this._overlayOptions = options;
+        this.overlayOptions = options;
         for (let i = 0; i < this.count; i++) {
             const item = this.getAt(i) as NavItemComponent;
             item.update({ overlayOptions: options });
@@ -244,18 +217,12 @@ class NavComponent extends ItemGroupPooledComponent {
     onUpdated(props?: Record<string, any>): void {
         if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
         if (props?.mode !== undefined) this.setMode(props.mode);
-        if (props?.maxDepth !== undefined) {
-            this._maxDepth = props.maxDepth;
-            this._syncItemConfig();
-        }
+        if (props?.maxDepth !== undefined) this._syncItemConfig();
         if (props?.overlayOptions !== undefined) this.setOverlayOptions(props.overlayOptions);
-        if (props?.pathIndex !== undefined) this._pathIndex = props.pathIndex;
-        if (props?.indexPath !== undefined) this._indexPath = props.indexPath;
     }
 }
 
 NavComponent.define(NavComponentDefs);
 
 export { NavComponent };
-/** 导航实例类型 */
 export type NavComponentInstance = InstanceType<typeof NavComponent>;
