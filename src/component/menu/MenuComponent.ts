@@ -201,7 +201,7 @@ class MenuComponent extends ItemGroupStaticComponent {
             this.direction === 'horizontal' ? 'q-menu--submenu-bottom' : 'q-menu--submenu-right';
         sub.ready.then(() => {
             if (this._openSubmenuKey === item) {
-                sub.addCls('q-menu--submenu', submenuCls);
+                sub.addCls(['q-menu--submenu', submenuCls]);
                 item.el.appendChild(sub.el);
                 sub.el.style.display = '';
             }
