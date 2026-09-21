@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl, type ListenItem } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** TreeNav 选中项交互演示 */
@@ -44,12 +44,12 @@ class TreeNavSelectDemo extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        select: { path: 'treeNav', handler: '_onTreeNavSelect' },
-    };
+    listens: ListenItem[] = [
+        { node: 'treeNav', events: { select: { handler: '_onTreeNavSelect' } } },
+    ];
 
-    _onTreeNavSelect(domEvt: any): void {
-        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
+    _onTreeNavSelect(ctx: any): void {
+        const data = ctx?.data ?? {};
         const index = data?.index;
         const path = data?.path;
         const result = this.getNodeEl('result');

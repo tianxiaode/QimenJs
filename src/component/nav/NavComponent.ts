@@ -29,6 +29,7 @@ import './nav.css';
 
 const NavComponentDefs: Definitions = {
     options: {
+        direction: 'vertical',
         mode: 'expanded',
         maxDepth: 3,
         activeIndex: null,
@@ -40,7 +41,8 @@ const NavComponentDefs: Definitions = {
 } as const;
 
 class NavComponent extends ItemGroupPooledComponent {
-    defaultItemType = 'NavItem';
+    static type = 'nav';
+    defaultItemType = 'nav-item';
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
     _maxDepth: number = 3;
@@ -52,9 +54,14 @@ class NavComponent extends ItemGroupPooledComponent {
     _currentNavData: { path: string; index: number } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '{NavItem}.content', handler: '_onItemClick', emits: ['[action]'], router: 'navigate' },
-        enter: { path: '{NavItem}', handler: '_onItemEnter' },
-        leave: { path: '{NavItem}', handler: '_onItemLeave' },
+        click: {
+            path: '{nav-item}.content',
+            handler: '_onItemClick',
+            emits: ['[action]'],
+            router: 'navigate',
+        },
+        enter: { path: '{nav-item}', handler: '_onItemEnter' },
+        leave: { path: '{nav-item}', handler: '_onItemLeave' },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];

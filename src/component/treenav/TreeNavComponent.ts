@@ -29,6 +29,7 @@ import './treenav.css';
 
 const TreeNavComponentDefs: Definitions = {
     options: {
+        direction: 'vertical',
         maxDepth: 5,
         activeIndex: null,
         pathIndex: null,

@@ -384,7 +384,8 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!container) return;
 
         container.style.display = 'flex';
-        container.style.flexDirection = this.getData('direction') === 'horizontal' ? 'row' : 'column';
+        container.style.flexDirection =
+            this.getData('direction') === 'horizontal' ? 'row' : 'column';
 
         const step = this._step;
         const items = this.items;

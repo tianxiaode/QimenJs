@@ -12,6 +12,7 @@ class MenuSelectDemo extends Component {
                     type: 'menu',
                     name: 'menu',
                     options: {
+                        eventKey: 'menu',
                         items: [
                             { text: '新建', action: 'new' },
                             { text: '打开', action: 'open' },
@@ -30,7 +31,7 @@ class MenuSelectDemo extends Component {
         };
     }
 
-    listens: ListenItem[] = [{ node: 'menu', events: { select: '_onMenuSelect' } }];
+    listens: ListenItem[] = [{ source: 'menu', events: { select: '_onMenuSelect' } }];
 
     _onMenuSelect(data: any): void {
         const action = data?.action;

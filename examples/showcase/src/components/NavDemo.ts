@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl, type ListenItem } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** Nav 选中项交互演示 */
@@ -31,12 +31,12 @@ class NavSelectDemo extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        select: { path: 'nav', handler: '_onNavSelect' },
-    };
+    listens: ListenItem[] = [
+        { node: 'nav', events: { select: { handler: '_onNavSelect' } } },
+    ];
 
-    _onNavSelect(domEvt: any): void {
-        const data = domEvt?.data?.data ?? domEvt?.data ?? domEvt;
+    _onNavSelect(ctx: any): void {
+        const data = ctx?.data ?? {};
         const index = data?.index;
         const result = this.getNodeEl('result');
         if (result && index !== undefined) {
