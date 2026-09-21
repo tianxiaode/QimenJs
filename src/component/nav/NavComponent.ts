@@ -21,10 +21,11 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
-import { DomEventsMap } from '@qimenjs/component-core';
+import { DomEventsMap, type TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { RouteEventBus } from '@/events';
 import type { EventContext } from '@/context';
+import { NAV_TPL } from './nav-tpl';
 import './nav.css';
 
 const NavComponentDefs: Definitions = {
@@ -43,6 +44,11 @@ const NavComponentDefs: Definitions = {
 class NavComponent extends ItemGroupPooledComponent {
     static type = 'nav';
     defaultItemType = 'nav-item';
+
+    get tpl(): TemplateDecl {
+        return NAV_TPL;
+    }
+
     _activeIndex: number = -1;
     _navMode: 'expanded' | 'collapsed' = 'expanded';
     _maxDepth: number = 3;
@@ -54,12 +60,18 @@ class NavComponent extends ItemGroupPooledComponent {
     _currentNavData: { path: string; index: number } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
-        click: {
-            path: '{nav-item}.content',
-            handler: '_onItemClick',
-            emits: ['[action]'],
-            router: 'navigate',
-        },
+        click: [
+            {
+                path: '{nav-item}.content',
+                handler: '_onItemClick',
+                emits: ['[action]'],
+                router: 'navigate',
+            },
+            {
+                path: 'collapseToggle',
+                handler: '_onCollapseToggle',
+            },
+        ],
         enter: { path: '{nav-item}', handler: '_onItemEnter' },
         leave: { path: '{nav-item}', handler: '_onItemLeave' },
     };
@@ -99,6 +111,10 @@ class NavComponent extends ItemGroupPooledComponent {
 
         const item = target.component as NavItemComponent;
         item.hideTooltip();
+    }
+
+    _onCollapseToggle(): void {
+        this.setMode(this._navMode === 'expanded' ? 'collapsed' : 'expanded');
     }
 
     get defaultEventData(): Record<string, any> {

@@ -30,7 +30,7 @@ export interface NavOverlayOptions {
 const NavItemComponentDefs: Definitions = {
     options: {
         text: null,
-        icon: null,
+        iconCls: null,
         active: false,
         mode: 'expanded',
         children: null,
@@ -55,11 +55,11 @@ class NavItemComponent extends Component {
 
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
+        this._updateIconDisplay();
     }
 
-    _onIconOptionChange(value: string): void {
-        const el = this.getNodeEl('icon');
-        if (el) el.innerHTML = value ?? '';
+    _onIconClsOptionChange(value: string): void {
+        this._updateIconDisplay();
     }
 
     _onActiveOptionChange(value: boolean): void {
@@ -80,6 +80,7 @@ class NavItemComponent extends Component {
         else this.removeCls('q-nav-item--collapsed');
         this.setNodeHidden(value === 'collapsed', 'text');
         if (this._overlayOpen) this.closeOverlay();
+        this._updateIconDisplay();
     }
 
     _onChildrenOptionChange(value: Record<string, any>[]): void {
@@ -90,6 +91,28 @@ class NavItemComponent extends Component {
         this.setNodeHidden(!hasChildren, 'expand');
         if (!hasChildren || this.depth >= this.maxDepth) {
             this._disposeSubNav();
+        }
+    }
+
+    private _updateIconDisplay(): void {
+        const iconEl = this.getNodeEl('icon');
+        if (!iconEl) return;
+
+        const hasIcon = !!this.iconCls;
+        const isCollapsed = this.mode === 'collapsed';
+
+        if (hasIcon) {
+            iconEl.className = `q-nav-item__icon ${this.iconCls}`;
+            iconEl.textContent = '';
+            this.setNodeHidden(false, 'icon');
+        } else if (isCollapsed && this.text) {
+            iconEl.className = 'q-nav-item__icon q-nav-item__icon--fallback';
+            iconEl.textContent = this.text.charAt(0);
+            this.setNodeHidden(false, 'icon');
+        } else {
+            iconEl.className = 'q-nav-item__icon';
+            iconEl.textContent = '';
+            this.setNodeHidden(true, 'icon');
         }
     }
 

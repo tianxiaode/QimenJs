@@ -24,7 +24,12 @@
     align-items: center;
     justify-content: center;
     font-size: var(--q-font-size-lg);
-    min-width: 20px;
+}
+
+.q-nav-item__icon--fallback {
+    font-style: normal;
+    font-size: var(--q-font-size-md);
+    font-weight: var(--q-font-weight-bold);
 }
 
 .q-nav-item__text {
