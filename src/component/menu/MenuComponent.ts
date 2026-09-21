@@ -225,6 +225,7 @@ class MenuComponent extends ItemGroupStaticComponent {
     private _closeSubmenuChain(sub: any): void {
         sub.closeAllSubmenus();
         this.closeAllSubmenus();
+        this.close();
     }
 
     private _disposeSubmenuOf(item: any): void {
