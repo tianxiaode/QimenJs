@@ -89,6 +89,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     _onItemEnter(domEvt: any): void {
         const item = domEvt.targetComponent;
+        console.log(`[_onItemEnter] item=${item?.getData?.('text')} _submenu=${!!item?._submenu} _disabled=${!!item?._disabled} isOwn=${this._isOwnItem(item)} openKey=${this._openSubmenuKey === item}`);
         if (!item) return;
         if (!this._isOwnItem(item)) return;
 
@@ -118,11 +119,13 @@ class MenuComponent extends ItemGroupStaticComponent {
         for (let i = 0; i < this.items.length; i++) {
             const item = this.items[i];
             const data = datas[i];
+            console.log(`[setItems] i=${i} text=${data?.text} hasSubmenu=${!!data?.submenu} item._submenu=${!!item?._submenu}`);
             if (data?.submenu) {
                 item._submenu = data.submenu;
                 item.addCls('q-menu-item--has-submenu');
                 item.removeCls('hidden', 'expand');
                 item.setExpandArrow('collapsed');
+                console.log(`[setItems] set _submenu on item "${data.text}", submenu len=${data.submenu.length}`);
             }
         }
         this.initGroupSelect({ defaultMode: 'radio' });
@@ -155,6 +158,7 @@ class MenuComponent extends ItemGroupStaticComponent {
     // ─── 子菜单浮层管理 ───
 
     private _scheduleOpen(item: any): void {
+        console.log(`[_scheduleOpen] item=${item?.getData?.('text')} pending=${this._pendingItem === item}`);
         if (this._pendingItem !== item) {
             this._closeOtherSubmenus(item);
             this._pendingItem = item;
@@ -177,15 +181,18 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     private _openSubmenu(item: any): void {
+        console.log(`[_openSubmenu] item=${item?.getData?.('text')} _submenu=${!!item?._submenu} openKey=${this._openSubmenuKey === item}`);
         if (!item._submenu) return;
         if (this._openSubmenuKey === item) return;
 
         let sub = this._submenuMap.get(item);
         if (!sub) {
+            console.log(`[_openSubmenu] creating new MenuComponent for "${item?.getData?.('text')}", submenu len=${item._submenu.length}`);
             sub = new MenuComponent({
                 items: item._submenu,
                 direction: this.direction,
             });
+            console.log(`[_openSubmenu] sub.el created, children=${sub.el?.children?.length}, items=${sub.items?.length}`);
             this._submenuMap.set(item, sub);
             sub.on('select', (data: any) => {
                 const payload = data?.data ?? data;
@@ -195,7 +202,9 @@ class MenuComponent extends ItemGroupStaticComponent {
         }
 
         const placement = this.direction === 'horizontal' ? 'bottom' : 'right';
+        console.log(`[_openSubmenu] calling _showOverlay anchor=${!!item.el} placement=${placement} sub.isOpen=${sub.isOpen}`);
         sub._showOverlay({ anchor: item.el, placement });
+        console.log(`[_openSubmenu] after _showOverlay sub.isOpen=${sub.isOpen} sub.el.style.display="${sub.el?.style?.display}" sub.el.children=${sub.el?.children?.length}`);
         this._openSubmenuKey = item;
     }
 
