@@ -1,4 +1,4 @@
-import { Component } from '@qimenjs/component-core';
+import { HrefComponent } from '../text/HrefComponent';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
@@ -29,14 +29,12 @@ export interface NavOverlayOptions {
 
 const NavItemComponentDefs: Definitions = {
     options: {
-        text: null,
         iconCls: null,
         active: false,
         mode: 'expanded',
         children: null,
     },
     fields: {
-        path: undefined,
         overlayOptions: undefined,
         overlayComponent: undefined,
         depth: 0,
@@ -44,12 +42,14 @@ const NavItemComponentDefs: Definitions = {
     },
 } as const;
 
-class NavItemComponent extends Component {
+class NavItemComponent extends HrefComponent {
     static type = 'nav-item';
 
     get tpl(): TemplateDecl {
         return NAV_ITEM_TPL;
     }
+
+    domEvents = {};
 
     _overlayOpen: boolean = false;
 

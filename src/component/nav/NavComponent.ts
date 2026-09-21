@@ -84,9 +84,9 @@ class NavComponent extends ItemGroupPooledComponent {
             this.selectAt(target.index);
         }
 
-        if (item.path) {
-            this._lastNavigatedPath = item.path;
-            this._currentNavData = { path: item.path, index: target.index };
+        if (item.href) {
+            this._lastNavigatedPath = item.href;
+            this._currentNavData = { path: item.href, index: target.index };
         }
     }
 
@@ -153,8 +153,8 @@ class NavComponent extends ItemGroupPooledComponent {
         this.pathIndex = {};
         if (!items?.length) return;
         for (let i = 0; i < items.length; i++) {
-            const path = items[i]?.path;
-            if (path) this.pathIndex[path] = i;
+            const href = items[i]?.href;
+            if (href) this.pathIndex[href] = i;
         }
     }
 
