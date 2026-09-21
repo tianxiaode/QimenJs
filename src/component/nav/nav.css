@@ -28,7 +28,14 @@
 }
 
 .q-nav--submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    z-index: 1000;
     min-width: 160px;
+    background: var(--q-color-bg, #fff);
+    border: 1px solid var(--q-color-border, #e0e0e0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .q-nav__collapse-toggle {
