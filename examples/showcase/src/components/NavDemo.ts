@@ -130,14 +130,20 @@ export const NAV_DEMO: DemoConfig = {
     options: {
         activeIndex: 0,
         items: [
-            { text: '组件', iconCls: 'fa-solid fa-cube', children: [
-                { text: 'Button', href: '/components/Button' },
-                { text: 'Card', href: '/components/Card' },
-            ]},
-            { text: '布局', iconCls: 'fa-solid fa-table-cells', children: [
-                { text: 'Panel', href: '/components/Panel' },
-                { text: 'Tabs', href: '/components/Tabs' },
-            ]},
+            { text: '组件', iconCls: 'fa-solid fa-cube', popover: {
+                type: 'nav', trigger: 'click', placement: 'right-start',
+                options: { items: [
+                    { text: 'Button', href: '/components/Button' },
+                    { text: 'Card', href: '/components/Card' },
+                ]}
+            }},
+            { text: '布局', iconCls: 'fa-solid fa-table-cells', popover: {
+                type: 'nav', trigger: 'click', placement: 'right-start',
+                options: { items: [
+                    { text: 'Panel', href: '/components/Panel' },
+                    { text: 'Tabs', href: '/components/Tabs' },
+                ]}
+            }},
             { text: '设置', iconCls: 'fa-solid fa-gear' },
         ],
     }
@@ -150,18 +156,32 @@ export const NAV_DEMO: DemoConfig = {
                         {
                             text: '组件',
                             iconCls: 'fa-solid fa-cube',
-                            children: [
-                                { text: 'Button', href: '/components/Button' },
-                                { text: 'Card', href: '/components/Card' },
-                            ],
+                            popover: {
+                                type: 'nav',
+                                trigger: 'click',
+                                placement: 'right-start',
+                                options: {
+                                    items: [
+                                        { text: 'Button', href: '/components/Button' },
+                                        { text: 'Card', href: '/components/Card' },
+                                    ],
+                                },
+                            },
                         },
                         {
                             text: '布局',
                             iconCls: 'fa-solid fa-table-cells',
-                            children: [
-                                { text: 'Panel', href: '/components/Panel' },
-                                { text: 'Tabs', href: '/components/Tabs' },
-                            ],
+                            popover: {
+                                type: 'nav',
+                                trigger: 'click',
+                                placement: 'right-start',
+                                options: {
+                                    items: [
+                                        { text: 'Panel', href: '/components/Panel' },
+                                        { text: 'Tabs', href: '/components/Tabs' },
+                                    ],
+                                },
+                            },
                         },
                         { text: '设置', iconCls: 'fa-solid fa-gear' },
                     ],

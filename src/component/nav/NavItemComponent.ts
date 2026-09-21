@@ -4,41 +4,11 @@ import { Definitions } from '@/composable';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
 import './nav-item.css';
 
-export type NavPlacement =
-    | 'top'
-    | 'bottom'
-    | 'left'
-    | 'right'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'left-start'
-    | 'left-end'
-    | 'right-start'
-    | 'right-end';
-
-export interface NavOverlayOptions {
-    placement?: NavPlacement;
-    offset?: number;
-    overlayClass?: string;
-    enterAnimation?: Keyframe[];
-    exitAnimation?: Keyframe[];
-    animationDuration?: number;
-}
-
 const NavItemComponentDefs: Definitions = {
     options: {
         iconCls: null,
         active: false,
         mode: 'expanded',
-        children: null,
-    },
-    fields: {
-        overlayOptions: undefined,
-        overlayComponent: undefined,
-        depth: 0,
-        maxDepth: 3,
     },
 } as const;
 
@@ -50,9 +20,6 @@ class NavItemComponent extends HrefComponent {
     }
 
     domEvents = {};
-
-    _overlayOpen: boolean = false;
-    _subNav: any = null;
 
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
@@ -80,19 +47,8 @@ class NavItemComponent extends HrefComponent {
         if (value === 'collapsed') this.addCls('q-nav-item--collapsed');
         else this.removeCls('q-nav-item--collapsed');
         this.setNodeHidden(value === 'collapsed', 'text');
-        if (this._overlayOpen) this._closeSubNav();
+        if (value === 'collapsed') this.hidePopover();
         this._updateIconDisplay();
-    }
-
-    _onChildrenOptionChange(value: Record<string, any>[]): void {
-        const hasChildren = !!value?.length;
-        hasChildren
-            ? this.addCls('q-nav-item--has-children')
-            : this.removeCls('q-nav-item--has-children');
-        this.setNodeHidden(!hasChildren, 'expand');
-        if (!hasChildren || this.depth >= this.maxDepth) {
-            this._closeSubNav();
-        }
     }
 
     private _updateIconDisplay(): void {
@@ -117,12 +73,18 @@ class NavItemComponent extends HrefComponent {
         }
     }
 
+    onAfterInit(): void {
+        super.onAfterInit();
+        if (this.popover) {
+            this.addCls('q-nav-item--has-children');
+            this.removeCls('hidden', 'expand');
+            this.setExpandArrow('collapsed');
+        }
+    }
+
     select(): boolean {
         if (this.disable) return false;
-        if (this.children?.length) {
-            this._toggleSubNav();
-            return false;
-        }
+        if (this.popover) return false;
         return true;
     }
 
@@ -142,6 +104,16 @@ class NavItemComponent extends HrefComponent {
             this.removeCls('q-nav-item__expand--expanded', 'expand');
             this.addCls('q-nav-item__expand--collapsed', 'expand');
         }
+    }
+
+    showPopover(): void {
+        super.showPopover();
+        this.setExpandArrow('expanded');
+    }
+
+    hidePopover(): void {
+        super.hidePopover();
+        this.setExpandArrow('collapsed');
     }
 
     showTooltip(): void {
@@ -176,53 +148,8 @@ class NavItemComponent extends HrefComponent {
         if (inst) inst.overlay.hide();
     }
 
-    private _toggleSubNav(): void {
-        if (this._overlayOpen) this._closeSubNav();
-        else this._openSubNav();
-    }
-
-    private _openSubNav(): void {
-        if (this._overlayOpen || !this.children?.length) return;
-        if (this.depth >= this.maxDepth) return;
-
-        if (!this._subNav) {
-            const NavClass = this.resolveComponent('nav');
-            if (!NavClass) return;
-
-            this._subNav = new NavClass({
-                items: this.children,
-                mode: 'expanded',
-                depth: this.depth + 1,
-                maxDepth: this.maxDepth,
-            });
-        }
-
-        this._overlayOpen = true;
-        this.setExpandArrow('expanded');
-
-        this._subNav.ready.then(() => {
-            if (this._overlayOpen) {
-                this._subNav.addCls('q-nav--submenu');
-                this.el.appendChild(this._subNav.el);
-            }
-        });
-    }
-
-    private _closeSubNav(): void {
-        if (!this._overlayOpen) return;
-        if (this._subNav?.el?.parentNode) {
-            this._subNav.el.parentNode.removeChild(this._subNav.el);
-        }
-        this._overlayOpen = false;
-        this.setExpandArrow('collapsed');
-    }
-
     onBeforeDispose(): void {
-        this._closeSubNav();
-        if (this._subNav) {
-            this._subNav.dispose();
-            this._subNav = null;
-        }
+        this.hidePopover();
         this.hideTooltip();
         super.onBeforeDispose();
     }

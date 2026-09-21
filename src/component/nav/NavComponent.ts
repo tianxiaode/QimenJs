@@ -11,8 +11,10 @@
  * - listens route change → onRouteChange 自动高亮
  * - pathIndex 可显式传入，或从 items[].path 自动构建
  *
- * 深度模型：
- * - maxDepth（默认 3）：子级浮层挂载的硬上限，depth >= maxDepth 不再挂浮层
+ * 作为浮层内容使用（子菜单）：
+ * - PopoverAbility 创建 NavComponent 实例时传入 anchor 选项
+ * - show()/hide() 方法供 PopoverAbility 调用
+ * - rawOptions?.anchor 存在时自动添加 q-nav--submenu class
  *
  * domEvents 路径：
  * - 'NavItem.content' → 点击导航项内容区域
@@ -20,7 +22,7 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import type { NavItemComponent, NavOverlayOptions } from './NavItemComponent';
+import type { NavItemComponent } from './NavItemComponent';
 import { DomEventsMap, type TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { RouteEventBus } from '@/events';
@@ -32,13 +34,9 @@ const NavComponentDefs: Definitions = {
     options: {
         direction: 'vertical',
         mode: 'expanded',
-        maxDepth: 3,
         activeIndex: -1,
-        depth: 0,
         pathIndex: null,
         indexPath: null,
-        overlayOptions: null,
-        overlayComponent: null,
     },
 } as const;
 
@@ -116,7 +114,6 @@ class NavComponent extends ItemGroupPooledComponent {
             ...super.defaultEventData,
             navMode: this.mode,
             activeIndex: this.activeIndex,
-            maxDepth: this.maxDepth,
             ...this._currentNavData,
         };
     }
@@ -136,7 +133,7 @@ class NavComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
 
         this.addCls('q-nav');
-        if (this.depth > 0) this.addCls('q-nav--submenu');
+        if (this.rawOptions?.anchor) this.addCls('q-nav--submenu');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-nav__items');
 
@@ -160,6 +157,15 @@ class NavComponent extends ItemGroupPooledComponent {
         }
     }
 
+    show(): void {
+        const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
+        this._showOverlay({ anchor });
+    }
+
+    hide(): void {
+        this._hideOverlay();
+    }
+
     private _buildPathIndex(items?: Record<string, any>[]): void {
         this.pathIndex = {};
         if (!items?.length) return;
@@ -172,12 +178,7 @@ class NavComponent extends ItemGroupPooledComponent {
     _syncItemConfig(): void {
         for (let i = 0; i < this.count; i++) {
             const item = this.getAt(i) as NavItemComponent;
-            item.update({
-                maxDepth: this.maxDepth,
-                mode: this.mode,
-                overlayOptions: this.overlayOptions,
-                overlayComponent: this.overlayComponent,
-            });
+            item.update({ mode: this.mode });
         }
     }
 
@@ -217,19 +218,9 @@ class NavComponent extends ItemGroupPooledComponent {
         }
     }
 
-    setOverlayOptions(options: NavOverlayOptions): void {
-        this.overlayOptions = options;
-        for (let i = 0; i < this.count; i++) {
-            const item = this.getAt(i) as NavItemComponent;
-            item.update({ overlayOptions: options });
-        }
-    }
-
     onUpdated(props?: Record<string, any>): void {
         if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
         if (props?.mode !== undefined) this.setMode(props.mode);
-        if (props?.maxDepth !== undefined) this._syncItemConfig();
-        if (props?.overlayOptions !== undefined) this.setOverlayOptions(props.overlayOptions);
     }
 }
 
