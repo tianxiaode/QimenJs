@@ -131,14 +131,14 @@ export const NAV_DEMO: DemoConfig = {
         activeIndex: 0,
         items: [
             { text: '组件', iconCls: 'fa-solid fa-cube', popover: {
-                type: 'nav', trigger: 'click', placement: 'right-start',
+                type: 'nav', trigger: 'hover', placement: 'right-start',
                 options: { items: [
                     { text: 'Button', href: '/components/Button' },
                     { text: 'Card', href: '/components/Card' },
                 ]}
             }},
             { text: '布局', iconCls: 'fa-solid fa-table-cells', popover: {
-                type: 'nav', trigger: 'click', placement: 'right-start',
+                type: 'nav', trigger: 'hover', placement: 'right-start',
                 options: { items: [
                     { text: 'Panel', href: '/components/Panel' },
                     { text: 'Tabs', href: '/components/Tabs' },
@@ -158,7 +158,7 @@ export const NAV_DEMO: DemoConfig = {
                             iconCls: 'fa-solid fa-cube',
                             popover: {
                                 type: 'nav',
-                                trigger: 'click',
+                                trigger: 'hover',
                                 placement: 'right-start',
                                 options: {
                                     items: [
@@ -173,7 +173,7 @@ export const NAV_DEMO: DemoConfig = {
                             iconCls: 'fa-solid fa-table-cells',
                             popover: {
                                 type: 'nav',
-                                trigger: 'click',
+                                trigger: 'hover',
                                 placement: 'right-start',
                                 options: {
                                     items: [
