@@ -82,7 +82,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         (this as any).notifyGroupSelect(item);
 
-        if (!item._hasSubmenu) {
+        if (!item._submenu) {
             this.close();
         }
     }
@@ -94,7 +94,7 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         if (item === this._openSubmenuKey) return;
 
-        if (item._hasSubmenu && !item._disabled) {
+        if (item._submenu && !item._disabled) {
             item.setExpandArrow('expanded');
             this._scheduleOpen(item);
         } else {
@@ -118,13 +118,17 @@ class MenuComponent extends ItemGroupStaticComponent {
         for (let i = 0; i < this.items.length; i++) {
             const item = this.items[i];
             const data = datas[i];
-            if (data?.submenu && !item._hasSubmenu) {
-                item._hasSubmenu = true;
+            if (data?.submenu) {
                 item._submenu = data.submenu;
                 item.addCls('q-menu-item--has-submenu');
                 item.removeCls('hidden', 'expand');
+                item.setExpandArrow('collapsed');
             }
-            if (item._hasSubmenu) {
+        }
+        this.initGroupSelect({ defaultMode: 'radio' });
+        this.registerGroupItems(this.items);
+    }
+        if (item._submenu) {
                 item.setExpandArrow('collapsed');
             }
         }

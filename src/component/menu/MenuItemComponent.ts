@@ -24,7 +24,6 @@ const MenuItemComponentDefs: Definitions = {
 
 class MenuItemComponent extends Component {
     static type = 'menu-item';
-    _hasSubmenu: boolean = false;
     _submenu: Record<string, any>[] | null = null;
 
     get tpl(): TemplateDecl {
@@ -33,7 +32,7 @@ class MenuItemComponent extends Component {
 
     onAfterInit(): void {
         super.onAfterInit();
-        if (this._hasSubmenu) {
+        if (this._submenu) {
             this.addCls('q-menu-item--has-submenu');
             this.removeCls('hidden', 'expand');
         }
@@ -48,7 +47,6 @@ class MenuItemComponent extends Component {
     }
 
     _onHasSubmenuOptionChange(value: boolean): void {
-        this._hasSubmenu = value;
         value
             ? this.addCls('q-menu-item--has-submenu')
             : this.removeCls('q-menu-item--has-submenu');
@@ -57,12 +55,10 @@ class MenuItemComponent extends Component {
 
     _onSubmenuOptionChange(value: Record<string, any>[] | null): void {
         this._submenu = value;
-        if (value && !this._hasSubmenu) {
-            this._hasSubmenu = true;
+        if (value) {
             this.addCls('q-menu-item--has-submenu');
             this.removeCls('hidden', 'expand');
-        } else if (!value && this._hasSubmenu && !this.getData('hasSubmenu')) {
-            this._hasSubmenu = false;
+        } else {
             this.removeCls('q-menu-item--has-submenu');
             this.addCls('hidden', 'expand');
         }
@@ -104,7 +100,7 @@ class MenuItemComponent extends Component {
 
     select(): boolean {
         if (this.disable) return false;
-        if (this.hasSubmenu) return false;
+        if (this._submenu) return false;
 
         if (this.group) {
             if (this.groupMode === 'checkbox') {
