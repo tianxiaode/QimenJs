@@ -110,6 +110,7 @@ export class Router extends ComposableBase {
         }
 
         const offSwitch = this.routeOn('router', 'switch', (data: any) => {
+            if (!data?.path) return;
             this.navigate(data.path, data.replace ?? false);
         });
         this.onCleanup(offSwitch);
