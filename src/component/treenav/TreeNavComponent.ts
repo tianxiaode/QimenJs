@@ -62,7 +62,9 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     }
 
     _onItemClick(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
+        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
+        if (!clickTarget) return;
+        const target = this.getTargetItem(clickTarget);
         if (!target) return;
 
         const item = target.component as TreeNavItemComponent;
