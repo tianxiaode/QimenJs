@@ -124,6 +124,8 @@ class TreeNavItemComponent extends Component {
         const container = this.getNodeEl('children');
         if (!container || !this.children?.length) return;
 
+        this._clearChildren();
+
         for (const childData of this.children) {
             const child = new TreeNavItemComponent({
                 ...childData,
