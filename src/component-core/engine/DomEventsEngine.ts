@@ -343,7 +343,7 @@ export class DomEventsEngine {
             if (!childComp.el.contains(target)) continue;
             const ctor = childComp.constructor;
             const childType =
-                ctor?._type || ctor?.name?.replace(/Component$/, '') || childComp.type;
+                ctor?._type || ctor?.name?.replace(/Component$/, '');
             if (childType === type) return childComp;
         }
         return null;

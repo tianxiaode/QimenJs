@@ -54,7 +54,7 @@ class NavComponent extends ItemGroupPooledComponent {
     domEvents?: DomEventsMap | undefined = {
         click: [
             {
-                path: '{nav-item}.content',
+                path: '[items]',
                 handler: '_onItemClick',
                 emits: ['[action]'],
                 router: 'navigate',
@@ -64,8 +64,8 @@ class NavComponent extends ItemGroupPooledComponent {
                 handler: '_onCollapseToggle',
             },
         ],
-        enter: { path: '{nav-item}', handler: '_onItemEnter' },
-        leave: { path: '{nav-item}', handler: '_onItemLeave' },
+        enter: { path: '[items]', handler: '_onItemEnter' },
+        leave: { path: '[items]', handler: '_onItemLeave' },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
@@ -75,34 +75,30 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 
     _onItemClick(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
+        const target = domEvt.targetComponent;
         if (!target) return;
+        if (!target.select()) return;
 
-        const item = target.component as NavItemComponent;
-        if (item.select()) {
-            this.selectAt(target.index);
-        }
+        this.selectAt(this.indexOf(target));
 
-        if (item.href) {
-            this._lastNavigatedPath = item.href;
-            this._currentNavData = { path: item.href, index: target.index };
+        if (target.href) {
+            this._lastNavigatedPath = target.href;
+            this._currentNavData = { path: target.href, index: this.indexOf(target) };
         }
     }
 
     _onItemEnter(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
+        const target = domEvt.targetComponent;
         if (!target) return;
 
-        const item = target.component as NavItemComponent;
-        item.showTooltip();
+        target.showTooltip();
     }
 
     _onItemLeave(domEvt: any): void {
-        const target = this.getTargetItem(domEvt.target);
+        const target = domEvt.targetComponent;
         if (!target) return;
 
-        const item = target.component as NavItemComponent;
-        item.hideTooltip();
+        target.hideTooltip();
     }
 
     _onCollapseToggle(): void {

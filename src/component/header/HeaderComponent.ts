@@ -1,6 +1,5 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import { HtmlComponent } from '../html/HtmlComponent';
-import { IconComponent } from '../icon/IconComponent';
 import { SpacerComponent } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
