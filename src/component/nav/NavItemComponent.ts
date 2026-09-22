@@ -9,6 +9,7 @@ const NavItemComponentDefs: Definitions = {
         iconCls: null,
         active: false,
         mode: 'expanded',
+        size: null,
     },
 } as const;
 

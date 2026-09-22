@@ -33,10 +33,6 @@ class NavSelectDemo extends Component {
 
     listens: ListenItem[] = [{ node: 'nav', events: { select: { handler: '_onNavSelect' } } }];
 
-    onAfterInit(): void {
-        super.onAfterInit();
-    }
-
     _onNavSelect(ctx: any): void {
         const data = ctx?.data ?? {};
         const index = data?.index;
@@ -44,6 +40,53 @@ class NavSelectDemo extends Component {
         if (result && index !== undefined) {
             result.textContent = `选中导航项: index=${index}`;
         }
+    }
+}
+
+/** 外部按钮控制折叠演示 */
+class NavToggleDemo extends Component {
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            style: { display: 'flex', gap: '16px', alignItems: 'flex-start' },
+            children: [
+                {
+                    type: 'nav',
+                    name: 'nav',
+                    options: {
+                        activeIndex: 0,
+                        items: [
+                            { text: '首页', iconCls: 'fa-solid fa-house' },
+                            { text: '搜索', iconCls: 'fa-solid fa-magnifying-glass' },
+                            { text: '消息', iconCls: 'fa-solid fa-bell' },
+                            { text: '设置', iconCls: 'fa-solid fa-gear' },
+                        ],
+                    },
+                },
+                {
+                    type: 'button',
+                    name: 'toggleBtn',
+                    options: {
+                        text: '折叠',
+                        variant: 'outline',
+                        size: 'sm',
+                    },
+                },
+            ],
+        };
+    }
+
+    listens: ListenItem[] = [
+        { node: 'toggleBtn', events: { click: { handler: '_onToggleClick' } } },
+    ];
+
+    _onToggleClick(): void {
+        const nav = this.getComponent('nav') as any;
+        if (!nav) return;
+        const newMode = nav.mode === 'expanded' ? 'collapsed' : 'expanded';
+        nav.update({ mode: newMode });
+        const btn = this.getComponent('toggleBtn') as any;
+        if (btn) btn.update({ text: newMode === 'collapsed' ? '展开' : '折叠' });
     }
 }
 
@@ -124,6 +167,42 @@ export const NAV_DEMO: DemoConfig = {
                     ],
                 },
             },
+        },
+        {
+            label: '自带折叠按钮',
+            code: `{
+    type: 'nav',
+    options: {
+        showToggle: true,
+        activeIndex: 0,
+        items: [
+            { text: '首页', iconCls: 'fa-solid fa-house' },
+            { text: '搜索', iconCls: 'fa-solid fa-magnifying-glass' },
+            { text: '消息', iconCls: 'fa-solid fa-bell' },
+            { text: '设置', iconCls: 'fa-solid fa-gear' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    showToggle: true,
+                    activeIndex: 0,
+                    items: [
+                        { text: '首页', iconCls: 'fa-solid fa-house' },
+                        { text: '搜索', iconCls: 'fa-solid fa-magnifying-glass' },
+                        { text: '消息', iconCls: 'fa-solid fa-bell' },
+                        { text: '设置', iconCls: 'fa-solid fa-gear' },
+                    ],
+                },
+            },
+        },
+        {
+            label: '外部按钮控制折叠',
+            code: `// 通过 update({ mode }) 切换 expanded/collapsed
+const nav = instance.getComponent('nav');
+nav.update({ mode: 'collapsed' });`,
+            component: NavToggleDemo,
         },
         {
             label: '嵌套子菜单',
