@@ -119,9 +119,8 @@ class MenuComponent extends ItemGroupStaticComponent {
     }
 
     setItems(datas: Record<string, any>[]): void {
-        const defaultPlacement =
-            this.direction === 'horizontal' ? 'bottom-start' : 'right-start';
-        const processedDatas = datas.map((data) => {
+        const defaultPlacement = this.direction === 'horizontal' ? 'bottom-start' : 'right-start';
+        const processedDatas = datas.map(data => {
             if (!data?.popover) return data;
             return {
                 ...data,

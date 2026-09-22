@@ -38,7 +38,6 @@ class NavSelectDemo extends Component {
     }
 
     _onNavSelect(ctx: any): void {
-        console.log('nav select', ctx);
         const data = ctx?.data ?? {};
         const index = data?.index;
         const result = this.getNodeEl('result');

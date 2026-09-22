@@ -37,6 +37,7 @@ const NavComponentDefs: Definitions = {
         activeIndex: -1,
         pathIndex: null,
         indexPath: null,
+        showToggle: false,
     },
 } as const;
 
@@ -136,6 +137,8 @@ class NavComponent extends ItemGroupPooledComponent {
         if (!this.pathIndex) this._buildPathIndex(this.getData('items'));
 
         this.toggleCls('q-nav--collapsed', this.mode === 'collapsed');
+
+        this.setNodeHidden(!this.getData('showToggle'), 'collapseToggle');
 
         this._syncItemConfig();
 
