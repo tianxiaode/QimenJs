@@ -67,7 +67,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         }
 
         if (item.href) {
-            this._pendingNavData = { path: item.href, item };
+            this._pendingNavData = { path: item.href };
         }
     }
 
