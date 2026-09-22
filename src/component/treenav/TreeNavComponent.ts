@@ -22,10 +22,7 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
-import type { ForwardRouteKey } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { RouteEventBus } from '@/events';
-import type { EventContext } from '@/context';
 import './treenav.css';
 
 const TreeNavComponentDefs: Definitions = {
@@ -58,10 +55,6 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
-    routerEmit(ctx: EventContext): void {
-        RouteEventBus.getInstance().routeEmit(ctx);
-    }
-
     _onItemClick(domEvt: any): void {
         const topItem = domEvt?.targetComponent as TreeNavItemComponent;
         if (!topItem) return;
@@ -69,6 +62,12 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         const clickTarget = domEvt?.data?.originalEvent?.target as Element;
         const deepest = clickTarget ? this._findDeepestItem(topItem, clickTarget) : null;
         const item = deepest ?? topItem;
+
+        const expandEl = item.getNodeEl?.('expand');
+        if (expandEl && expandEl.contains(clickTarget)) {
+            item.toggleExpand();
+            return;
+        }
 
         if (item.select()) {
             if (item === topItem) {
@@ -105,22 +104,6 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         const data = this._pendingNavData;
         this._pendingNavData = null;
         return { ...super.defaultEventData, ...(data ?? {}) };
-    }
-
-    /**
-     * 动态转发守卫
-     *
-     * 根据 _isRouteNav flag 决定是否放行 'router' 路由：
-     * - 有 path（路由导航）：放行 ['emit', 'bridge', 'router']
-     * - 无 path（纯 UI 选中）：仅放行 ['emit', 'bridge']，不触发路由事件
-     *
-     * 消费后复位 flag。
-     */
-    getForwardFilter(): ForwardRouteKey[] {
-        const keys: ForwardRouteKey[] = ['emit', 'bridge'];
-        if (this._isRouteNav) keys.push('router');
-        this._isRouteNav = false;
-        return keys;
     }
 
     onRouteChange(event: any): void {

@@ -53,10 +53,6 @@ class TreeNavItemComponent extends HrefComponent {
 
     select(): boolean {
         if (this.disable) return false;
-        if (this.children?.length && this.depth < this.maxDepth) {
-            this.toggleExpand();
-            return false;
-        }
         return true;
     }
 
