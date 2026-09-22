@@ -74,10 +74,10 @@ class TreeNavComponent extends ItemGroupStaticComponent {
             }
         }
 
-        if (item.path) {
+        if (item.href) {
             this._isRouteNav = true;
-            this._lastNavigatedPath = item.path;
-            this._pendingNavData = { path: item.path, item };
+            this._lastNavigatedPath = item.href;
+            this._pendingNavData = { path: item.href, item };
         } else {
             this._isRouteNav = false;
         }

@@ -1,36 +1,32 @@
-import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@/component-core';
+import { HrefComponent } from '../text/HrefComponent';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
 import './tree-nav-item.css';
 
 const TreeNavItemComponentDefs: Definitions = {
     options: {
-        text: null,
         iconCls: null,
         active: false,
         expanded: false,
         size: null,
     },
-    fields: {
-        path: undefined,
+   0    fields: {
         depth: 0,
         maxDepth: 5,
         children: undefined,
     },
 } as const;
 
-class TreeNavItemComponent extends Component {
+class TreeNavItemComponent extends HrefComponent {
     static type = 'tree-nav-item';
     get tpl(): TemplateDecl {
         return TREE_NAV_ITEM_TPL;
     }
 
-    _childInstances: TreeNavItemComponent[] = [];
+    domEvents = {};
 
-    _onTextOptionChange(value: string): void {
-        this.setNodeText(value, 'text');
-    }
+    _childInstances: TreeNavItemComponent[] = [];
 
     _onIconClsOptionChange(value: string): void {
         const el = this.getNodeEl('icon');
@@ -85,9 +81,13 @@ class TreeNavItemComponent extends Component {
         this.active = value;
     }
 
+    onAfterInit(): void {
+        super.onAfterInit();
+        this._applyChildrenState();
+    }
+
     update(props?: Record<string, any>): void {
         super.update(props);
-        if (props?.path !== undefined) this.path = props.path;
         if (props?.depth !== undefined) {
             this.depth = props.depth;
             this.el?.style.setProperty('--q-item-depth', String(this.depth));
