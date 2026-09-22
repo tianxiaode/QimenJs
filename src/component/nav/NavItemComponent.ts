@@ -1,4 +1,4 @@
-import { HrefComponent } from '../text/HrefComponent';
+import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { NAV_ITEM_TPL } from './nav-item-tpl';
@@ -6,21 +6,24 @@ import './nav-item.css';
 
 const NavItemComponentDefs: Definitions = {
     options: {
+        text: null,
+        href: null,
         iconCls: null,
         active: false,
         mode: 'expanded',
-        size: null,
     },
 } as const;
 
-class NavItemComponent extends HrefComponent {
+class NavItemComponent extends Component {
     static type = 'nav-item';
 
     get tpl(): TemplateDecl {
         return NAV_ITEM_TPL;
     }
 
-    domEvents = {};
+    get defaultEventData(): Record<string, any> {
+        return { ...super.defaultEventData, href: this.href };
+    }
 
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
