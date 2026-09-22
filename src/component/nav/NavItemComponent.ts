@@ -49,6 +49,7 @@ class NavItemComponent extends HrefComponent {
         this.setNodeHidden(value === 'collapsed', 'text');
         if (value === 'collapsed') this.hidePopover();
         this._updateIconDisplay();
+        this.hint = value === 'collapsed' ? this.text : null;
     }
 
     private _updateIconDisplay(): void {
@@ -116,41 +117,8 @@ class NavItemComponent extends HrefComponent {
         this.setExpandArrow('collapsed');
     }
 
-    showTooltip(): void {
-        if (this.mode !== 'collapsed' || !this.text) return;
-
-        let inst = this.abilityState('navTooltip') as any;
-        if (!inst) {
-            const OverlayClass = this.resolveComponent('tooltip');
-            if (!OverlayClass) return;
-
-            const overlay: any = new OverlayClass({
-                text: this.text,
-                anchor: this.el!,
-                placement: 'right',
-                trigger: 'manual',
-            });
-            overlay.show();
-            inst = { overlay };
-            this.abilityState('navTooltip', () => inst);
-            this.onCleanup(() => {
-                overlay.dispose();
-                this.setAbilityState('navTooltip', undefined);
-            });
-        } else {
-            inst.overlay.text = this.text;
-            inst.overlay.show();
-        }
-    }
-
-    hideTooltip(): void {
-        const inst = this.abilityState('navTooltip') as any;
-        if (inst) inst.overlay.hide();
-    }
-
     onBeforeDispose(): void {
         this.hidePopover();
-        this.hideTooltip();
         super.onBeforeDispose();
     }
 }

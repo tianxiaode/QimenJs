@@ -65,8 +65,6 @@ class NavComponent extends ItemGroupPooledComponent {
                 handler: '_onCollapseToggle',
             },
         ],
-        enter: { path: '[items]', handler: '_onItemEnter' },
-        leave: { path: '[items]', handler: '_onItemLeave' },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
@@ -86,20 +84,6 @@ class NavComponent extends ItemGroupPooledComponent {
             this._lastNavigatedPath = target.href;
             this._currentNavData = { path: target.href, index: this.indexOf(target) };
         }
-    }
-
-    _onItemEnter(domEvt: any): void {
-        const target = domEvt.targetComponent;
-        if (!target) return;
-
-        target.showTooltip();
-    }
-
-    _onItemLeave(domEvt: any): void {
-        const target = domEvt.targetComponent;
-        if (!target) return;
-
-        target.hideTooltip();
     }
 
     _onCollapseToggle(): void {
@@ -184,9 +168,8 @@ class NavComponent extends ItemGroupPooledComponent {
 
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
-        if (index === this.activeIndex) return;
 
-        if (this.activeIndex >= 0 && this.activeIndex < this.count) {
+        if (this.activeIndex >= 0 && this.activeIndex < this.count && this.activeIndex !== index) {
             const prevItem = this.getAt(this.activeIndex) as NavItemComponent;
             prevItem.setActive(false);
         }
