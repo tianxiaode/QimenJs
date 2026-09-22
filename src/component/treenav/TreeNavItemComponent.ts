@@ -86,6 +86,7 @@ class TreeNavItemComponent extends Component {
 
     onAfterInit(): void {
         super.onAfterInit();
+        this.el?.style.setProperty('--q-item-depth', String(this.depth));
         this._applyChildrenState();
     }
 
