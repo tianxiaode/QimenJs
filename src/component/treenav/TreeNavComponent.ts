@@ -48,7 +48,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
             path: '[items]',
             handler: '_onItemClick',
             emits: ['select', '[action]'],
-            bridges: ['[action]'],
+            bridges: ['select', '[action]'],
             router: 'navigate',
         },
     };

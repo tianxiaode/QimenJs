@@ -25,8 +25,6 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { NavItemComponent } from './NavItemComponent';
 import { DomEventsMap, type TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { RouteEventBus } from '@/events';
-import type { EventContext } from '@/context';
 import { NAV_TPL } from './nav-tpl';
 import './nav.css';
 
@@ -68,10 +66,6 @@ class NavComponent extends ItemGroupPooledComponent {
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
-
-    routerEmit(ctx: EventContext): void {
-        RouteEventBus.getInstance().routeEmit(ctx);
-    }
 
     _onItemClick(domEvt: any): void {
         const target = domEvt.targetComponent;

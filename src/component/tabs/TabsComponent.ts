@@ -31,8 +31,6 @@ import { TabBarComponent } from './TabBarComponent';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { EventForwarder } from '@/component-core/engine';
-import { RouteEventBus } from '@/events';
-import type { EventContext } from '@/context';
 import { TABS_TPL } from './tabs-tpl';
 import './tabs.css';
 
@@ -129,10 +127,6 @@ class TabsComponent extends Component {
         if (index !== undefined && index !== this.selectedIndex) {
             this.selectedIndex = index;
         }
-    }
-
-    routerEmit(ctx: EventContext): void {
-        RouteEventBus.getInstance().routeEmit(ctx);
     }
 
     onTabBarClose(ctx: any): void {

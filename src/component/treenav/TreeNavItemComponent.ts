@@ -1,4 +1,4 @@
-import { HrefComponent } from '../text/HrefComponent';
+import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
@@ -7,10 +7,11 @@ import './tree-nav-item.css';
 
 const TreeNavItemComponentDefs: Definitions = {
     options: {
+        text: null,
+        href: null,
         iconCls: null,
         active: false,
         expanded: false,
-        size: null,
     },
     fields: {
         depth: 0,
@@ -19,23 +20,21 @@ const TreeNavItemComponentDefs: Definitions = {
     },
 } as const;
 
-class TreeNavItemComponent extends HrefComponent {
+class TreeNavItemComponent extends Component {
     static type = 'tree-nav-item';
     get tpl(): TemplateDecl {
         return TREE_NAV_ITEM_TPL;
     }
 
-    domEvents = {};
-
     _childInstances: TreeNavItemComponent[] = [];
+
+    get defaultEventData(): Record<string, any> {
+        return { ...super.defaultEventData, href: this.href };
+    }
 
     _onTextOptionChange(value: string): void {
         this.setNodeText(value, 'text');
     }
-
-    _onHrefOptionChange(_value: string): void {}
-
-    _onTargetOptionChange(_value: string): void {}
 
     _onIconClsOptionChange(value: string): void {
         const el = this.getNodeEl('icon');

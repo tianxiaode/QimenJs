@@ -75,8 +75,7 @@ function _forwardBridges(ctx: ForwardContext): void {
     const eventKey = EventForwarder.resolveKey(ctx.instance.eventKey);
     if (!eventKey) return;
     for (const bridge of ctx.config.bridges!) {
-        const resolvedName =
-            bridge === '[action]' && ctx.actualAction ? ctx.actualAction : bridge;
+        const resolvedName = bridge === '[action]' && ctx.actualAction ? ctx.actualAction : bridge;
         const eventCtx = EventForwarder.buildContext(
             ctx.instance,
             resolvedName,
@@ -105,7 +104,7 @@ function _forwardRouter(ctx: ForwardContext): void {
         'router',
         'router'
     );
-    ctx.instance.routerEmit?.(eventCtx);
+    ctx.instance.routeEmit?.(eventCtx);
 }
 
 function _forwardSystem(ctx: ForwardContext): void {
