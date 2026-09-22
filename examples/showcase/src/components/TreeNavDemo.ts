@@ -18,16 +18,16 @@ class TreeNavSelectDemo extends Component {
                                 text: '组件',
                                 iconCls: 'fa-solid fa-cube',
                                 children: [
-                                    { text: 'Button', path: '/components/Button' },
-                                    { text: 'Card', path: '/components/Card' },
+                                    { text: 'Button', href: '/components/Button' },
+                                    { text: 'Card', href: '/components/Card' },
                                 ],
                             },
                             {
                                 text: '布局',
                                 iconCls: 'fa-solid fa-table-cells',
                                 children: [
-                                    { text: 'Panel', path: '/components/Panel' },
-                                    { text: 'Tabs', path: '/components/Tabs' },
+                                    { text: 'Panel', href: '/components/Panel' },
+                                    { text: 'Tabs', href: '/components/Tabs' },
                                 ],
                             },
                             { text: '设置', iconCls: 'fa-solid fa-gear' },
@@ -147,8 +147,8 @@ export const TREENAV_DEMO: DemoConfig = {
         activeIndex: 0,
         items: [
             { text: '组件', children: [
-                { text: 'Button', path: '/components/Button' },
-                { text: 'Card', path: '/components/Card' },
+                { text: 'Button', href: '/components/Button' },
+                { text: 'Card', href: '/components/Card' },
             ]},
         ],
     }
@@ -162,16 +162,16 @@ export const TREENAV_DEMO: DemoConfig = {
                             text: '组件',
                             iconCls: 'fa-solid fa-cube',
                             children: [
-                                { text: 'Button', path: '/components/Button' },
-                                { text: 'Card', path: '/components/Card' },
+                                { text: 'Button', href: '/components/Button' },
+                                { text: 'Card', href: '/components/Card' },
                             ],
                         },
                         {
                             text: '布局',
                             iconCls: 'fa-solid fa-table-cells',
                             children: [
-                                { text: 'Panel', path: '/components/Panel' },
-                                { text: 'Tabs', path: '/components/Tabs' },
+                                { text: 'Panel', href: '/components/Panel' },
+                                { text: 'Tabs', href: '/components/Tabs' },
                             ],
                         },
                     ],

@@ -10,13 +10,12 @@
  *
  * 路由内化（声明式，参考 BreadcrumbComponent）：
  * - domEvents click 带 router: 'navigate'，EventForwarder 自动 routeEmit
- * - item 有 path 时触发路由导航；无 path 则纯 UI 选中
- * - _isRouteNav flag 标识本次点击是否为路由导航，getForwardFilter 据此
- *   动态放行 'router' 路由（无 path 时仅放行 'emit'/'bridge'，不触发路由事件）
+ * - item 有 href 时触发路由导航；无 href 则纯 UI 选中
  * - listens route change → onRouteChange 自动高亮
  *
- * - domEvents click path [items]，targetComponent 拿到顶层 item，
- *   _findDeepestItem 递归 _childInstances 查找嵌套子项。
+ * 展开/折叠：
+ * - TreeNavItemComponent 自身 domEvents 处理 expand 节点 click → toggleExpand()
+ * - TreeNavComponent 的 [items] click 只管选中，不检测 expand 区域
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
@@ -39,9 +38,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     defaultItemType = 'tree-nav-item';
 
     _selectedItem: TreeNavItemComponent | null = null;
-    _lastNavigatedPath: string | null = null;
     _pendingNavData: { path: string; item: any } | null = null;
-    _isRouteNav: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -59,15 +56,8 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         const topItem = domEvt?.targetComponent as TreeNavItemComponent;
         if (!topItem) return;
 
-        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
-        const deepest = clickTarget ? this._findDeepestItem(topItem, clickTarget) : null;
+        const deepest = this._findDeepestItem(topItem, domEvt);
         const item = deepest ?? topItem;
-
-        const expandEl = item.getNodeEl?.('expand');
-        if (expandEl && expandEl.contains(clickTarget)) {
-            item.toggleExpand();
-            return;
-        }
 
         if (item.select()) {
             if (item === topItem) {
@@ -79,22 +69,20 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         }
 
         if (item.href) {
-            this._isRouteNav = true;
-            this._lastNavigatedPath = item.href;
             this._pendingNavData = { path: item.href, item };
-        } else {
-            this._isRouteNav = false;
         }
     }
 
     private _findDeepestItem(
-        component: TreeNavItemComponent,
-        target: Element
+        topItem: TreeNavItemComponent,
+        domEvt: any
     ): TreeNavItemComponent | null {
-        const children: TreeNavItemComponent[] = component?._childInstances ?? [];
+        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
+        if (!clickTarget) return null;
+        const children: TreeNavItemComponent[] = topItem?._childInstances ?? [];
         for (const child of children) {
-            if (child.el?.contains(target)) {
-                return this._findDeepestItem(child, target) ?? child;
+            if (child.el?.contains(clickTarget)) {
+                return this._findDeepestItem(child, domEvt) ?? child;
             }
         }
         return null;
@@ -109,10 +97,6 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     onRouteChange(event: any): void {
         const path = event?.path;
         if (!path) return;
-        if (path === this._lastNavigatedPath) {
-            this._lastNavigatedPath = null;
-            return;
-        }
         const pathIndex = this.pathIndex;
         const index = pathIndex?.[path];
         if (index !== undefined) this.selectAt(index);

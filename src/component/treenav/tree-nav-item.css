@@ -72,7 +72,7 @@
     background: var(--q-overlay-hover, rgba(0, 0, 0, 0.04));
 }
 
-.q-tree-nav-item--active {
+.q-tree-nav-item--active > .q-tree-nav-item__content {
     border-left-color: var(--q-color-primary, #0078d4);
 }
 

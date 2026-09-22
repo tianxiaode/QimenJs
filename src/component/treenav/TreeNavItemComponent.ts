@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
 import { ExpandCollapseAbility } from '@/system-abilities';
@@ -28,6 +28,13 @@ class TreeNavItemComponent extends Component {
 
     _childInstances: TreeNavItemComponent[] = [];
 
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            path: 'expand',
+            handler: '_onExpandClick',
+        },
+    };
+
     get defaultEventData(): Record<string, any> {
         return { ...super.defaultEventData, href: this.href };
     }
@@ -39,6 +46,10 @@ class TreeNavItemComponent extends Component {
     _onIconClsOptionChange(value: string): void {
         const el = this.getNodeEl('icon');
         if (el) el.className = `q-tree-nav-item__icon ${value ?? ''}`;
+    }
+
+    _onExpandClick(): void {
+        this.toggleExpand();
     }
 
     _onActiveOptionChange(value: boolean): void {
