@@ -30,7 +30,7 @@ class AccordionComponent extends ItemGroupPooledComponent {
      * handler 为字符串时直接作为方法名，避免冗长的自动推导名称。
      */
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '{Panel}.header.action', handler: '_onPanelAction', emits: ['[action]'] },
+        click: { path: '[items].header.action', handler: '_onPanelAction', emits: ['[action]'] },
     };
 
     /**

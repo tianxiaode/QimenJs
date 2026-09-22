@@ -341,9 +341,7 @@ export class DomEventsEngine {
         for (const childComp of children) {
             if (!childComp?.el) continue;
             if (!childComp.el.contains(target)) continue;
-            const ctor = childComp.constructor;
-            const childType =
-                ctor?._type || ctor?.name?.replace(/Component$/, '');
+            const childType = childComp.type;
             if (childType === type) return childComp;
         }
         return null;

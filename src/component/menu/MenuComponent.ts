@@ -43,13 +43,13 @@ class MenuComponent extends ItemGroupStaticComponent {
 
     domEvents?: DomEventsMap | undefined = {
         click: {
-            path: '{MenuItem}',
+            path: '[items]',
             handler: '_onItemClick',
             emits: ['select', '[action]'],
             bridges: ['select', '[action]'],
         },
-        enter: { path: '{MenuItem}', handler: '_onItemEnter' },
-        leave: { path: '{MenuItem}', handler: '_onItemLeave' },
+        enter: { path: '[items]', handler: '_onItemEnter' },
+        leave: { path: '[items]', handler: '_onItemLeave' },
     };
 
     get defaultEventData(): Record<string, any> {

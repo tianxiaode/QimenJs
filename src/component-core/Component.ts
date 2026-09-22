@@ -101,7 +101,7 @@ export class Component extends ComposableBase implements IComponent {
 
     constructor(options?: ComponentCoreOptions) {
         super(options);
-        this._initialize(options);
+        this._initialize();
     }
 
     update(options?: ComponentCoreOptions) {
