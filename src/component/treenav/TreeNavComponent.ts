@@ -2,20 +2,18 @@
  * TreeNavComponent 树导航组件
  *
  * 从 ItemGroupStaticComponent 派生（非池化，子项随展开/折叠动态创建销毁），
- * 纵向布局，通过 domEvents 集中处理子项点击，委托 TreeNavItemComponent.select()。
+ * 纵向布局，通过 domEvents 集中处理子项点击。
  *
- * 选中模型：
- * - 顶层选中通过 selectAt(index) / activeIndex
- * - 嵌套选中通过 emit('select', { item })，_selectedItem 维护全局单选
+ * 选中模型（只有 leaf 可选中）：
+ * - parent 节点点击 → toggleExpand，不选中
+ * - leaf 节点点击 → 选中
+ * - selectAt(parent) → 自动展开并选中第一个 leaf 后代
+ * - 嵌套选中通过 _selectNested，_selectedItem 维护全局单选
  *
- * 路由内化（声明式，参考 BreadcrumbComponent）：
- * - domEvents click 带 router: 'navigate'，EventForwarder 自动 routeEmit
+ * 路由内化：
+ * - domEvents click 带 router: 'navigate'
  * - item 有 href 时触发路由导航；无 href 则纯 UI 选中
  * - listens route change → onRouteChange 自动高亮
- *
- * 展开/折叠：
- * - TreeNavItemComponent 自身 domEvents 处理 expand 节点 click → toggleExpand()
- * - TreeNavComponent 的 [items] click 只管选中，不检测 expand 区域
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
@@ -139,18 +137,28 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
 
-        if (this._selectedItem && this._selectedItem !== this.getAt(index)) {
+        const item = this.getAt(index) as TreeNavItemComponent;
+        const leaf = this._findFirstLeaf(item);
+
+        if (this._selectedItem && this._selectedItem !== leaf) {
             this._selectedItem.setActive(false);
         }
 
-        const newItem = this.getAt(index) as TreeNavItemComponent;
-        newItem.setActive(true);
+        leaf.setActive(true);
+        this._selectedItem = leaf;
         this.activeIndex = index;
-        this._selectedItem = newItem;
 
         if (!silent) {
-            this.emit('select', { index, item: newItem });
+            this.emit('select', { index, item: leaf });
         }
+    }
+
+    private _findFirstLeaf(item: TreeNavItemComponent): TreeNavItemComponent {
+        if (!item.children?.length) return item;
+        if (!item.expanded) item.expand();
+        const firstChild = item._childInstances[0];
+        if (!firstChild) return item;
+        return this._findFirstLeaf(firstChild);
     }
 
     private _selectNested(item: TreeNavItemComponent): void {
