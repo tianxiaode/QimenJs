@@ -26,6 +26,7 @@ import {
     EntityAbility,
     OverlayAbility,
     MaskAbility,
+    ArrowAbility,
 } from './abilities';
 import { IComponentCore } from './types';
 import { ComponentDefs } from './ComponentDefs';
@@ -47,6 +48,7 @@ export const COMPONENT_ABILITIES = [
     BadgeAbility,
     OverlayAbility,
     MaskAbility,
+    ArrowAbility,
     TooltipAbility,
     DialogAbility,
     PopoverAbility,
