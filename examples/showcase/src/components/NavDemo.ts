@@ -1,4 +1,9 @@
-import { Component, type TemplateDecl, type ListenItem } from '@qimenjs/component-core';
+import {
+    Component,
+    type TemplateDecl,
+    type ListenItem,
+    DomEventsMap,
+} from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 
 /** Nav 选中项交互演示 */
@@ -76,9 +81,12 @@ class NavToggleDemo extends Component {
         };
     }
 
-    listens: ListenItem[] = [
-        { node: 'toggleBtn', events: { click: { handler: '_onToggleClick' } } },
-    ];
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            path: 'toggleBtn',
+            handler: '_onToggleClick',
+        },
+    };
 
     _onToggleClick(): void {
         const nav = this.getComponent('nav') as any;

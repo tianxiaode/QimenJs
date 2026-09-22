@@ -84,27 +84,6 @@ export const NAVBAR_DEMO: DemoConfig = {
             },
         },
         {
-            label: 'Fixed 固定导航栏',
-            code: `{
-    type: 'navbar',
-    options: {
-        companyName: 'Fixed Navbar',
-        fixed: true,
-        items: [
-            { type: 'href', text: '首页', action: 'home' },
-        ],
-    }
-}`,
-            template: {
-                type: 'navbar',
-                options: {
-                    companyName: 'Fixed Navbar',
-                    fixed: true,
-                    items: [{ type: 'href', text: '首页', action: 'home' }],
-                },
-            },
-        },
-        {
             label: '移动端菜单 (menu)',
             code: `{
     type: 'navbar',
