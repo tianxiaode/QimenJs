@@ -15,7 +15,8 @@
  *   动态放行 'router' 路由（无 path 时仅放行 'emit'/'bridge'，不触发路由事件）
  * - listens route change → onRouteChange 自动高亮
  *
- * getTargetItem 递归查找嵌套子项，命中最深的匹配项。
+ * - domEvents click path [items]，targetComponent 拿到顶层 item，
+ *   _findDeepestItem 递归 _childInstances 查找嵌套子项。
  */
 
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
@@ -47,7 +48,7 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
     domEvents?: DomEventsMap | undefined = {
         click: {
-            path: '[items].content',
+            path: '[items]',
             handler: '_onItemClick',
             emits: ['select', '[action]'],
             bridges: ['[action]'],
@@ -62,15 +63,17 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     }
 
     _onItemClick(domEvt: any): void {
-        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
-        if (!clickTarget) return;
-        const target = this.getTargetItem(clickTarget);
-        if (!target) return;
+        const topItem = domEvt?.targetComponent as TreeNavItemComponent;
+        if (!topItem) return;
 
-        const item = target.component as TreeNavItemComponent;
+        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
+        const deepest = clickTarget ? this._findDeepestItem(topItem, clickTarget) : null;
+        const item = deepest ?? topItem;
+
         if (item.select()) {
-            if (target.index >= 0) {
-                this.selectAt(target.index);
+            if (item === topItem) {
+                const index = this.indexOf(topItem);
+                if (index >= 0) this.selectAt(index);
             } else {
                 this._selectNested(item);
             }
@@ -83,6 +86,19 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         } else {
             this._isRouteNav = false;
         }
+    }
+
+    private _findDeepestItem(
+        component: TreeNavItemComponent,
+        target: Element
+    ): TreeNavItemComponent | null {
+        const children: TreeNavItemComponent[] = component?._childInstances ?? [];
+        for (const child of children) {
+            if (child.el?.contains(target)) {
+                return this._findDeepestItem(child, target) ?? child;
+            }
+        }
+        return null;
     }
 
     get defaultEventData(): Record<string, any> {
@@ -117,37 +133,6 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         const pathIndex = this.pathIndex;
         const index = pathIndex?.[path];
         if (index !== undefined) this.selectAt(index);
-    }
-
-    getTargetItem(target: Element): { component: any; type: string; index: number } | null {
-        for (let i = 0; i < this.items.length; i++) {
-            const component = this.items[i];
-            if (component.el.contains(target)) {
-                const deepest = this._findDeepestMatch(component, target);
-                if (deepest) return deepest;
-                return { component, type: component?.type ?? '', index: i };
-            }
-        }
-        return null;
-    }
-
-    private _findDeepestMatch(
-        component: any,
-        target: Element
-    ): { component: any; type: string; index: number } | null {
-        const children: TreeNavItemComponent[] = component?._childInstances ?? [];
-        for (const child of children) {
-            if (child.el?.contains(target)) {
-                return (
-                    this._findDeepestMatch(child, target) ?? {
-                        component: child,
-                        type: child?.type ?? '',
-                        index: -1,
-                    }
-                );
-            }
-        }
-        return null;
     }
 
     get defaultOptions(): Record<string, any> {
