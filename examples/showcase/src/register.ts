@@ -41,6 +41,8 @@ import {
     BreadcrumbComponent,
     NavItemComponent,
     NavComponent,
+    TreeNavComponent,
+    TreeNavItemComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -71,3 +73,5 @@ TabsComponent.register();
 BreadcrumbComponent.register();
 NavItemComponent.register();
 NavComponent.register();
+TreeNavComponent.register();
+TreeNavItemComponent.register();

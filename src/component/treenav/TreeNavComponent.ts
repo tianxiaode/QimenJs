@@ -31,23 +31,28 @@ const TreeNavComponentDefs: Definitions = {
     options: {
         direction: 'vertical',
         maxDepth: 5,
-        activeIndex: null,
+        activeIndex: -1,
         pathIndex: null,
     },
 } as const;
 
 class TreeNavComponent extends ItemGroupStaticComponent {
-    defaultItemType = 'TreeNavItem';
-    _activeIndex: number = -1;
-    _maxDepth: number = 5;
+    static type = 'tree-nav';
+    defaultItemType = 'tree-nav-item';
+
     _selectedItem: TreeNavItemComponent | null = null;
-    _pathIndex: Record<string, number> = {};
     _lastNavigatedPath: string | null = null;
     _pendingNavData: { path: string; item: any } | null = null;
     _isRouteNav: boolean = false;
 
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '[items].content', handler: '_onItemClick', emits: ['select', '[action]'], bridges: ['[action]'], router: 'navigate' },
+        click: {
+            path: '[items].content',
+            handler: '_onItemClick',
+            emits: ['select', '[action]'],
+            bridges: ['[action]'],
+            router: 'navigate',
+        },
     };
 
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
@@ -107,7 +112,8 @@ class TreeNavComponent extends ItemGroupStaticComponent {
             this._lastNavigatedPath = null;
             return;
         }
-        const index = this._pathIndex[path];
+        const pathIndex = this.pathIndex;
+        const index = pathIndex?.[path];
         if (index !== undefined) this.selectAt(index);
     }
 
@@ -150,42 +156,31 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         super.onAfterInit();
 
         this.addCls('q-tree-nav');
-        this._maxDepth = this.getData('maxDepth') ?? 5;
-
-        const pathIndex = this.getData('pathIndex');
-        if (pathIndex) this._pathIndex = pathIndex;
 
         this._syncItemConfig();
 
-        const activeIndex = this.getData('activeIndex');
-        if (activeIndex !== undefined && activeIndex >= 0) {
-            this.selectAt(activeIndex, true);
+        if (this.activeIndex >= 0) {
+            this.selectAt(this.activeIndex, true);
         }
     }
 
     _syncItemConfig(): void {
         for (let i = 0; i < this.count; i++) {
             const item = this.getAt(i) as TreeNavItemComponent;
-            item.update({ maxDepth: this._maxDepth });
+            item.update({ maxDepth: this.maxDepth });
         }
-    }
-
-    get activeIndex(): number {
-        return this._activeIndex;
-    }
-    get maxDepth(): number {
-        return this._maxDepth;
     }
 
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
-        if (index === this._activeIndex && this._selectedItem === this.getAt(index)) return;
 
-        if (this._selectedItem) this._selectedItem.setActive(false);
+        if (this._selectedItem && this._selectedItem !== this.getAt(index)) {
+            this._selectedItem.setActive(false);
+        }
 
         const newItem = this.getAt(index) as TreeNavItemComponent;
         newItem.setActive(true);
-        this._activeIndex = index;
+        this.activeIndex = index;
         this._selectedItem = newItem;
 
         if (!silent) {
@@ -199,23 +194,21 @@ class TreeNavComponent extends ItemGroupStaticComponent {
         }
         item.setActive(true);
         this._selectedItem = item;
-        this._activeIndex = -1;
+        this.activeIndex = -1;
         this.emit('select', { item });
     }
 
     clearSelection(): void {
         if (this._selectedItem) this._selectedItem.setActive(false);
         this._selectedItem = null;
-        this._activeIndex = -1;
+        this.activeIndex = -1;
     }
 
     onUpdated(props?: Record<string, any>): void {
         if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
         if (props?.maxDepth !== undefined) {
-            this._maxDepth = props.maxDepth;
             this._syncItemConfig();
         }
-        if (props?.pathIndex !== undefined) this._pathIndex = props.pathIndex;
     }
 }
 

@@ -8,13 +8,14 @@
     align-items: center;
     gap: var(--q-tree-nav-item-gap, 8px);
     width: 100%;
-!    padding: var(--q-space-xs, 8px) var(--q-space-md, 16px);
+    padding: var(--q-space-xs, 8px) var(--q-space-md, 16px);
     padding-left: calc(var(--q-space-md, 16px) + var(--q-item-depth, 0) * var(--q-indent-step, 16px));
     color: var(--q-color-text-secondary, #666);
     cursor: var(--q-cursor-pointer, pointer);
     user-select: none;
     transition: background var(--q-transition-fast), color var(--q-transition-fast);
     font-weight: var(--q-font-weight-medium, 500);
+    border-left: 3px solid transparent;
 }
 
 .q-tree-nav-item__icon {
@@ -37,23 +38,24 @@
     align-items: center;
     justify-content: center;
     margin-left: auto;
-    font-size: var(--q-font-size-sm, 12px);
-    transition>transform var(--q-transition-fast);
+    width: 16px;
+    height: 16px;
     color: var(--q-color-text-secondary, #666);
 }
 
 .q-tree-nav-item__expand::after {
     content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border: solid currentColor;
-    border-width: 0 2px 2px 0;
-    transform: rotate(-45deg);
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 4px 0 4px 6px;
+    border-color: transparent transparent transparent currentColor;
 }
 
-.q-tree-nav-item--expanded .q-tree-nav-item__expand {
-    transform: rotate(90deg);
+.q-tree-nav-item--expanded .q-tree-nav-item__expand::after {
+    border-width: 6px 4px 0 4px;
+    border-color: currentColor transparent transparent transparent;
 }
 
 .q-tree-nav-item--has-children .q-tree-nav-item__expand {
@@ -67,16 +69,20 @@
 
 .q-tree-nav-item:hover .q-tree-nav-item__content {
     color: var(--q-color-primary, #0078d4);
-    background: rgba(0, 120, 212, 0.06);
+    background: var(--q-overlay-hover, rgba(0, 0, 0, 0.04));
+}
+
+.q-tree-nav-item--active {
+    border-left-color: var(--q-color-primary, #0078d4);
 }
 
 .q-tree-nav-item--active .q-tree-nav-item__content {
     color: var(--q-color-primary, #0078d4);
-    background: rgba(0, 120, 212, 0.1);
+    background: var(--q-overlay-active, rgba(0, 120, 212, 0.1));
     font-weight: var(--q-font-weight-bold, 700);
 }
 
-.q-tree-nav-item-disabled {
+.q-tree-nav-item--disabled {
     opacity: var(--q-opacity-disabled, 0.4);
     cursor: not-allowed;
     pointer-events: none;

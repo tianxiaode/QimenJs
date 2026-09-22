@@ -7,9 +7,10 @@ import './tree-nav-item.css';
 const TreeNavItemComponentDefs: Definitions = {
     options: {
         text: null,
-        icon: null,
+        iconCls: null,
         active: false,
         expanded: false,
+        size: null,
     },
     fields: {
         path: undefined,
@@ -28,12 +29,12 @@ class TreeNavItemComponent extends Component {
     _childInstances: TreeNavItemComponent[] = [];
 
     _onTextOptionChange(value: string): void {
-        this.setNodeText(value, "text");
+        this.setNodeText(value, 'text');
     }
 
-    _onIconOptionChange(value: string): void {
+    _onIconClsOptionChange(value: string): void {
         const el = this.getNodeEl('icon');
-        if (el) el.textContent = value ?? '';
+        if (el) el.className = `q-tree-nav-item__icon ${value ?? ''}`;
     }
 
     _onActiveOptionChange(value: boolean): void {
@@ -46,7 +47,9 @@ class TreeNavItemComponent extends Component {
     }
 
     _onExpandedOptionChange(value: boolean): void {
-        value ? this.addCls('q-tree-nav-item--expanded') : this.removeCls('q-tree-nav-item--expanded');
+        value
+            ? this.addCls('q-tree-nav-item--expanded')
+            : this.removeCls('q-tree-nav-item--expanded');
         value ? this.removeCls('hidden', 'children') : this.addCls('hidden', 'children');
     }
 
@@ -78,11 +81,6 @@ class TreeNavItemComponent extends Component {
         this.emit('collapse', { item: this });
     }
 
-    setExpandArrow(state: 'expanded' | 'collapsed'): void {
-        if (state === 'expanded') this.addCls('q-tree-nav-item--expanded');
-        else this.removeCls('q-tree-nav-item--expanded');
-    }
-
     setActive(value: boolean): void {
         this.active = value;
     }
@@ -112,7 +110,9 @@ class TreeNavItemComponent extends Component {
 
     private _applyChildrenState(): void {
         const hasChildren = !!this.children?.length;
-        hasChildren ? this.addCls('q-tree-nav-item--has-children') : this.removeCls('q-tree-nav-item--has-children');
+        hasChildren
+            ? this.addCls('q-tree-nav-item--has-children')
+            : this.removeCls('q-tree-nav-item--has-children');
         hasChildren ? this.removeCls('hidden', 'expand') : this.addCls('hidden', 'expand');
     }
 
