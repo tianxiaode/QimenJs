@@ -29,6 +29,14 @@ class TreeNavItemComponent extends HrefComponent {
 
     _childInstances: TreeNavItemComponent[] = [];
 
+    _onTextOptionChange(value: string): void {
+        this.setNodeText(value, 'text');
+    }
+
+    _onHrefOptionChange(_value: string): void {}
+
+    _onTargetOptionChange(_value: string): void {}
+
     _onIconClsOptionChange(value: string): void {
         const el = this.getNodeEl('icon');
         if (el) el.className = `q-tree-nav-item__icon ${value ?? ''}`;
