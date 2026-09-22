@@ -157,10 +157,21 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
         this.addCls('q-tree-nav');
 
+        if (!this.pathIndex) this._buildPathIndex(this.getData('items'));
+
         this._syncItemConfig();
 
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
+        }
+    }
+
+    private _buildPathIndex(items: any[]): void {
+        this.pathIndex = {};
+        if (!items?.length) return;
+        for (let i = 0; i < items.length; i++) {
+            const href = items[i]?.href;
+            if (href) this.pathIndex[href] = i;
         }
     }
 

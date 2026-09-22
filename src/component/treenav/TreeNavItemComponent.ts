@@ -2,6 +2,7 @@ import { HrefComponent } from '../text/HrefComponent';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
+import { ExpandCollapseAbility } from '@/system-abilities';
 import './tree-nav-item.css';
 
 const TreeNavItemComponentDefs: Definitions = {
@@ -11,7 +12,7 @@ const TreeNavItemComponentDefs: Definitions = {
         expanded: false,
         size: null,
     },
-   0    fields: {
+    fields: {
         depth: 0,
         maxDepth: 5,
         children: undefined,
@@ -42,13 +43,6 @@ class TreeNavItemComponent extends HrefComponent {
         }
     }
 
-    _onExpandedOptionChange(value: boolean): void {
-        value
-            ? this.addCls('q-tree-nav-item--expanded')
-            : this.removeCls('q-tree-nav-item--expanded');
-        value ? this.removeCls('hidden', 'children') : this.addCls('hidden', 'children');
-    }
-
     select(): boolean {
         if (this.disable) return false;
         if (this.children?.length && this.depth < this.maxDepth) {
@@ -58,23 +52,25 @@ class TreeNavItemComponent extends HrefComponent {
         return true;
     }
 
-    toggleExpand(): void {
-        this.expanded ? this.collapse() : this.expand();
-    }
-
     expand(): void {
         if (this.expanded) return;
         if (!this.children?.length || this.depth >= this.maxDepth) return;
-        this._renderChildren();
         this.expanded = true;
-        this.emit('expand', { item: this });
     }
 
     collapse(): void {
         if (!this.expanded) return;
         this.expanded = false;
-        this._clearChildren();
-        this.emit('collapse', { item: this });
+    }
+
+    toggleExpand(): void {
+        this.expanded ? this.collapse() : this.expand();
+    }
+
+    _onExpandedChange(value: boolean): void {
+        value ? this.removeCls('hidden', 'children') : this.addCls('hidden', 'children');
+        if (value) this._renderChildren();
+        else this._clearChildren();
     }
 
     setActive(value: boolean): void {
@@ -143,6 +139,7 @@ class TreeNavItemComponent extends HrefComponent {
 }
 
 TreeNavItemComponent.define(TreeNavItemComponentDefs);
+TreeNavItemComponent.use(ExpandCollapseAbility);
 
 export { TreeNavItemComponent };
 export type TreeNavItemComponentInstance = InstanceType<typeof TreeNavItemComponent>;
