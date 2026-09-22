@@ -6,7 +6,7 @@
  * showTooltip() / hideTooltip() 执行状态变更。
  *
  * 路由内化（声明式，参考 BreadcrumbComponent）：
- * - domEvents click 带 router: 'navigate'，EventForwarder 自动 routeEmit
+ * - domEvents click 带 router: 'switch'，EventForwarder 自动 routeEmit
  * - item 有 path 时触发路由导航；无 path 则纯 UI 选中
  * - listens route change → onRouteChange 自动高亮
  * - pathIndex 可显式传入，或从 items[].path 自动构建
@@ -56,7 +56,7 @@ class NavComponent extends ItemGroupPooledComponent {
                 path: '[items]',
                 handler: '_onItemClick',
                 emits: ['[action]'],
-                router: 'navigate',
+                router: 'switch',
             },
             {
                 path: 'collapseToggle',

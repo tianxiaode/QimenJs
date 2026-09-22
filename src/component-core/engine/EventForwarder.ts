@@ -104,7 +104,7 @@ function _forwardRouter(ctx: ForwardContext): void {
         'router',
         'router'
     );
-    ctx.instance.routeEmit?.(eventCtx);
+    ctx.instance.routeEmit?.(ctx.config.router!, eventCtx);
 }
 
 function _forwardSystem(ctx: ForwardContext): void {
