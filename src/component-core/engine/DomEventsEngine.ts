@@ -468,6 +468,9 @@ export class DomEventsEngine {
             const domEventKey = `${DOM_EVENT_PREFIX}${rule.event}`;
             const handler = (domEvt: any) => {
                 if (isDirect) {
+                    const originalEvent = domEvt?.data?.originalEvent;
+                    const target = originalEvent?.target ?? domEvt?.target;
+                    if (target && !targetEl.contains(target)) return;
                     DomEventsEngine._dispatchRule(instance, rule, domEvt);
                 } else {
                     DomEventsEngine.handleDelegatedEvent(instance, domEvt);
