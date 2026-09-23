@@ -1,6 +1,6 @@
 .q-tab-bar {
     display: flex;
-    border-bottom: 2px solid var(--q-color-border, #dcdfe6);
+    position: relative;
 }
 
 .q-tab-bar__items {
@@ -10,84 +10,93 @@
 }
 
 .q-tab-bar--top {
-    border-bottom: 2px solid var(--q-color-border, #dcdfe6);
-}
-
-.q-tab-bar--top > .q-tab-bar__items {
-    padding-bottom: 2px;
-    margin-bottom: -2px;
+    flex-direction: row;
 }
 
 .q-tab-bar--bottom {
-    border-bottom: none;
-    border-top: 2px solid var(--q-color-border, #dcdfe6);
-}
-
-.q-tab-bar--bottom > .q-tab-bar__items {
-    padding-top: 2px;
-    margin-top: -2px;
-}
-
-.q-tab-bar--bottom .q-tab {
-    border-bottom: none;
-    border-top: 2px solid transparent;
-    margin-bottom: 0;
-    margin-top: -2px;
-}
-
-.q-tab-bar--bottom .q-tab--pressed {
-    border-top-color: var(--q-color-primary, #0078d4);
+    flex-direction: row;
 }
 
 .q-tab-bar--left {
     flex-direction: column;
-    border-bottom: none;
-    border-right: 2px solid var(--q-color-border, #dcdfe6);
-}
-
-.q-tab-bar--left > .q-tab-bar__items {
-    width: calc(100% + 2px);
-    padding-right: 2px;
-    margin-right: -2px;
-}
-
-.q-tab-bar--left .q-tab {
-    border-bottom: none;
-    border-right: 2px solid transparent;
-    margin-bottom: 0;
-    margin-right: -2px;
-    justify-content: flex-start;
-}
-
-.q-tab-bar--left .q-tab--pressed {
-    border-right-color: var(--q-color-primary, #0078d4);
 }
 
 .q-tab-bar--right {
     flex-direction: column;
-    border-bottom: none;
-    border-left: 2px solid var(--q-color-border, #dcdfe6);
 }
 
-.q-tab-bar--right > .q-tab-bar__items {
-    width: calc(100% + 2px);
-    padding-left: 2px;
-    margin-left: -2px;
-}
-
-.q-tab-bar--right .q-tab {
-    border-bottom: none;
-    border-left: 2px solid transparent;
-    margin-bottom: 0;
-    margin-left: -2px;
+.q-tab-bar--left .q-tab {
     justify-content: flex-start;
 }
 
-.q-tab-bar--right .q-tab--pressed {
-    border-left-color: var(--q-color-primary, #0078d4);
+.q-tab-bar--right .q-tab {
+    justify-content: flex-start;
 }
 
-/* overflow 箭头按钮：长条形而非方形 */
+.q-tab-bar::after {
+    content: '';
+    position: absolute;
+    background: var(--q-color-border, #dcdfe6);
+    pointer-events: none;
+}
+
+.q-tab-bar--top::after {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+}
+
+.q-tab-bar--bottom::after {
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+}
+
+.q-tab-bar--left::after {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 2px;
+}
+
+.q-tab-bar--right::after {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+}
+
+.q-tab-bar__indicator {
+    position: absolute;
+    background: var(--q-color-primary, #0078d4);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.2s ease;
+}
+
+.q-tab-bar--top .q-tab-bar__indicator {
+    bottom: 0;
+    height: 2px;
+}
+
+.q-tab-bar--bottom .q-tab-bar__indicator {
+    top: 0;
+    height: 2px;
+}
+
+.q-tab-bar--left .q-tab-bar__indicator {
+    right: 0;
+    width: 2px;
+}
+
+.q-tab-bar--right .q-tab-bar__indicator {
+    left: 0;
+    width: 2px;
+}
+
 .q-tab-bar--top .q-itemgroup__overflow-prev,
 .q-tab-bar--top .q-itemgroup__overflow-next,
 .q-tab-bar--bottom .q-itemgroup__overflow-prev,
@@ -97,18 +106,6 @@
     align-self: stretch;
 }
 
-.q-tab-bar--top .q-itemgroup__overflow-prev,
-.q-tab-bar--top .q-itemgroup__overflow-next {
-    padding-bottom: 2px;
-    margin-bottom: -2px;
-}
-
-.q-tab-bar--bottom .q-itemgroup__overflow-prev,
-.q-tab-bar--bottom .q-itemgroup__overflow-next {
-    padding-top: 2px;
-    margin-top: -2px;
-}
-
 .q-tab-bar--left .q-itemgroup__overflow-prev,
 .q-tab-bar--left .q-itemgroup__overflow-next,
 .q-tab-bar--right .q-itemgroup__overflow-prev,
@@ -116,18 +113,6 @@
     height: 16px;
     width: auto;
     align-self: stretch;
-}
-
-.q-tab-bar--left .q-itemgroup__overflow-prev,
-.q-tab-bar--left .q-itemgroup__overflow-next {
-    padding-right: 2px;
-    margin-right: -2px;
-}
-
-.q-tab-bar--right .q-itemgroup__overflow-prev,
-.q-tab-bar--right .q-itemgroup__overflow-next {
-    padding-left: 2px;
-    margin-left: -2px;
 }
 
 .q-tabs {

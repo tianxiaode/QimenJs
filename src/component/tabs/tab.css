@@ -6,12 +6,10 @@
     cursor: var(--q-cursor-pointer, pointer);
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
     font-size: var(--q-font-size-md, 14px);
     font-weight: var(--q-font-weight-regular, 400);
     color: var(--q-color-text, #333);
-    transition: background var(--q-transition-fast), color var(--q-transition-fast), border-color var(--q-transition-fast);
+    transition: background var(--q-transition-fast), color var(--q-transition-fast);
 }
 
 .q-tab:hover {
@@ -19,7 +17,6 @@
 }
 
 .q-tab--pressed {
-    border-bottom-color: var(--q-color-primary, #0078d4);
     color: var(--q-color-primary, #0078d4);
     font-weight: var(--q-font-weight-semibold, 600);
 }
