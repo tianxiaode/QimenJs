@@ -295,18 +295,101 @@ export class ComponentsPage extends Component {
     }
 
     _showDemo(componentName: string): void {
-        console.log('[ComponentsPage] _showDemo', { name: componentName, current: this._currentDemoName, same: this._currentDemoName === componentName });
+        console.log('[ComponentsPage] _showDemo start', { name: componentName, current: this._currentDemoName });
         if (this._currentDemoName === componentName) return;
         this._currentDemoName = componentName;
 
         const config = DEMO_MAP[componentName];
         const contentEl = this.getNodeEl('content');
+        console.log('[ComponentsPage] _showDemo contentEl', { hasContentEl: !!contentEl, hasConfig: !!config });
         if (!contentEl) return;
 
         if (this._currentDemo) {
-            this._currentDemo.dispose();
+            console.log('[ComponentsPage] _showDemo disposing current demo');
+            try {
+                this._currentDemo.dispose();
+            } catch (e) {
+                console.error('[ComponentsPage] _showDemo dispose error', e);
+            }
             this._currentDemo = null;
         }
+        this._interactiveInstances.forEach(inst => {
+            try { inst.dispose(); } catch (e) { console.error('[ComponentsPage] interactive dispose error', e); }
+        });
+        this._interactiveInstances = [];
+        contentEl.innerHTML = '';
+        console.log('[ComponentsPage] _showDemo after cleanup, creating new demo');
+
+        if (!config) {
+            contentEl.innerHTML = `<div class="q-components-page__coming-soon">${componentName} 演示即将上线</div>`;
+            return;
+        }
+
+        const demoTpl: TemplateDecl = {
+            tag: 'div',
+            classes: 'q-demo',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-demo__header',
+                    children: [
+                        { tag: 'h2', classes: 'q-demo__title', options: { text: config.title } },
+                        {
+                            tag: 'p',
+                            classes: 'q-demo__desc',
+                            options: { text: config.description },
+                        },
+                    ],
+                },
+                ...config.sections.map((section, i) => ({
+                    tag: 'div',
+                    classes: 'q-demo__section',
+                    children: [
+                        {
+                            tag: 'h3',
+                            classes: 'q-demo__section-label',
+                            options: { text: section.label },
+                        },
+                        section.component
+                            ? { tag: 'div', name: `section-${i}`, classes: 'q-demo__interactive' }
+                            : section.template,
+                        ...(section.code
+                            ? [
+                                  {
+                                      tag: 'pre',
+                                      classes: 'q-demo__code',
+                                      children: [{ tag: 'code', options: { text: section.code } }],
+                                  },
+                              ]
+                            : []),
+                    ],
+                })),
+            ],
+        };
+
+        try {
+            this._currentDemo = new (Component.extend({
+                type: 'component-demo',
+                tpl: demoTpl,
+            }))({ container: contentEl });
+            console.log('[ComponentsPage] _showDemo demo created', { hasDemo: !!this._currentDemo, hasEl: !!this._currentDemo?.el });
+
+            config.sections.forEach((section, i) => {
+                if (section.component) {
+                    const containerEl = this._currentDemo.getNodeEl(`section-${i}`);
+                    console.log('[ComponentsPage] _showDemo section', { i, hasContainer: !!containerEl, hasComponent: !!section.component });
+                    if (containerEl) {
+                        this._interactiveInstances.push(
+                            new section.component({ container: containerEl })
+                        );
+                    }
+                }
+            });
+            console.log('[ComponentsPage] _showDemo done', { interactiveCount: this._interactiveInstances.length });
+        } catch (e) {
+            console.error('[ComponentsPage] _showDemo creation error', e);
+        }
+    }
         this._interactiveInstances.forEach(inst => inst.dispose());
         this._interactiveInstances = [];
         contentEl.innerHTML = '';
