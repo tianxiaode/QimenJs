@@ -83,8 +83,9 @@ export const PopoverAbility: AbilityDefinition = {
 
         const anchorSource =
             decl.anchor && decl.anchor !== 'self'
-                ? (this.getNodeEl?.(decl.anchor) ?? this.el!)
+                ? (this.getNodeEl?.(decl.anchor) ?? null)
                 : this.el!;
+        if (!anchorSource) return null;
         const constr: any = {
             ...(decl.options ?? {}),
             anchor: anchorSource,

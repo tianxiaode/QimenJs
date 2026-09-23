@@ -78,13 +78,27 @@
 }
 
 .q-tab-bar--top .q-tab-bar__indicator {
+    left: 0;
     bottom: 0;
     height: 2px;
 }
 
 .q-tab-bar--bottom .q-tab-bar__indicator {
+    left: 0;
     top: 0;
     height: 2px;
+}
+
+.q-tab-bar--left .q-tab-bar__indicator {
+    top: 0;
+    right: 0;
+    width: 2px;
+}
+
+.q-tab-bar--right .q-tab-bar__indicator {
+    top: 0;
+    left: 0;
+    width: 2px;
 }
 
 .q-tab-bar--left .q-tab-bar__indicator {
