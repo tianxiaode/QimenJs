@@ -21,7 +21,6 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     _expandedPaths: Set<string> = new Set();
     _flatData: any[] = [];
     _selectedPath: number[] | null = null;
-    _pendingNavData: { path: string } | null = null;
     _isAfterInit = false;
 
     domEvents?: DomEventsMap | undefined = {
@@ -30,7 +29,6 @@ class TreeNavComponent extends ItemGroupPooledComponent {
             handler: '_onItemClick',
             emits: ['select', '[action]'],
             bridges: ['select', '[action]'],
-            router: 'switch',
         },
     };
 
@@ -51,14 +49,8 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         }
 
         if (data.href) {
-            this._pendingNavData = { path: data.href };
+            this.routeEmit('switch', { path: data.href });
         }
-    }
-
-    get defaultEventData(): Record<string, any> {
-        const data = this._pendingNavData;
-        this._pendingNavData = null;
-        return { ...super.defaultEventData, ...(data ?? {}) };
     }
 
     onRouteChange(event: any): void {
@@ -80,11 +72,15 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
         this.addCls('q-tree-nav');
         this._isAfterInit = true;
-        if (this._treeData.length > 0 && this._flatData.length === 0) {
+        if (this._treeData.length > 0) {
+            this._flatData = this._flattenTree(this._treeData);
+            if (this.activeIndex >= 0 && this.activeIndex < this._flatData.length) {
+                const data = this._flatData[this.activeIndex];
+                this._selectedPath = data.hasChildren
+                    ? this._findFirstLeafPath(data._path)
+                    : data._path;
+            }
             this._reflow();
-        }
-        if (this.activeIndex >= 0) {
-            this.selectAt(this.activeIndex, true);
         }
     }
 
