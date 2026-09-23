@@ -7,6 +7,8 @@
     display: flex;
     align-items: stretch;
     gap: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .q-tab-bar--top {
@@ -33,80 +35,37 @@
     justify-content: flex-start;
 }
 
-.q-tab-bar::after {
-    content: '';
+.q-tab-bar__baseline {
     position: absolute;
     background: var(--q-color-border, #dcdfe6);
     pointer-events: none;
+    z-index: 0;
 }
 
-.q-tab-bar--top::after {
+.q-tab-bar--top .q-tab-bar__baseline {
     left: 0;
     right: 0;
     bottom: 0;
     height: 2px;
 }
 
-.q-tab-bar--bottom::after {
+.q-tab-bar--bottom .q-tab-bar__baseline {
     left: 0;
     right: 0;
     top: 0;
     height: 2px;
 }
 
-.q-tab-bar--left::after {
+.q-tab-bar--left .q-tab-bar__baseline {
     top: 0;
     bottom: 0;
     right: 0;
     width: 2px;
 }
 
-.q-tab-bar--right::after {
+.q-tab-bar--right .q-tab-bar__baseline {
     top: 0;
     bottom: 0;
-    left: 0;
-    width: 2px;
-}
-
-.q-tab-bar__indicator {
-    position: absolute;
-    background: var(--q-color-primary, #0078d4);
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0;
-    transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, opacity 0.2s ease;
-}
-
-.q-tab-bar--top .q-tab-bar__indicator {
-    left: 0;
-    bottom: 0;
-    height: 2px;
-}
-
-.q-tab-bar--bottom .q-tab-bar__indicator {
-    left: 0;
-    top: 0;
-    height: 2px;
-}
-
-.q-tab-bar--left .q-tab-bar__indicator {
-    top: 0;
-    right: 0;
-    width: 2px;
-}
-
-.q-tab-bar--right .q-tab-bar__indicator {
-    top: 0;
-    left: 0;
-    width: 2px;
-}
-
-.q-tab-bar--left .q-tab-bar__indicator {
-    right: 0;
-    width: 2px;
-}
-
-.q-tab-bar--right .q-tab-bar__indicator {
     left: 0;
     width: 2px;
 }

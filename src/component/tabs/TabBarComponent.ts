@@ -45,7 +45,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
     _lastToggleIndex: number = -1;
-    private _indicatorEl: HTMLElement | null = null;
 
     _onOverflowSelect(data: any): void {
         const index = parseInt(data?.action ?? '-1', 10);
@@ -143,8 +142,7 @@ class TabBarComponent extends ItemGroupPooledComponent {
             this._applySelection();
         }
 
-        this._createIndicator();
-        this._updateIndicator();
+        this._createBaseline();
 
         if (!this.abilityState('OverflowAbility:state')) {
             const mode = this.getData('overflowMode') ?? 'scroll';
@@ -163,13 +161,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
         const isVertical = this._position === 'left' || this._position === 'right';
         this._direction = isVertical ? 'vertical' : 'horizontal';
         this.direction = this._direction;
-
-        if (this._indicatorEl) {
-            this._indicatorEl.style.transform = '';
-            this._indicatorEl.style.width = '';
-            this._indicatorEl.style.height = '';
-        }
-        this._updateIndicator();
     }
 
     private _applySelection(): void {
@@ -177,7 +168,6 @@ class TabBarComponent extends ItemGroupPooledComponent {
             const item = this.getAt(i) as TabComponent;
             item.pressed = i === this._selectedIndex;
         }
-        this._updateIndicator();
     }
 
     get selectedIndex(): number {
@@ -202,31 +192,10 @@ class TabBarComponent extends ItemGroupPooledComponent {
         }
     }
 
-    private _createIndicator(): void {
-        if (this._indicatorEl) return;
-        const indicator = document.createElement('div');
-        indicator.className = 'q-tab-bar__indicator';
-        this.el!.appendChild(indicator);
-        this._indicatorEl = indicator;
-    }
-
-    private _updateIndicator(): void {
-        if (!this._indicatorEl) return;
-        const item = this.getAt(this._selectedIndex);
-        const pressedTab = item?.el as HTMLElement | undefined;
-        if (!pressedTab) {
-            this._indicatorEl.style.opacity = '0';
-            return;
-        }
-        this._indicatorEl.style.opacity = '1';
-
-        if (this._direction === 'horizontal') {
-            this._indicatorEl.style.transform = `translateX(${pressedTab.offsetLeft}px)`;
-            this._indicatorEl.style.width = `${pressedTab.offsetWidth}px`;
-        } else {
-            this._indicatorEl.style.transform = `translateY(${pressedTab.offsetTop}px)`;
-            this._indicatorEl.style.height = `${pressedTab.offsetHeight}px`;
-        }
+    private _createBaseline(): void {
+        const baseline = document.createElement('div');
+        baseline.className = 'q-tab-bar__baseline';
+        this.el!.appendChild(baseline);
     }
 
     /** 滚动到指定标签，确保选中标签可见 */
