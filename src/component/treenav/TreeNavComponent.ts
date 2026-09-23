@@ -22,6 +22,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     _flatData: any[] = [];
     _selectedPath: number[] | null = null;
     _pendingNavData: { path: string } | null = null;
+    _isAfterInit = false;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -78,6 +79,10 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-tree-nav');
+        this._isAfterInit = true;
+        if (this._treeData.length > 0 && this._flatData.length === 0) {
+            this._reflow();
+        }
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
         }
@@ -92,7 +97,9 @@ class TreeNavComponent extends ItemGroupPooledComponent {
             this.setData('items', [], true);
         }
         this._flatData = [];
-        this._reflow();
+        if (this._isAfterInit) {
+            this._reflow();
+        }
     }
 
     private _scanInitialExpanded(items: any[], basePath: number[] = []): void {
