@@ -137,20 +137,6 @@
     background: var(--q-overlay-active);
 }
 
-.q-itemgroup--horizontal .q-itemgroup__overflow-prev,
-.q-itemgroup--horizontal .q-itemgroup__overflow-next,
-.q-itemgroup--horizontal .q-itemgroup__overflow-more {
-    width: var(--q-itemgroup-overflow-size, 32px);
-    height: var(--q-itemgroup-size, 32px);
-}
-
-.q-itemgroup--vertical .q-itemgroup__overflow-prev,
-.q-itemgroup--vertical .q-itemgroup__overflow-next,
-.q-itemgroup--vertical .q-itemgroup__overflow-more {
-    width: var(--q-itemgroup-size, 32px);
-    height: var(--q-itemgroup-overflow-size, 32px);
-}
-
 .q-itemgroup--overflow.q-itemgroup--can-prev > .q-itemgroup__overflow-prev,
 .q-itemgroup--overflow.q-itemgroup--can-next > .q-itemgroup__overflow-next,
 .q-itemgroup--overflow.q-itemgroup--has-overflow > .q-itemgroup__overflow-more {
