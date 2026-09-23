@@ -93,7 +93,11 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         this._expandedPaths = new Set();
         this._scanInitialExpanded(this._treeData);
         if (!this.pathIndex) this._buildPathIndex(this._treeData);
-        if (!Array.isArray(this.items)) {
+        const current = this.items;
+        if (
+            !Array.isArray(current) ||
+            (current.length > 0 && typeof current[0]?.update !== 'function')
+        ) {
             this.setData('items', [], true);
         }
         this._flatData = [];
