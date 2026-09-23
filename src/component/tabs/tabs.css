@@ -79,11 +79,25 @@
     align-self: stretch;
 }
 
+.q-tab-bar--top .q-itemgroup__overflow-more,
+.q-tab-bar--bottom .q-itemgroup__overflow-more {
+    width: 32px;
+    height: auto;
+    align-self: stretch;
+}
+
 .q-tab-bar--left .q-itemgroup__overflow-prev,
 .q-tab-bar--left .q-itemgroup__overflow-next,
 .q-tab-bar--right .q-itemgroup__overflow-prev,
 .q-tab-bar--right .q-itemgroup__overflow-next {
     height: 16px;
+    width: auto;
+    align-self: stretch;
+}
+
+.q-tab-bar--left .q-itemgroup__overflow-more,
+.q-tab-bar--right .q-itemgroup__overflow-more {
+    height: 32px;
     width: auto;
     align-self: stretch;
 }
