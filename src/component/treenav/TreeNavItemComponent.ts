@@ -2,7 +2,6 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { TREE_NAV_ITEM_TPL } from './tree-nav-item-tpl';
 import { Definitions } from '@/composable';
-import { ExpandCollapseAbility } from '@/system-abilities';
 import './tree-nav-item.css';
 
 const TreeNavItemComponentDefs: Definitions = {
@@ -12,11 +11,10 @@ const TreeNavItemComponentDefs: Definitions = {
         iconCls: null,
         active: false,
         expanded: false,
+        hasChildren: false,
     },
     fields: {
         depth: 0,
-        maxDepth: 5,
-        children: undefined,
     },
 } as const;
 
@@ -25,8 +23,6 @@ class TreeNavItemComponent extends Component {
     get tpl(): TemplateDecl {
         return TREE_NAV_ITEM_TPL;
     }
-
-    _childInstances: TreeNavItemComponent[] = [];
 
     get defaultEventData(): Record<string, any> {
         return { ...super.defaultEventData, href: this.href };
@@ -50,34 +46,16 @@ class TreeNavItemComponent extends Component {
         }
     }
 
-    select(): boolean {
-        if (this.disable) return false;
-        if (this.children?.length) {
-            this.toggleExpand();
-            return false;
-        }
-        return true;
+    _onExpandedOptionChange(value: boolean): void {
+        value
+            ? this.addCls('q-tree-nav-item--expanded')
+            : this.removeCls('q-tree-nav-item--expanded');
     }
 
-    expand(): void {
-        if (this.expanded) return;
-        if (!this.children?.length || this.depth >= this.maxDepth) return;
-        this.expanded = true;
-    }
-
-    collapse(): void {
-        if (!this.expanded) return;
-        this.expanded = false;
-    }
-
-    toggleExpand(): void {
-        this.expanded ? this.collapse() : this.expand();
-    }
-
-    _onExpandedChange(value: boolean): void {
-        value ? this.removeCls('hidden', 'children') : this.addCls('hidden', 'children');
-        if (value) this._renderChildren();
-        else this._clearChildren();
+    _onHasChildrenOptionChange(value: boolean): void {
+        value
+            ? this.addCls('q-tree-nav-item--has-children')
+            : this.removeCls('q-tree-nav-item--has-children');
     }
 
     setActive(value: boolean): void {
@@ -87,7 +65,6 @@ class TreeNavItemComponent extends Component {
     onAfterInit(): void {
         super.onAfterInit();
         this.el?.style.setProperty('--q-item-depth', String(this.depth));
-        this._applyChildrenState();
     }
 
     update(props?: Record<string, any>): void {
@@ -96,60 +73,10 @@ class TreeNavItemComponent extends Component {
             this.depth = props.depth;
             this.el?.style.setProperty('--q-item-depth', String(this.depth));
         }
-        if (props?.maxDepth !== undefined) this.maxDepth = props.maxDepth;
-        if (props?.children !== undefined) {
-            this.children = props.children;
-            this._applyChildrenState();
-            if (this.expanded) {
-                this._clearChildren();
-                this._renderChildren();
-            }
-        }
-    }
-
-    onBeforeDispose(): void {
-        this._clearChildren();
-        super.onBeforeDispose();
-    }
-
-    private _applyChildrenState(): void {
-        const hasChildren = !!this.children?.length;
-        hasChildren
-            ? this.addCls('q-tree-nav-item--has-children')
-            : this.removeCls('q-tree-nav-item--has-children');
-        hasChildren ? this.removeCls('hidden', 'expand') : this.addCls('hidden', 'expand');
-    }
-
-    private _renderChildren(): void {
-        const container = this.getNodeEl('children');
-        if (!container || !this.children?.length) return;
-
-        this._clearChildren();
-
-        for (const childData of this.children) {
-            const child = new TreeNavItemComponent({
-                ...childData,
-                depth: this.depth + 1,
-                maxDepth: this.maxDepth,
-                expanded: childData.expanded ?? false,
-            }) as TreeNavItemComponent;
-            container.appendChild(child.el);
-            this._childInstances.push(child);
-        }
-    }
-
-    private _clearChildren(): void {
-        for (const child of this._childInstances) {
-            child.dispose();
-        }
-        this._childInstances = [];
-        const container = this.getNodeEl('children');
-        if (container) container.innerHTML = '';
     }
 }
 
 TreeNavItemComponent.define(TreeNavItemComponentDefs);
-TreeNavItemComponent.use(ExpandCollapseAbility);
 
 export { TreeNavItemComponent };
 export type TreeNavItemComponentInstance = InstanceType<typeof TreeNavItemComponent>;

@@ -202,7 +202,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     _reuseFromPool(data: Record<string, any>): any {
-        const dataType = data.type ?? this._defaultItemType;
+        const dataType = data.type ?? this.defaultItemType;
         if (!dataType) return null;
         for (let i = 0; i < this._hiddenItems.length; i++) {
             const component = this._hiddenItems[i];

@@ -1,22 +1,4 @@
-/**
- * TreeNavComponent 树导航组件
- *
- * 从 ItemGroupStaticComponent 派生（非池化，子项随展开/折叠动态创建销毁），
- * 纵向布局，通过 domEvents 集中处理子项点击。
- *
- * 选中模型（只有 leaf 可选中）：
- * - parent 节点点击 → toggleExpand，不选中
- * - leaf 节点点击 → 选中
- * - selectAt(parent) → 自动展开并选中第一个 leaf 后代
- * - 嵌套选中通过 _selectNested，_selectedItem 维护全局单选
- *
- * 路由内化：
- * - domEvents click 带 router: 'navigate'
- * - item 有 href 时触发路由导航；无 href 则纯 UI 选中
- * - listens route change → onRouteChange 自动高亮
- */
-
-import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
@@ -31,12 +13,15 @@ const TreeNavComponentDefs: Definitions = {
     },
 } as const;
 
-class TreeNavComponent extends ItemGroupStaticComponent {
+class TreeNavComponent extends ItemGroupPooledComponent {
     static type = 'tree-nav';
     defaultItemType = 'tree-nav-item';
 
-    _selectedItem: TreeNavItemComponent | null = null;
-    _pendingNavData: { path: string; item: any } | null = null;
+    _treeData: any[] = [];
+    _expandedPaths: Set<string> = new Set();
+    _flatData: any[] = [];
+    _selectedPath: number[] | null = null;
+    _pendingNavData: { path: string } | null = null;
 
     domEvents?: DomEventsMap | undefined = {
         click: {
@@ -51,39 +36,22 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
-        const topItem = domEvt?.targetComponent as TreeNavItemComponent;
-        if (!topItem) return;
+        const item = domEvt?.targetComponent as TreeNavItemComponent;
+        if (!item) return;
+        const flatIndex = this.indexOf(item);
+        if (flatIndex < 0) return;
+        const data = this._flatData[flatIndex];
+        if (!data) return;
 
-        const deepest = this._findDeepestItem(topItem, domEvt);
-        const item = deepest ?? topItem;
-
-        if (item.select()) {
-            if (item === topItem) {
-                const index = this.indexOf(topItem);
-                if (index >= 0) this.selectAt(index);
-            } else {
-                this._selectNested(item);
-            }
+        if (data.hasChildren) {
+            this._toggleExpand(data._path);
+        } else {
+            this._selectLeaf(flatIndex, data._path);
         }
 
-        if (item.href) {
-            this._pendingNavData = { path: item.href };
+        if (data.href) {
+            this._pendingNavData = { path: data.href };
         }
-    }
-
-    private _findDeepestItem(
-        topItem: TreeNavItemComponent,
-        domEvt: any
-    ): TreeNavItemComponent | null {
-        const clickTarget = domEvt?.data?.originalEvent?.target as Element;
-        if (!clickTarget) return null;
-        const children: TreeNavItemComponent[] = topItem?._childInstances ?? [];
-        for (const child of children) {
-            if (child.el?.contains(clickTarget)) {
-                return this._findDeepestItem(child, domEvt) ?? child;
-            }
-        }
-        return null;
     }
 
     get defaultEventData(): Record<string, any> {
@@ -95,9 +63,12 @@ class TreeNavComponent extends ItemGroupStaticComponent {
     onRouteChange(event: any): void {
         const path = event?.path;
         if (!path) return;
-        const pathIndex = this.pathIndex;
-        const index = pathIndex?.[path];
-        if (index !== undefined) this.selectAt(index);
+        const treePath = this.pathIndex?.[path];
+        if (!treePath) return;
+        this._expandAncestors(treePath);
+        this._selectedPath = treePath;
+        this._reflow();
+        this.activeIndex = this._findFlatIndex(treePath);
     }
 
     get defaultOptions(): Record<string, any> {
@@ -106,87 +77,165 @@ class TreeNavComponent extends ItemGroupStaticComponent {
 
     onAfterInit(): void {
         super.onAfterInit();
-
         this.addCls('q-tree-nav');
-
-        if (!this.pathIndex) this._buildPathIndex(this.getData('items'));
-
-        this._syncItemConfig();
-
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
         }
     }
 
-    private _buildPathIndex(items: any[]): void {
-        this.pathIndex = {};
-        if (!items?.length) return;
+    _onItemsOptionChange(value: any[]): void {
+        this._treeData = value ? [...value] : [];
+        this._expandedPaths = new Set();
+        this._scanInitialExpanded(this._treeData);
+        if (!this.pathIndex) this._buildPathIndex(this._treeData);
+        if (!Array.isArray(this.items)) {
+            this.setData('items', [], true);
+        }
+        this._flatData = [];
+        this._reflow();
+    }
+
+    private _scanInitialExpanded(items: any[], basePath: number[] = []): void {
         for (let i = 0; i < items.length; i++) {
-            const href = items[i]?.href;
-            if (href) this.pathIndex[href] = i;
+            const item = items[i];
+            const path = [...basePath, i];
+            if (item.expanded) {
+                this._expandedPaths.add(path.join('.'));
+            }
+            if (item.children?.length) {
+                this._scanInitialExpanded(item.children, path);
+            }
         }
     }
 
-    _syncItemConfig(): void {
-        for (let i = 0; i < this.count; i++) {
-            const item = this.getAt(i) as TreeNavItemComponent;
-            item.update({ maxDepth: this.maxDepth });
+    private _buildPathIndex(items: any[]): void {
+        this.pathIndex = {};
+        this._buildPathIndexRecursive(items, []);
+    }
+
+    private _buildPathIndexRecursive(items: any[], basePath: number[]): void {
+        if (!items?.length) return;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const path = [...basePath, i];
+            if (item.href) this.pathIndex[item.href] = path;
+            if (item.children?.length) {
+                this._buildPathIndexRecursive(item.children, path);
+            }
         }
+    }
+
+    private _flattenTree(items: any[], depth: number = 0, basePath: number[] = []): any[] {
+        const result: any[] = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const path = [...basePath, i];
+            const pathKey = path.join('.');
+            const hasChildren = !!item.children?.length;
+            const expanded = this._expandedPaths.has(pathKey);
+            const active = this._selectedPath ? this._selectedPath.join('.') === pathKey : false;
+
+            result.push({
+                text: item.text,
+                href: item.href,
+                iconCls: item.iconCls,
+                depth,
+                hasChildren,
+                expanded,
+                active,
+                _path: path,
+            });
+
+            if (hasChildren && expanded && depth < this.maxDepth) {
+                result.push(...this._flattenTree(item.children, depth + 1, path));
+            }
+        }
+        return result;
+    }
+
+    private _reflow(): void {
+        this._flatData = this._flattenTree(this._treeData);
+        super.setItems(this._flatData);
+        this.activeIndex = this._selectedPath ? this._findFlatIndex(this._selectedPath) : -1;
+    }
+
+    private _toggleExpand(path: number[]): void {
+        const depth = path.length - 1;
+        if (depth >= this.maxDepth) return;
+        const key = path.join('.');
+        if (this._expandedPaths.has(key)) {
+            this._expandedPaths.delete(key);
+        } else {
+            this._expandedPaths.add(key);
+        }
+        this._reflow();
+    }
+
+    private _expandAncestors(path: number[]): void {
+        for (let i = 1; i < path.length; i++) {
+            this._expandedPaths.add(path.slice(0, i).join('.'));
+        }
+    }
+
+    private _selectLeaf(flatIndex: number, path: number[]): void {
+        this._selectedPath = path;
+        this._reflow();
+        this.activeIndex = flatIndex;
+        this.emit('select', { index: flatIndex, path });
+    }
+
+    private _findFlatIndex(path: number[]): number {
+        const key = path.join('.');
+        for (let i = 0; i < this._flatData.length; i++) {
+            if (this._flatData[i]._path.join('.') === key) return i;
+        }
+        return -1;
+    }
+
+    private _findFirstLeafPath(path: number[]): number[] {
+        const items = this._getChildrenAtPath(path);
+        if (!items || items.length === 0) return path;
+        this._expandedPaths.add(path.join('.'));
+        return this._findFirstLeafPath([...path, 0]);
+    }
+
+    private _getChildrenAtPath(path: number[]): any[] | null {
+        let items: any[] = this._treeData;
+        for (const idx of path) {
+            if (!items || !items[idx]) return null;
+            items = items[idx].children;
+        }
+        return items;
     }
 
     selectAt(index: number, silent: boolean = false): void {
         if (index < 0 || index >= this.count) return;
+        const data = this._flatData[index];
+        if (!data) return;
 
-        const item = this.getAt(index) as TreeNavItemComponent;
-        const leaf = this._findFirstLeaf(item);
+        const selectedPath = data.hasChildren ? this._findFirstLeafPath(data._path) : data._path;
+        this._selectedPath = selectedPath;
 
-        if (this._selectedItem && this._selectedItem !== leaf) {
-            this._selectedItem.setActive(false);
-        }
-
-        leaf.setActive(true);
-        this._selectedItem = leaf;
-        this.activeIndex = index;
+        this._reflow();
+        this.activeIndex = this._findFlatIndex(selectedPath);
 
         if (!silent) {
-            this.emit('select', { index, item: leaf });
+            this.emit('select', { index: this.activeIndex, path: selectedPath });
         }
-    }
-
-    private _findFirstLeaf(item: TreeNavItemComponent): TreeNavItemComponent {
-        if (!item.children?.length) return item;
-        if (!item.expanded) item.expand();
-        const firstChild = item._childInstances[0];
-        if (!firstChild) return item;
-        return this._findFirstLeaf(firstChild);
-    }
-
-    private _selectNested(item: TreeNavItemComponent): void {
-        if (this._selectedItem && this._selectedItem !== item) {
-            this._selectedItem.setActive(false);
-        }
-        item.setActive(true);
-        this._selectedItem = item;
-        this.activeIndex = -1;
-        this.emit('select', { item });
     }
 
     clearSelection(): void {
-        if (this._selectedItem) this._selectedItem.setActive(false);
-        this._selectedItem = null;
+        this._selectedPath = null;
+        this._reflow();
         this.activeIndex = -1;
     }
 
     onUpdated(props?: Record<string, any>): void {
         if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
-        if (props?.maxDepth !== undefined) {
-            this._syncItemConfig();
-        }
     }
 }
 
 TreeNavComponent.define(TreeNavComponentDefs);
 
 export { TreeNavComponent };
-/** 树导航实例类型 */
 export type TreeNavComponentInstance = InstanceType<typeof TreeNavComponent>;

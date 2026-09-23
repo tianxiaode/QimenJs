@@ -14,6 +14,5 @@ export const TREE_NAV_ITEM_TPL: TemplateDecl = {
                 { tag: 'span', name: 'expand', classes: 'q-tree-nav-item__expand' },
             ],
         },
-        { tag: 'div', name: 'children', classes: 'q-tree-nav-item__children hidden' },
     ],
 };
