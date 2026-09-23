@@ -6,9 +6,9 @@
  *
  * 核心设计：
  * - 单例模式，全局唯一，拥有独立的 eventScope
- * - routeEmit：发送路由事件，自动编码 routeKey + eventName
+ * - routeEmit：发送路由事件，直接用 ctx.type 作为事件名
  * - routeOn：监听路由事件，支持 match 通配（'*' 匹配所有细分事件）
- * - 事件名编码：route:{routeKey}:{eventName}
+ * - 事件名即为 eventName 本身（如 'switch'、'change'、'change:users:list'）
  *
  * 路由事件命名规则：
  * - 无路径时发 change
@@ -20,16 +20,15 @@
  * const bus = RouteEventBus.getInstance();
  *
  * // Router 发送路由变化事件
- * bus.routeEmit('router', 'change', ctx);
- * bus.routeEmit('router', 'change:users:list', ctx);
+ * bus.routeEmit(ctx);  // ctx.type = 'change' 或 'change:users:list'
  *
  * // 组件监听路由变化
- * const off = bus.routeOn('router', 'change', (data) => {
+ * const off = bus.routeOn('change', (data) => {
  *     console.log('路由变化:', data);
  * });
  *
  * // 监听特定路径
- * bus.routeOn('router', 'change:users', (data) => {
+ * bus.routeOn('change:users', (data) => {
  *     console.log('进入用户页:', data);
  * });
  * ```
@@ -39,10 +38,6 @@ import { globalEventBus } from './GlobalEventBus';
 import type { IEventScope } from './types';
 import type { EventContext } from '@/context';
 import { ILogger, Logger } from '@qimenjs/logger';
-
-function encodeRouteEvent(routeKey: string, eventName: string): string {
-    return `route:${routeKey}:${eventName}`;
-}
 
 export class RouteEventBus {
     private static instance: RouteEventBus;
@@ -70,41 +65,32 @@ export class RouteEventBus {
     /**
      * 发送路由事件（只接收 EventContext）
      *
-     * 事件总线统一约定：只接收 EventContext，由发送方构建。
-     * 从 ctx.source 提取 routeKey，从 ctx.type 提取 eventName。
+     * 直接用 ctx.type 作为事件名，不再编码 routeKey。
      *
      * @param ctx - 预构建的 EventContext
      */
     routeEmit(ctx: EventContext): void {
-        const routeKey = ctx.source;
         const eventName = ctx.type!;
-        const routeEvent = encodeRouteEvent(routeKey, eventName);
         this.logger.debug?.(
-            '[RouteEventBus] routeEmit, routeKey =',
-            routeKey,
-            'eventName =',
+            '[RouteEventBus] routeEmit, eventName =',
             eventName
         );
-        this.routeScope.emit(routeEvent, ctx);
+        this.routeScope.emit(eventName, ctx);
     }
 
     /**
      * 监听路由事件
      *
-     * @param routeKey - 路由源标识（通常为 'router'）
-     * @param eventName - 事件名称（如 'change'、'change:users'）
+     * @param eventName - 事件名称（如 'switch'、'change'、'change:users'）
      * @param handler - 事件处理函数
      * @returns 返回取消监听的函数
      */
-    routeOn(routeKey: string, eventName: string, handler: (data: any) => void): () => void {
-        const routeEvent = encodeRouteEvent(routeKey, eventName);
+    routeOn(eventName: string, handler: (data: any) => void): () => void {
         this.logger.debug?.(
-            '[RouteEventBus] routeOn, routeKey =',
-            routeKey,
-            'eventName =',
+            '[RouteEventBus] routeOn, eventName =',
             eventName
         );
-        return this.routeScope.on(routeEvent, (ctx: any) => {
+        return this.routeScope.on(eventName, (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
             handler(data);
         });
@@ -113,13 +99,11 @@ export class RouteEventBus {
     /**
      * 一次性监听路由事件
      *
-     * @param routeKey - 路由源标识
      * @param eventName - 事件名称
      * @param handler - 事件处理函数
      */
-    routeOnce(routeKey: string, eventName: string, handler: (data: any) => void): void {
-        const routeEvent = encodeRouteEvent(routeKey, eventName);
-        this.routeScope.once(routeEvent, (ctx: any) => {
+    routeOnce(eventName: string, handler: (data: any) => void): void {
+        this.routeScope.once(eventName, (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
             handler(data);
         });

@@ -67,7 +67,7 @@ export class ListensEngine {
             } else if (isSystemListen(item)) {
                 ListensEngine._bindSystem(instance, item.events);
             } else if (isRouteListen(item)) {
-                ListensEngine._bindRoute(instance, item.route, item.events);
+                ListensEngine._bindRoute(instance, item.events);
             } else if (isFileListen(item)) {
                 ListensEngine._bindFile(instance, item.file, item.events);
             }
@@ -292,7 +292,6 @@ export class ListensEngine {
 
     private static _bindRoute(
         instance: any,
-        route: string,
         events: Record<string, EventMapping>
     ): void {
         const bus = RouteEventBus.getInstance();
@@ -302,9 +301,9 @@ export class ListensEngine {
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.routeOnce(route, eventName, handler);
+                bus.routeOnce(eventName, handler);
             } else {
-                const off = bus.routeOn(route, eventName, handler);
+                const off = bus.routeOn(eventName, handler);
                 instance.onCleanup(off);
             }
         }

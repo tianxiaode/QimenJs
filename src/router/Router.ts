@@ -17,13 +17,13 @@
  * @example
  * ```ts
  * // 导航（组件侧，需 EventsAbility）
- * this.routeEmit('switch', { path: '/users', replace: false }, { source: 'router' });
+ * this.routeEmit('switch', { path: '/users', replace: false });
  *
  * // 监听（组件侧，需 EventsAbility）
- * this.routeOn('router', 'change', (data) => { ... });
+ * this.routeOn('change', (data) => { ... });
  *
  * // 或用 listens 声明
- * listens: [{ route: 'router', events: { change: 'onRouteChange' } }]
+ * listens: [{ route: true, events: { change: 'onRouteChange' } }]
  * ```
  */
 
@@ -53,7 +53,7 @@ export function pathToEventName(path: string): string {
  * 路由器类
  *
  * RouteEventBus 双向参与者：
- * - routeOn('router', 'switch') ← 接收导航指令
+ * - routeOn('switch') ← 接收导航指令
  * - routeEmit('change') → 发出路由变化通知
  */
 export class Router extends ComposableBase {
@@ -109,7 +109,7 @@ export class Router extends ComposableBase {
             this.onCleanup(off);
         }
 
-        const offSwitch = this.routeOn('router', 'switch', (data: any) => {
+        const offSwitch = this.routeOn('switch', (data: any) => {
             if (!data?.path) return;
             this.navigate(data.path, data.replace ?? false);
         });
@@ -196,9 +196,9 @@ export class Router extends ComposableBase {
             params,
         };
 
-        this.routeEmit('change', event, { source: 'router' });
+        this.routeEmit('change', event);
         if (eventName) {
-            this.routeEmit(`change:${eventName}`, event, { source: 'router' });
+            this.routeEmit(`change:${eventName}`, event);
         }
     }
 

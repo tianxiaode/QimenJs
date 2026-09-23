@@ -3,13 +3,13 @@
  *
  * 从 ItemGroupPooledComponent 派生（池化，CSS order 布局，复用隐藏项），
  * 通过 domEvents 集中处理子项事件，委托 NavItemComponent.select() /
- * showTooltip() / hideTooltip() 执行状态变更。
+ * setActive() 执行状态变更。
  *
  * 路由内化（声明式，参考 BreadcrumbComponent）：
  * - domEvents click 带 router: 'switch'，EventForwarder 自动 routeEmit
- * - item 有 path 时触发路由导航；无 path 则纯 UI 选中
+ * - item 有 href 时触发路由导航；无 href 则纯 UI 选中
  * - listens route change → onRouteChange 自动高亮
- * - pathIndex 可显式传入，或从 items[].path 自动构建
+ * - pathIndex 可显式传入，或从 items[].href 自动构建
  *
  * 作为浮层内容使用（子菜单）：
  * - PopoverAbility 创建 NavComponent 实例时传入 anchor 选项
@@ -17,8 +17,8 @@
  * - rawOptions?.anchor 存在时自动添加 q-nav--submenu class
  *
  * domEvents 路径：
- * - 'NavItem.content' → 点击导航项内容区域
- * - 'NavItem'        → 鼠标进入/离开导航项（折叠提示反馈）
+ * - '[items]'        → 点击导航项（委托 NavItemComponent.select()）
+ * - 'collapseToggle' → 点击折叠切换按钮
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
@@ -65,7 +65,7 @@ class NavComponent extends ItemGroupPooledComponent {
         ],
     };
 
-    listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
+    listens = [{ route: true, events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
         const target = domEvt.targetComponent;

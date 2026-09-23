@@ -8,9 +8,9 @@
  * - 发出 change 事件 → 通知路由变化
  *
  * 组件通过 EventsAbility 直接交互：
- * - this.routeEmit('switch', { path: '/users' }, { source: 'router' }) → 导航
- * - this.routeOn('router', 'change', handler) → 监听变化
- * - 或用 listens 声明：{ route: 'router', events: { change: 'onRouteChange' } }
+ * - this.routeEmit('switch', { path: '/users' }) → 导航
+ * - this.routeOn('change', handler) → 监听变化
+ * - 或用 listens 声明：{ route: true, events: { change: 'onRouteChange' } }
  *
  * @example
  * ```typescript
@@ -23,10 +23,10 @@
  * router.start(true);
  *
  * // 2. 组件导航（需混入 EventsAbility）
- * this.routeEmit('switch', { path: '/users' }, { source: 'router' });
+ * this.routeEmit('switch', { path: '/users' });
  *
  * // 3. 组件监听（需混入 EventsAbility）
- * this.routeOn('router', 'change', (data) => {
+ * this.routeOn('change', (data) => {
  *     console.log('路由变化:', data.path);
  * });
  * ```

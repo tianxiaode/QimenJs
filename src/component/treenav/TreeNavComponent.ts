@@ -32,7 +32,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         },
     };
 
-    listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
+    listens = [{ route: true, events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
         const item = domEvt?.targetComponent as TreeNavItemComponent;
@@ -49,7 +49,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         }
 
         if (data.href) {
-            this.routeEmit('switch', { path: data.href }, { source: 'router' });
+            this.routeEmit('switch', { path: data.href });
         }
     }
 

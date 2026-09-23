@@ -68,7 +68,7 @@ class TabsComponent extends Component {
                 close: { handler: 'onTabBarClose', bridges: ['close'] },
             },
         },
-        { route: 'router', events: { change: 'onRouteChange' } },
+        { route: true, events: { change: 'onRouteChange' } },
     ];
 
     private _tabBar: InstanceType<typeof TabBarComponent> | null = null;

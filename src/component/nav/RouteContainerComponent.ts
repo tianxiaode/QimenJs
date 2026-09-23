@@ -17,7 +17,7 @@ class RouteContainerComponent extends Component {
         return ROUTE_CONTAINER_TPL;
     }
 
-    listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
+    listens = [{ route: true, events: { change: 'onRouteChange' } }];
 
     _currentInstance: any = null;
     _currentPageClass: any = null;

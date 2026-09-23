@@ -180,10 +180,9 @@ describe('ListensEngine', () => {
         it('绑定路由事件', () => {
             const { instance, routeEventBus } = makeInstance();
             ListensEngine.bindListens(instance, [
-                { route: 'router', events: { change: 'onRouteChange' } },
+                { route: true, events: { change: 'onRouteChange' } },
             ]);
             expect(routeEventBus.routeOn).toHaveBeenCalledWith(
-                'router',
                 'change',
                 expect.any(Function)
             );

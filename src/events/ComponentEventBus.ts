@@ -19,7 +19,7 @@
  * - EntityEventBus：实体数据操作事件（entity:{entityKey}:{event}）
  * - OverlayEventBus：浮层组件事件（overlay:{overlayKey}:{action}）
  * - FileEventBus：文件操作事件（file:{fileKey}:{action}）
- * - RouteEventBus：路由导航事件（route:{routeKey}:{event}）
+ * - RouteEventBus：路由导航事件（{event}）
  * - SystemEventBus：系统级事件（system:{event}）
  * - ComponentEventBus：组件间通信事件（component:{eventKey}:{event}）
  *

@@ -319,12 +319,12 @@ export interface SystemListen {
  *
  * @example
  * ```ts
- * { route: 'router', events: { change: 'onRouteChange', 'change:users': 'onUsersRoute' } }
+ * { route: true, events: { change: 'onRouteChange', 'change:users': 'onUsersRoute' } }
  * ```
  */
 export interface RouteListen {
-    /** 路由源 key（通常为 'router'） */
-    route: string;
+    /** 标识为路由事件订阅（固定 true） */
+    route: boolean;
     /** 事件映射：路由事件名 → 处理方法名或带选项对象 */
     events: Record<string, EventMapping>;
 }

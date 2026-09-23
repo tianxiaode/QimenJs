@@ -210,14 +210,14 @@ export const EventsAbility = {
         RouteEventBus.getInstance().routeEmit(this._resolveCtx(event, dataOrCtx, overrides));
     },
 
-    routeOn(routeKey: string, eventName: string, handler: (data: any) => void): () => void {
-        const off = RouteEventBus.getInstance().routeOn(routeKey, eventName, handler);
+    routeOn(eventName: string, handler: (data: any) => void): () => void {
+        const off = RouteEventBus.getInstance().routeOn(eventName, handler);
         this.onCleanup(off);
         return off;
     },
 
-    routeOnce(routeKey: string, eventName: string, handler: (data: any) => void): void {
-        RouteEventBus.getInstance().routeOnce(routeKey, eventName, handler);
+    routeOnce(eventName: string, handler: (data: any) => void): void {
+        RouteEventBus.getInstance().routeOnce(eventName, handler);
     },
 
     // ============================================================

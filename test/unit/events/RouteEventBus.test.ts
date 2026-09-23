@@ -47,10 +47,10 @@ describe('RouteEventBus', () => {
     describe('routeEmit / routeOn', () => {
         it('handler receives data from EventContext', () => {
             const handler = jest.fn();
-            bus.routeOn('router', 'change', handler);
+            bus.routeOn('change', handler);
 
             const ctx = EventContextBuilder.create()
-                .withEvent('route:router:change')
+                .withEvent('change')
                 .withType('change')
                 .withSource('router')
                 .withData({ path: '/users' })
@@ -64,12 +64,12 @@ describe('RouteEventBus', () => {
 
         it('unsubscribe stops receiving events', () => {
             const handler = jest.fn();
-            const off = bus.routeOn('router', 'change', handler);
+            const off = bus.routeOn('change', handler);
 
             off();
 
             const ctx = EventContextBuilder.create()
-                .withEvent('route:router:change')
+                .withEvent('change')
                 .withType('change')
                 .withSource('router')
                 .withData({})
@@ -79,20 +79,20 @@ describe('RouteEventBus', () => {
             expect(handler).not.toHaveBeenCalled();
         });
 
-        it('different routeKeys are isolated', () => {
+        it('different event names are isolated', () => {
             const handlerA = jest.fn();
             const handlerB = jest.fn();
-            bus.routeOn('routerA', 'change', handlerA);
-            bus.routeOn('routerB', 'change', handlerB);
+            bus.routeOn('change', handlerA);
+            bus.routeOn('switch', handlerB);
 
-            const ctx = EventContextBuilder.create()
-                .withEvent('route:routerA:change')
+            const ctxChange = EventContextBuilder.create()
+                .withEvent('change')
                 .withType('change')
-                .withSource('routerA')
+                .withSource('router')
                 .withData({ x: 1 })
                 .build();
 
-            bus.routeEmit(ctx);
+            bus.routeEmit(ctxChange);
 
             expect(handlerA).toHaveBeenCalledTimes(1);
             expect(handlerB).not.toHaveBeenCalled();
@@ -101,11 +101,11 @@ describe('RouteEventBus', () => {
         it('specific event name does not match generic', () => {
             const genericHandler = jest.fn();
             const specificHandler = jest.fn();
-            bus.routeOn('router', 'change', genericHandler);
-            bus.routeOn('router', 'change:users', specificHandler);
+            bus.routeOn('change', genericHandler);
+            bus.routeOn('change:users', specificHandler);
 
             const ctx = EventContextBuilder.create()
-                .withEvent('route:router:change:users')
+                .withEvent('change:users')
                 .withType('change:users')
                 .withSource('router')
                 .withData({})
@@ -121,10 +121,10 @@ describe('RouteEventBus', () => {
     describe('routeOnce', () => {
         it('handler fires only once', () => {
             const handler = jest.fn();
-            bus.routeOnce('router', 'change', handler);
+            bus.routeOnce('change', handler);
 
             const ctx = EventContextBuilder.create()
-                .withEvent('route:router:change')
+                .withEvent('change')
                 .withType('change')
                 .withSource('router')
                 .withData({})
@@ -140,12 +140,12 @@ describe('RouteEventBus', () => {
     describe('dispose', () => {
         it('clears all listeners', () => {
             const handler = jest.fn();
-            bus.routeOn('router', 'change', handler);
+            bus.routeOn('change', handler);
 
             bus.dispose();
 
             const ctx = EventContextBuilder.create()
-                .withEvent('route:router:change')
+                .withEvent('change')
                 .withType('change')
                 .withSource('router')
                 .withData({})
