@@ -184,7 +184,10 @@ export class EventBus {
                     done();
                 }
             } catch (err) {
-                this.logEvent('error', 'handler_error', String(event), { error: err });
+                this.logEvent('error', 'handler_error', String(event), {
+                    error: err,
+                    stack: (err as any)?.stack ?? String(err),
+                });
                 done();
             }
         });

@@ -42,6 +42,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
     onAfterInit(): void {
         super.onAfterInit();
+        this._hiddenItems = [];
         this._auxPools = new Map();
         this._initAuxPools();
     }

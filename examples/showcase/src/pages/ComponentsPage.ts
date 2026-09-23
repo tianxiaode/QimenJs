@@ -277,7 +277,6 @@ export class ComponentsPage extends Component {
     }
 
     onRouteChange(event: any): void {
-        console.log('[ComponentsPage] onRouteChange', { path: event?.path, currentDemo: this._currentDemoName });
         const path: string = event?.path ?? '';
         if (path.startsWith('/components/')) {
             const componentName = path.slice('/components/'.length).split('/')[0];
@@ -295,17 +294,14 @@ export class ComponentsPage extends Component {
     }
 
     _showDemo(componentName: string): void {
-        console.log('[ComponentsPage] _showDemo start', { name: componentName, current: this._currentDemoName });
         if (this._currentDemoName === componentName) return;
         this._currentDemoName = componentName;
 
         const config = DEMO_MAP[componentName];
         const contentEl = this.getNodeEl('content');
-        console.log('[ComponentsPage] _showDemo contentEl', { hasContentEl: !!contentEl, hasConfig: !!config });
         if (!contentEl) return;
 
         if (this._currentDemo) {
-            console.log('[ComponentsPage] _showDemo disposing current demo');
             try {
                 this._currentDemo.dispose();
             } catch (e) {
@@ -318,7 +314,6 @@ export class ComponentsPage extends Component {
         });
         this._interactiveInstances = [];
         contentEl.innerHTML = '';
-        console.log('[ComponentsPage] _showDemo after cleanup, creating new demo');
 
         if (!config) {
             contentEl.innerHTML = `<div class="q-components-page__coming-soon">${componentName} 演示即将上线</div>`;
@@ -372,12 +367,10 @@ export class ComponentsPage extends Component {
                 type: 'component-demo',
                 tpl: demoTpl,
             }))({ container: contentEl });
-            console.log('[ComponentsPage] _showDemo demo created', { hasDemo: !!this._currentDemo, hasEl: !!this._currentDemo?.el });
 
             config.sections.forEach((section, i) => {
                 if (section.component) {
                     const containerEl = this._currentDemo.getNodeEl(`section-${i}`);
-                    console.log('[ComponentsPage] _showDemo section', { i, hasContainer: !!containerEl, hasComponent: !!section.component });
                     if (containerEl) {
                         this._interactiveInstances.push(
                             new section.component({ container: containerEl })
@@ -385,7 +378,6 @@ export class ComponentsPage extends Component {
                     }
                 }
             });
-            console.log('[ComponentsPage] _showDemo done', { interactiveCount: this._interactiveInstances.length });
         } catch (e) {
             console.error('[ComponentsPage] _showDemo creation error', e);
         }

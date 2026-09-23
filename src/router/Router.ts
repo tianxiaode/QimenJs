@@ -196,7 +196,6 @@ export class Router extends ComposableBase {
             params,
         };
 
-        console.log('[Router] applyRoute', { path, previousPath, eventName });
         this.routeEmit('change', event);
         if (eventName) {
             this.routeEmit(`change:${eventName}`, event);
@@ -229,7 +228,6 @@ export class Router extends ComposableBase {
 
     private handleUrlChange(): void {
         const path = this.getCurrentPath();
-        console.log('[Router] handleUrlChange', { path, currentPath: this.currentPath });
         if (path && path !== this.currentPath) {
             this.applyRoute(path);
         }

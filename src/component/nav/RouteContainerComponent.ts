@@ -34,10 +34,8 @@ class RouteContainerComponent extends Component {
     }
 
     onRouteChange(event: any): void {
-        console.log('[RouteContainer] onRouteChange', { event, path: event?.path, currentPath: this._currentPageClass?.name });
         const path = event?.path;
         const match = this._matchRoute(path);
-        console.log('[RouteContainer] onRouteChange match', { match: !!match, path });
         if (match) {
             this._mountComponent(match.PageClass);
         }
