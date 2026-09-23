@@ -46,6 +46,7 @@
 }
 
 .q-tab-bar--left > .q-tab-bar__items {
+    width: calc(100% + 2px);
     padding-right: 2px;
     margin-right: -2px;
 }
@@ -69,6 +70,7 @@
 }
 
 .q-tab-bar--right > .q-tab-bar__items {
+    width: calc(100% + 2px);
     padding-left: 2px;
     margin-left: -2px;
 }
