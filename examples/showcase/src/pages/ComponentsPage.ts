@@ -259,7 +259,7 @@ export class ComponentsPage extends Component {
         return COMPONENTS_TPL;
     }
 
-    listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
+    listens = [{ route: true, events: { change: 'onRouteChange' } }];
 
     domEvents: DomEventsMap = {
         click: { path: 'sidebar', handler: '_onNavClick' },
@@ -277,6 +277,7 @@ export class ComponentsPage extends Component {
     }
 
     onRouteChange(event: any): void {
+        console.log('[ComponentsPage] onRouteChange', { path: event?.path, currentDemo: this._currentDemoName });
         const path: string = event?.path ?? '';
         if (path.startsWith('/components/')) {
             const componentName = path.slice('/components/'.length).split('/')[0];
@@ -294,6 +295,7 @@ export class ComponentsPage extends Component {
     }
 
     _showDemo(componentName: string): void {
+        console.log('[ComponentsPage] _showDemo', { name: componentName, current: this._currentDemoName, same: this._currentDemoName === componentName });
         if (this._currentDemoName === componentName) return;
         this._currentDemoName = componentName;
 
