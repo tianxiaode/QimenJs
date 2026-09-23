@@ -35,14 +35,9 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     listens = [{ route: 'router', events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
-        console.log('[TreeNav] _onItemClick', { domEvt, targetComponent: domEvt?.targetComponent, hasItems: Array.isArray(this.items), itemsLen: this.items?.length });
         const item = domEvt?.targetComponent as TreeNavItemComponent;
-        if (!item) {
-            console.log('[TreeNav] _onItemClick no item, returning');
-            return;
-        }
+        if (!item) return;
         const flatIndex = this.indexOf(item);
-        console.log('[TreeNav] _onItemClick flatIndex', { flatIndex });
         if (flatIndex < 0) return;
         const data = this._flatData[flatIndex];
         if (!data) return;
@@ -54,8 +49,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         }
 
         if (data.href) {
-            console.log('[TreeNav] _onItemClick calling routeEmit', { href: data.href });
-            this.routeEmit('switch', { path: data.href });
+            this.routeEmit('switch', { path: data.href }, { source: 'router' });
         }
     }
 
@@ -78,40 +72,32 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
         this.addCls('q-tree-nav');
         this._isAfterInit = true;
-        console.log('[TreeNav] onAfterInit', { treeDataLen: this._treeData.length, flatDataLen: this._flatData.length, activeIndex: this.activeIndex, itemsLen: this.items?.length });
         if (this._treeData.length > 0) {
             this._flatData = this._flattenTree(this._treeData);
-            console.log('[TreeNav] onAfterInit after _flattenTree', { flatDataLen: this._flatData.length, flatData: this._flatData.map(d => ({ text: d.text, path: d._path, hasChildren: d.hasChildren, active: d.active })) });
             if (this.activeIndex >= 0 && this.activeIndex < this._flatData.length) {
                 const data = this._flatData[this.activeIndex];
                 this._selectedPath = data.hasChildren
                     ? this._findFirstLeafPath(data._path)
                     : data._path;
-                console.log('[TreeNav] onAfterInit selectedPath', { selectedPath: this._selectedPath, expandedPaths: [...this._expandedPaths] });
             }
             this._reflow();
-            console.log('[TreeNav] onAfterInit after _reflow', { flatDataLen: this._flatData.length, itemsLen: this.items?.length, activeIndex: this.activeIndex });
         }
     }
 
     _onItemsOptionChange(value: any[]): void {
-        console.log('[TreeNav] _onItemsOptionChange', { value, isAfterInit: this._isAfterInit, items: this.items });
         this._treeData = value ? [...value] : [];
         this._expandedPaths = new Set();
         this._scanInitialExpanded(this._treeData);
         if (!this.pathIndex) this._buildPathIndex(this._treeData);
         const current = this.items;
-        console.log('[TreeNav] _onItemsOptionChange current items', { isArray: Array.isArray(current), len: current?.length, firstHasUpdate: typeof current?.[0]?.update });
         if (
             !Array.isArray(current) ||
             (current.length > 0 && typeof current[0]?.update !== 'function')
         ) {
             this.setData('items', [], true);
-            console.log('[TreeNav] _onItemsOptionChange cleared items to []');
         }
         this._flatData = [];
         if (this._isAfterInit) {
-            console.log('[TreeNav] _onItemsOptionChange calling _reflow');
             this._reflow();
         }
     }
@@ -176,9 +162,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
 
     private _reflow(): void {
         this._flatData = this._flattenTree(this._treeData);
-        console.log('[TreeNav] _reflow', { flatDataLen: this._flatData.length, itemsLen: this.items?.length, selectedPath: this._selectedPath });
         super.setItems(this._flatData);
-        console.log('[TreeNav] _reflow after setItems', { itemsLen: this.items?.length, itemsIsArray: Array.isArray(this.items) });
         this.activeIndex = this._selectedPath ? this._findFlatIndex(this._selectedPath) : -1;
     }
 
