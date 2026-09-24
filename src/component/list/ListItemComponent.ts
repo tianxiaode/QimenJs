@@ -5,7 +5,7 @@ import { Definitions } from '@/composable';
 import './list-item.css';
 
 export type ListStatus = 'default' | 'primary' | 'success' | 'warning' | 'error';
-export type MarkForm = 'dot' | 'dash' | 'ring';
+export type MarkForm = 'dot' | 'dash' | 'ring' | 'square' | 'check' | 'cross';
 
 const ListItemComponentDefs: Definitions = {
     options: {
