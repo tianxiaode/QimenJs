@@ -43,7 +43,7 @@ class AccordionComponent extends ItemGroupPooledComponent {
         if (!item) return;
 
         const action = item.component?.action;
-        if (action === 'collapse') {
+        if (action === 'expand') {
             const self = this as any;
             const isExpanded = self._isExpanded(item.index);
             if (self._mode === 'single') {
