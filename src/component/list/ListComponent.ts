@@ -18,7 +18,6 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
-import { SizeAbility } from '@/component-abilities';
 import { Definitions } from '@/composable';
 import './list.css';
 
@@ -42,9 +41,14 @@ class ListComponent extends ItemGroupPooledComponent {
 
     onAfterInit(): void {
         this.addCls('q-list');
+        this.addCls(`q-list--${this.getData('size')}`);
         (this as any).itemContainer?.el?.classList.add('q-list__items');
 
         super.onAfterInit();
+    }
+
+    _onSizeOptionChange(value: string, old: string): void {
+        this.toggleCls(`q-list--`, value, old);
     }
 
     get defaultEventData(): Record<string, any> {
@@ -61,7 +65,6 @@ class ListComponent extends ItemGroupPooledComponent {
 }
 
 ListComponent.define(ListComponentDefs);
-ListComponent.use(SizeAbility);
 
 export { ListComponent };
 /** 列表实例类型 */
