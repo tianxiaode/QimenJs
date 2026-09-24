@@ -108,7 +108,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeText(String(data.title), 'titleText');
+            this.setNodeText(String(data.title), 'title');
         }
         if (data?.sortState !== undefined) {
             this.sortState = data.sortState;

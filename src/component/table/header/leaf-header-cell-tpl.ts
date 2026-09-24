@@ -7,7 +7,7 @@ export const LEAF_HEADER_CELL_TPL: TemplateDecl = createHeaderCellTpl({
     name: 'content',
     classes: 'q-header-cell__content',
     children: [
-        { tag: 'span', name: 'titleText', classes: 'q-header-cell__title' },
+        { tag: 'span', name: 'title', classes: 'q-header-cell__title' },
         { tag: 'span', name: 'sortIcon', classes: 'q-header-cell__sort' },
     ],
 });

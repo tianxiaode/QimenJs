@@ -49,6 +49,7 @@ import {
     ListItemComponent,
     ProgressComponent,
     StatisticComponent,
+    TableComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -87,3 +88,4 @@ ListComponent.register();
 ListItemComponent.register();
 ProgressComponent.register();
 StatisticComponent.register();
+TableComponent.register();
