@@ -69,7 +69,10 @@ class RowComponent extends Component {
             const cell = this._cells.get(meta.name);
             if (cell?.el && meta.width) {
                 cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
+                cell.el.style.minWidth = '0';
                 cell.el.style.flexShrink = '0';
+                cell.el.style.overflow = 'hidden';
+                cell.el.style.boxSizing = 'border-box';
             }
         }
     }
