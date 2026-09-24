@@ -1,8 +1,7 @@
 import type { DemoConfig } from './types';
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { ColumnMetaManager } from '@/component/table/engine/ColumnMetaManager';
-import { TableEngine } from '@/component/table/engine/TableEngine';
-import type { ColumnDef } from '@/component/table/column-types';
+import { TableComponent } from '@qimenjs/component';
+import type { ColumnDef } from '@qimenjs/component';
 import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
 
@@ -26,56 +25,59 @@ const FORMATTED_COLUMNS: ColumnDef[] = [
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
 ];
 
-function buildTable(container: HTMLElement, columns: ColumnDef[], data: any[]): void {
-    const mgr = new ColumnMetaManager();
-    mgr.compile(columns);
-    const compiled = TableEngine.compile(mgr);
-
-    const header = new compiled.HeaderClass();
-    container.appendChild(header.el);
-
-    for (const row of data) {
-        const rowComp = new compiled.RowClass();
-        container.appendChild(rowComp.el);
-        rowComp.update(row);
-    }
-}
-
-const BASIC_TABLE_TPL: TemplateDecl = {
-    tag: 'div',
-    classes: 'q-demo__row',
-    children: [{ tag: 'div', name: 'container', classes: 'q-table' }],
-};
-
 class BasicTableDemo extends Component {
     static type = 'basic-table-demo';
-    get tpl(): TemplateDecl { return BASIC_TABLE_TPL; }
+    _table: TableComponent | null = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__row',
+            children: [{ tag: 'div', name: 'container', classes: 'q-table' }],
+        };
+    }
 
     onAfterInit(): void {
         const container = this.getNodeEl('container') as HTMLElement;
-        if (container) buildTable(container, BASIC_COLUMNS, TABLE_DATA);
+        if (!container) return;
+        this._table = new TableComponent({ columns: BASIC_COLUMNS, data: TABLE_DATA });
+        container.appendChild(this._table.el);
+    }
+
+    onDestroy(): void {
+        this._table?.dispose();
+        this._table = null;
     }
 }
-
-const FORMATTED_TABLE_TPL: TemplateDecl = {
-    tag: 'div',
-    classes: 'q-demo__row',
-    children: [{ tag: 'div', name: 'container', classes: 'q-table' }],
-};
 
 class FormattedTableDemo extends Component {
     static type = 'formatted-table-demo';
-    get tpl(): TemplateDecl { return FORMATTED_TABLE_TPL; }
+    _table: TableComponent | null = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__row',
+            children: [{ tag: 'div', name: 'container', classes: 'q-table' }],
+        };
+    }
 
     onAfterInit(): void {
         const container = this.getNodeEl('container') as HTMLElement;
-        if (container) buildTable(container, FORMATTED_COLUMNS, TABLE_DATA);
+        if (!container) return;
+        this._table = new TableComponent({ columns: FORMATTED_COLUMNS, data: TABLE_DATA });
+        container.appendChild(this._table.el);
+    }
+
+    onDestroy(): void {
+        this._table?.dispose();
+        this._table = null;
     }
 }
 
 export const TABLE_DEMO: DemoConfig = {
     title: 'Table',
-    description: '表格组件，通过 ColumnMetaManager + TableEngine 编译列定义生成行/表头组件，支持格式化、对齐、排序',
+    description: '表格组件，通过 columns/data option 驱动渲染，支持格式化、对齐、列隐藏/显示/排序',
     sections: [
         {
             label: '基础表格',
@@ -85,9 +87,7 @@ export const TABLE_DEMO: DemoConfig = {
     { name: 'salary', field: 'salary', title: '薪资', align: 'right', format: 'currency' },
     { name: 'dept', field: 'dept', title: '部门' },
 ];
-const mgr = new ColumnMetaManager();
-mgr.compile(columns);
-const compiled = TableEngine.compile(mgr);`,
+const table = new TableComponent({ columns, data });`,
             component: BasicTableDemo,
         },
         {
