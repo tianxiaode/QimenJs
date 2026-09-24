@@ -67,6 +67,10 @@ export { DialogComponent } from './dialog/DialogComponent';
 export { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
 export { ItemGroupStaticComponent } from './itemgroup/ItemGroupStaticComponent';
 
+// 表格组件
+export { TableComponent } from './table/TableComponent';
+export type { ColumnDef, ColumnDefOrGroup, ColumnMeta } from './table/column-types';
+
 // 工具栏组件
 export { ToolbarComponent } from './toolbar/ToolbarComponent';
 
