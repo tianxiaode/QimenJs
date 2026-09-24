@@ -5,22 +5,22 @@ import { BenchTableB } from './TdMode';
 import type { BenchColumnDef } from './ComponentMode';
 import './benchmark.css';
 
-const COL_COUNT = 10;
+const ROW_COUNT = 50;
 const COL_WIDTH = 100;
 
-function generateColumns(): BenchColumnDef[] {
+function generateColumns(colCount: number): BenchColumnDef[] {
     const cols: BenchColumnDef[] = [];
-    for (let j = 0; j < COL_COUNT; j++) {
+    for (let j = 0; j < colCount; j++) {
         cols.push({ field: `col${j}`, title: `Column ${j}`, width: COL_WIDTH });
     }
     return cols;
 }
 
-function generateData(rows: number): Record<string, any>[] {
+function generateData(colCount: number): Record<string, any>[] {
     const data: Record<string, any>[] = [];
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < ROW_COUNT; i++) {
         const row: Record<string, any> = {};
-        for (let j = 0; j < COL_COUNT; j++) {
+        for (let j = 0; j < colCount; j++) {
             row[`col${j}`] = `R${i}C${j}`;
         }
         data.push(row);
@@ -33,7 +33,7 @@ class BenchmarkPage extends Component {
 
     _tableA: BenchTableA | null = null;
     _tableB: BenchTableB | null = null;
-    _currentRows: number = 50;
+    _currentCols: number = 10;
 
     get tpl(): TemplateDecl {
         return {
@@ -48,17 +48,17 @@ class BenchmarkPage extends Component {
                     name: 'controls',
                     classes: 'bench-controls',
                     children: [
-                        { tag: 'span', classes: 'bench-controls__label', options: { text: 'Rows:' } },
+                        { tag: 'span', classes: 'bench-controls__label', options: { text: 'Cols:' } },
                         {
                             tag: 'select',
-                            name: 'rowSelect',
+                            name: 'colSelect',
                             classes: 'bench-controls__select',
                             children: [
-                                { tag: 'option', attributes: { value: '10' }, options: { text: '10' } },
-                                { tag: 'option', attributes: { value: '50', selected: 'selected' }, options: { text: '50' } },
+                                { tag: 'option', attributes: { value: '5' }, options: { text: '5' } },
+                                { tag: 'option', attributes: { value: '10', selected: 'selected' }, options: { text: '10' } },
+                                { tag: 'option', attributes: { value: '20' }, options: { text: '20' } },
+                                { tag: 'option', attributes: { value: '50' }, options: { text: '50' } },
                                 { tag: 'option', attributes: { value: '100' }, options: { text: '100' } },
-                                { tag: 'option', attributes: { value: '500' }, options: { text: '500' } },
-                                { tag: 'option', attributes: { value: '1000' }, options: { text: '1000' } },
                             ],
                         },
                         { tag: 'button', name: 'runBtn', classes: 'bench-controls__btn', options: { text: 'Run Benchmark' } },
@@ -171,9 +171,9 @@ class BenchmarkPage extends Component {
     };
 
     onMounted(): void {
-        const select = this.getNodeEl('rowSelect') as HTMLSelectElement | null;
+        const select = this.getNodeEl('colSelect') as HTMLSelectElement | null;
         if (select) {
-            this._currentRows = parseInt(select.value, 10) || 50;
+            this._currentCols = parseInt(select.value, 10) || 10;
         }
         this._runBenchmark();
     }
@@ -227,9 +227,9 @@ class BenchmarkPage extends Component {
     }
 
     _runBenchmark(): void {
-        const rows = this._currentRows;
-        const columns = generateColumns();
-        const data = generateData(rows);
+        const cols = this._currentCols;
+        const columns = generateColumns(cols);
+        const data = generateData(cols);
 
         const bodyA = this.getNodeEl('bodyA');
         const bodyB = this.getNodeEl('bodyB');
@@ -254,14 +254,14 @@ class BenchmarkPage extends Component {
         bodyA.appendChild(this._tableA.el);
         this._tableA.ready.then(() => {
             const t1 = performance.now();
-            this._setResult('renderA', `${(t1 - t0).toFixed(2)}ms (${rows}r×${COL_COUNT}c)`);
+            this._setResult('renderA', `${(t1 - t0).toFixed(2)}ms (${ROW_COUNT}r×${cols}c)`);
 
             const t2 = performance.now();
             this._tableB = new BenchTableB({ columns, benchData: data });
             bodyB.appendChild(this._tableB.el);
             this._tableB.ready.then(() => {
                 const t3 = performance.now();
-                this._setResult('renderB', `${(t3 - t2).toFixed(2)}ms (${rows}r×${COL_COUNT}c)`);
+                this._setResult('renderB', `${(t3 - t2).toFixed(2)}ms (${ROW_COUNT}r×${cols}c)`);
                 this._setResult('hideA', '-');
                 this._setResult('hideB', '-');
                 this._setResult('showA', '-');
