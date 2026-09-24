@@ -2,7 +2,7 @@ import type { DemoConfig } from './types';
 
 export const PROGRESS_DEMO: DemoConfig = {
     title: 'Progress',
-    description: '进度条组件，支持百分比、类型色（default/success/warning/error）、条纹动画、文字显示',
+    description: '进度条组件，支持百分比、类型色、自定义颜色、条纹动画、文字显示',
     sections: [
         {
             label: '基础进度条',
@@ -70,6 +70,33 @@ export const PROGRESS_DEMO: DemoConfig = {
                     {
                         type: 'progress',
                         options: { percent: 30, progressType: 'error', showText: true },
+                    },
+                ],
+            },
+        },
+        {
+            label: '自定义颜色 (color)',
+            code: `{ type: 'progress', options: { percent: 60, color: 'primary | secondary | success | warning | error | info' } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__col',
+                style: { gap: '8px' },
+                children: [
+                    {
+                        type: 'progress',
+                        options: { percent: 60, color: 'primary', showText: true },
+                    },
+                    {
+                        type: 'progress',
+                        options: { percent: 70, color: 'secondary', showText: true },
+                    },
+                    {
+                        type: 'progress',
+                        options: { percent: 80, color: 'info', showText: true },
+                    },
+                    {
+                        type: 'progress',
+                        options: { percent: 90, color: 'success', showText: true },
                     },
                 ],
             },

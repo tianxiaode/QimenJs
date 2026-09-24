@@ -76,6 +76,25 @@
     text-align: right;
 }
 
+.q-progress--color-primary .q-progress__bar {
+    background: var(--q-color-primary);
+}
+.q-progress--color-secondary .q-progress__bar {
+    background: var(--q-color-secondary, #6c757d);
+}
+.q-progress--color-success .q-progress__bar {
+    background: var(--q-color-success);
+}
+.q-progress--color-warning .q-progress__bar {
+    background: var(--q-color-warning);
+}
+.q-progress--color-error .q-progress__bar {
+    background: var(--q-color-error);
+}
+.q-progress--color-info .q-progress__bar {
+    background: var(--q-color-info, #17a2b8);
+}
+
 @keyframes q-progress-stripes {
     0% {
         background-position: 16px 0;

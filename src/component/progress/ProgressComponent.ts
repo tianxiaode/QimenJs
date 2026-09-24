@@ -19,9 +19,10 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@/component-core';
 import { PROGRESS_TPL } from './progress-tpl';
 import { Definitions } from '@/composable';
+import { ColorAbility, type ColorValue } from '@/component-abilities';
 import './progress.css';
 
-/** 进度条类型 */
+export type { ColorValue } from '@/component-abilities';
 export type ProgressType = 'default' | 'success' | 'warning' | 'error';
 
 const ProgressComponentDefs: Definitions = {
@@ -30,6 +31,7 @@ const ProgressComponentDefs: Definitions = {
         progressType: 'default',
         striped: false,
         showText: false,
+        color: null,
     },
 } as const;
 
@@ -68,6 +70,7 @@ class ProgressComponent extends Component {
 }
 
 ProgressComponent.define(ProgressComponentDefs);
+ProgressComponent.use(ColorAbility);
 export { ProgressComponent };
 /** 进度条实例类型 */
 export type ProgressComponentInstance = InstanceType<typeof ProgressComponent>;
