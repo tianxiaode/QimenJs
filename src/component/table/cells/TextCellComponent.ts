@@ -39,7 +39,7 @@ class TextCellComponent extends BaseCellComponent {
     update(data: TextCellData): void {
         const raw = data.value;
         const display = this._formatValue(raw);
-        this.setNodeProp('text', display, 'content');
+        this.setNodeText(display, 'content');
     }
 
     _formatValue(value: any): string {

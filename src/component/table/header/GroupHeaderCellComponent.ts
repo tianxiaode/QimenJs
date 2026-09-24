@@ -80,14 +80,14 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     _applyGroupWidth(): void {
         if (this.childNames.length === 0) return;
         const parts = this.childNames.map((n: string) => `var(--q-table-col-${n}-width)`);
-        this.setNodeStyle({
+        this.setStyles({
             width: `calc(${parts.join(' + ')})`,
             flexShrink: '0',
         });
     }
 
     _applyResizable(): void {
-        this.setNodeStyle({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
+        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     _createChildren(configs: GroupChildConfig[]): void {
@@ -147,7 +147,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeProp('text', String(data.title), 'title');
+            this.setNodeText(String(data.title), 'title');
         }
     }
 }

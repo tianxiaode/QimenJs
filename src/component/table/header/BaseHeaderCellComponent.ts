@@ -33,7 +33,7 @@ class BaseHeaderCellComponent extends Component {
     }
 
     onAfterInit(): void {
-        if (this.title) this.setNodeProp('text', this.title, 'title');
+        if (this.title) this.setNodeText(this.title, 'title');
         this._applyWidth();
         this._applyAlign();
     }
@@ -44,7 +44,7 @@ class BaseHeaderCellComponent extends Component {
 
     _applyWidth(): void {
         if (!this.colName) return;
-        this.setNodeStyle({
+        this.setStyles({
             width: `var(--q-table-col-${this.colName}-width)`,
             minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
             flexShrink: '0',
@@ -58,12 +58,12 @@ class BaseHeaderCellComponent extends Component {
                 : this.align === 'right'
                   ? 'flex-end'
                   : 'flex-start';
-        this.setNodeStyle({ justifyContent }, 'content');
+        this.setStyles({ justifyContent }, 'content');
     }
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeProp('text', String(data.title), 'title');
+            this.setNodeText(String(data.title), 'title');
         }
     }
 }

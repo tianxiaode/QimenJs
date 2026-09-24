@@ -61,15 +61,15 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     _applySortIcon(): void {
         if (!this.sortable) {
-            this.setNodeStyle({ display: 'none' }, 'sortIcon');
+            this.setStyles({ display: 'none' }, 'sortIcon');
             return;
         }
-        this.setNodeStyle({ display: '' }, 'sortIcon');
+        this.setStyles({ display: '' }, 'sortIcon');
         this.setNodeCls(`q-header-cell__sort q-header-cell__sort--${this._sortState}`, 'sortIcon');
     }
 
     _applyResizable(): void {
-        this.setNodeStyle({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
+        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     _onSortClick(): void {
@@ -108,7 +108,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeProp('text', String(data.title), 'titleText');
+            this.setNodeText(String(data.title), 'titleText');
         }
         if (data?.sortState !== undefined) {
             this.sortState = data.sortState;

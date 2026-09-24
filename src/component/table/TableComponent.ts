@@ -2,6 +2,7 @@ import type { TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { HeaderComponent } from './header/HeaderComponent';
+import { RowComponent } from './row/RowComponent';
 import type { ColumnDefOrGroup } from './column-types';
 import { Definitions } from '@/composable';
 

@@ -37,11 +37,11 @@ class TreeCellComponent extends BaseCellComponent {
 
         this._applyIndent();
         this._applyToggle();
-        this.setNodeProp('text', String(data.value ?? ''), 'text');
+        this.setNodeText(String(data.value ?? ''), 'text');
     }
 
     _applyIndent(): void {
-        this.setNodeStyle({ marginLeft: `${this._depth * INDENT_UNIT}px` }, 'toggle');
+        this.setStyles({ marginLeft: `${this._depth * INDENT_UNIT}px` }, 'toggle');
     }
 
     _applyToggle(): void {

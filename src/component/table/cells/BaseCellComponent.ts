@@ -49,7 +49,7 @@ class BaseCellComponent extends Component {
     }
 
     _applyAlign(): void {
-        this.setNodeStyle({ textAlign: this.align });
+        this.setStyles({ textAlign: this.align });
         this.toggleCls('q-cell--left', this.align === 'left');
         this.toggleCls('q-cell--center', this.align === 'center');
         this.toggleCls('q-cell--right', this.align === 'right');
@@ -57,7 +57,7 @@ class BaseCellComponent extends Component {
 
     update(data: any): void {
         if (data?.value !== undefined) {
-            this.setNodeProp('text', String(data.value ?? ''), 'content');
+            this.setNodeText(String(data.value ?? ''), 'content');
         }
     }
 }
