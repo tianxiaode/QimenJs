@@ -51,7 +51,7 @@ class AccordionComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical', gap: '0' };
+        return { direction: 'vertical', gap: '0', defaultItemOption: { expandable: true } };
     }
 
     onAfterInit(): void {
@@ -66,13 +66,20 @@ class AccordionComponent extends ItemGroupPooledComponent {
 
         if (self._mode === 'single') {
             const expandedIndex = this.getData('expandedIndex');
-            if (expandedIndex !== undefined) {
-                self.expandAt(expandedIndex, true);
+            if (expandedIndex !== undefined && expandedIndex >= 0) {
+                for (let i = 0; i < self.count; i++) {
+                    if (i !== expandedIndex) self._collapsePanel(i);
+                }
+                self._expandPanel(expandedIndex);
+                self._expandedIndex = expandedIndex;
             }
         } else {
             const expandedIndices = this.getData('expandedIndices');
             if (expandedIndices?.length) {
-                for (const idx of expandedIndices) self.expandAt(idx, true);
+                for (let i = 0; i < self.count; i++) {
+                    if (!expandedIndices.includes(i)) self._collapsePanel(i);
+                }
+                for (const idx of expandedIndices) self._expandPanel(idx);
             }
         }
     }
