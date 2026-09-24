@@ -101,6 +101,10 @@
     position: relative;
 }
 
+.q-progress--text-center .q-progress__track {
+    height: 20px;
+}
+
 .q-progress--text-center .q-progress__text {
     position: absolute;
     left: 50%;
