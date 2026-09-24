@@ -32,6 +32,7 @@ const ProgressComponentDefs: Definitions = {
         striped: false,
         showText: false,
         color: null,
+        textPosition: 'right',
     },
 } as const;
 
@@ -66,6 +67,10 @@ class ProgressComponent extends Component {
             const textEl = this.getNodeEl('text');
             if (textEl) textEl.textContent = `${this.percent}%`;
         }
+    }
+
+    _onTextPositionOptionChange(value: string, old: string): void {
+        this.toggleOptionCls('q-progress--text-', value, old);
     }
 }
 
