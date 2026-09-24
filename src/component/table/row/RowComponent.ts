@@ -1,62 +1,93 @@
-/**
- * RowComponent — 数据行基础组件
- *
- * 内置行操作逻辑，不绑定模板。由引擎根据列配置编译模板后，
- * 通过 `class XxxRow extends RowComponent {}` + `XxxRow.useTemplate(tpl)` 完成绑定。
- *
- * @example
- * ```ts
- * // 引擎内部：
- * const tpl = createRowTpl(visibleMetas, createCellTpl);
- * const RowClass = class extends RowComponent { _columnMetas = visibleMetas; };
- * RowClass.useTemplate(tpl);
- * const row = new RowClass();
- * row.update(data);
- * ```
- */
-
 import { Component } from '../../../component-core/Component';
-import type { ColumnMeta } from '../column-types';
+import type { ColumnMeta, CellType } from '../column-types';
+import { TextCellComponent } from '../cells/TextCellComponent';
+import { TreeCellComponent } from '../cells/TreeCellComponent';
+import { CheckboxCellComponent } from '../cells/CheckboxCellComponent';
+import { ActionCellComponent } from '../cells/ActionCellComponent';
+import { Definitions } from '@/composable';
 import './row.css';
 
-export class RowComponent extends Component {
-    _columnMetas: ColumnMeta[] = [];
+const CELL_CLASS_MAP: Record<CellType, any> = {
+    text: TextCellComponent,
+    tree: TreeCellComponent,
+    checkbox: CheckboxCellComponent,
+    action: ActionCellComponent,
+};
 
-    onAfterInit(): void {
-        this._applyWidths();
+class RowComponent extends Component {
+    static type = 'q-table-row';
+
+    _columnMetas: ColumnMeta[] = [];
+    _cells: Map<string, any> = new Map();
+
+    get tpl(): any {
+        return {
+            tag: 'div',
+            name: 'root',
+            classes: 'q-table-row',
+        };
     }
 
-    /**
-     * 更新行数据，逐列调用 cell.update()
-     *
-     * @param data - 行数据对象
-     */
-    update(data: any): void {
-        if (!data) return;
+    onAfterInit(): void {
+        this.el.style.display = 'flex';
+        this._createCells();
+        this._applyWidths();
+
+        const data = this.getData('data');
+        if (data) {
+            const cells = Array.from(this._cells.values());
+            Promise.all(cells.map((c: any) => c.ready)).then(() => {
+                this._doUpdate(data);
+            });
+        }
+    }
+
+    _createCells(): void {
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        this._columnMetas = columns;
+
+        for (let i = 0; i < columns.length; i++) {
+            const meta = columns[i];
+            const cell = this._createCell(meta);
+            this.el.appendChild(cell.el);
+            this._cells.set(meta.name, cell);
+            cell.el.style.order = String((i + 1) * 10);
+        }
+    }
+
+    _createCell(meta: ColumnMeta): any {
+        const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
+        const options: Record<string, any> = { align: meta.align };
+        if (meta.format && meta.cellType === 'text') {
+            options.format = meta.format;
+        }
+        return new CellClass(options);
+    }
+
+    _applyWidths(): void {
         for (const meta of this._columnMetas) {
-            const cell = this.nodeMap?.[meta.name]?.component;
+            const cell = this._cells.get(meta.name);
+            if (cell?.el && meta.width) {
+                cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
+                cell.el.style.flexShrink = '0';
+            }
+        }
+    }
+
+    update(props: any): void {
+        if (!props?.data) return;
+        this._doUpdate(props.data);
+    }
+
+    _doUpdate(data: any): void {
+        for (const meta of this._columnMetas) {
+            const cell = this._cells.get(meta.name);
             if (cell && typeof cell.update === 'function') {
                 cell.update(this._getCellData(meta, data));
             }
         }
     }
 
-    /**
-     * 根据列宽度变量设置各列宽度
-     */
-    _applyWidths(): void {
-        for (const meta of this._columnMetas) {
-            const node = this.nodeMap?.[meta.name]?.el as HTMLElement | null;
-            if (node && meta.width) {
-                node.style.width = `var(--q-table-col-${meta.name}-width)`;
-                node.style.flexShrink = '0';
-            }
-        }
-    }
-
-    /**
-     * 根据列类型提取单元格数据
-     */
     _getCellData(meta: ColumnMeta, data: any): any {
         const value = this._getFieldValue(data, meta.field);
         switch (meta.cellType) {
@@ -76,9 +107,6 @@ export class RowComponent extends Component {
         }
     }
 
-    /**
-     * 按点分隔路径取值
-     */
     _getFieldValue(obj: any, path: string): any {
         if (!obj) return undefined;
         const keys = path.split('.');
@@ -89,4 +117,50 @@ export class RowComponent extends Component {
         }
         return val;
     }
+
+    hideColumn(name: string): void {
+        const cell = this._cells.get(name);
+        if (cell) cell.el.style.display = 'none';
+    }
+
+    showColumn(name: string): void {
+        const cell = this._cells.get(name);
+        if (cell) cell.el.style.display = '';
+    }
+
+    setColumnOrder(name: string, order: number): void {
+        const cell = this._cells.get(name);
+        if (cell) cell.el.style.order = String(order);
+    }
+
+    moveColumn(from: number, to: number): void {
+        if (from === to || from < 0 || to < 0) return;
+        if (from >= this._columnMetas.length || to >= this._columnMetas.length) return;
+        const fromName = this._columnMetas[from].name;
+        const toName = this._columnMetas[to].name;
+        const fromCell = this._cells.get(fromName);
+        const toCell = this._cells.get(toName);
+        if (fromCell && toCell) {
+            const fromOrder = fromCell.el.style.order;
+            const toOrder = toCell.el.style.order;
+            fromCell.el.style.order = toOrder;
+            toCell.el.style.order = fromOrder;
+        }
+    }
 }
+
+const RowComponentDefs: Definitions = {
+    options: {
+        columnMetas: null,
+        data: null,
+    },
+    fields: {
+        _columnMetas: [],
+        _cells: null,
+    },
+} as const;
+
+RowComponent.define(RowComponentDefs);
+RowComponent.register();
+
+export { RowComponent };
