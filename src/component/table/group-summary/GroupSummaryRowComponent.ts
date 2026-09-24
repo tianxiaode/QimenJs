@@ -1,41 +1,50 @@
-/**
- * GroupSummaryRowComponent — 分组统计行基础组件
- *
- * 内置分组统计行操作逻辑，不绑定模板。由引擎根据列配置编译模板后，
- * 通过 `class XxxGroupSummary extends GroupSummaryRowComponent {}` + `useTemplate(tpl)` 完成绑定。
- *
- * @example
- * ```ts
- * const GroupSumClass = class extends GroupSummaryRowComponent {
- *     _columnMetas = visibleMetas;
- * };
- * GroupSumClass.useTemplate(tpl);
- * const sumRow = new GroupSumClass();
- * sumRow.update({ label: '技术部', count: 25 });
- * ```
- */
-
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
+import { TextCellComponent } from '../cells/TextCellComponent';
+import { Definitions } from '@/composable';
 import './groupsummaryrow.css';
 
-export class GroupSummaryRowComponent extends Component {
-    _columnMetas: ColumnMeta[] = [];
+class GroupSummaryRowComponent extends Component {
+    static type = 'q-table-group-summary-row';
 
-    onAfterInit(): void {
-        this.addCls('q-table-row--group-summary');
-        this._applyWidths();
+    _columnMetas: ColumnMeta[] = [];
+    _cells: Map<string, any> = new Map();
+
+    get tpl(): any {
+        return {
+            tag: 'div',
+            name: 'root',
+            classes: 'q-table-row q-table-row--group-summary',
+        };
     }
 
-    /**
-     * 更新分组统计数据
-     *
-     * @param data - 分组聚合数据
-     */
+    onAfterInit(): void {
+        this.el.style.display = 'flex';
+        this._createCells();
+    }
+
+    _createCells(): void {
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        this._columnMetas = columns;
+
+        for (let i = 0; i < columns.length; i++) {
+            const meta = columns[i];
+            const cell = new TextCellComponent({ align: meta.align, format: meta.format });
+            this.el.appendChild(cell.el);
+            this._cells.set(meta.name, cell);
+            cell.el.style.order = String((i + 1) * 10);
+
+            if (meta.width) {
+                cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
+                cell.el.style.flexShrink = '0';
+            }
+        }
+    }
+
     update(data: any): void {
         if (!data) return;
         for (const meta of this._columnMetas) {
-            const cell = this.getNode(meta.name);
+            const cell = this._cells.get(meta.name);
             if (cell && typeof cell.update === 'function') {
                 const value = data[meta.name];
                 if (meta.groupAggregator === 'label') {
@@ -49,20 +58,42 @@ export class GroupSummaryRowComponent extends Component {
         }
     }
 
-    /**
-     * 根据列宽度变量设置各列宽度
-     */
-    _applyWidths(): void {
-        for (const meta of this._columnMetas) {
-            if (meta.width) {
-                this.setNodeStyle(
-                    {
-                        width: `var(--q-table-col-${meta.name}-width)`,
-                        flexShrink: '0',
-                    },
-                    meta.name
-                );
-            }
+    hideColumn(name: string): void {
+        const cell = this._cells.get(name);
+        if (cell) cell.el.style.display = 'none';
+    }
+
+    showColumn(name: string): void {
+        const cell = this._cells.get(name);
+        if (cell) cell.el.style.display = '';
+    }
+
+    moveColumn(from: number, to: number): void {
+        if (from === to || from < 0 || to < 0) return;
+        if (from >= this._columnMetas.length || to >= this._columnMetas.length) return;
+        const fromName = this._columnMetas[from].name;
+        const toName = this._columnMetas[to].name;
+        const fromCell = this._cells.get(fromName);
+        const toCell = this._cells.get(toName);
+        if (fromCell && toCell) {
+            const fromOrder = fromCell.el.style.order;
+            const toOrder = toCell.el.style.order;
+            fromCell.el.style.order = toOrder;
+            toCell.el.style.order = fromOrder;
         }
     }
 }
+
+const GroupSummaryRowComponentDefs: Definitions = {
+    options: {
+        columnMetas: null,
+    },
+    fields: {
+        _columnMetas: [],
+        _cells: null,
+    },
+} as const;
+
+GroupSummaryRowComponent.define(GroupSummaryRowComponentDefs);
+
+export { GroupSummaryRowComponent };
