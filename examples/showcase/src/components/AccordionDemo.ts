@@ -48,6 +48,28 @@ export const ACCORDION_DEMO: DemoConfig = {
             },
         },
         {
+            label: '单展开（只打开一个，其余折叠）',
+            code: `{ type: 'accordion', options: { mode: 'single', expandedIndex: 0, items: [...] } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'accordion',
+                        options: {
+                            mode: 'single',
+                            expandedIndex: 0,
+                            items: [
+                                { title: '面板1（展开）', body: '此面板默认展开，其余面板处于折叠状态' },
+                                { title: '面板2（折叠）', body: '面板2的内容' },
+                                { title: '面板3（折叠）', body: '面板3的内容' },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
             label: '多展开模式 (multiple)',
             code: `{ type: 'accordion', options: { mode: 'multiple', expandedIndices: [0, 2], items: [...] } }`,
             template: {
