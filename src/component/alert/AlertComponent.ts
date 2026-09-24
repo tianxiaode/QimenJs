@@ -70,7 +70,6 @@ class AlertComponent extends Component {
     };
 
     onAfterInit(): void {
-        this._initAlert();
     }
 
     _onTextOptionChange(value: string): void {

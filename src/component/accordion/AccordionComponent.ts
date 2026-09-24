@@ -31,36 +31,36 @@ class AccordionComponent extends ItemGroupPooledComponent {
      * handler 为字符串时直接作为方法名，避免冗长的自动推导名称。
      */
     domEvents?: DomEventsMap | undefined = {
-        click: { path: '[items].header.action', handler: '_onPanelAction', emits: ['[action]'] },
+        click: {
+            path: '[items].header.[items]',
+            handler: { expand: '_onPanelExpand', close: '_onPanelClose' },
+            emits: ['[action]'],
+        },
     };
 
-    /**
-     * Panel 的 action 按钮点击（collapse/close 等）
-     * handler 字符串 'onPanelAction' 指定，方法名简洁。
-     */
-    _onPanelAction(domEvt: any): void {
-        const item = this.getTargetItem(domEvt.target);
-        if (!item) return;
-
-        const action = item.component?.action;
-        if (action === 'expand') {
-            const self = this as any;
-            const isExpanded = self._isExpanded(item.index);
-            if (self._mode === 'single') {
-                if (isExpanded) {
-                    const prev = self._expandedIndex;
-                    self._expandedIndex = item.index;
-                    if (prev >= 0 && prev !== item.index && prev < self.count) {
-                        self._collapsePanel(prev);
-                    }
-                } else {
-                    self._expandedIndex = -1;
+    _onPanelExpand(domEvt: any): void {
+        const self = this as any;
+        const item = this.getTargetItem(domEvt.targetComponent?.el);
+        if (!item?.component?.hasCls) return;
+        const isExpanded = !item.component.hasCls('q-panel--collapsed');
+        if (self._mode === 'single') {
+            if (isExpanded) {
+                const prev = self._expandedIndex;
+                self._expandedIndex = item.index;
+                if (prev >= 0 && prev !== item.index && prev < self.count) {
+                    self._collapsePanel(prev);
                 }
+            } else {
+                self._expandedIndex = -1;
             }
-            self.emit('select', { index: item.index, expanded: isExpanded });
-        } else if (action === 'close') {
-            this.removeAt(item.index);
         }
+        self.emit('select', { index: item.index, expanded: isExpanded });
+    }
+
+    _onPanelClose(domEvt: any): void {
+        const item = this.getTargetItem(domEvt.targetComponent?.el);
+        if (!item) return;
+        this.removeAt(item.index);
     }
 
     get defaultOptions(): Record<string, any> {
