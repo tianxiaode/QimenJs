@@ -158,5 +158,19 @@ export const OverlayAbility: AbilityDefinition = {
 
         overlayRoot.registerOverlay(callback);
         this.onCleanup(() => overlayRoot.unregisterOverlay(callback));
+
+        // 页面滚动即关闭浮层（浮层自身内容滚动不误关）
+        const offScroll = this.bind(document, 'scroll', { capture: true });
+        this.onCleanup(offScroll);
+
+        this.onCleanup(
+            this.on('dom:scroll', (ctx: any) => {
+                if (!this.abilityState('OverlayAbility:open')) return;
+                const event = ctx?.data?.originalEvent as Event;
+                const el = this.el;
+                if (el && event?.target && el.contains(event.target as Node)) return;
+                this.hide();
+            })
+        );
     },
 } satisfies AbilityDefinition;
