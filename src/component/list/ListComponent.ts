@@ -18,12 +18,19 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import { SizeAbility } from '@/component-abilities';
 import { Definitions } from '@/composable';
 import './list.css';
 
 export type { ListStatus, MarkForm } from './ListItemComponent';
 /** 列表项 */
 export type ListItem = Record<string, any>;
+
+const ListComponentDefs: Definitions = {
+    options: {
+        size: 'md',
+    },
+} as const;
 
 class ListComponent extends ItemGroupPooledComponent {
     static type = 'list';
@@ -53,7 +60,8 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 }
 
-ListComponent.define({} as Definitions);
+ListComponent.define(ListComponentDefs);
+ListComponent.use(SizeAbility);
 
 export { ListComponent };
 /** 列表实例类型 */

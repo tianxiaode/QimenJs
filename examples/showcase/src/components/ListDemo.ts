@@ -2,7 +2,7 @@ import type { DemoConfig } from './types';
 
 export const LIST_DEMO: DemoConfig = {
     title: 'List',
-    description: '列表组件，支持状态色、6种标记形态（dot/dash/ring/square/check/cross）、描述文本',
+    description: '列表组件，支持尺寸（sm/md/lg）、状态色继承、6种标记形态（dot/dash/ring/square/check/cross）、描述文本',
     sections: [
         {
             label: '基础列表',
@@ -39,6 +39,49 @@ export const LIST_DEMO: DemoConfig = {
                                 { label: '磁盘空间不足', status: 'warning' },
                                 { label: '连接已断开', status: 'error' },
                                 { label: '常规信息', status: 'default' },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '尺寸 (size)',
+            code: `{ type: 'list', options: { size: 'sm | md | lg', items: [...] } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'list',
+                        options: {
+                            size: 'sm',
+                            items: [
+                                { label: '小尺寸 - 服务器运行中', status: 'success' },
+                                { label: '小尺寸 - 磁盘空间不足', status: 'warning' },
+                                { label: '小尺寸 - 连接已断开', status: 'error' },
+                            ],
+                        },
+                    },
+                    {
+                        type: 'list',
+                        options: {
+                            size: 'md',
+                            items: [
+                                { label: '中等尺寸 - 服务器运行中', status: 'success' },
+                                { label: '中等尺寸 - 磁盘空间不足', status: 'warning' },
+                                { label: '中等尺寸 - 连接已断开', status: 'error' },
+                            ],
+                        },
+                    },
+                    {
+                        type: 'list',
+                        options: {
+                            size: 'lg',
+                            items: [
+                                { label: '大尺寸 - 服务器运行中', status: 'success' },
+                                { label: '大尺寸 - 磁盘空间不足', status: 'warning' },
+                                { label: '大尺寸 - 连接已断开', status: 'error' },
                             ],
                         },
                     },

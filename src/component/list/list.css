@@ -3,6 +3,20 @@
     font-size: 14px;
     line-height: 1.5;
     box-sizing: border-box;
+    --list-pad-y: 8px;
+    --list-mark-size: 12px;
+}
+
+.q-list.q-size--sm {
+    font-size: 12px;
+    --list-pad-y: 4px;
+    --list-mark-size: 10px;
+}
+
+.q-list.q-size--lg {
+    font-size: 16px;
+    --list-pad-y: 12px;
+    --list-mark-size: 14px;
 }
 
 .q-list__items {
