@@ -1,6 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
-import { BenchTableA } from './ComponentMode';
+import { BenchTableA, BenchCellA } from './ComponentMode';
 import { BenchTableB } from './TdMode';
 import type { BenchColumnDef } from './ComponentMode';
 import './benchmark.css';
@@ -62,6 +62,7 @@ class BenchmarkPage extends Component {
                             ],
                         },
                         { tag: 'button', name: 'runBtn', classes: 'bench-controls__btn', options: { text: 'Run Benchmark' } },
+                        { tag: 'button', name: 'cellBtn', classes: 'bench-controls__btn', options: { text: 'Cell Bench' } },
                         { tag: 'button', name: 'hideBtn', classes: 'bench-controls__btn', options: { text: 'Hide Col 3' } },
                         { tag: 'button', name: 'showBtn', classes: 'bench-controls__btn', options: { text: 'Show Col 3' } },
                         { tag: 'button', name: 'moveBtn', classes: 'bench-controls__btn', options: { text: '0->5' } },
@@ -163,6 +164,7 @@ class BenchmarkPage extends Component {
     domEvents = {
         click: [
             { path: 'runBtn', handler: '_onRunClick' },
+            { path: 'cellBtn', handler: '_onCellBenchClick' },
             { path: 'hideBtn', handler: '_onHideClick' },
             { path: 'showBtn', handler: '_onShowClick' },
             { path: 'moveBtn', handler: '_onMoveClick' },
@@ -180,6 +182,67 @@ class BenchmarkPage extends Component {
 
     _onRunClick(): void {
         this._runBenchmark();
+    }
+
+    _onCellBenchClick(): void {
+        const count = ROW_COUNT * this._currentCols;
+        const bodyA = this.getNodeEl('bodyA');
+        const bodyB = this.getNodeEl('bodyB');
+        if (!bodyA || !bodyB) return;
+
+        if (this._tableA) { this._tableA.dispose(); this._tableA = null; }
+        if (this._tableB) { this._tableB.dispose(); this._tableB = null; }
+        bodyA.innerHTML = '';
+        bodyB.innerHTML = '';
+
+        this._setResult('renderA', 'running...');
+        this._setResult('renderB', 'running...');
+        this._setResult('hideA', '-');
+        this._setResult('hideB', '-');
+        this._setResult('showA', '-');
+        this._setResult('showB', '-');
+        this._setResult('moveA', '-');
+        this._setResult('moveB', '-');
+        this._setResult('clearA', '-');
+        this._setResult('clearB', '-');
+
+        const t0 = performance.now();
+        const containerA = document.createElement('div');
+        containerA.style.display = 'flex';
+        containerA.style.flexWrap = 'wrap';
+        bodyA.appendChild(containerA);
+        const cells: any[] = [];
+        for (let i = 0; i < count; i++) {
+            const cell = new BenchCellA({ value: `Cell${i}` });
+            containerA.appendChild(cell.el);
+            cells.push(cell);
+        }
+        const t1 = performance.now();
+        this._setResult('hideA', `sync: ${(t1 - t0).toFixed(2)}ms`);
+
+        Promise.all(cells.map(c => c.ready)).then(() => {
+            const t2 = performance.now();
+            this._setResult('renderA', `${(t2 - t0).toFixed(2)}ms (${count} Component)`);
+
+            const t3 = performance.now();
+            const table = document.createElement('table');
+            const tbody = document.createElement('tbody');
+            table.appendChild(tbody);
+            bodyB.appendChild(table);
+            const cols = this._currentCols;
+            for (let r = 0; r < ROW_COUNT; r++) {
+                const tr = document.createElement('tr');
+                tbody.appendChild(tr);
+                for (let c = 0; c < cols; c++) {
+                    const td = document.createElement('td');
+                    td.textContent = `R${r}C${c}`;
+                    td.style.width = `${COL_WIDTH}px`;
+                    tr.appendChild(td);
+                }
+            }
+            const t4 = performance.now();
+            this._setResult('renderB', `${(t4 - t3).toFixed(2)}ms (${count} td)`);
+        });
     }
 
     _onHideClick(): void {
