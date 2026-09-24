@@ -44,7 +44,20 @@ class AccordionComponent extends ItemGroupPooledComponent {
 
         const action = item.component?.action;
         if (action === 'collapse') {
-            this.toggleAt(item.index);
+            const self = this as any;
+            const isExpanded = self._isExpanded(item.index);
+            if (self._mode === 'single') {
+                if (isExpanded) {
+                    const prev = self._expandedIndex;
+                    self._expandedIndex = item.index;
+                    if (prev >= 0 && prev !== item.index && prev < self.count) {
+                        self._collapsePanel(prev);
+                    }
+                } else {
+                    self._expandedIndex = -1;
+                }
+            }
+            self.emit('select', { index: item.index, expanded: isExpanded });
         } else if (action === 'close') {
             this.removeAt(item.index);
         }
