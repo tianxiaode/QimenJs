@@ -32,6 +32,7 @@ export { BreadcrumbComponent } from './breadcrumb/BreadcrumbComponent';
 export { DividerComponent } from './divider/DividerComponent';
 export { HeroComponent } from './hero/HeroComponent';
 export { ProgressComponent } from './progress/ProgressComponent';
+export { StatisticComponent } from './statistic/StatisticComponent';
 export * from './tag';
 export * from './html';
 
@@ -51,6 +52,10 @@ export { PanelComponent } from './panel/PanelComponent';
 
 // 手风琴组件
 export { AccordionComponent } from './accordion/AccordionComponent';
+
+// 列表组件
+export { ListComponent } from './list/ListComponent';
+export { ListItemComponent } from './list/ListItemComponent';
 
 // 头部组件
 export { HeaderComponent } from './header/HeaderComponent';

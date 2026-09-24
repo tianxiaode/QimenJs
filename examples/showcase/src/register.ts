@@ -43,6 +43,12 @@ import {
     NavComponent,
     TreeNavComponent,
     TreeNavItemComponent,
+    AlertComponent,
+    AccordionComponent,
+    ListComponent,
+    ListItemComponent,
+    ProgressComponent,
+    StatisticComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -75,3 +81,9 @@ NavItemComponent.register();
 NavComponent.register();
 TreeNavComponent.register();
 TreeNavItemComponent.register();
+AlertComponent.register();
+AccordionComponent.register();
+ListComponent.register();
+ListItemComponent.register();
+ProgressComponent.register();
+StatisticComponent.register();

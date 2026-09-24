@@ -28,6 +28,13 @@ import { MENU_DEMO } from '../components/MenuDemo';
 import { NAV_DEMO } from '../components/NavDemo';
 import { NAVBAR_DEMO } from '../components/NavbarDemo';
 import { TREENAV_DEMO } from '../components/TreeNavDemo';
+import { ACCORDION_DEMO } from '../components/AccordionDemo';
+import { ALERT_DEMO } from '../components/AlertDemo';
+import { LIST_DEMO } from '../components/ListDemo';
+import { PROGRESS_DEMO } from '../components/ProgressDemo';
+import { STATISTIC_DEMO } from '../components/StatisticDemo';
+import { TABLE_DEMO } from '../components/TableDemo';
+import { TAG_DEMO } from '../components/TagDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -90,6 +97,13 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Nav: NAV_DEMO,
     Navbar: NAVBAR_DEMO,
     TreeNav: TREENAV_DEMO,
+    Accordion: ACCORDION_DEMO,
+    Alert: ALERT_DEMO,
+    List: LIST_DEMO,
+    Progress: PROGRESS_DEMO,
+    Statistic: STATISTIC_DEMO,
+    Table: TABLE_DEMO,
+    Tag: TAG_DEMO,
 };
 
 /** 首页模板 */

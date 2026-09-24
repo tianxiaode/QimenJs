@@ -28,6 +28,10 @@
     border-top: 0;
 }
 
+.q-accordion .q-panel--closed + .q-panel:not(.q-panel--closed) {
+    border-top: 2px solid var(--q-color-border, #c8bdb0);
+}
+
 .q-accordion--horizontal .q-panel + .q-panel {
     border-top: 2px solid var(--q-colors-border, #dcdfe6);
     border-left: 0;

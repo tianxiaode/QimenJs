@@ -15,7 +15,8 @@ const AccordionComponentDefs: Definitions = {
 } as const;
 
 class AccordionComponent extends ItemGroupPooledComponent {
-    defaultItemType = 'Panel';
+    static type = 'accordion';
+    defaultItemType = 'panel';
     _mode: AccordionMode = 'single';
     _expandedIndex: number = -1;
 

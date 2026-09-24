@@ -60,6 +60,7 @@ const AlertComponentDefs: Definitions = {
 };
 
 class AlertComponent extends Component {
+    static type = 'alert';
     get tpl(): TemplateDecl {
         return ALERT_TPL;
     }

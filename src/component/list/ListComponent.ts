@@ -18,6 +18,7 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import { Definitions } from '@/composable';
 import './list.css';
 
 export type { ListStatus, MarkForm } from './ListItemComponent';
@@ -25,7 +26,8 @@ export type { ListStatus, MarkForm } from './ListItemComponent';
 export type ListItem = Record<string, any>;
 
 class ListComponent extends ItemGroupPooledComponent {
-    defaultItemType = 'ListItem';
+    static type = 'list';
+    defaultItemType = 'list-item';
 
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical' };
@@ -36,13 +38,6 @@ class ListComponent extends ItemGroupPooledComponent {
         (this as any).itemContainer?.el?.classList.add('q-list__items');
 
         super.onAfterInit();
-    }
-
-    get items(): ListItem[] {
-        return this.rawOptions?.items as ListItem[] ?? [];
-    }
-    set items(value: ListItem[]) {
-        this.setItems(value);
     }
 
     get defaultEventData(): Record<string, any> {
@@ -57,6 +52,8 @@ class ListComponent extends ItemGroupPooledComponent {
         super.update(props);
     }
 }
+
+ListComponent.define({} as Definitions);
 
 export { ListComponent };
 /** 列表实例类型 */
