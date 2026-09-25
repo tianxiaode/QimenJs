@@ -78,6 +78,12 @@ __qimen_i18n_register__('zh-CN', {
         pageSize: '{size} 条/页',
         page: '第 {current}/{total} 页',
     },
+    table: {
+        sortAsc: '升序排列',
+        sortDesc: '降序排列',
+        groupBy: '按此字段分组',
+        hideColumn: '隐藏列',
+    },
     error: {
         network: '网络错误，请稍后重试',
         timeout: '请求超时，请稍后重试',

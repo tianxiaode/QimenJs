@@ -7,7 +7,7 @@ import './header.css';
 
 class TableHeaderComponent extends ItemGroupPooledComponent {
     static type = 'table-header';
-    defaultItemType = 'q-header-cell';
+    defaultItemType = 'header-cell';
 
     get tpl(): TemplateDecl {
         return {
@@ -33,7 +33,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const childNames = this._collectLeafNames(group.children);
             const childConfigs = group.children.map(child => this._buildChildConfig(child));
             return {
-                type: 'q-header-group-cell',
+                type: 'group-header-cell',
                 colName: group.name,
                 title: group.title,
                 action: group.name,
@@ -44,7 +44,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
         const leaf = col as ColumnDef;
         return {
-            type: 'q-header-cell',
+            type: 'header-cell',
             colName: leaf.name,
             title: leaf.title,
             align: leaf.align,
@@ -54,6 +54,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             action: leaf.name,
             minWidth: leaf.minWidth ?? 50,
             hideableColumns,
+            groupable: leaf.groupable ?? false,
+            customMenuItems: leaf.menuItems ?? null,
         };
     }
 
@@ -92,16 +94,16 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return names;
     }
 
-    _collectHideableColumns(): Array<{ colName: string; title?: string }> {
+    _collectHideableColumns(): Array<{ colName: string; title?: string; hidden: boolean }> {
         const columns = this.columns;
         if (!Array.isArray(columns)) return [];
-        const result: Array<{ colName: string; title?: string }> = [];
+        const result: Array<{ colName: string; title?: string; hidden: boolean }> = [];
         for (const col of columns) {
             if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
                 continue;
             }
             const leaf = col as ColumnDef;
-            result.push({ colName: leaf.name, title: leaf.title });
+            result.push({ colName: leaf.name, title: leaf.title, hidden: leaf.hidden ?? false });
         }
         return result;
     }
@@ -154,8 +156,21 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             this._applySort(colName, 'asc');
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-        } else if (action?.startsWith('hideColumn:')) {
-            this.emit('hideColumn', { colName: action.substring('hideColumn:'.length) });
+        } else if (action === 'groupBy') {
+            this.emit('groupBy', { colName });
+        } else if (action?.startsWith('toggleColumn:')) {
+            const targetColName = action.substring('toggleColumn:'.length);
+            const columns = this.columns;
+            if (Array.isArray(columns)) {
+                const col = columns.find(
+                    (c: any) => c.name === targetColName && !('children' in c)
+                ) as ColumnDef | undefined;
+                if (col?.hidden) {
+                    this.emit('showColumn', { colName: targetColName });
+                } else {
+                    this.emit('hideColumn', { colName: targetColName });
+                }
+            }
         }
     }
 

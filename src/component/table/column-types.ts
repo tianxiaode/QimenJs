@@ -306,6 +306,25 @@ export interface ActionCellData {
 export type CellData = TextCellData | TreeCellData | CheckboxCellData | ActionCellData;
 
 // ══════════════════════════════════════════════════════════════
+// 自定义菜单项
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 自定义菜单项 — 通过 ColumnDef.menuItems 传入，追加到表头弹出菜单
+ *
+ * 与内置菜单项合并后按 order 排序。
+ * 内置项默认 order：sortAsc=10, sortDesc=20, groupBy=30, hideColumn=40。
+ */
+export interface ColumnMenuItem {
+    /** 菜单项文本（支持 i18n key） */
+    text: string;
+    /** 动作标识，通过 menuSelect 事件传出 */
+    action: string;
+    /** 排序权重，默认 50（排在内置项之后） */
+    order?: number;
+}
+
+// ══════════════════════════════════════════════════════════════
 // 列定义
 // ══════════════════════════════════════════════════════════════
 
@@ -481,6 +500,30 @@ export interface ColumnDef {
      * 为 true 时表头单元格可拖拽到其他列位置，释放后列顺序交换。
      */
     reorderable?: boolean;
+
+    /**
+     * 是否可分组 — 默认 false
+     *
+     * 为 true 时表头单元格菜单自动添加 "Group by this field" 项，
+     * 点击后 emit groupBy 事件。
+     */
+    groupable?: boolean;
+
+    /**
+     * 自定义菜单项 — 追加到表头单元格弹出菜单中
+     *
+     * 与内置菜单项（sortAsc/sortDesc/groupBy/hideColumn）合并后按 order 排序。
+     * 内置项默认 order：sortAsc=10, sortDesc=20, groupBy=30, hideColumn=40。
+     *
+     * @example
+     * ```ts
+     * menuItems: [
+     *     { text: '导出此列', action: 'exportCol', order: 25 },
+     *     { text: '冻结此列', action: 'freezeCol', order: 35 },
+     * ]
+     * ```
+     */
+    menuItems?: ColumnMenuItem[];
 
     /**
      * 初始隐藏状态 — 默认 false（可见）

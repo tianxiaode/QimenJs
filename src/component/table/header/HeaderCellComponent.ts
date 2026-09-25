@@ -19,6 +19,8 @@ const HeaderCellComponentDefs: Definitions = {
         reorderable: false,
         menuDisabled: false,
         hideableColumns: null,
+        groupable: false,
+        customMenuItems: null,
     },
 } as const;
 
@@ -42,26 +44,39 @@ class HeaderCellComponent extends Component {
     _buildMenuItems(): any[] {
         const items: any[] = [];
         if (this.sortable) {
-            items.push({ text: '@table.sortAsc', action: 'sortAsc' });
-            items.push({ text: '@table.sortDesc', action: 'sortDesc' });
+            items.push({ text: '@table.sortAsc', action: 'sortAsc', order: 10 });
+            items.push({ text: '@table.sortDesc', action: 'sortDesc', order: 20 });
+        }
+        if (this.groupable) {
+            items.push({ text: '@table.groupBy', action: 'groupBy', order: 30 });
         }
         const hideable = this.hideableColumns;
         if (hideable?.length) {
             items.push({
                 text: '@table.hideColumn',
                 action: 'hideColumn',
+                order: 40,
                 popover: {
                     trigger: 'hover',
                     placement: 'right-start',
                     options: {
                         items: hideable.map((col: any) => ({
                             text: col.title ?? col.colName,
-                            action: `hideColumn:${col.colName}`,
+                            action: `toggleColumn:${col.colName}`,
+                            group: 'hideableColumns',
+                            groupMode: 'checkbox',
+                            checked: !col.hidden,
                         })),
                     },
                 },
             });
         }
+        if (this.customMenuItems?.length) {
+            for (const item of this.customMenuItems) {
+                items.push({ ...item, order: item.order ?? 50 });
+            }
+        }
+        items.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
         return items;
     }
 
@@ -149,6 +164,18 @@ class HeaderCellComponent extends Component {
         }
     }
 
+    _onGroupableOptionChange(_value: boolean): void {
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
+    }
+
+    _onCustomMenuItemsOptionChange(_value: any): void {
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
+    }
+
     get sortState(): SortState {
         return this._sortState;
     }
@@ -190,7 +217,7 @@ class HeaderCellComponent extends Component {
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable) return;
-        this._resizeStartWidth = this.el.offsetWidth;
+        this._resizeStartWidth = this.el!.offsetWidth;
     }
 
     onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {

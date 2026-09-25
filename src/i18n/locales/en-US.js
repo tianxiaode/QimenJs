@@ -78,6 +78,12 @@ __qimen_i18n_register__('en-US', {
         pageSize: '{size} per page',
         page: 'Page {current}/{total}',
     },
+    table: {
+        sortAsc: 'Sort Ascending',
+        sortDesc: 'Sort Descending',
+        groupBy: 'Group by This Field',
+        hideColumn: 'Hide Columns',
+    },
     error: {
         network: 'Network error, please try again later',
         timeout: 'Request timed out, please try again later',
