@@ -4,6 +4,10 @@ import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import { RowComponent } from './row/RowComponent';
 import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
+import { DictionaryManager } from '@/entity';
+import { createEntityManager } from '@/entity';
+import type { BaseEntityManager } from '@/entity';
+import { ENTITY_LIST_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
@@ -11,8 +15,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
-    _sortCol: string | null = null;
-    _sortDir: 'asc' | 'desc' | null = null;
+    _entity: BaseEntityManager | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -36,6 +39,8 @@ class TableComponent extends ItemGroupPooledComponent {
         this.defaultItemType = 'q-table-row';
         super.onAfterInit();
 
+        this._ensureEntity();
+
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
             const columns = this.getData('columns') || [];
@@ -46,6 +51,29 @@ class TableComponent extends ItemGroupPooledComponent {
 
         this._isAfterInit = true;
         this._reflow();
+    }
+
+    _ensureEntity(): void {
+        if (this._entity) return;
+        const entityConfig = this.getData('entity');
+        if (entityConfig) {
+            if (typeof entityConfig.sort === 'function') {
+                this._entity = entityConfig;
+            } else {
+                this._entity = createEntityManager(entityConfig);
+            }
+        } else {
+            const data = this.getData('data') || [];
+            this._entity = new DictionaryManager({ data });
+        }
+        this._bindEntityEvents();
+    }
+
+    _bindEntityEvents(): void {
+        if (!this._entity) return;
+        this._entity.on(ENTITY_LIST_EVENTS.LISTED, () => {
+            if (this._isAfterInit) this._reflow();
+        });
     }
 
     _bindHeaderEvents(): void {
@@ -59,36 +87,28 @@ class TableComponent extends ItemGroupPooledComponent {
         this._header.on('hideColumn', (data: any) => {
             this.hideColumn(data.colName);
         });
+        this._header.on('showColumn', (data: any) => {
+            this.showColumn(data.colName);
+        });
+        this._header.on('groupBy', (data: any) => {
+            this.emit('groupBy', data);
+        });
     }
 
     _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
-        this._sortCol = direction ? colName : null;
-        this._sortDir = direction;
-
-        const data = this.getData('data') || [];
-        if (direction && data.length > 0) {
-            const sorted = [...data].sort((a: any, b: any) => {
-                const meta = this._columnMetaManager?.get(colName);
-                const field = meta?.field || colName;
-                const av = a[field];
-                const bv = b[field];
-                if (av == null && bv == null) return 0;
-                if (av == null) return direction === 'asc' ? -1 : 1;
-                if (bv == null) return direction === 'asc' ? 1 : -1;
-                if (typeof av === 'number' && typeof bv === 'number') {
-                    return direction === 'asc' ? av - bv : bv - av;
-                }
-                const cmp = String(av).localeCompare(String(bv));
-                return direction === 'asc' ? cmp : -cmp;
-            });
-            this.setData('data', sorted, true);
+        if (this._entity) {
+            const entity = this._entity as any;
+            if (direction) {
+                entity.sort(colName, direction);
+            } else {
+                entity.sort(colName, 'asc');
+                entity.sort(colName, 'asc');
+            }
         }
-
-        this._reflow();
     }
 
     _onColumnResize(colName: string, width: number): void {
-        this.el.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
+        this.el!.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
         if (this._columnMetaManager) {
             const meta = this._columnMetaManager.get(colName);
             if (meta) meta.width = `${width}px`;
@@ -107,14 +127,26 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onDataOptionChange(_data: Record<string, any>[]): void {
+    _onDataOptionChange(data: Record<string, any>[]): void {
+        if (this._entity) {
+            this._entity.setData('data', data);
+        }
         if (this._isAfterInit) {
             this._reflow();
         }
     }
 
+    _onEntityOptionChange(value: any): void {
+        if (!value) return;
+        if (typeof value.sort === 'function') {
+            this._entity = value;
+        } else {
+            this._entity = createEntityManager(value);
+        }
+        this._bindEntityEvents();
+    }
+
     _reflow(): void {
-        const data = this.getData('data') || [];
         const columns = this.getData('columns') || [];
         if (columns.length === 0) return;
 
@@ -128,7 +160,8 @@ class TableComponent extends ItemGroupPooledComponent {
         const metas = this._columnMetaManager.getAll();
         this.defaultItemOption = { columnMetas: metas };
 
-        const items = data.map(rowData => ({ data: rowData }));
+        const data = this._entity?.items ?? this.getData('data') ?? [];
+        const items = data.map((rowData: any) => ({ data: rowData }));
         super.setItems(items);
     }
 
@@ -137,7 +170,7 @@ class TableComponent extends ItemGroupPooledComponent {
         const metas = this._columnMetaManager.getAll();
         for (const meta of metas) {
             if (meta.width) {
-                this.el.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
+                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
             }
         }
     }
@@ -199,13 +232,13 @@ const TableComponentDefs: Definitions = {
     options: {
         columns: null,
         data: null,
+        entity: null,
     },
     fields: {
         _isAfterInit: false,
         _columnMetaManager: null,
         _header: null,
-        _sortCol: null,
-        _sortDir: null,
+        _entity: null,
     },
 } as const;
 

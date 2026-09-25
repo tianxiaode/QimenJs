@@ -1,13 +1,24 @@
 import { BaseEntityManager } from './BaseEntityManager';
-import type { InferAbilities } from '@/composable';
+import type { InferAbilities, Definitions } from '@/composable';
 import { FlatLocalStateAbility } from '../abilities';
-import type { DictionaryManagerConfig } from '../types';
 import { DICTIONARY_MANAGER_ENTITY_TYPE } from '../types';
 import type { IEntity, ILocalSearchParams } from '@/schema';
 import type { RegistrSchema } from '@/schema';
-import { ENTITY_COMMAND_EVENTS as CMD, ENTITY_LIST_EVENTS } from '@/events/entity-events';
+import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
 
 const DICTIONARY_ABILITIES = [FlatLocalStateAbility] as const;
+
+const DictionaryManagerDefs: Definitions = {
+    options: {
+        valueField: 'value',
+        labelField: 'label',
+        idType: 'string',
+        searchFields: [],
+        defaultSort: '',
+        defaultOrder: 'asc',
+        data: [],
+    },
+} as const;
 
 export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
     static entityType: string = DICTIONARY_MANAGER_ENTITY_TYPE;
@@ -40,18 +51,37 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
         isTree: false,
     };
 
-    constructor(config: DictionaryManagerConfig) {
+    constructor(config?: Record<string, any>) {
         super(config);
-        Object.assign(this.schema, {
-            idField: config.valueField ?? 'value',
-            idType: config.idType ?? 'string',
-            nameField: config.labelField ?? 'label',
-            searchFields: config.searchFields ?? [],
-            defaultSort: config.defaultSort ?? '',
-            defaultOrder: config.defaultOrder ?? 'asc',
-        });
+        this.initOptions();
+    }
 
-        this.loadDictionary(config.data);
+    _onValueFieldOptionChange(value: string): void {
+        this.schema.idField = value;
+    }
+
+    _onLabelFieldOptionChange(value: string): void {
+        this.schema.nameField = value;
+    }
+
+    _onIdTypeOptionChange(value: 'number' | 'string'): void {
+        this.schema.idType = value;
+    }
+
+    _onSearchFieldsOptionChange(value: string[]): void {
+        this.schema.searchFields = value;
+    }
+
+    _onDefaultSortOptionChange(value: string): void {
+        this.schema.defaultSort = value;
+    }
+
+    _onDefaultOrderOptionChange(value: 'asc' | 'desc'): void {
+        this.schema.defaultOrder = value;
+    }
+
+    _onDataOptionChange(value: any[]): void {
+        this.loadDictionary(value);
     }
 
     loadDictionary(data: any[]): void {
@@ -68,5 +98,6 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
 }
 
 DictionaryManager.use(DICTIONARY_ABILITIES);
+DictionaryManager.define(DictionaryManagerDefs);
 DictionaryManager.register();
 export interface DictionaryManager extends InferAbilities<typeof DICTIONARY_ABILITIES> {}

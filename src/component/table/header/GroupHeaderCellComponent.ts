@@ -29,7 +29,7 @@ const GroupHeaderCellComponentDefs: Definitions = {
 } as const;
 
 class GroupHeaderCellComponent extends HeaderCellComponent {
-    static type = 'q-header-group-cell';
+    static type = 'group-header-cell';
 
     get tpl(): TemplateDecl {
         return GROUP_HEADER_CELL_TPL;
@@ -100,14 +100,14 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
                     this.emit('menuSelect', data);
                 });
             }
-            this._childCells.push({ component: instance, el: instance.el });
+            this._childCells.push({ component: instance, el: instance.el as HTMLElement });
             container.appendChild(instance.el);
         }
     }
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable || this.childNames.length === 0) return;
-        this._resizeStartWidth = this.el.offsetWidth;
+        this._resizeStartWidth = this.el!.offsetWidth;
     }
 
     onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {

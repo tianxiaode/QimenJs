@@ -45,7 +45,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     static permissions: Record<string, boolean | string> = {};
 
     constructor(config?: Record<string, any>) {
-        super();
+        super(config);
         const ctor = this.constructor as typeof CoreEntityManager;
         if (!ctor.entityType) {
             throw new Error(`${ctor.name} must declare static entityType`);

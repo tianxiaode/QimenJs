@@ -51,8 +51,9 @@ import {
     StatisticComponent,
     TableComponent,
     RowComponent,
-    LeafHeaderCellComponent,
     TableHeaderComponent,
+    HeaderCellComponent,
+    GroupHeaderCellComponent,
 } from '@qimenjs/component';
 ButtonComponent.register();
 ButtonGroupComponent.register();
@@ -94,4 +95,5 @@ StatisticComponent.register();
 TableComponent.register();
 RowComponent.register();
 TableHeaderComponent.register();
-LeafHeaderCellComponent.register();
+HeaderCellComponent.register();
+GroupHeaderCellComponent.register();
