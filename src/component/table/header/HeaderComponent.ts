@@ -1,4 +1,4 @@
-import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import { ItemGroupPooledComponent } from '../../itemgroup/ItemGroupPooledComponent';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
