@@ -47,7 +47,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             type: 'header-cell',
             colName: leaf.name,
             title: leaf.title,
-            align: leaf.align,
+            align: 'center',
             sortable: leaf.sortable ?? false,
             resizable: leaf.resizable ?? true,
             reorderable: leaf.reorderable ?? false,

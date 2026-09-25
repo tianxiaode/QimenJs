@@ -57,8 +57,6 @@ class HeaderCellComponent extends Component {
                 action: 'hideColumn',
                 order: 40,
                 popover: {
-                    trigger: 'hover',
-                    placement: 'right-start',
                     options: {
                         items: hideable.map((col: any) => ({
                             text: col.title ?? col.colName,
@@ -108,23 +106,17 @@ class HeaderCellComponent extends Component {
     }
 
     _onMinWidthOptionChange(_value: number): void {
-        this.setStyles(
-            {
-                width: `var(--q-table-col-${this.colName}-width)`,
-                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
-            },
-            'content'
-        );
+        this.setStyles({
+            width: `var(--q-table-col-${this.colName}-width)`,
+            minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+        });
     }
 
     _onColNameOptionChange(_value: string): void {
-        this.setStyles(
-            {
-                width: `var(--q-table-col-${this.colName}-width)`,
-                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
-            },
-            'content'
-        );
+        this.setStyles({
+            width: `var(--q-table-col-${this.colName}-width)`,
+            minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+        });
     }
 
     _onTitleOptionChange(_value: string): void {

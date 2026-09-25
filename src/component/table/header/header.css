@@ -29,6 +29,7 @@
     padding: 0 8px;
     flex: 1;
     overflow: hidden;
+    min-width: 0;
 }
 
 .q-header-cell__title {
@@ -108,22 +109,17 @@
 }
 
 .q-header-cell__menu-icon {
-    display: inline-block;
     margin: 0 2px;
-    width: 0;
-    height: 0;
-    vertical-align: middle;
-    border-style: solid;
-    border-width: 4px 4px 0 4px;
-    border-color: var(--q-colors-text-secondary, #909399) transparent transparent transparent;
     cursor: pointer;
     flex-shrink: 0;
     padding: 4px 6px;
     box-sizing: content-box;
+    color: var(--q-colors-text-secondary, #909399);
+    --q-arrow-size: 4px;
 }
 
 .q-header-cell__menu-icon:hover {
-    border-color: var(--q-colors-primary, #0078d4) transparent transparent transparent;
+    color: var(--q-colors-primary, #0078d4);
     background: var(--q-color-bg-hover, #f0f0f0);
     border-radius: 2px;
 }
