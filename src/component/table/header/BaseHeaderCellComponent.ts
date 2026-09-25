@@ -13,63 +13,46 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { ColumnAlign } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { BASE_HEADER_CELL_TPL } from './base-header-cell-tpl';
 
 const BaseHeaderCellComponentDefs: Definitions = {
     options: {
         colName: '',
-        align: 'left',
+        align: 'center',
         minWidth: 50,
         title: null,
     },
 } as const;
 
 class BaseHeaderCellComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return BASE_HEADER_CELL_TPL;
     }
 
-    onAfterInit(): void {
-        if (this.title) this.setNodeText(this.title, 'title');
-        this._applyWidth();
-        this._applyAlign();
-    }
-
     _onAlignOptionChange(_value: string): void {
-        this._applyAlign();
-    }
-
-    _applyWidth(): void {
-        if (!this.colName) return;
-        this.setStyles({
-            width: `var(--q-table-col-${this.colName}-width)`,
-            minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
-            flexShrink: '0',
-        });
-    }
-
-    _applyAlign(): void {
         const justifyContent =
-            this.align === 'center'
-                ? 'center'
-                : this.align === 'right'
-                  ? 'flex-end'
-                  : 'flex-start';
+            this.align === 'center' ? 'center' : this.align === 'right' ? 'flex-end' : 'flex-start';
         this.setStyles({ justifyContent }, 'content');
     }
 
-    update(data: any): void {
-        if (data?.title !== undefined) {
-            this.setNodeText(String(data.title), 'title');
-        }
+    _onWidthOptionChange(_value: string): void {
+        this.setStyles(
+            {
+                width: `var(--q-table-col-${this.colName}-width)`,
+                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+                flexShrink: '0',
+            },
+            'content'
+        );
+    }
+
+    _onTitleOptionChange(_value: string): void {
+        this.setStyles({ display: this.title ? 'block' : 'none' }, 'title');
     }
 }
 
 BaseHeaderCellComponent.define(BaseHeaderCellComponentDefs);
 
 export { BaseHeaderCellComponent };
-/** 基础表头单元格实例类型 */
-export type BaseHeaderCellComponentInstance = InstanceType<typeof BaseHeaderCellComponent>;

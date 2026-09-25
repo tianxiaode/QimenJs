@@ -3,6 +3,7 @@
     align-items: center;
     box-sizing: border-box;
     border-bottom: 1px solid var(--q-colors-border, #e0e0e0);
+    background: var(--q-color-bg-secondary, #f5f5f5);
 }
 
 .q-header-cell {
@@ -23,6 +24,7 @@
 .q-header-cell__content {
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 0 8px;
     flex: 1;
     overflow: hidden;
@@ -105,8 +107,8 @@
 }
 
 .q-header-cell__menu-icon {
-    display: inline-block;
-    margin-left: 4px;
+    display: none;
+    margin: 0 2px;
     width: 0;
     height: 0;
     vertical-align: middle;
@@ -115,6 +117,10 @@
     border-color: var(--q-colors-text-secondary, #909399) transparent transparent transparent;
     cursor: pointer;
     flex-shrink: 0;
+}
+
+.q-header-cell:hover .q-header-cell__menu-icon {
+    display: inline-block;
 }
 
 .q-header-cell__menu-icon:hover {

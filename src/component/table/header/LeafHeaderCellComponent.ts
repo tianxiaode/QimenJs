@@ -23,6 +23,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     domEvents = {
         click: [
             { path: 'content', handler: '_onContentClick' },
+            { path: 'menuIcon', handler: '_onMenuIconClick' },
             { path: 'menu', handler: '_onMenuClick' },
         ],
     };
@@ -91,38 +92,38 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
     }
 
-    _onContentClick(e: any): void {
-        const target = e?.target as HTMLElement;
-        const menuIconEl = this.getNodeEl('menuIcon');
-
-        if (menuIconEl === target || menuIconEl?.contains(target)) {
-            this._toggleMenu();
-            return;
-        }
-
+    _onContentClick(_domEvt: any): void {
         if (this._menuOpen) {
             this._closeMenu();
             return;
         }
-
         if (this.sortable) {
             this._onSortClick();
         }
     }
 
-    _onMenuClick(e: any): void {
-        const target = e?.target as HTMLElement;
+    _onMenuIconClick(_domEvt: any): void {
+        this._toggleMenu();
+    }
+
+    _onMenuClick(domEvt: any): void {
+        const targetComponent = domEvt?.targetComponent;
+        if (!targetComponent) {
+            this._closeMenu();
+            return;
+        }
+        const el = targetComponent.el ?? targetComponent;
         const sortAscEl = this.getNodeEl('sortAscItem');
         const sortDescEl = this.getNodeEl('sortDescItem');
         const hideColEl = this.getNodeEl('hideColumnItem');
 
-        if (sortAscEl === target) {
+        if (el === sortAscEl) {
             this.sortState = 'asc';
             this.emit('sortChange', { colName: this.colName, direction: 'asc' });
-        } else if (sortDescEl === target) {
+        } else if (el === sortDescEl) {
             this.sortState = 'desc';
             this.emit('sortChange', { colName: this.colName, direction: 'desc' });
-        } else if (hideColEl === target) {
+        } else if (el === hideColEl) {
             this.emit('hideColumn', { colName: this.colName });
         }
 

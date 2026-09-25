@@ -24,8 +24,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { ColumnAlign } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { BASE_CELL_TPL } from './base-cell-tpl';
 
@@ -34,35 +33,23 @@ const BaseCellComponentDefs: Definitions = {
         align: 'left',
         colName: '',
         fixed: null,
+        value: null,
     },
 } as const;
 
 class BaseCellComponent extends Component {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return BASE_CELL_TPL;
     }
 
-    onAfterInit(): void {
-        this._applyAlign();
-        this._applyFixed();
-    }
-
     _onAlignOptionChange(_value: string): void {
-        this._applyAlign();
-    }
-
-    _onFixedOptionChange(_value: string): void {
-        this._applyFixed();
-    }
-
-    _applyAlign(): void {
         this.setStyles({ textAlign: this.align });
         this.toggleCls('q-cell--left', this.align === 'left');
         this.toggleCls('q-cell--center', this.align === 'center');
         this.toggleCls('q-cell--right', this.align === 'right');
     }
 
-    _applyFixed(): void {
+    _onFixedOptionChange(_value: string): void {
         if (this.fixed === 'left') {
             this.setStyles({ position: 'sticky', left: '0', zIndex: '1' });
         } else if (this.fixed === 'right') {
@@ -72,15 +59,11 @@ class BaseCellComponent extends Component {
         }
     }
 
-    update(data: any): void {
-        if (data?.value !== undefined) {
-            this.setNodeText(String(data.value ?? ''), 'content');
-        }
+    _onValueOptionChange(value: any): void {
+        this.setNodeText(String(value ?? ''), 'content');
     }
 }
 
 BaseCellComponent.define(BaseCellComponentDefs);
 
 export { BaseCellComponent };
-/** 基础单元格实例类型 */
-export type BaseCellComponentInstance = InstanceType<typeof BaseCellComponent>;

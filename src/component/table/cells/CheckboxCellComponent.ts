@@ -13,11 +13,11 @@
 
 import { BaseCellComponent } from './BaseCellComponent';
 import type { CheckboxCellData } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
 
 class CheckboxCellComponent extends BaseCellComponent {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return CHECKBOX_CELL_TPL;
     }
 

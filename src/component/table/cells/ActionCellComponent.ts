@@ -18,11 +18,11 @@
 
 import { BaseCellComponent } from './BaseCellComponent';
 import type { ActionCellData } from '../column-types';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { ACTION_CELL_TPL } from './action-cell-tpl';
 
 class ActionCellComponent extends BaseCellComponent {
-    get tpl(): TplNode {
+    get tpl(): TemplateDecl {
         return ACTION_CELL_TPL;
     }
 
@@ -49,5 +49,3 @@ class ActionCellComponent extends BaseCellComponent {
 }
 
 export { ActionCellComponent };
-/** 操作单元格实例类型 */
-export type ActionCellComponentInstance = InstanceType<typeof ActionCellComponent>;

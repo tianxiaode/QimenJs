@@ -7,8 +7,12 @@
     transition: background 0.1s;
 }
 
+.q-table-row:nth-child(odd) {
+    background: transparent;
+}
+
 .q-table-row:nth-child(even) {
-    background: var(--q-color-bg-stripe, #fafafa);
+    background: var(--q-color-bg-stripe, #f5f5f5);
 }
 
 .q-table-row .q_cell {

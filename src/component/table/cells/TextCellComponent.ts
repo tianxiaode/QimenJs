@@ -22,7 +22,6 @@
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { ColumnFormat, TextCellData } from '../column-types';
 import { Definitions } from '@/composable';
 
 const TextCellComponentDefs: Definitions = {
@@ -32,13 +31,8 @@ const TextCellComponentDefs: Definitions = {
 } as const;
 
 class TextCellComponent extends BaseCellComponent {
-    onAfterInit(): void {
-        super.onAfterInit();
-    }
-
-    update(data: TextCellData): void {
-        const raw = data.value;
-        const display = this._formatValue(raw);
+    _onValueOptionChange(value: any): void {
+        const display = this._formatValue(value);
         this.setNodeText(display, 'content');
     }
 
@@ -73,5 +67,3 @@ class TextCellComponent extends BaseCellComponent {
 TextCellComponent.define(TextCellComponentDefs);
 
 export { TextCellComponent };
-/** 文本单元格实例类型 */
-export type TextCellComponentInstance = InstanceType<typeof TextCellComponent>;
