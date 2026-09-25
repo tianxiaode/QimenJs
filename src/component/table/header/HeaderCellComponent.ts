@@ -18,7 +18,7 @@ const HeaderCellComponentDefs: Definitions = {
         resizable: true,
         reorderable: false,
         menuDisabled: false,
-        menuItems: null,
+        hideableColumns: null,
     },
 } as const;
 
@@ -40,13 +40,28 @@ class HeaderCellComponent extends Component {
     _popoverInitialized: boolean = false;
 
     _buildMenuItems(): any[] {
-        if (this.menuItems) return this.menuItems;
         const items: any[] = [];
         if (this.sortable) {
             items.push({ text: '@table.sortAsc', action: 'sortAsc' });
             items.push({ text: '@table.sortDesc', action: 'sortDesc' });
         }
-        items.push({ text: '@table.hideColumn', action: 'hideColumn' });
+        const hideable = this.hideableColumns;
+        if (hideable?.length) {
+            items.push({
+                text: '@table.hideColumn',
+                action: 'hideColumn',
+                popover: {
+                    trigger: 'hover',
+                    placement: 'right-start',
+                    options: {
+                        items: hideable.map((col: any) => ({
+                            text: col.title ?? col.colName,
+                            action: `hideColumn:${col.colName}`,
+                        })),
+                    },
+                },
+            });
+        }
         return items;
     }
 
@@ -128,7 +143,7 @@ class HeaderCellComponent extends Component {
         }
     }
 
-    _onMenuItemsOptionChange(_value: any): void {
+    _onHideableColumnsOptionChange(_value: any): void {
         if (this._popoverInitialized && !this.menuDisabled) {
             this.updatePopover({ items: this._buildMenuItems() });
         }

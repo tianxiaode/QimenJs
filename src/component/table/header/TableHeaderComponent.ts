@@ -27,6 +27,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
+        const hideableColumns = this._collectHideableColumns();
         if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
             const group = col as ColumnGroupDef;
             const childNames = this._collectLeafNames(group.children);
@@ -38,6 +39,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 action: group.name,
                 childNames,
                 childConfigs,
+                hideableColumns,
             };
         }
         const leaf = col as ColumnDef;
@@ -51,6 +53,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             reorderable: leaf.reorderable ?? false,
             action: leaf.name,
             minWidth: leaf.minWidth ?? 50,
+            hideableColumns,
         };
     }
 
@@ -87,6 +90,20 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             }
         }
         return names;
+    }
+
+    _collectHideableColumns(): Array<{ colName: string; title?: string }> {
+        const columns = this.columns;
+        if (!Array.isArray(columns)) return [];
+        const result: Array<{ colName: string; title?: string }> = [];
+        for (const col of columns) {
+            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+                continue;
+            }
+            const leaf = col as ColumnDef;
+            result.push({ colName: leaf.name, title: leaf.title });
+        }
+        return result;
     }
 
     _createItem(data: Record<string, any>): any {
@@ -137,8 +154,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             this._applySort(colName, 'asc');
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-        } else if (action === 'hideColumn') {
-            this.emit('hideColumn', { colName });
+        } else if (action?.startsWith('hideColumn:')) {
+            this.emit('hideColumn', { colName: action.substring('hideColumn:'.length) });
         }
     }
 
