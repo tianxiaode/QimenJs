@@ -32,6 +32,8 @@ import { BASE_CELL_TPL } from './base-cell-tpl';
 const BaseCellComponentDefs: Definitions = {
     options: {
         align: 'left',
+        colName: '',
+        fixed: null,
     },
 } as const;
 
@@ -42,10 +44,15 @@ class BaseCellComponent extends Component {
 
     onAfterInit(): void {
         this._applyAlign();
+        this._applyFixed();
     }
 
     _onAlignOptionChange(_value: string): void {
         this._applyAlign();
+    }
+
+    _onFixedOptionChange(_value: string): void {
+        this._applyFixed();
     }
 
     _applyAlign(): void {
@@ -53,6 +60,16 @@ class BaseCellComponent extends Component {
         this.toggleCls('q-cell--left', this.align === 'left');
         this.toggleCls('q-cell--center', this.align === 'center');
         this.toggleCls('q-cell--right', this.align === 'right');
+    }
+
+    _applyFixed(): void {
+        if (this.fixed === 'left') {
+            this.setStyles({ position: 'sticky', left: '0', zIndex: '1' });
+        } else if (this.fixed === 'right') {
+            this.setStyles({ position: 'sticky', right: '0', zIndex: '1' });
+        } else {
+            this.setStyles({ position: '', left: '', right: '', zIndex: '' });
+        }
     }
 
     update(data: any): void {

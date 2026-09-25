@@ -1,6 +1,6 @@
 .q-table-row {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     height: var(--q-table-row-height, 36px);
     box-sizing: border-box;
     border-bottom: 1px solid var(--q-colors-border, #e0e0e0);
@@ -11,6 +11,10 @@
     flex-shrink: 0;
     overflow: hidden;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 100%;
 }
 
 .q-table-row:hover {

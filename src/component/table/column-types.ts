@@ -476,6 +476,13 @@ export interface ColumnDef {
     resizable?: boolean;
 
     /**
+     * 是否可拖拽改变列位置 — 默认 false
+     *
+     * 为 true 时表头单元格可拖拽到其他列位置，释放后列顺序交换。
+     */
+    reorderable?: boolean;
+
+    /**
      * 初始隐藏状态 — 默认 false（可见）
      *
      * 隐藏的列不参与行模板编译，不占 DOM。
@@ -582,6 +589,9 @@ export interface ColumnMeta {
 
     /** 是否可调整列宽 */
     resizable: boolean;
+
+    /** 是否可拖拽改变列位置 */
+    reorderable: boolean;
 
     /** 是否可编辑 */
     editable: boolean;

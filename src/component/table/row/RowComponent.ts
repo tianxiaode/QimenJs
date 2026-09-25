@@ -56,7 +56,11 @@ class RowComponent extends Component {
 
     _createCell(meta: ColumnMeta): any {
         const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
-        const options: Record<string, any> = { align: meta.align };
+        const options: Record<string, any> = {
+            align: meta.align,
+            colName: meta.name,
+            fixed: meta.fixed ?? null,
+        };
         if (meta.width) {
             options.width = `var(--q-table-col-${meta.name}-width)`;
             options.minWidth = '0';

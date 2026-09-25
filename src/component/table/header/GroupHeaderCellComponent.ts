@@ -35,6 +35,7 @@ export interface GroupChildConfig {
     align?: ColumnAlign;
     sortable?: boolean;
     resizable?: boolean;
+    reorderable?: boolean;
     minWidth?: number;
     children?: GroupChildConfig[];
 }
@@ -107,6 +108,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
             if (config.type === 'leaf') {
                 childProps.sortable = config.sortable;
                 childProps.resizable = config.resizable;
+                childProps.reorderable = config.reorderable;
             } else if (config.type === 'group' && config.children) {
                 childProps.childNames = config.children.map((c: GroupChildConfig) => c.colName);
                 childProps.childConfigs = config.children;

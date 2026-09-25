@@ -3,7 +3,7 @@ import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { HeaderComponent } from './header/HeaderComponent';
 import { RowComponent } from './row/RowComponent';
-import type { ColumnDefOrGroup } from './column-types';
+import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
@@ -11,6 +11,8 @@ class TableComponent extends ItemGroupPooledComponent {
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: HeaderComponent | null = null;
+    _sortCol: string | null = null;
+    _sortDir: 'asc' | 'desc' | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -39,10 +41,78 @@ class TableComponent extends ItemGroupPooledComponent {
             const columns = this.getData('columns') || [];
             this._header = new HeaderComponent({ columns });
             headerArea.appendChild(this._header.el);
+            this._bindHeaderEvents();
         }
 
         this._isAfterInit = true;
         this._reflow();
+    }
+
+    _bindHeaderEvents(): void {
+        if (!this._header) return;
+        this._header.on('sortChange', (data: any) => {
+            this._onSortChange(data.colName, data.direction);
+        });
+        this._header.on('resize', (data: any) => {
+            this._onColumnResize(data.colName, data.width);
+        });
+        this._header.on('reorder', (data: any) => {
+            this._onColumnReorder(data.from, data.to);
+        });
+    }
+
+    _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
+        this._sortCol = direction ? colName : null;
+        this._sortDir = direction;
+
+        if (this._header) {
+            for (const cell of this._header._headerCells) {
+                if (cell.sortState !== undefined) {
+                    cell.sortState = cell.colName === colName ? (direction || 'none') : 'none';
+                }
+            }
+        }
+
+        const data = this.getData('data') || [];
+        if (direction && data.length > 0) {
+            const sorted = [...data].sort((a: any, b: any) => {
+                const meta = this._columnMetaManager?.get(colName);
+                const field = meta?.field || colName;
+                const av = a[field];
+                const bv = b[field];
+                if (av == null && bv == null) return 0;
+                if (av == null) return direction === 'asc' ? -1 : 1;
+                if (bv == null) return direction === 'asc' ? 1 : -1;
+                if (typeof av === 'number' && typeof bv === 'number') {
+                    return direction === 'asc' ? av - bv : bv - av;
+                }
+                const cmp = String(av).localeCompare(String(bv));
+                return direction === 'asc' ? cmp : -cmp;
+            });
+            this.setData('data', sorted, true);
+        }
+
+        this._reflow();
+    }
+
+    _onColumnResize(colName: string, width: number): void {
+        this.el.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
+        if (this._columnMetaManager) {
+            const meta = this._columnMetaManager.get(colName);
+            if (meta) meta.width = `${width}px`;
+        }
+    }
+
+    _onColumnReorder(fromCol: string, toCol: string): void {
+        const metas = this._columnMetaManager?.getAll() || [];
+        const fromIdx = metas.findIndex((m: ColumnMeta) => m.name === fromCol);
+        const toIdx = metas.findIndex((m: ColumnMeta) => m.name === toCol);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+        const [moved] = metas.splice(fromIdx, 1);
+        metas.splice(toIdx, 0, moved);
+
+        this.moveColumn(fromIdx, toIdx);
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
@@ -61,6 +131,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 headerArea.innerHTML = '';
                 this._header = new HeaderComponent({ columns });
                 headerArea.appendChild(this._header.el);
+                this._bindHeaderEvents();
             }
             this._disposeAllItems();
             this._reflow();
@@ -164,6 +235,8 @@ const TableComponentDefs: Definitions = {
         _isAfterInit: false,
         _columnMetaManager: null,
         _header: null,
+        _sortCol: null,
+        _sortDir: null,
     },
 } as const;
 

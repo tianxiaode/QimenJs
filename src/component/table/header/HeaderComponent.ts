@@ -22,6 +22,21 @@ class HeaderComponent extends Component {
     onAfterInit(): void {
         this.el.style.display = 'flex';
         this._createHeaderCells();
+        this._bindCellEvents();
+    }
+
+    _bindCellEvents(): void {
+        for (const cell of this._headerCells) {
+            cell.on('sortChange', (data: any) => {
+                this.emit('sortChange', data);
+            });
+            cell.on('resize', (data: any) => {
+                this.emit('resize', data);
+            });
+            cell.on('reorder', (data: any) => {
+                this.emit('reorder', data);
+            });
+        }
     }
 
     _createHeaderCells(): void {
@@ -53,6 +68,7 @@ class HeaderComponent extends Component {
             align: def.align,
             sortable: def.sortable ?? false,
             resizable: def.resizable ?? true,
+            reorderable: def.reorderable ?? false,
             minWidth: def.minWidth ?? 50,
         });
     }
@@ -87,6 +103,7 @@ class HeaderComponent extends Component {
             align: leaf.align,
             sortable: leaf.sortable ?? false,
             resizable: leaf.resizable ?? true,
+            reorderable: leaf.reorderable ?? false,
             minWidth: leaf.minWidth ?? 50,
         };
     }
