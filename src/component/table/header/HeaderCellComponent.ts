@@ -52,22 +52,35 @@ class HeaderCellComponent extends Component {
         }
         const hideable = this.hideableColumns;
         if (hideable?.length) {
-            items.push({
-                text: '@table.hideColumn',
-                action: 'hideColumn',
-                order: 40,
-                popover: {
-                    options: {
-                        items: hideable.map((col: any) => ({
-                            text: col.title ?? col.colName,
-                            action: `toggleColumn:${col.colName}`,
-                            group: 'hideableColumns',
-                            groupMode: 'checkbox',
-                            checked: !col.hidden,
-                        })),
+            if (items.length === 0) {
+                for (const col of hideable) {
+                    items.push({
+                        text: col.title ?? col.colName,
+                        action: `toggleColumn:${col.colName}`,
+                        group: 'hideableColumns',
+                        groupMode: 'checkbox',
+                        checked: !col.hidden,
+                        order: 40,
+                    });
+                }
+            } else {
+                items.push({
+                    text: '@table.hideColumn',
+                    action: 'hideColumn',
+                    order: 40,
+                    popover: {
+                        options: {
+                            items: hideable.map((col: any) => ({
+                                text: col.title ?? col.colName,
+                                action: `toggleColumn:${col.colName}`,
+                                group: 'hideableColumns',
+                                groupMode: 'checkbox',
+                                checked: !col.hidden,
+                            })),
+                        },
                     },
-                },
-            });
+                });
+            }
         }
         if (this.customMenuItems?.length) {
             for (const item of this.customMenuItems) {
