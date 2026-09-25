@@ -56,9 +56,6 @@ class TableComponent extends ItemGroupPooledComponent {
         this._header.on('resize', (data: any) => {
             this._onColumnResize(data.colName, data.width);
         });
-        this._header.on('reorder', (data: any) => {
-            this._onColumnReorder(data.from, data.to);
-        });
         this._header.on('hideColumn', (data: any) => {
             this.hideColumn(data.colName);
         });
@@ -67,14 +64,6 @@ class TableComponent extends ItemGroupPooledComponent {
     _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
         this._sortCol = direction ? colName : null;
         this._sortDir = direction;
-
-        if (this._header) {
-            for (const cell of this._header._headerCells) {
-                if (cell.sortState !== undefined) {
-                    cell.sortState = cell.colName === colName ? (direction || 'none') : 'none';
-                }
-            }
-        }
 
         const data = this.getData('data') || [];
         if (direction && data.length > 0) {
@@ -106,18 +95,6 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onColumnReorder(fromCol: string, toCol: string): void {
-        const metas = this._columnMetaManager?.getAll() || [];
-        const fromIdx = metas.findIndex((m: ColumnMeta) => m.name === fromCol);
-        const toIdx = metas.findIndex((m: ColumnMeta) => m.name === toCol);
-        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
-
-        const [moved] = metas.splice(fromIdx, 1);
-        metas.splice(toIdx, 0, moved);
-
-        this.moveColumn(fromIdx, toIdx);
-    }
-
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
         if (!this._columnMetaManager) {
             this._columnMetaManager = new ColumnMetaManager();
@@ -125,17 +102,6 @@ class TableComponent extends ItemGroupPooledComponent {
         this._columnMetaManager.compile(columns);
         this._applyColumnWidths();
         if (this._isAfterInit) {
-            if (this._header) {
-                this._header.dispose();
-                this._header = null;
-            }
-            const headerArea = this.getNodeEl('headerArea');
-            if (headerArea) {
-                headerArea.innerHTML = '';
-                this._header = new HeaderComponent({ columns });
-                headerArea.appendChild(this._header.el);
-                this._bindHeaderEvents();
-            }
             this._disposeAllItems();
             this._reflow();
         }

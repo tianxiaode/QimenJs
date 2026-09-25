@@ -23,6 +23,7 @@ const BaseHeaderCellComponentDefs: Definitions = {
         align: 'center',
         minWidth: 50,
         title: null,
+        action: null,
     },
 } as const;
 

@@ -20,14 +20,6 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         return LEAF_HEADER_CELL_TPL;
     }
 
-    domEvents = {
-        click: [
-            { path: 'content', handler: '_onContentClick' },
-            { path: 'menuIcon', handler: '_onMenuIconClick' },
-            { path: 'menu', handler: '_onMenuClick' },
-        ],
-    };
-
     drag?: boolean | DragOptions = {
         axis: 'x',
         activeClass: 'q-header-cell__resize--active',
@@ -92,44 +84,6 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
     }
 
-    _onContentClick(_domEvt: any): void {
-        if (this._menuOpen) {
-            this._closeMenu();
-            return;
-        }
-        if (this.sortable) {
-            this._onSortClick();
-        }
-    }
-
-    _onMenuIconClick(_domEvt: any): void {
-        this._toggleMenu();
-    }
-
-    _onMenuClick(domEvt: any): void {
-        const targetComponent = domEvt?.targetComponent;
-        if (!targetComponent) {
-            this._closeMenu();
-            return;
-        }
-        const el = targetComponent.el ?? targetComponent;
-        const sortAscEl = this.getNodeEl('sortAscItem');
-        const sortDescEl = this.getNodeEl('sortDescItem');
-        const hideColEl = this.getNodeEl('hideColumnItem');
-
-        if (el === sortAscEl) {
-            this.sortState = 'asc';
-            this.emit('sortChange', { colName: this.colName, direction: 'asc' });
-        } else if (el === sortDescEl) {
-            this.sortState = 'desc';
-            this.emit('sortChange', { colName: this.colName, direction: 'desc' });
-        } else if (el === hideColEl) {
-            this.emit('hideColumn', { colName: this.colName });
-        }
-
-        this._closeMenu();
-    }
-
     _toggleMenu(): void {
         if (this._menuOpen) this._closeMenu();
         else this._openMenu();
@@ -143,18 +97,6 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     _closeMenu(): void {
         this._menuOpen = false;
         this.removeCls('q-header-cell--menu-open');
-    }
-
-    _onSortClick(): void {
-        if (!this.sortable) return;
-        const next: SortState =
-            this._sortState === 'none' ? 'asc' : this._sortState === 'asc' ? 'desc' : 'none';
-        this.sortState = next;
-
-        this.emit('sortChange', {
-            colName: this.colName,
-            direction: next === 'none' ? null : next,
-        });
     }
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
@@ -184,6 +126,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 }
 
 LeafHeaderCellComponent.define(LeafHeaderCellComponentDefs);
+LeafHeaderCellComponent.register();
 
 export { LeafHeaderCellComponent };
 export type LeafHeaderCellComponentInstance = InstanceType<typeof LeafHeaderCellComponent>;

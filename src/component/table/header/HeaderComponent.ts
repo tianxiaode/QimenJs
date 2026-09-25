@@ -1,95 +1,67 @@
-import { Component } from '../../../component-core/Component';
+import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
 import { GroupHeaderCellComponent } from './GroupHeaderCellComponent';
+import type { DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
 
-class HeaderComponent extends Component {
+class HeaderComponent extends ItemGroupPooledComponent {
     static type = 'q-table-header';
+    defaultItemType = 'q-header-leaf-cell';
 
-    _headerCells: any[] = [];
-
-    get tpl(): any {
+    get tpl(): TemplateDecl {
         return {
             tag: 'div',
-            name: 'root',
             classes: 'q-table-header',
+            children: [
+                { tag: 'div', name: 'itemContainer', classes: 'q-table-header__cells' },
+            ],
         };
     }
 
-    onAfterInit(): void {
-        this.el.style.display = 'flex';
-        this._createHeaderCells();
-        this._bindCellEvents();
+    domEvents: DomEventsMap = {
+        click: [
+            { path: '[items]', handler: '_onHeaderCellClick' },
+        ],
+    };
+
+    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+        const items = columns.map(col => this._buildItemData(col));
+        this.setItems(items);
     }
 
-    _bindCellEvents(): void {
-        for (const cell of this._headerCells) {
-            cell.on('sortChange', (data: any) => {
-                this.emit('sortChange', data);
-            });
-            cell.on('resize', (data: any) => {
-                this.emit('resize', data);
-            });
-            cell.on('reorder', (data: any) => {
-                this.emit('reorder', data);
-            });
-            cell.on('hideColumn', (data: any) => {
-                this.emit('hideColumn', data);
-            });
+    _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
+        if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+            const group = col as ColumnGroupDef;
+            const childNames = this._collectLeafNames(group.children);
+            const childConfigs = group.children.map(child => this._buildChildConfig(child));
+            return {
+                type: 'q-header-group-cell',
+                colName: group.name,
+                title: group.title,
+                action: group.name,
+                childNames,
+                childConfigs,
+            };
         }
-    }
-
-    _createHeaderCells(): void {
-        const columns: ColumnDefOrGroup[] = this.getData('columns') || [];
-        if (columns.length === 0) return;
-
-        for (let i = 0; i < columns.length; i++) {
-            const col = columns[i];
-            const cell = this._createHeaderCell(col);
-            if (cell) {
-                this.el.appendChild(cell.el);
-                cell.el.style.order = String((i + 1) * 10);
-                this._headerCells.push(cell);
-            }
-        }
-    }
-
-    _createHeaderCell(col: ColumnDefOrGroup): any {
-        if (this._isGroup(col)) {
-            return this._createGroupCell(col as ColumnGroupDef);
-        }
-        return this._createLeafCell(col as ColumnDef);
-    }
-
-    _createLeafCell(def: ColumnDef): any {
-        return new LeafHeaderCellComponent({
-            colName: def.name,
-            title: def.title,
-            align: def.align,
-            sortable: def.sortable ?? false,
-            resizable: def.resizable ?? true,
-            reorderable: def.reorderable ?? false,
-            minWidth: def.minWidth ?? 50,
-        });
-    }
-
-    _createGroupCell(def: ColumnGroupDef): any {
-        const childNames = this._collectLeafNames(def.children);
-        const childConfigs = def.children.map(child => this._buildChildConfig(child));
-
-        return new GroupHeaderCellComponent({
-            colName: def.name,
-            title: def.title,
-            childNames,
-            childConfigs,
-        });
+        const leaf = col as ColumnDef;
+        return {
+            type: 'q-header-leaf-cell',
+            colName: leaf.name,
+            title: leaf.title,
+            align: leaf.align,
+            sortable: leaf.sortable ?? false,
+            resizable: leaf.resizable ?? true,
+            reorderable: leaf.reorderable ?? false,
+            action: leaf.name,
+            minWidth: leaf.minWidth ?? 50,
+        };
     }
 
     _buildChildConfig(col: ColumnDefOrGroup): GroupChildConfig {
-        if (this._isGroup(col)) {
+        if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
             const group = col as ColumnGroupDef;
             return {
                 type: 'group',
@@ -114,7 +86,7 @@ class HeaderComponent extends Component {
     _collectLeafNames(columns: ColumnDefOrGroup[]): string[] {
         const names: string[] = [];
         for (const col of columns) {
-            if (this._isGroup(col)) {
+            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
                 names.push(...this._collectLeafNames((col as ColumnGroupDef).children));
             } else {
                 names.push((col as ColumnDef).name);
@@ -123,38 +95,114 @@ class HeaderComponent extends Component {
         return names;
     }
 
-    _isGroup(col: ColumnDefOrGroup): col is ColumnGroupDef {
-        return 'children' in col && Array.isArray((col as ColumnGroupDef).children);
+    _createItem(data: Record<string, any>): any {
+        const item = super._createItem(data);
+        if (item && typeof item.on === 'function') {
+            item.on('resize', (resizeData: any) => {
+                this.emit('resize', resizeData);
+            });
+        }
+        return item;
+    }
+
+    _onHeaderCellClick(domEvt: any): void {
+        const target = domEvt?.targetComponent;
+        if (!target) return;
+        const colName = target.action || target.colName;
+
+        const originalEvent = domEvt?.data?.originalEvent;
+        const clickTarget = originalEvent?.target as HTMLElement;
+
+        const menuEl = target.getNodeEl?.('menu');
+        if (menuEl && menuEl.contains(clickTarget)) {
+            this._onMenuItemClick(target, clickTarget, colName);
+            return;
+        }
+
+        const menuIconEl = target.getNodeEl?.('menuIcon');
+        if (menuIconEl && (menuIconEl === clickTarget || menuIconEl.contains(clickTarget))) {
+            target._toggleMenu?.();
+            return;
+        }
+
+        const resizeHandleEl = target.getNodeEl?.('resizeHandle');
+        if (resizeHandleEl && (resizeHandleEl === clickTarget || resizeHandleEl.contains(clickTarget))) {
+            return;
+        }
+
+        if (target.sortable) {
+            const currentState = target.sortState || 'none';
+            const nextState = currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
+            this._applySort(colName, nextState);
+        }
+    }
+
+    _onMenuItemClick(cell: any, clickTarget: HTMLElement, colName: string): void {
+        const sortAscEl = cell.getNodeEl?.('sortAscItem');
+        const sortDescEl = cell.getNodeEl?.('sortDescItem');
+        const hideColEl = cell.getNodeEl?.('hideColumnItem');
+
+        if (sortAscEl?.contains(clickTarget)) {
+            this._applySort(colName, 'asc');
+        } else if (sortDescEl?.contains(clickTarget)) {
+            this._applySort(colName, 'desc');
+        } else if (hideColEl?.contains(clickTarget)) {
+            this.emit('hideColumn', { colName });
+        }
+        cell._closeMenu?.();
+    }
+
+    _applySort(colName: string, direction: 'asc' | 'desc' | 'none'): void {
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (item.sortState !== undefined) {
+                    item.sortState = item.action === colName ? direction : 'none';
+                }
+            }
+        }
+        this.emit('sortChange', {
+            colName,
+            direction: direction === 'none' ? null : direction,
+        });
     }
 
     hideColumn(name: string): void {
-        for (const cell of this._headerCells) {
-            if (cell.colName === name) {
-                cell.el.style.display = 'none';
-                break;
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (item.action === name || item.colName === name) {
+                    item.el.style.display = 'none';
+                    break;
+                }
             }
         }
     }
 
     showColumn(name: string): void {
-        for (const cell of this._headerCells) {
-            if (cell.colName === name) {
-                cell.el.style.display = '';
-                break;
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (item.action === name || item.colName === name) {
+                    item.el.style.display = '';
+                    break;
+                }
             }
         }
     }
 
     moveColumn(from: number, to: number): void {
         if (from === to || from < 0 || to < 0) return;
-        if (from >= this._headerCells.length || to >= this._headerCells.length) return;
-        const fromCell = this._headerCells[from];
-        const toCell = this._headerCells[to];
-        if (fromCell && toCell) {
-            const fromOrder = fromCell.el.style.order;
-            const toOrder = toCell.el.style.order;
-            fromCell.el.style.order = toOrder;
-            toCell.el.style.order = fromOrder;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        if (from >= items.length || to >= items.length) return;
+        const fromItem = items[from];
+        const toItem = items[to];
+        if (fromItem?.el && toItem?.el) {
+            const fromOrder = fromItem.el.style.order;
+            const toOrder = toItem.el.style.order;
+            fromItem.el.style.order = toOrder;
+            toItem.el.style.order = fromOrder;
         }
     }
 }
@@ -162,9 +210,7 @@ class HeaderComponent extends Component {
 const HeaderComponentDefs: Definitions = {
     options: {
         columns: null,
-    },
-    fields: {
-        _headerCells: [],
+        direction: 'horizontal',
     },
 } as const;
 

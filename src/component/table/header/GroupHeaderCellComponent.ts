@@ -155,6 +155,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
 }
 
 GroupHeaderCellComponent.define(GroupHeaderCellComponentDefs);
+GroupHeaderCellComponent.register();
 
 export { GroupHeaderCellComponent };
 /** 分组表头单元格实例类型 */
