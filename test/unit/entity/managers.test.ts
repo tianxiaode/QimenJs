@@ -154,7 +154,9 @@ jest.mock('@/schema', () => ({
 jest.mock('@/composable', () => {
     class ComposableBase {
         static use() {}
+        static define() {}
         logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        initOptions() {}
         _getCompiledSchema() {
             return { schema: { name: 'TestEntity', idField: 'id', fields: [] } };
         }

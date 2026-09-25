@@ -1,4 +1,11 @@
 import { DictionaryManager } from './DictionaryManager';
+import {
+    LocalReadonlyEntityManager,
+    LocalCrudEntityManager,
+    RemoteReadonlyEntityManager,
+    RemoteCrudEntityManager,
+    RemoteTreeEntityManager,
+} from './managers';
 import type { BaseEntityManager } from './BaseEntityManager';
 
 export type EntityManagerType =
@@ -16,6 +23,11 @@ export interface EntityManagerConfig {
 
 const ENTITY_MANAGER_REGISTRY: Partial<Record<EntityManagerType, any>> = {
     dictionary: DictionaryManager,
+    'local-readonly': LocalReadonlyEntityManager,
+    'local-crud': LocalCrudEntityManager,
+    'remote-readonly': RemoteReadonlyEntityManager,
+    'remote-crud': RemoteCrudEntityManager,
+    'remote-tree': RemoteTreeEntityManager,
 };
 
 export function createEntityManager(config: EntityManagerConfig): BaseEntityManager {

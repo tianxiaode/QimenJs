@@ -1,6 +1,6 @@
 import { BaseEntityManager } from './BaseEntityManager';
-import type { InferAbilities } from '@/composable';
-import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, IEntity } from '@/schema';
+import type { InferAbilities, Definitions } from '@/composable';
+import type { ILocalSearchParams, IFlatSearchParams, ITreeSearchParams, IEntity, RegistrSchema } from '@/schema';
 import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
 import {
     FlatLocalStateAbility,
@@ -36,15 +36,35 @@ const LOCAL_READONLY_ABILITIES = [
     LocalGetAbility,
 ] as const;
 
-export abstract class LocalReadonlyEntityManager<
+const LocalReadonlyDefs: Definitions = {
+    options: {
+        schema: null,
+        url: '',
+        data: [],
+    },
+} as const;
+
+export class LocalReadonlyEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
 > extends BaseEntityManager {
+    static entityType: string = 'local-readonly';
+
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
     search: TSearch = {} as TSearch;
+
+    url: string = '';
+    schema: RegistrSchema = {
+        name: '',
+        idField: 'id',
+        idType: 'string',
+        nameField: 'name',
+        domain: 'local',
+        isTree: false,
+    };
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
@@ -53,10 +73,37 @@ export abstract class LocalReadonlyEntityManager<
         [CMD.SORT]: 'sort',
         [CMD.GET]: 'get',
     };
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.initOptions();
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
+
+    _onDataOptionChange(value: IEntity[]): void {
+        if (!Array.isArray(value)) return;
+        const idField = this.schema.idField || 'id';
+        this.sourceData.clear();
+        for (const item of value) {
+            const id = item[idField];
+            if (id !== undefined && id !== null) {
+                this.sourceData.set(id, item);
+            }
+        }
+        this.refreshView();
+    }
 }
 
 LocalReadonlyEntityManager.use(LOCAL_READONLY_ABILITIES);
-
+LocalReadonlyEntityManager.define(LocalReadonlyDefs);
+LocalReadonlyEntityManager.register();
 export interface LocalReadonlyEntityManager extends InferAbilities<
     typeof LOCAL_READONLY_ABILITIES
 > {}
@@ -73,15 +120,35 @@ const LOCAL_CRUD_ABILITIES = [
     FlatLocalDeleteAbility,
 ] as const;
 
-export abstract class LocalCrudEntityManager<
+const LocalCrudDefs: Definitions = {
+    options: {
+        schema: null,
+        url: '',
+        data: [],
+    },
+} as const;
+
+export class LocalCrudEntityManager<
     TSearch extends ILocalSearchParams = ILocalSearchParams,
 > extends BaseEntityManager {
+    static entityType: string = 'local-crud';
+
     isRemote: boolean = false;
     sourceData = new Map<string | number, IEntity>();
     loading: boolean = false;
     items: IEntity[] = [];
     item: IEntity | null = null;
     search: TSearch = {} as TSearch;
+
+    url: string = '';
+    schema: RegistrSchema = {
+        name: '',
+        idField: 'id',
+        idType: 'string',
+        nameField: 'name',
+        domain: 'local',
+        isTree: false,
+    };
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
@@ -95,10 +162,37 @@ export abstract class LocalCrudEntityManager<
         [CMD.SAVE]: 'save',
         [CMD.DELETE]: 'delete',
     };
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.initOptions();
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
+
+    _onDataOptionChange(value: IEntity[]): void {
+        if (!Array.isArray(value)) return;
+        const idField = this.schema.idField || 'id';
+        this.sourceData.clear();
+        for (const item of value) {
+            const id = item[idField];
+            if (id !== undefined && id !== null) {
+                this.sourceData.set(id, item);
+            }
+        }
+        this.refreshView();
+    }
 }
 
 LocalCrudEntityManager.use(LOCAL_CRUD_ABILITIES);
-
+LocalCrudEntityManager.define(LocalCrudDefs);
+LocalCrudEntityManager.register();
 export interface LocalCrudEntityManager extends InferAbilities<typeof LOCAL_CRUD_ABILITIES> {}
 
 // ============================================
@@ -118,9 +212,19 @@ const REMOTE_READONLY_ABILITIES = [
     RemotePagingAbility,
 ] as const;
 
-export abstract class RemoteReadonlyEntityManager<
+const RemoteReadonlyDefs: Definitions = {
+    options: {
+        schema: null,
+        url: '',
+        pageSize: 20,
+    },
+} as const;
+
+export class RemoteReadonlyEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
 > extends BaseEntityManager {
+    static entityType: string = 'remote-readonly';
+
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -130,6 +234,16 @@ export abstract class RemoteReadonlyEntityManager<
     page: number = 1;
     pages: number = 0;
     hasMore: boolean = false;
+
+    url: string = '';
+    schema: RegistrSchema = {
+        name: '',
+        idField: 'id',
+        idType: 'number',
+        nameField: 'name',
+        domain: 'remote',
+        isTree: false,
+    };
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
@@ -149,10 +263,28 @@ export abstract class RemoteReadonlyEntityManager<
         [CMD.CANCEL_EDIT]: 'cancelEdit',
         [CMD.ROLLBACK_ALL]: 'rollbackAll',
     };
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.initOptions();
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
+
+    _onPageSizeOptionChange(value: number): void {
+        this.pageSize = value;
+    }
 }
 
 RemoteReadonlyEntityManager.use(REMOTE_READONLY_ABILITIES);
-
+RemoteReadonlyEntityManager.define(RemoteReadonlyDefs);
+RemoteReadonlyEntityManager.register();
 export interface RemoteReadonlyEntityManager extends InferAbilities<
     typeof REMOTE_READONLY_ABILITIES
 > {}
@@ -178,9 +310,19 @@ const REMOTE_CRUD_ABILITIES = [
     RemoteToggleAbility,
 ] as const;
 
-export abstract class RemoteCrudEntityManager<
+const RemoteCrudDefs: Definitions = {
+    options: {
+        schema: null,
+        url: '',
+        pageSize: 20,
+    },
+} as const;
+
+export class RemoteCrudEntityManager<
     TSearch extends IFlatSearchParams = IFlatSearchParams,
 > extends BaseEntityManager {
+    static entityType: string = 'remote-crud';
+
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -190,6 +332,16 @@ export abstract class RemoteCrudEntityManager<
     page: number = 1;
     pages: number = 0;
     hasMore: boolean = false;
+
+    url: string = '';
+    schema: RegistrSchema = {
+        name: '',
+        idField: 'id',
+        idType: 'number',
+        nameField: 'name',
+        domain: 'remote',
+        isTree: false,
+    };
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
@@ -213,10 +365,28 @@ export abstract class RemoteCrudEntityManager<
         [CMD.CANCEL_EDIT]: 'cancelEdit',
         [CMD.ROLLBACK_ALL]: 'rollbackAll',
     };
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.initOptions();
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
+
+    _onPageSizeOptionChange(value: number): void {
+        this.pageSize = value;
+    }
 }
 
 RemoteCrudEntityManager.use(REMOTE_CRUD_ABILITIES);
-
+RemoteCrudEntityManager.define(RemoteCrudDefs);
+RemoteCrudEntityManager.register();
 export interface RemoteCrudEntityManager extends InferAbilities<typeof REMOTE_CRUD_ABILITIES> {}
 
 // ============================================
@@ -237,9 +407,18 @@ const REMOTE_TREE_ABILITIES = [
     RemoteDeleteAbility,
 ] as const;
 
-export abstract class RemoteTreeEntityManager<
+const RemoteTreeDefs: Definitions = {
+    options: {
+        schema: null,
+        url: '',
+    },
+} as const;
+
+export class RemoteTreeEntityManager<
     TSearch extends ITreeSearchParams = ITreeSearchParams,
 > extends BaseEntityManager {
+    static entityType: string = 'remote-tree';
+
     isRemote: boolean = true;
     loading: boolean = false;
     items: IEntity[] = [];
@@ -247,6 +426,18 @@ export abstract class RemoteTreeEntityManager<
     search: TSearch = {} as ITreeSearchParams as TSearch;
     total: number = 0;
     expandedIds: Set<string | number> = new Set();
+
+    url: string = '';
+    schema: RegistrSchema = {
+        name: '',
+        idField: 'id',
+        idType: 'number',
+        nameField: 'name',
+        domain: 'remote',
+        isTree: true,
+        isLazy: false,
+        root: null,
+    };
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
@@ -266,8 +457,22 @@ export abstract class RemoteTreeEntityManager<
         [CMD.CANCEL_EDIT]: 'cancelEdit',
         [CMD.ROLLBACK_ALL]: 'rollbackAll',
     };
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.initOptions();
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
 }
 
 RemoteTreeEntityManager.use(REMOTE_TREE_ABILITIES);
-
+RemoteTreeEntityManager.define(RemoteTreeDefs);
+RemoteTreeEntityManager.register();
 export interface RemoteTreeEntityManager extends InferAbilities<typeof REMOTE_TREE_ABILITIES> {}
