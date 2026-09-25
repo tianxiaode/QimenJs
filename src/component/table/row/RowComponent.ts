@@ -31,15 +31,15 @@ class RowComponent extends Component {
     onAfterInit(): void {
         this.el.style.display = 'flex';
         this._createCells();
-        this._applyWidths();
 
+        const cells = Array.from(this._cells.values());
         const data = this.getData('data');
-        if (data) {
-            const cells = Array.from(this._cells.values());
-            Promise.all(cells.map((c: any) => c.ready)).then(() => {
+        Promise.all(cells.map((c: any) => c.ready)).then(() => {
+            this._applyWidths();
+            if (data) {
                 this._doUpdate(data);
-            });
-        }
+            }
+        });
     }
 
     _createCells(): void {
