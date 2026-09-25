@@ -6,13 +6,6 @@
 
 // 浮层与模板
 
-// 孤儿组件注册触发（无自然 import 链，显式 import 触发底部 register/useTemplate 副作用）
-import './text/TextComponent';
-import './text/HrefComponent';
-import './date/DayGridComponent';
-import './table/header/BaseHeaderCellComponent';
-import './table/cells/BaseCellComponent';
-
 // 基础组件
 export { IconComponent } from './icon/IconComponent';
 export { AvatarComponent } from './avatar/AvatarComponent';
@@ -115,3 +108,4 @@ export { NavbarComponent } from './navbar/NavbarComponent';
 
 // Href 超链接文本组件（<a> 封装，navigate 事件 + router 转发）
 export * from './text';
+export * from './table';

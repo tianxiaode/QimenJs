@@ -1,0 +1,1 @@
+export { TableSummaryRowComponent } from './TableSummaryRowComponent';
