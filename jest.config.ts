@@ -21,6 +21,7 @@ const config: Config = {
         },
     },
     moduleNameMapper: {
+        '\\.(css|less|scss)$': '<rootDir>/test/css-stub.js',
         '^@test/(.*)$': '<rootDir>/test/$1',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@qimenjs/async$': '<rootDir>/src/async',

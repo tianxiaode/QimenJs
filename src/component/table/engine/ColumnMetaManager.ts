@@ -10,8 +10,7 @@
  * - getEditable/getGroupable/getSummarizable: 懒缓存筛选
  * - dispose: 清理
  *
- * TableEngine 统一接收 ColumnMetaManager，按需取用列信息：
- *   TableEngine.compile(mgr)
+ * TableComponent 接收 ColumnMetaManager，按需取用列信息。
  */
 
 import type {
