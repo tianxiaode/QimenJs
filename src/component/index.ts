@@ -61,8 +61,7 @@ export { ItemGroupPooledComponent } from './itemgroup/ItemGroupPooledComponent';
 export { ItemGroupStaticComponent } from './itemgroup/ItemGroupStaticComponent';
 
 // 表格组件
-export { TableComponent } from './table/TableComponent';
-export type { ColumnDef, ColumnDefOrGroup, ColumnMeta } from './table/column-types';
+export * from './table';
 
 // 工具栏组件
 export { ToolbarComponent } from './toolbar/ToolbarComponent';
@@ -108,4 +107,3 @@ export { NavbarComponent } from './navbar/NavbarComponent';
 
 // Href 超链接文本组件（<a> 封装，navigate 事件 + router 转发）
 export * from './text';
-export * from './table';

@@ -1,23 +1,30 @@
-import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
+import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl, DragOptions } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { LEAF_HEADER_CELL_TPL } from './leaf-header-cell-tpl';
+import { HEADER_CELL_TPL } from './header-cell-tpl';
 
 type SortState = 'none' | 'asc' | 'desc';
 
 const SORT_CLS_PREFIX = 'q-header-cell__sort--';
 
-const LeafHeaderCellComponentDefs: Definitions = {
+const HeaderCellComponentDefs: Definitions = {
     options: {
+        colName: '',
+        align: 'center',
+        minWidth: 50,
+        title: null,
+        action: null,
         sortable: false,
         resizable: true,
         reorderable: false,
     },
 } as const;
 
-class LeafHeaderCellComponent extends BaseHeaderCellComponent {
+class HeaderCellComponent extends Component {
+    static type = 'q-header-cell';
+
     get tpl(): TemplateDecl {
-        return LEAF_HEADER_CELL_TPL;
+        return HEADER_CELL_TPL;
     }
 
     drag?: boolean | DragOptions = {
@@ -31,10 +38,24 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     _menuOpen: boolean = false;
 
     onAfterInit(): void {
-        super.onAfterInit();
+        this._applyAlign();
+        this._applyWidth();
+        this._applyTitle();
         this._applySortIcon();
         this._applyResizable();
         this._initMenu();
+    }
+
+    _onAlignOptionChange(_value: string): void( {
+        this._applyAlign();
+    }
+
+    _onMinWidthOptionChange(_value: number): void {
+        this._applyWidth();
+    }
+
+    _onTitleOptionChange(_value: string): void {
+        this._applyTitle();
     }
 
     _onSortableOptionChange(_value: boolean): void {
@@ -52,6 +73,32 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     set sortState(v: SortState) {
         this._sortState = v;
         this._applySortIcon();
+    }
+
+    _applyAlign(): void {
+        const justifyContent =
+            this.align === 'center' ? 'center' : this.align === 'right' ? 'flex-end' : 'flex-start';
+        this.setStyles({ justifyContent }, 'content');
+    }
+
+    _applyWidth(): void {
+        this.setStyles(
+            {
+                width: `var(--q-table-col-${this.colName}-width)`,
+                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+                flexShrink: '0',
+            },
+            'content'
+        );
+    }
+
+    _applyTitle(): void {
+        if (this.title) {
+            this.setNodeText(String(this.title), 'title');
+            this.setStyles({ display: '' }, 'title');
+        } else {
+            this.setStyles({ display: 'none' }, 'title');
+        }
     }
 
     _applySortIcon(): void {
@@ -117,7 +164,7 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeText(String(data.title), 'title');
+            this.setData('title', data.title);
         }
         if (data?.sortState !== undefined) {
             this.sortState = data.sortState;
@@ -125,8 +172,8 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     }
 }
 
-LeafHeaderCellComponent.define(LeafHeaderCellComponentDefs);
-LeafHeaderCellComponent.register();
+HeaderCellComponent.define(HeaderCellComponentDefs);
+HeaderCellComponent.register();
 
-export { LeafHeaderCellComponent };
-export type LeafHeaderCellComponentInstance = InstanceType<typeof LeafHeaderCellComponent>;
+export { HeaderCellComponent };
+export type HeaderCellComponentInstance = InstanceType<typeof HeaderCellComponent>;

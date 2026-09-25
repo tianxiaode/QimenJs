@@ -1,30 +1,24 @@
 import { ItemGroupPooledComponent } from '../../itemgroup/ItemGroupPooledComponent';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
-import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
-import { GroupHeaderCellComponent } from './GroupHeaderCellComponent';
 import type { DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
 
-class HeaderComponent extends ItemGroupPooledComponent {
-    static type = 'q-table-header';
-    defaultItemType = 'q-header-leaf-cell';
+class TableHeaderComponent extends ItemGroupPooledComponent {
+    static type = 'table-header';
+    defaultItemType = 'q-header-cell';
 
     get tpl(): TemplateDecl {
         return {
             tag: 'div',
             classes: 'q-table-header',
-            children: [
-                { tag: 'div', name: 'itemContainer', classes: 'q-table-header__cells' },
-            ],
+            children: [{ tag: 'div', name: 'itemContainer', classes: 'q-table-header__cells' }],
         };
     }
 
     domEvents: DomEventsMap = {
-        click: [
-            { path: '[items]', handler: '_onHeaderCellClick' },
-        ],
+        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
     };
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
@@ -48,7 +42,7 @@ class HeaderComponent extends ItemGroupPooledComponent {
         }
         const leaf = col as ColumnDef;
         return {
-            type: 'q-header-leaf-cell',
+            type: 'q-header-cell',
             colName: leaf.name,
             title: leaf.title,
             align: leaf.align,
@@ -126,13 +120,17 @@ class HeaderComponent extends ItemGroupPooledComponent {
         }
 
         const resizeHandleEl = target.getNodeEl?.('resizeHandle');
-        if (resizeHandleEl && (resizeHandleEl === clickTarget || resizeHandleEl.contains(clickTarget))) {
+        if (
+            resizeHandleEl &&
+            (resizeHandleEl === clickTarget || resizeHandleEl.contains(clickTarget))
+        ) {
             return;
         }
 
         if (target.sortable) {
             const currentState = target.sortState || 'none';
-            const nextState = currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
+            const nextState =
+                currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this._applySort(colName, nextState);
         }
     }
@@ -207,13 +205,13 @@ class HeaderComponent extends ItemGroupPooledComponent {
     }
 }
 
-const HeaderComponentDefs: Definitions = {
+const TableHeaderComponentDefs: Definitions = {
     options: {
         columns: null,
         direction: 'horizontal',
     },
 } as const;
 
-HeaderComponent.define(HeaderComponentDefs);
+TableHeaderComponent.define(TableHeaderComponentDefs);
 
-export { HeaderComponent };
+export { TableHeaderComponent };

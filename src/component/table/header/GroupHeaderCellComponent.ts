@@ -1,33 +1,10 @@
-/**
- * GroupHeaderCellComponent 分组表头单元格组件
- *
- * 多表头的分组容器，递归嵌套：
- * - 顶部全宽标题
- * - 底部 children 容器（flex row），放子 HeaderCell（leaf 或 group）
- * - 右边缘 resize 手柄，拖拽时代理到最右子列
- * - 宽度 = calc(子列 CSS 变量之和)
- * - 无排序
- *
- * @example
- * ```ts
- * const groupCell = new GroupHeaderCellComponent({
- *     colName: 'baseInfo',
- *     title: '基本信息',
- *     childNames: ['name', 'age', 'dept'],
- *     childConfigs: [...],
- * });
- * ```
- */
-
-import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
+import { HeaderCellComponent } from './HeaderCellComponent';
 import type { ColumnAlign } from '../column-types';
-import type { TplNode, DragOptions } from '@qimenjs/component-core';
+import type { DragOptions, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
-import { LeafHeaderCellComponent } from './LeafHeaderCellComponent';
 import './groupheadercell.css';
 
-/** 分组表头子项配置 */
 export interface GroupChildConfig {
     type: 'leaf' | 'group';
     colName: string;
@@ -42,6 +19,7 @@ export interface GroupChildConfig {
 
 const GroupHeaderCellComponentDefs: Definitions = {
     options: {
+        sortable: false,
         resizable: true,
     },
     fields: {
@@ -50,8 +28,10 @@ const GroupHeaderCellComponentDefs: Definitions = {
     },
 } as const;
 
-class GroupHeaderCellComponent extends BaseHeaderCellComponent {
-    get tpl(): TplNode {
+class GroupHeaderCellComponent extends HeaderCellComponent {
+    static type = 'q-header-group-cell';
+
+    get tpl(): TemplateDecl {
         return GROUP_HEADER_CELL_TPL;
     }
 
@@ -67,15 +47,18 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-header-cell--group');
-        this.removeCls('q-header-cell--leaf');
-
         this._applyGroupWidth();
         this._applyResizable();
         if (this.childConfigs) this._createChildren(this.childConfigs);
     }
 
-    _onResizableOptionChange(_value: boolean): void {
-        this._applyResizable();
+    _applySortIcon(): void {
+        this.setStyles({ display: 'none' }, 'sortIcon');
+        this.removeCls('q-header-cell--sortable');
+    }
+
+    _applyResizable(): void {
+        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     _applyGroupWidth(): void {
@@ -87,16 +70,13 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         });
     }
 
-    _applyResizable(): void {
-        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
-    }
-
     _createChildren(configs: GroupChildConfig[]): void {
         const container = this.getNodeEl('children');
         if (!container) return;
 
         for (const config of configs) {
-            const ChildClass = config.type === 'group' ? GroupHeaderCellComponent : LeafHeaderCellComponent;
+            const ChildClass =
+                config.type === 'group' ? GroupHeaderCellComponent : HeaderCellComponent;
 
             const childProps: any = {
                 colName: config.colName,
@@ -120,22 +100,12 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
         }
     }
 
-    onDragStart(_ctx: {
-        dx: number;
-        dy: number;
-        el: HTMLElement;
-        originalEvent: Event;
-    }): void {
+    onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable || this.childNames.length === 0) return;
         this._resizeStartWidth = this.el.offsetWidth;
     }
 
-    onDragMove(ctx: {
-        dx: number;
-        dy: number;
-        el: HTMLElement;
-        originalEvent: Event;
-    }): void {
+    onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable || this.childNames.length === 0) return;
         const targetCol = this.childNames[this.childNames.length - 1];
         const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
@@ -149,7 +119,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
 
     update(data: any): void {
         if (data?.title !== undefined) {
-            this.setNodeText(String(data.title), 'title');
+            this.setData('title', data.title);
         }
     }
 }
@@ -158,5 +128,4 @@ GroupHeaderCellComponent.define(GroupHeaderCellComponentDefs);
 GroupHeaderCellComponent.register();
 
 export { GroupHeaderCellComponent };
-/** 分组表头单元格实例类型 */
 export type GroupHeaderCellComponentInstance = InstanceType<typeof GroupHeaderCellComponent>;

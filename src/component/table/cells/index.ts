@@ -3,8 +3,3 @@ export { BaseCellComponent } from './BaseCellComponent';
 export { CheckboxCellComponent } from './CheckboxCellComponent';
 export { TextCellComponent } from './TextCellComponent';
 export { TreeCellComponent } from './TreeCellComponent';
-export type { ActionCellComponentInstance } from './ActionCellComponent';
-export type { BaseCellComponentInstance } from './BaseCellComponent';
-export type { CheckboxCellComponentInstance } from './CheckboxCellComponent';
-export type { TextCellComponentInstance } from './TextCellComponent';
-export type { TreeCellComponentInstance } from './TreeCellComponent';
