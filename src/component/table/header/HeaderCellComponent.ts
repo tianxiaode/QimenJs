@@ -38,33 +38,54 @@ class HeaderCellComponent extends Component {
     _menuOpen: boolean = false;
 
     onAfterInit(): void {
-        this._applyAlign();
-        this._applyWidth();
-        this._applyTitle();
-        this._applySortIcon();
-        this._applyResizable();
-        this._initMenu();
+        this.setNodeText('升序', 'sortAscItem');
+        this.setNodeText('降序', 'sortDescItem');
+        this.setNodeText('隐藏此列', 'hideColumnItem');
     }
 
-    _onAlignOptionChange(_value: string): void( {
-        this._applyAlign();
+    _onAlignOptionChange(_value: string): void {
+        const justifyContent =
+            this.align === 'center' ? 'center' : this.align === 'right' ? 'flex-end' : 'flex-start';
+        this.setStyles({ justifyContent }, 'content');
     }
 
     _onMinWidthOptionChange(_value: number): void {
-        this._applyWidth();
+        this.setStyles(
+            {
+                width: `var(--q-table-col-${this.colName}-width)`,
+                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+            },
+            'content'
+        );
+    }
+
+    _onColNameOptionChange(_value: string): void {
+        this.setStyles(
+            {
+                width: `var(--q-table-col-${this.colName}-width)`,
+                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
+            },
+            'content'
+        );
     }
 
     _onTitleOptionChange(_value: string): void {
-        this._applyTitle();
+        if (this.title) {
+            this.setNodeText(String(this.title), 'title');
+            this.setStyles({ display: '' }, 'title');
+        } else {
+            this.setStyles({ display: 'none' }, 'title');
+        }
     }
 
     _onSortableOptionChange(_value: boolean): void {
         this._applySortIcon();
-        this._applyMenuItems();
+        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortAscItem');
+        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
     }
 
     _onResizableOptionChange(_value: boolean): void {
-        this._applyResizable();
+        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
 
     get sortState(): SortState {
@@ -73,32 +94,6 @@ class HeaderCellComponent extends Component {
     set sortState(v: SortState) {
         this._sortState = v;
         this._applySortIcon();
-    }
-
-    _applyAlign(): void {
-        const justifyContent =
-            this.align === 'center' ? 'center' : this.align === 'right' ? 'flex-end' : 'flex-start';
-        this.setStyles({ justifyContent }, 'content');
-    }
-
-    _applyWidth(): void {
-        this.setStyles(
-            {
-                width: `var(--q-table-col-${this.colName}-width)`,
-                minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
-                flexShrink: '0',
-            },
-            'content'
-        );
-    }
-
-    _applyTitle(): void {
-        if (this.title) {
-            this.setNodeText(String(this.title), 'title');
-            this.setStyles({ display: '' }, 'title');
-        } else {
-            this.setStyles({ display: 'none' }, 'title');
-        }
     }
 
     _applySortIcon(): void {
@@ -110,25 +105,11 @@ class HeaderCellComponent extends Component {
             return;
         }
         this.setStyles({ display: '' }, 'sortIcon');
-        this.removeCls([`${SORT_CLS_PREFIX}none`, `${SORT_CLS_PREFIX}asc`, `${SORT_CLS_PREFIX}desc`], 'sortIcon');
+        this.removeCls(
+            [`${SORT_CLS_PREFIX}none`, `${SORT_CLS_PREFIX}asc`, `${SORT_CLS_PREFIX}desc`],
+            'sortIcon'
+        );
         this.addCls(`${SORT_CLS_PREFIX}${this._sortState}`, 'sortIcon');
-    }
-
-    _applyResizable(): void {
-        this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
-    }
-
-    _initMenu(): void {
-        this.setNodeText('升序', 'sortAscItem');
-        this.setNodeText('降序', 'sortDescItem');
-        this.setNodeText('隐藏此列', 'hideColumnItem');
-        this._applyMenuItems();
-        this._closeMenu();
-    }
-
-    _applyMenuItems(): void {
-        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortAscItem');
-        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
     }
 
     _toggleMenu(): void {
