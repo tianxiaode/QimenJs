@@ -36,6 +36,9 @@ class HeaderComponent extends Component {
             cell.on('reorder', (data: any) => {
                 this.emit('reorder', data);
             });
+            cell.on('hideColumn', (data: any) => {
+                this.emit('hideColumn', data);
+            });
         }
     }
 

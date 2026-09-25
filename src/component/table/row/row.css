@@ -7,6 +7,10 @@
     transition: background 0.1s;
 }
 
+.q-table-row:nth-child(even) {
+    background: var(--q-color-bg-stripe, #fafafa);
+}
+
 .q-table-row .q_cell {
     flex-shrink: 0;
     overflow: hidden;

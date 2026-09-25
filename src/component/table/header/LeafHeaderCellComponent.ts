@@ -1,13 +1,3 @@
-/**
- * LeafHeaderCellComponent 叶子表头单元格组件
- *
- * 最底层列的表头单元格，提供：
- * - 排序图标（sortable 时显示，点击切换 asc/desc/none）
- * - 拖拽调整列宽（resizable 时显示 resize 手柄）
- * - 排序 → emit('sortChange')
- * - 列宽变更 →: emit('resize')
- */
-
 import { BaseHeaderCellComponent } from './BaseHeaderCellComponent';
 import type { TemplateDecl, DragOptions } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
@@ -30,6 +20,13 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
         return LEAF_HEADER_CELL_TPL;
     }
 
+    domEvents = {
+        click: [
+            { path: 'content', handler: '_onContentClick' },
+            { path: 'menu', handler: '_onMenuClick' },
+        ],
+    };
+
     drag?: boolean | DragOptions = {
         axis: 'x',
         activeClass: 'q-header-cell__resize--active',
@@ -38,15 +35,18 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
+    _menuOpen: boolean = false;
 
     onAfterInit(): void {
         super.onAfterInit();
         this._applySortIcon();
         this._applyResizable();
+        this._initMenu();
     }
 
     _onSortableOptionChange(_value: boolean): void {
         this._applySortIcon();
+        this._applyMenuItems();
     }
 
     _onResizableOptionChange(_value: boolean): void {
@@ -62,7 +62,10 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
     }
 
     _applySortIcon(): void {
-        if (!this.sortable) {
+        if (this.sortable) {
+            this.addCls('q-header-cell--sortable');
+        } else {
+            this.removeCls('q-header-cell--sortable');
             this.setStyles({ display: 'none' }, 'sortIcon');
             return;
         }
@@ -73,6 +76,72 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 
     _applyResizable(): void {
         this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
+    }
+
+    _initMenu(): void {
+        this.setNodeText('升序', 'sortAscItem');
+        this.setNodeText('降序', 'sortDescItem');
+        this.setNodeText('隐藏此列', 'hideColumnItem');
+        this._applyMenuItems();
+        this._closeMenu();
+    }
+
+    _applyMenuItems(): void {
+        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortAscItem');
+        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
+    }
+
+    _onContentClick(e: any): void {
+        const target = e?.target as HTMLElement;
+        const menuIconEl = this.getNodeEl('menuIcon');
+
+        if (menuIconEl === target || menuIconEl?.contains(target)) {
+            this._toggleMenu();
+            return;
+        }
+
+        if (this._menuOpen) {
+            this._closeMenu();
+            return;
+        }
+
+        if (this.sortable) {
+            this._onSortClick();
+        }
+    }
+
+    _onMenuClick(e: any): void {
+        const target = e?.target as HTMLElement;
+        const sortAscEl = this.getNodeEl('sortAscItem');
+        const sortDescEl = this.getNodeEl('sortDescItem');
+        const hideColEl = this.getNodeEl('hideColumnItem');
+
+        if (sortAscEl === target) {
+            this.sortState = 'asc';
+            this.emit('sortChange', { colName: this.colName, direction: 'asc' });
+        } else if (sortDescEl === target) {
+            this.sortState = 'desc';
+            this.emit('sortChange', { colName: this.colName, direction: 'desc' });
+        } else if (hideColEl === target) {
+            this.emit('hideColumn', { colName: this.colName });
+        }
+
+        this._closeMenu();
+    }
+
+    _toggleMenu(): void {
+        if (this._menuOpen) this._closeMenu();
+        else this._openMenu();
+    }
+
+    _openMenu(): void {
+        this._menuOpen = true;
+        this.addCls('q-header-cell--menu-open');
+    }
+
+    _closeMenu(): void {
+        this._menuOpen = false;
+        this.removeCls('q-header-cell--menu-open');
     }
 
     _onSortClick(): void {
@@ -116,5 +185,4 @@ class LeafHeaderCellComponent extends BaseHeaderCellComponent {
 LeafHeaderCellComponent.define(LeafHeaderCellComponentDefs);
 
 export { LeafHeaderCellComponent };
-/** 叶子表头单元格实例类型 */
 export type LeafHeaderCellComponentInstance = InstanceType<typeof LeafHeaderCellComponent>;

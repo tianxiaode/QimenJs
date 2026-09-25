@@ -59,6 +59,9 @@ class TableComponent extends ItemGroupPooledComponent {
         this._header.on('reorder', (data: any) => {
             this._onColumnReorder(data.from, data.to);
         });
+        this._header.on('hideColumn', (data: any) => {
+            this.hideColumn(data.colName);
+        });
     }
 
     _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
