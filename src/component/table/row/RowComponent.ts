@@ -34,12 +34,11 @@ class RowComponent extends Component {
 
         const cells = Array.from(this._cells.values());
         const data = this.getData('data');
-        Promise.all(cells.map((c: any) => c.ready)).then(() => {
-            this._applyWidths();
-            if (data) {
+        if (data) {
+            Promise.all(cells.map((c: any) => c.ready)).then(() => {
                 this._doUpdate(data);
-            }
-        });
+            });
+        }
     }
 
     _createCells(): void {
@@ -58,23 +57,14 @@ class RowComponent extends Component {
     _createCell(meta: ColumnMeta): any {
         const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
         const options: Record<string, any> = { align: meta.align };
+        if (meta.width) {
+            options.width = `var(--q-table-col-${meta.name}-width)`;
+            options.minWidth = '0';
+        }
         if (meta.format && meta.cellType === 'text') {
             options.format = meta.format;
         }
         return new CellClass(options);
-    }
-
-    _applyWidths(): void {
-        for (const meta of this._columnMetas) {
-            const cell = this._cells.get(meta.name);
-            if (cell?.el && meta.width) {
-                cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
-                cell.el.style.minWidth = '0';
-                cell.el.style.flexShrink = '0';
-                cell.el.style.overflow = 'hidden';
-                cell.el.style.boxSizing = 'border-box';
-            }
-        }
     }
 
     update(props: any): void {

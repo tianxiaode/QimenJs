@@ -7,6 +7,12 @@
     transition: background 0.1s;
 }
 
+.q-table-row .q_cell {
+    flex-shrink: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
 .q-table-row:hover {
     background: var(--q-color-bg-hover, #f0f0f0);
 }
