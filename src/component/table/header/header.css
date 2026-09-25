@@ -126,31 +126,3 @@
 .q-header-cell__menu-icon:hover {
     border-color: var(--q-colors-primary, #0078d4) transparent transparent transparent;
 }
-
-.q-header-cell__menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    min-width: 120px;
-    background: var(--q-color-bg, #fff);
-    border: 1px solid var(--q-colors-border, #e0e0e0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    z-index: 10;
-    border-radius: 2px;
-}
-
-.q-header-cell--menu-open .q-header-cell__menu {
-    display: block;
-}
-
-.q-header-cell__menu-item {
-    padding: 6px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.q-header-cell__menu-item:hover {
-    background: var(--q-color-bg-hover, #f0f0f0);
-}

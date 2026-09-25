@@ -21,7 +21,7 @@ const HeaderCellComponentDefs: Definitions = {
 } as const;
 
 class HeaderCellComponent extends Component {
-    static type = 'q-header-cell';
+    static type = 'header-cell';
 
     get tpl(): TemplateDecl {
         return HEADER_CELL_TPL;
@@ -35,12 +35,33 @@ class HeaderCellComponent extends Component {
 
     _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
-    _menuOpen: boolean = false;
+    _popoverInitialized: boolean = false;
+
+    _buildMenuItems(): any[] {
+        const items: any[] = [];
+        if (this.sortable) {
+            items.push({ text: '@table.sortAsc', action: 'sortAsc' });
+            items.push({ text: '@table.sortDesc', action: 'sortDesc' });
+        }
+        items.push({ text: '@table.hideColumn', action: 'hideColumn' });
+        return items;
+    }
+
+    _applyPopover(): void {
+        if (!this.getNodeEl('menuIcon')) return;
+        this.setData('popover', {
+            type: 'menu',
+            trigger: 'click',
+            anchor: 'menuIcon',
+            placement: 'bottom-end',
+            options: { items: this._buildMenuItems() },
+        });
+        this._popoverInitialized = true;
+    }
 
     onAfterInit(): void {
-        this.setNodeText('升序', 'sortAscItem');
-        this.setNodeText('降序', 'sortDescItem');
-        this.setNodeText('隐藏此列', 'hideColumnItem');
+        super.onAfterInit();
+        this._applyPopover();
     }
 
     _onAlignOptionChange(_value: string): void {
@@ -80,8 +101,9 @@ class HeaderCellComponent extends Component {
 
     _onSortableOptionChange(_value: boolean): void {
         this._applySortIcon();
-        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortAscItem');
-        this.setStyles({ display: this.sortable ? '' : 'none' }, 'sortDescItem');
+        if (this._popoverInitialized) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
     }
 
     _onResizableOptionChange(_value: boolean): void {
@@ -112,19 +134,19 @@ class HeaderCellComponent extends Component {
         this.addCls(`${SORT_CLS_PREFIX}${this._sortState}`, 'sortIcon');
     }
 
-    _toggleMenu(): void {
-        if (this._menuOpen) this._closeMenu();
-        else this._openMenu();
-    }
-
-    _openMenu(): void {
-        this._menuOpen = true;
-        this.addCls('q-header-cell--menu-open');
-    }
-
-    _closeMenu(): void {
-        this._menuOpen = false;
-        this.removeCls('q-header-cell--menu-open');
+    showPopover(): void {
+        super.showPopover();
+        const inst = this._getPopoverInstance();
+        if (inst && !inst._menuSelectBound) {
+            inst._menuSelectBound = true;
+            inst.on('select', (data: any) => {
+                const payload = data?.data ?? data;
+                this.emit('menuSelect', {
+                    action: payload?.action,
+                    colName: this.colName,
+                });
+            });
+        }
     }
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {

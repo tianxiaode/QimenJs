@@ -95,6 +95,11 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             }
 
             const instance = new ChildClass(childProps);
+            if (typeof instance.on === 'function') {
+                instance.on('menuSelect', (data: any) => {
+                    this.emit('menuSelect', data);
+                });
+            }
             this._childCells.push({ component: instance, el: instance.el });
             container.appendChild(instance.el);
         }

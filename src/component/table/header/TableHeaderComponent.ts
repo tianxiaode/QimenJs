@@ -95,6 +95,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             item.on('resize', (resizeData: any) => {
                 this.emit('resize', resizeData);
             });
+            item.on('menuSelect', (menuData: any) => {
+                this._onMenuSelect(menuData);
+            });
         }
         return item;
     }
@@ -107,15 +110,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const originalEvent = domEvt?.data?.originalEvent;
         const clickTarget = originalEvent?.target as HTMLElement;
 
-        const menuEl = target.getNodeEl?.('menu');
-        if (menuEl && menuEl.contains(clickTarget)) {
-            this._onMenuItemClick(target, clickTarget, colName);
-            return;
-        }
-
         const menuIconEl = target.getNodeEl?.('menuIcon');
         if (menuIconEl && (menuIconEl === clickTarget || menuIconEl.contains(clickTarget))) {
-            target._toggleMenu?.();
             return;
         }
 
@@ -135,19 +131,15 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onMenuItemClick(cell: any, clickTarget: HTMLElement, colName: string): void {
-        const sortAscEl = cell.getNodeEl?.('sortAscItem');
-        const sortDescEl = cell.getNodeEl?.('sortDescItem');
-        const hideColEl = cell.getNodeEl?.('hideColumnItem');
-
-        if (sortAscEl?.contains(clickTarget)) {
+    _onMenuSelect(data: any): void {
+        const { action, colName } = data;
+        if (action === 'sortAsc') {
             this._applySort(colName, 'asc');
-        } else if (sortDescEl?.contains(clickTarget)) {
+        } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-        } else if (hideColEl?.contains(clickTarget)) {
+        } else if (action === 'hideColumn') {
             this.emit('hideColumn', { colName });
         }
-        cell._closeMenu?.();
     }
 
     _applySort(colName: string, direction: 'asc' | 'desc' | 'none'): void {
