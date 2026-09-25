@@ -27,13 +27,6 @@ const SORTABLE_COLUMNS: ColumnDef[] = [
     { name: 'dept', field: 'dept', title: '部门', width: 120, sortable: true },
 ];
 
-const REORDERABLE_COLUMNS: ColumnDef[] = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, reorderable: true, resizable: true },
-    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', reorderable: true, resizable: true },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', reorderable: true, resizable: true },
-    { name: 'dept', field: 'dept', title: '部门', width: 120, reorderable: true, resizable: true },
-];
-
 const GROUPED_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     {
@@ -88,31 +81,6 @@ class SortableTableDemo extends Component {
         const container = this.getNodeEl('container') as HTMLElement;
         if (!container) return;
         this._table = new TableComponent({ columns: SORTABLE_COLUMNS, data: TABLE_DATA });
-        container.appendChild(this._table.el);
-    }
-
-    onDestroy(): void {
-        this._table?.dispose();
-        this._table = null;
-    }
-}
-
-class ReorderableTableDemo extends Component {
-    static type = 'reorderable-table-demo';
-    _table: TableComponent | null = null;
-
-    get tpl(): TemplateDecl {
-        return {
-            tag: 'div',
-            classes: 'q-demo__row',
-            children: [{ tag: 'div', name: 'container', classes: 'q-table' }],
-        };
-    }
-
-    onAfterInit(): void {
-        const container = this.getNodeEl('container') as HTMLElement;
-        if (!container) return;
-        this._table = new TableComponent({ columns: REORDERABLE_COLUMNS, data: TABLE_DATA });
         container.appendChild(this._table.el);
     }
 
@@ -204,9 +172,60 @@ class HideColumnTableDemo extends Component {
     }
 }
 
+class MoveColumnTableDemo extends Component {
+    static type = 'move-column-table-demo';
+    _table: TableComponent | null = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-demo__controls',
+                    children: [
+                        { tag: 'button', name: 'moveLeft', classes: 'q-demo__btn', options: { text: '姓名←→年龄 交换' } },
+                        { tag: 'button', name: 'moveRight', classes: 'q-demo__btn', options: { text: '薪资←→部门 交换' } },
+                    ],
+                },
+                { tag: 'div', name: 'container', classes: 'q-table' },
+            ],
+        };
+    }
+
+    onAfterInit(): void {
+        const container = this.getNodeEl('container') as HTMLElement;
+        if (!container) return;
+        this._table = new TableComponent({ columns: BASIC_COLUMNS, data: TABLE_DATA });
+        container.appendChild(this._table.el);
+
+        const moveLeftBtn = this.getNodeEl('moveLeft');
+        const moveRightBtn = this.getNodeEl('moveRight');
+
+        this.bind(moveLeftBtn, 'click');
+        this.on('dom:click', (e: any) => {
+            if (e?.target === moveLeftBtn || moveLeftBtn?.contains(e?.target)) {
+                this._table?.moveColumn(0, 1);
+            }
+        });
+        this.bind(moveRightBtn, 'click');
+        this.on('dom:click', (e: any) => {
+            if (e?.target === moveRightBtn || moveRightBtn?.contains(e?.target)) {
+                this._table?.moveColumn(2, 3);
+            }
+        });
+    }
+
+    onDestroy(): void {
+        this._table?.dispose();
+        this._table = null;
+    }
+}
+
 export const TABLE_DEMO: DemoConfig = {
     title: 'Table',
-    description: '表格组件，option 驱动渲染，支持排序、列拖拽 reorder、隐藏/显示列、分组列头、列宽调整',
+    description: '表格组件，option 驱动渲染，支持排序、隐藏/显示列、交换列位置、分组列头、列宽调整',
     sections: [
         {
             label: '基础表格',
@@ -226,12 +245,6 @@ const table = new TableComponent({ columns, data });`,
             component: SortableTableDemo,
         },
         {
-            label: '列拖拽 reorder + resize',
-            code: `{ name: 'name', title: '姓名', reorderable: true, resizable: true }
-// 拖拽表头单元格交换列位置，拖拽右侧手柄调整列宽`,
-            component: ReorderableTableDemo,
-        },
-        {
             label: '分组列头（多表头）',
             code: `{
     name: 'baseInfo', title: '基本信息', children: [
@@ -246,6 +259,11 @@ const table = new TableComponent({ columns, data });`,
             code: `table.hideColumn('age');
 table.showColumn('age');`,
             component: HideColumnTableDemo,
+        },
+        {
+            label: '交换列位置',
+            code: `table.moveColumn(0, 1);  // 交换第0列和第1列`,
+            component: MoveColumnTableDemo,
         },
     ],
 };

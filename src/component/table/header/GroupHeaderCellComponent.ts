@@ -92,7 +92,7 @@ class GroupHeaderCellComponent extends BaseHeaderCellComponent {
     }
 
     _createChildren(configs: GroupChildConfig[]): void {
-        const container = this._resolveNodeEl('children');
+        const container = this.getNodeEl('children');
         if (!container) return;
 
         for (const config of configs) {
