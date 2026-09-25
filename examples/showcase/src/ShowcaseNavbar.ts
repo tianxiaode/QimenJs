@@ -26,8 +26,6 @@ const NAV_HREFS: Record<string, string> = {
     'nav-components': '#/components',
     'nav-apps': '#/apps',
     'nav-docs': '#/docs',
-    'nav-benchmark': '#/benchmark',
-    'nav-table-demo': '#/table-demo',
 };
 
 function getCurrentLang(): string {
@@ -95,20 +93,6 @@ class ShowcaseNavbar extends NavbarComponent {
                     text: '@nav.docs',
                     dock: 'left',
                     action: 'nav-docs',
-                },
-                {
-                    type: 'href',
-                    href: '#/benchmark',
-                    text: 'Benchmark',
-                    dock: 'left',
-                    action: 'nav-benchmark',
-                },
-                {
-                    type: 'href',
-                    href: '#/table-demo',
-                    text: 'Table',
-                    dock: 'left',
-                    action: 'nav-table-demo',
                 },
                 {
                     type: 'href',

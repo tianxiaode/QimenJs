@@ -4,8 +4,6 @@ import { ShowcaseFooter } from './ShowcaseFooter';
 import { HomePage } from './pages/HomePage';
 import { ComponentsPage } from './pages/ComponentsPage';
 import { DocsPage } from './pages/DocsPage';
-import { BenchmarkPage } from './benchmark/BenchmarkPage';
-import { TableDemoPage } from './pages/TableDemoPage';
 
 export class ShowcaseApp extends Component {
     get tpl(): TemplateDecl {
@@ -33,8 +31,6 @@ export class ShowcaseApp extends Component {
                             '/': HomePage,
                             '/components': ComponentsPage,
                             '/docs': DocsPage,
-                            '/benchmark': BenchmarkPage,
-                            '/table-demo': TableDemoPage,
                         },
                         defaultComponent: HomePage,
                     },
