@@ -17,6 +17,8 @@ const HeaderCellComponentDefs: Definitions = {
         sortable: false,
         resizable: true,
         reorderable: false,
+        menuDisabled: false,
+        menuItems: null,
     },
 } as const;
 
@@ -38,6 +40,7 @@ class HeaderCellComponent extends Component {
     _popoverInitialized: boolean = false;
 
     _buildMenuItems(): any[] {
+        if (this.menuItems) return this.menuItems;
         const items: any[] = [];
         if (this.sortable) {
             items.push({ text: '@table.sortAsc', action: 'sortAsc' });
@@ -48,7 +51,7 @@ class HeaderCellComponent extends Component {
     }
 
     _applyPopover(): void {
-        if (!this.getNodeEl('menuIcon')) return;
+        if (this.menuDisabled || !this.getNodeEl('menuIcon')) return;
         this.setData('popover', {
             type: 'menu',
             trigger: 'click',
@@ -61,7 +64,11 @@ class HeaderCellComponent extends Component {
 
     onAfterInit(): void {
         super.onAfterInit();
-        this._applyPopover();
+        if (this.menuDisabled) {
+            this.setStyles({ display: 'none' }, 'menuIcon');
+        } else {
+            this._applyPopover();
+        }
     }
 
     _onAlignOptionChange(_value: string): void {
@@ -108,6 +115,23 @@ class HeaderCellComponent extends Component {
 
     _onResizableOptionChange(_value: boolean): void {
         this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
+    }
+
+    _onMenuDisabledOptionChange(_value: boolean): void {
+        this.setStyles({ display: this.menuDisabled ? 'none' : '' }, 'menuIcon');
+        if (this.menuDisabled) {
+            this.hidePopover();
+            this.setData('popover', null);
+            this._popoverInitialized = false;
+        } else {
+            this._applyPopover();
+        }
+    }
+
+    _onMenuItemsOptionChange(_value: any): void {
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
     }
 
     get sortState(): SortState {
