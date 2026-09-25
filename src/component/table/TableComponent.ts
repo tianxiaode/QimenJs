@@ -1,7 +1,7 @@
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
-import { HeaderComponent } from './header/HeaderComponent';
+import { TableHeaderComponent } from './header/TableHeaderComponent';
 import { RowComponent } from './row/RowComponent';
 import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
 import { Definitions } from '@/composable';
@@ -10,7 +10,7 @@ class TableComponent extends ItemGroupPooledComponent {
     static type = 'q-table';
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
-    _header: HeaderComponent | null = null;
+    _header: TableHeaderComponent | null = null;
     _sortCol: string | null = null;
     _sortDir: 'asc' | 'desc' | null = null;
 
@@ -39,7 +39,7 @@ class TableComponent extends ItemGroupPooledComponent {
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
             const columns = this.getData('columns') || [];
-            this._header = new HeaderComponent({ columns });
+            this._header = new TableHeaderComponent({ columns });
             headerArea.appendChild(this._header.el);
             this._bindHeaderEvents();
         }
