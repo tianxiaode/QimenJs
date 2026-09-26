@@ -157,7 +157,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
         } else if (action === 'groupBy') {
-            this.emit('groupBy', { colName });
+            this.componentEmit('groupBy', { colName });
         } else if (action?.startsWith('toggleColumn:')) {
             const targetColName = action.substring('toggleColumn:'.length);
             const columns = this.columns;
@@ -166,9 +166,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                     (c: any) => c.name === targetColName && !('children' in c)
                 ) as ColumnDef | undefined;
                 if (col?.hidden) {
-                    this.emit('showColumn', { colName: targetColName });
+                    this.showColumn(targetColName);
+                    this.componentEmit('showColumn', { colName: targetColName });
                 } else {
-                    this.emit('hideColumn', { colName: targetColName });
+                    this.hideColumn(targetColName);
+                    this.componentEmit('hideColumn', { colName: targetColName });
                 }
             }
         }
@@ -183,7 +185,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 }
             }
         }
-        this.emit('sortChange', {
+        this.componentEmit('sortChange', {
             colName,
             direction: direction === 'none' ? null : direction,
         });

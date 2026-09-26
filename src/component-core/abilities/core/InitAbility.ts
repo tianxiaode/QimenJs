@@ -27,6 +27,13 @@ export const InitAbility = {
         this.logger.debug(`[initialize][${this.id}]`, '开始初始化');
         this.id = this.id ?? string.getId(`cmp-${this.type}`);
 
+        if (this.getData('autoEntityKey') && !this.getData('entityKey')) {
+            this.setData('entityKey', `ent-${this.id}`, true);
+        }
+        if (this.getData('autoEventKey') && !this.getData('eventKey')) {
+            this.setData('eventKey', `evt-${this.id}`, true);
+        }
+
         this._initializing = true;
         this.isInstance = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));

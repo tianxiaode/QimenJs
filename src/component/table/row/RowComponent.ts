@@ -45,7 +45,7 @@ class RowComponent extends Component {
         for (let i = 0; i < columns.length; i++) {
             const meta = columns[i];
             const cell = this._createCell(meta);
-            this.el.appendChild(cell.el);
+            this.el!.appendChild(cell.el);
             this._cells.set(meta.name, cell);
             cell.order = (i + 1) * 10;
         }
@@ -123,6 +123,14 @@ class RowComponent extends Component {
         if (cell) cell.hidden = false;
     }
 
+    onHideColumn(data: any): void {
+        this.hideColumn(data.colName);
+    }
+
+    onShowColumn(data: any): void {
+        this.showColumn(data.colName);
+    }
+
     setColumnOrder(name: string, order: number): void {
         const cell = this._cells.get(name);
         if (cell) cell.order = order;
@@ -150,6 +158,16 @@ const RowComponentDefs: Definitions = {
         display: 'flex',
         columnMetas: null,
         data: null,
+        eventKey: null,
+        listens: [
+            {
+                source: 'self',
+                events: {
+                    hideColumn: 'onHideColumn',
+                    showColumn: 'onShowColumn',
+                },
+            },
+        ],
     },
     fields: {
         _cells: null,

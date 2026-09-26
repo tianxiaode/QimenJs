@@ -41,9 +41,8 @@ class TableComponent extends ItemGroupPooledComponent {
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
             const columns = this.getData('columns') || [];
-            this._header = new TableHeaderComponent({ columns });
+            this._header = new TableHeaderComponent({ columns, eventKey: this.eventKey });
             headerArea.appendChild(this._header.el);
-            this._bindHeaderEvents();
         }
 
         this._isAfterInit = true;
@@ -75,26 +74,9 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _bindHeaderEvents(): void {
-        if (!this._header) return;
-        this._header.on('sortChange', (data: any) => {
-            this._onSortChange(data.colName, data.direction);
-        });
-        this._header.on('resize', (data: any) => {
-            this._onColumnResize(data.colName, data.width);
-        });
-        this._header.on('hideColumn', (data: any) => {
-            this.hideColumn(data.colName);
-        });
-        this._header.on('showColumn', (data: any) => {
-            this.showColumn(data.colName);
-        });
-        this._header.on('groupBy', (data: any) => {
-            this.emit('groupBy', data);
-        });
-    }
-
-    _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
+    _onSortChange(data: any): void {
+        const colName = data.colName;
+        const direction = data.direction;
         const entityKey = this.getData('entityKey');
         if (entityKey) {
             this.entityEmit(
@@ -125,12 +107,18 @@ class TableComponent extends ItemGroupPooledComponent {
         this._reflow();
     }
 
-    _onColumnResize(colName: string, width: number): void {
+    _onColumnResize(data: any): void {
+        const colName = data.colName;
+        const width = data.width;
         this.el!.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
         if (this._columnMetaManager) {
             const meta = this._columnMetaManager.get(colName);
             if (meta) meta.width = `${width}px`;
         }
+    }
+
+    onGroupBy(data: any): void {
+        this.emit('groupBy', data);
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
@@ -167,7 +155,7 @@ class TableComponent extends ItemGroupPooledComponent {
         this._applyColumnWidths();
 
         const metas = this._columnMetaManager.getAll();
-        this.defaultItemOption = { columnMetas: metas };
+        this.defaultItemOption = { columnMetas: metas, eventKey: this.eventKey };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
         const items = data.map((rowData: any) => ({ data: rowData }));
@@ -201,24 +189,12 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     hideColumn(name: string): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const row of items) {
-                if (typeof row.hideColumn === 'function') row.hideColumn(name);
-            }
-        }
         if (this._header && typeof this._header.hideColumn === 'function') {
             this._header.hideColumn(name);
         }
     }
 
     showColumn(name: string): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const row of items) {
-                if (typeof row.showColumn === 'function') row.showColumn(name);
-            }
-        }
         if (this._header && typeof this._header.showColumn === 'function') {
             this._header.showColumn(name);
         }
@@ -250,6 +226,17 @@ const TableComponentDefs: Definitions = {
         columns: null,
         data: null,
         entityKey: null,
+        autoEventKey: true,
+        listens: [
+            {
+                source: 'self',
+                events: {
+                    sortChange: 'onSortChange',
+                    resize: 'onColumnResize',
+                    groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
+                },
+            },
+        ],
     },
     fields: {
         _isAfterInit: false,

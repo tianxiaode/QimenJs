@@ -240,6 +240,11 @@ export class ListensEngine {
         source: string,
         events: Record<string, EventMapping>
     ): void {
+        const resolvedSource = source === 'self'
+            ? EventForwarder.resolveKey(instance.eventKey)
+            : source;
+        if (!resolvedSource) return;
+
         const bus = ComponentEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {
@@ -247,9 +252,9 @@ export class ListensEngine {
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.componentOnce(source, eventName, handler);
+                bus.componentOnce(resolvedSource, eventName, handler);
             } else {
-                const off = bus.componentOn(source, eventName, handler);
+                const off = bus.componentOn(resolvedSource, eventName, handler);
                 instance.onCleanup(off);
             }
         }

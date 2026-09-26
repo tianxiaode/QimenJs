@@ -124,10 +124,14 @@ export const ComponentDefs: Definitions = {
         listens: null,
         /** 组件事件key- 用于组件之间订阅和发送事件的唯一标识符  */
         eventKey: null,
+        /** 自动生成 eventKey（未指定 eventKey 时生成 evt-${id}） */
+        autoEventKey: false,
         /**
          * 组件实体key — 用于与实体通信时订阅和发送实体事件的唯一标识符
          */
         entityKey: null,
+        /** 自动生成 entityKey（未指定 entityKey 时生成 ent-${id}） */
+        autoEntityKey: false,
         /** 组件动画配置 */
         animation: null,
         /**
