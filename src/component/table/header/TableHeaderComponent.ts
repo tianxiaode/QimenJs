@@ -194,7 +194,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         if (Array.isArray(items)) {
             for (const item of items) {
                 if (item.action === name || item.colName === name) {
-                    item.el.style.display = 'none';
+                    item.hidden = true;
                     break;
                 }
             }
@@ -206,7 +206,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         if (Array.isArray(items)) {
             for (const item of items) {
                 if (item.action === name || item.colName === name) {
-                    item.el.style.display = '';
+                    item.hidden = false;
                     break;
                 }
             }
@@ -220,11 +220,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         if (from >= items.length || to >= items.length) return;
         const fromItem = items[from];
         const toItem = items[to];
-        if (fromItem?.el && toItem?.el) {
-            const fromOrder = fromItem.el.style.order;
-            const toOrder = toItem.el.style.order;
-            fromItem.el.style.order = toOrder;
-            toItem.el.style.order = fromOrder;
+        if (fromItem && toItem) {
+            const fromOrder = fromItem.order;
+            const toOrder = toItem.order;
+            fromItem.order = toOrder;
+            toItem.order = fromOrder;
         }
     }
 }

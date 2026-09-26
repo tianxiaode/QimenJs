@@ -116,12 +116,12 @@ class RowComponent extends Component {
 
     hideColumn(name: string): void {
         const cell = this._cells.get(name);
-        if (cell) cell.el.style.display = 'none';
+        if (cell) cell.hidden = true;
     }
 
     showColumn(name: string): void {
         const cell = this._cells.get(name);
-        if (cell) cell.el.style.display = '';
+        if (cell) cell.hidden = false;
     }
 
     setColumnOrder(name: string, order: number): void {
