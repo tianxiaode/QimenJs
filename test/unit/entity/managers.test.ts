@@ -153,13 +153,31 @@ jest.mock('@/schema', () => ({
 
 jest.mock('@/composable', () => {
     class ComposableBase {
-        private _data: Record<string, any> = {};
         static use() {}
-        static define() {}
+        static define(definitions: any) {
+            if (definitions?.options) {
+                for (const [key] of Object.entries(definitions.options)) {
+                    Object.defineProperty(this.prototype, key, {
+                        get() { return this.getData(key); },
+                        set(value: any) { this.setData(key, value); },
+                        enumerable: true,
+                        configurable: true,
+                    });
+                }
+            }
+        }
+        private _data: Record<string, any> = {};
         logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        constructor(options?: Record<string, any>) {
+            this._applyInitOptions(options);
+        }
         getData(key: string) { return this._data[key]; }
         setData(key: string, value: any) { this._data[key] = value; }
         _applyInitOptions(options?: Record<string, any>) {
+            const defaults = (this as any).defaultOptions || {};
+            for (const [key, value] of Object.entries(defaults)) {
+                this._data[key] = value;
+            }
             if (options) {
                 for (const [key, value] of Object.entries(options)) {
                     this._data[key] = value;

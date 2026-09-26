@@ -44,16 +44,11 @@ const CoreEntityManagerDefs: Definitions = {
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
-    entityKey: string;
-    domain: string;
-    url: string;
     eventMap: Record<string, string> = {};
 
-    cacheTTL: number;
-
-    schema: RegistrSchema;
-
-    permissions: Record<string, boolean | string>;
+    get defaultOptions(): Record<string, any> {
+        return { entityKey: (this.constructor as any).entityType };
+    }
 
     constructor(config?: Record<string, any>) {
         super(config);
@@ -61,32 +56,7 @@ export abstract class CoreEntityManager extends ComposableBase {
         if (!ctor.entityType) {
             throw new Error(`${ctor.name} must declare static entityType`);
         }
-        this.entityKey = this.getData('entityKey') || ctor.entityType;
         this._bindEventMap();
-    }
-
-    _onEntityKeyOptionChange(value: string): void {
-        this.entityKey = value;
-    }
-
-    _onPermissionsOptionChange(value: Record<string, boolean | string>): void {
-        this.permissions = value;
-    }
-
-    _onDomainOptionChange(value: string): void {
-        this.domain = value;
-    }
-
-    _onUrlOptionChange(value: string): void {
-        this.url = value;
-    }
-
-    _onCacheTTLOptionChange(value: number): void {
-        this.cacheTTL = value;
-    }
-
-    _onSchemaOptionChange(value: RegistrSchema): void {
-        if (value) this.schema = value;
     }
 
     private _bindEventMap(): void {
@@ -94,7 +64,7 @@ export abstract class CoreEntityManager extends ComposableBase {
         if (!map) return;
 
         for (const [eventName, methodName] of Object.entries(map)) {
-            this.entityOn(this.entityKey, eventName, (data: any) => {
+            this.entityOn(this.entityKey!, eventName, (data: any) => {
                 const method = (this as any)[methodName as string];
                 if (typeof method === 'function') {
                     method.call(this, data);
