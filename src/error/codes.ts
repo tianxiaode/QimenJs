@@ -151,4 +151,16 @@ export enum KernelErrorCode {
     PHASE_EXECUTION_FAILED = 'INIT_PHASE_EXECUTION_FAILED',
     COMPONENT_INIT_FAILED = 'COMPONENT_INIT_FAILED',
     COMPONENT_CAN_NOT_REMOVE_ROOT = 'COMPONENT_CAn_NOT_REMOVE_ROOT',
+
+    // ---- 实体管理器错误 ----
+
+    /**
+     * 实体管理器未声明 static entityType
+     */
+    ENTITY_TYPE_NOT_DECLARED = 'ENTITY_TYPE_NOT_DECLARED',
+
+    /**
+     * 实体管理器缺少 entityKey
+     */
+    ENTITY_KEY_REQUIRED = 'ENTITY_KEY_REQUIRED',
 }

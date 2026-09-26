@@ -19,7 +19,8 @@ import {
     buildRequestEvent,
     ENTITY_REQUEST_STATUS,
 } from '@/events/entity-events';
-import { KernelErrorCode } from '@/error';
+import { KernelError, KernelErrorCode } from '@/error';
+import { string } from '@/utils';
 import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
 export const CORE_ENTITY_ABILITIES = [
@@ -32,6 +33,7 @@ export const CORE_ENTITY_ABILITIES = [
 
 const CoreEntityManagerDefs: Definitions = {
     options: {
+        id: '',
         entityKey: '',
         domain: 'default',
         url: '',
@@ -44,7 +46,17 @@ const CoreEntityManagerDefs: Definitions = {
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
+    id: string;
+    entityKey: string;
+    domain: string;
+    url: string;
     eventMap: Record<string, string> = {};
+
+    cacheTTL: number;
+
+    schema: RegistrSchema;
+
+    permissions: Record<string, boolean | string>;
 
     get defaultOptions(): Record<string, any> {
         return { entityKey: (this.constructor as any).entityType };
@@ -54,7 +66,21 @@ export abstract class CoreEntityManager extends ComposableBase {
         super(config);
         const ctor = this.constructor as typeof CoreEntityManager;
         if (!ctor.entityType) {
-            throw new Error(`${ctor.name} must declare static entityType`);
+            throw new KernelError(
+                `${ctor.name} must declare static entityType`,
+                KernelErrorCode.ENTITY_TYPE_NOT_DECLARED,
+                { className: ctor.name }
+            );
+        }
+        if (!this.entityKey) {
+            throw new KernelError(
+                `EntityKey is required for ${ctor.name}`,
+                KernelErrorCode.ENTITY_KEY_REQUIRED,
+                { className: ctor.name, entityType: ctor.entityType }
+            );
+        }
+        if (!this.id) {
+            this.id = string.getId(`mgr-${ctor.entityType}`);
         }
         this._bindEventMap();
     }
