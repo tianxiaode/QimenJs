@@ -15,9 +15,8 @@ const CELL_CLASS_MAP: Record<CellType, any> = {
 };
 
 class RowComponent extends Component {
-    static type = 'q-table-row';
+    static type = 'table-row';
 
-    _columnMetas: ColumnMeta[] = [];
     _cells: Map<string, any> = new Map();
 
     get tpl(): any {
@@ -43,14 +42,13 @@ class RowComponent extends Component {
 
     _createCells(): void {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-        this._columnMetas = columns;
 
         for (let i = 0; i < columns.length; i++) {
             const meta = columns[i];
             const cell = this._createCell(meta);
             this.el.appendChild(cell.el);
             this._cells.set(meta.name, cell);
-            cell.el.style.order = String((i + 1) * 10);
+            cell.order = (i + 1) * 10;
         }
     }
 
@@ -77,7 +75,8 @@ class RowComponent extends Component {
     }
 
     _doUpdate(data: any): void {
-        for (const meta of this._columnMetas) {
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        for (const meta of columns) {
             const cell = this._cells.get(meta.name);
             if (cell && typeof cell.update === 'function') {
                 cell.update(this._getCellData(meta, data));
@@ -127,21 +126,22 @@ class RowComponent extends Component {
 
     setColumnOrder(name: string, order: number): void {
         const cell = this._cells.get(name);
-        if (cell) cell.el.style.order = String(order);
+        if (cell) cell.order = order;
     }
 
     moveColumn(from: number, to: number): void {
         if (from === to || from < 0 || to < 0) return;
-        if (from >= this._columnMetas.length || to >= this._columnMetas.length) return;
-        const fromName = this._columnMetas[from].name;
-        const toName = this._columnMetas[to].name;
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        if (from >= columns.length || to >= columns.length) return;
+        const fromName = columns[from].name;
+        const toName = columns[to].name;
         const fromCell = this._cells.get(fromName);
         const toCell = this._cells.get(toName);
         if (fromCell && toCell) {
-            const fromOrder = fromCell.el.style.order;
-            const toOrder = toCell.el.style.order;
-            fromCell.el.style.order = toOrder;
-            toCell.el.style.order = fromOrder;
+            const fromOrder = fromCell.order;
+            const toOrder = toCell.order;
+            fromCell.order = toOrder;
+            toCell.order = fromOrder;
         }
     }
 }
@@ -152,7 +152,6 @@ const RowComponentDefs: Definitions = {
         data: null,
     },
     fields: {
-        _columnMetas: [],
         _cells: null,
     },
 } as const;
