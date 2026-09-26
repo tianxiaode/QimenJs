@@ -3,7 +3,7 @@ import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import type { ColumnDefOrGroup } from './column-types';
-import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
+import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
@@ -26,19 +26,27 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical', autoEventKey: true };
+        return {
+            direction: 'vertical',
+            autoEventKey: true,
+            listens: [
+                {
+                    source: 'self',
+                    events: {
+                        sortChange: 'onSortChange',
+                        resize: 'onColumnResize',
+                        groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
+                    },
+                },
+                {
+                    entity: true,
+                    events: {
+                        listed: 'onEntityListed',
+                    },
+                },
+            ],
+        };
     }
-
-    listens = [
-        {
-            source: 'self',
-            events: {
-                sortChange: 'onSortChange',
-                resize: 'onColumnResize',
-                groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
-            },
-        },
-    ];
 
     onAfterInit(): void {
         this.defaultItemType = 'table-row';
@@ -52,7 +60,11 @@ class TableComponent extends ItemGroupPooledComponent {
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
             const columns = this.getData('columns') || [];
-            this._header = new TableHeaderComponent({ columns, eventKey: this.eventKey, entityKey: this.entityKey });
+            this._header = new TableHeaderComponent({
+                columns,
+                eventKey: this.eventKey,
+                entityKey: this.entityKey,
+            });
             headerArea.appendChild(this._header.el);
         }
 
@@ -70,11 +82,6 @@ class TableComponent extends ItemGroupPooledComponent {
         const entityKey = this.getData('entityKey');
         if (!entityKey) return;
 
-        this.entityOn(entityKey, ENTITY_LIST_EVENTS.LISTED, (items: any[]) => {
-            this._entityItems = Array.isArray(items) ? items : [];
-            if (this._isAfterInit) this._reflow();
-        });
-
         this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, { entityKey });
 
         this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
@@ -83,6 +90,11 @@ class TableComponent extends ItemGroupPooledComponent {
         if (Array.isArray(data) && data.length > 0) {
             this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
         }
+    }
+
+    onEntityListed(items: any[]): void {
+        this._entityItems = Array.isArray(items) ? items : [];
+        if (this._isAfterInit) this._reflow();
     }
 
     _onSortChange(data: any): void {
@@ -166,7 +178,11 @@ class TableComponent extends ItemGroupPooledComponent {
         this._applyColumnWidths();
 
         const metas = this._columnMetaManager.getAll();
-        this.defaultItemOption = { columnMetas: metas, eventKey: this.eventKey, entityKey: this.entityKey };
+        this.defaultItemOption = {
+            columnMetas: metas,
+            eventKey: this.eventKey,
+            entityKey: this.entityKey,
+        };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
         const items = data.map((rowData: any) => ({ data: rowData }));

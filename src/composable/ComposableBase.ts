@@ -258,9 +258,13 @@ export class ComposableBase implements IComposableBase {
      *
      * @param callback - 清理回调函数
      */
-    onCleanup(callback: () => void): void {
+    onCleanup(callback: () => void): () => void {
         const cleanups = this.cleanups;
         cleanups.push(callback);
+        return () => {
+            const idx = cleanups.indexOf(callback);
+            if (idx !== -1) cleanups.splice(idx, 1);
+        };
     }
 
     /** 释放前置钩子（可覆写，dispose 最先调用） */
