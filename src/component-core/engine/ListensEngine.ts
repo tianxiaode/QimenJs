@@ -24,13 +24,6 @@ import type {
     FileListen,
 } from '../types';
 import { EventForwarder, type ForwardConfig } from './EventForwarder';
-import {
-    ComponentEventBus,
-    EntityEventBus,
-    SystemEventBus,
-    RouteEventBus,
-    FileEventBus,
-} from '@/events';
 
 function isNodeListen(item: ListenItem): item is NodeListen {
     return 'node' in item;
@@ -247,17 +240,14 @@ export class ListensEngine {
             source === 'self' ? EventForwarder.resolveKey(instance.eventKey) : source;
         if (!resolvedSource) return;
 
-        const bus = ComponentEventBus.getInstance();
-
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._createHandler(instance, eventName, mapping);
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.componentOnce(resolvedSource, eventName, handler);
+                instance.componentOnce(resolvedSource, eventName, handler);
             } else {
-                const off = bus.componentOn(resolvedSource, eventName, handler);
-                instance.onCleanup(off);
+                instance.componentOn(resolvedSource, eventName, handler);
             }
         }
     }
@@ -266,49 +256,40 @@ export class ListensEngine {
         const entityKey = EventForwarder.resolveKey(instance.entityKey);
         if (!entityKey) return;
 
-        const bus = EntityEventBus.getInstance();
-
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._createHandler(instance, eventName, mapping);
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.entityOnce(entityKey, eventName, handler);
+                instance.entityOnce(entityKey, eventName, handler);
             } else {
-                const off = bus.entityOn(entityKey, eventName, handler);
-                instance.onCleanup(off);
+                instance.entityOn(entityKey, eventName, handler);
             }
         }
     }
 
     private static _bindSystem(instance: any, events: Record<string, EventMapping>): void {
-        const bus = SystemEventBus.getInstance();
-
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._createHandler(instance, eventName, mapping);
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.once(eventName, handler);
+                instance.systemOnce(eventName, handler);
             } else {
-                const off = bus.on(eventName, handler);
-                instance.onCleanup(off);
+                instance.systemOn(eventName, handler);
             }
         }
     }
 
     private static _bindRoute(instance: any, events: Record<string, EventMapping>): void {
-        const bus = RouteEventBus.getInstance();
-
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._createHandler(instance, eventName, mapping);
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.routeOnce(eventName, handler);
+                instance.routeOnce(eventName, handler);
             } else {
-                const off = bus.routeOn(eventName, handler);
-                instance.onCleanup(off);
+                instance.routeOn(eventName, handler);
             }
         }
     }
@@ -318,17 +299,14 @@ export class ListensEngine {
         fileKey: string,
         events: Record<string, EventMapping>
     ): void {
-        const bus = FileEventBus.getInstance();
-
         for (const [eventName, mapping] of Object.entries(events)) {
             const handler = ListensEngine._createHandler(instance, eventName, mapping);
             const once = ListensEngine._isOnce(mapping);
 
             if (once) {
-                bus.fileOnce(fileKey, eventName, handler);
+                instance.fileOnce(fileKey, eventName, handler);
             } else {
-                const off = bus.fileOn(fileKey, eventName, handler);
-                instance.onCleanup(off);
+                instance.fileOn(fileKey, eventName, handler);
             }
         }
     }
