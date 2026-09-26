@@ -44,16 +44,16 @@ const CoreEntityManagerDefs: Definitions = {
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
-    declare entityKey: string;
-    declare domain: string;
-    declare url: string;
+    entityKey: string;
+    domain: string;
+    url: string;
     eventMap: Record<string, string> = {};
 
-    declare cacheTTL: number;
+    cacheTTL: number;
 
-    declare schema: RegistrSchema;
+    schema: RegistrSchema;
 
-    declare permissions: Record<string, boolean | string>;
+    permissions: Record<string, boolean | string>;
 
     constructor(config?: Record<string, any>) {
         super(config);
