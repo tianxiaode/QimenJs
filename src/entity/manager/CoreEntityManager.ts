@@ -32,26 +32,28 @@ export const CORE_ENTITY_ABILITIES = [
 
 const CoreEntityManagerDefs: Definitions = {
     options: {
+        entityKey: '',
         domain: 'default',
         url: '',
         cacheTTL: 300000,
         schema: null,
+        permissions: {},
     },
 } as const;
 
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
-    domain: string = 'default';
-    entityKey: string;
-    url: string = '';
+    declare entityKey: string;
+    declare domain: string;
+    declare url: string;
     eventMap: Record<string, string> = {};
 
-    cacheTTL: number = 300000;
+    declare cacheTTL: number;
 
-    schema: RegistrSchema = {} as RegistrSchema;
+    declare schema: RegistrSchema;
 
-    static permissions: Record<string, boolean | string> = {};
+    declare permissions: Record<string, boolean | string>;
 
     constructor(config?: Record<string, any>) {
         super(config);
@@ -59,8 +61,16 @@ export abstract class CoreEntityManager extends ComposableBase {
         if (!ctor.entityType) {
             throw new Error(`${ctor.name} must declare static entityType`);
         }
-        this.entityKey = config?.entityKey ?? ctor.entityType;
+        this.entityKey = this.getData('entityKey') || ctor.entityType;
         this._bindEventMap();
+    }
+
+    _onEntityKeyOptionChange(value: string): void {
+        this.entityKey = value;
+    }
+
+    _onPermissionsOptionChange(value: Record<string, boolean | string>): void {
+        this.permissions = value;
     }
 
     _onDomainOptionChange(value: string): void {
@@ -184,8 +194,9 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected requirePermission(action: string): boolean {
-        const permConfig = (this.constructor as any).permissions?.[action];
+        const permConfig = this.permissions?.[action];
         if (permConfig === undefined) return true;
+        if (permConfig === false) return false;
 
         const permAction = permConfig === true ? action : permConfig;
 

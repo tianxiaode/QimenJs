@@ -43,6 +43,8 @@ jest.mock('@/data-processor', () => ({
 jest.mock('@/composable', () => {
     class ComposableBase {
         static use() {}
+        static define() {}
+        private _data: Record<string, any> = {};
         schema: any;
         logger = {
             debug: jest.fn(),
@@ -50,6 +52,16 @@ jest.mock('@/composable', () => {
             warn: jest.fn(),
             error: jest.fn(),
         };
+        getData(key: string) { return this._data[key]; }
+        setData(key: string, value: any) { this._data[key] = value; }
+        _applyInitOptions(options?: Record<string, any>) {
+            if (options) {
+                for (const [key, value] of Object.entries(options)) {
+                    this._data[key] = value;
+                }
+            }
+        }
+        initOptions() {}
         _getCompiledSchema() {
             const { SchemaRegistrar } = jest.requireMock('@/schema');
             const registrar = SchemaRegistrar.getInstance();

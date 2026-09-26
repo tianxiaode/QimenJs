@@ -153,9 +153,19 @@ jest.mock('@/schema', () => ({
 
 jest.mock('@/composable', () => {
     class ComposableBase {
+        private _data: Record<string, any> = {};
         static use() {}
         static define() {}
         logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+        getData(key: string) { return this._data[key]; }
+        setData(key: string, value: any) { this._data[key] = value; }
+        _applyInitOptions(options?: Record<string, any>) {
+            if (options) {
+                for (const [key, value] of Object.entries(options)) {
+                    this._data[key] = value;
+                }
+            }
+        }
         initOptions() {}
         _getCompiledSchema() {
             return { schema: { name: 'TestEntity', idField: 'id', fields: [] } };
