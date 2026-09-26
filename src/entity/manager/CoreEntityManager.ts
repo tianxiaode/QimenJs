@@ -1,5 +1,5 @@
 import { ComposableBase } from '@/composable';
-import type { InferAbilities } from '@/composable';
+import type { InferAbilities, Definitions } from '@/composable';
 import { EventsAbility, DebounceAbility } from '@/system-abilities';
 import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
@@ -30,17 +30,26 @@ export const CORE_ENTITY_ABILITIES = [
     SchemaAbility,
 ] as const;
 
+const CoreEntityManagerDefs: Definitions = {
+    options: {
+        domain: 'default',
+        url: '',
+        cacheTTL: 300000,
+        schema: null,
+    },
+} as const;
+
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
     domain: string = 'default';
     entityKey: string;
-    abstract url: string;
+    url: string = '';
     eventMap: Record<string, string> = {};
 
     cacheTTL: number = 300000;
 
-    abstract schema: RegistrSchema;
+    schema: RegistrSchema = {} as RegistrSchema;
 
     static permissions: Record<string, boolean | string> = {};
 
@@ -52,6 +61,22 @@ export abstract class CoreEntityManager extends ComposableBase {
         }
         this.entityKey = config?.entityKey ?? ctor.entityType;
         this._bindEventMap();
+    }
+
+    _onDomainOptionChange(value: string): void {
+        this.domain = value;
+    }
+
+    _onUrlOptionChange(value: string): void {
+        this.url = value;
+    }
+
+    _onCacheTTLOptionChange(value: number): void {
+        this.cacheTTL = value;
+    }
+
+    _onSchemaOptionChange(value: RegistrSchema): void {
+        if (value) this.schema = value;
     }
 
     private _bindEventMap(): void {
@@ -194,5 +219,6 @@ export abstract class CoreEntityManager extends ComposableBase {
 }
 
 CoreEntityManager.use(CORE_ENTITY_ABILITIES);
+CoreEntityManager.define(CoreEntityManagerDefs);
 
 export interface CoreEntityManager extends InferAbilities<typeof CORE_ENTITY_ABILITIES> {}

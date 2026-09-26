@@ -210,7 +210,7 @@ import {
     RemoteReadonlyEntityManager,
     RemoteCrudEntityManager,
     RemoteTreeEntityManager,
-} from '@/entity/manager/managers';
+} from '@/entity/manager';
 
 function createConcrete<T extends abstract new (...args: any[]) => any>(
     Base: T,

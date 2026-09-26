@@ -29,7 +29,7 @@ jest.mock('@/logger', () => {
 
 import { CacheFactory } from '@/cache/CacheFactory';
 import { MemoryProvider } from '@/cache/MemoryProvider';
-import { RemoteCrudEntityManager } from '@/entity/manager/managers';
+import { RemoteCrudEntityManager } from '@/entity/manager';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import type { FlatSchema, RegistrSchema } from '@/schema';

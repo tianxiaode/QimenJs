@@ -25,7 +25,7 @@ import {
     RemoteCrudEntityManager,
     RemoteReadonlyEntityManager,
     LocalReadonlyEntityManager,
-} from '@/entity/manager/managers';
+} from '@/entity/manager';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
 import { SchemaRegistrar } from '@/schema';

@@ -1,11 +1,9 @@
 import { DictionaryManager } from './DictionaryManager';
-import {
-    LocalReadonlyEntityManager,
-    LocalCrudEntityManager,
-    RemoteReadonlyEntityManager,
-    RemoteCrudEntityManager,
-    RemoteTreeEntityManager,
-} from './managers';
+import { LocalReadonlyEntityManager } from './LocalReadonlyEntityManager';
+import { LocalCrudEntityManager } from './LocalCrudEntityManager';
+import { RemoteReadonlyEntityManager } from './RemoteReadonlyEntityManager';
+import { RemoteCrudEntityManager } from './RemoteCrudEntityManager';
+import { RemoteTreeEntityManager } from './RemoteTreeEntityManager';
 import type { BaseEntityManager } from './BaseEntityManager';
 
 export type EntityManagerType =

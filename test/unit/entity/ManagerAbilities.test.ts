@@ -184,7 +184,7 @@ describe('SchemaAbility', () => {
 // ============================================
 
 describe('SchemaProxyAbility', () => {
-    const { RemoteCrudEntityManager } = require('@/entity/manager/managers');
+    const { RemoteCrudEntityManager } = require('@/entity/manager');
     const { SchemaRegistrar } = require('@/schema');
     const { RegistryHub } = require('@/registry/RegistryHub');
     const { DomainRegistrar } = require('@/registry/registrars/DomainRegistrar');

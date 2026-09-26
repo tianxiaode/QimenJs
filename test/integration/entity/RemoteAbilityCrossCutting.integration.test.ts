@@ -26,7 +26,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@/entity/manager/managers';
+import { RemoteCrudEntityManager, RemoteReadonlyEntityManager } from '@/entity/manager';
 import { SchemaRegistrar } from '@/schema';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';

@@ -23,7 +23,7 @@ jest.mock('@/logger', () => {
     };
 });
 
-import { RemoteCrudEntityManager } from '@/entity/manager/managers';
+import { RemoteCrudEntityManager } from '@/entity/manager';
 import { RemoteToggleAbility } from '@/entity/abilities/remote/RemoteToggleAbility';
 import { ENTITY_CRUD_EVENTS } from '@/events';
 import { RegistryHub } from '@/registry/RegistryHub';

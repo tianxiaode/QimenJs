@@ -25,7 +25,7 @@ jest.mock('@/logger', () => {
 });
 
 import { ComposableBase, type AbilityDefinition } from '@/composable';
-import { RemoteCrudEntityManager } from '@/entity/manager/managers';
+import { RemoteCrudEntityManager } from '@/entity/manager';
 import { SchemaRegistrar } from '@/schema';
 import { RegistryHub } from '@/registry/RegistryHub';
 import { DomainRegistrar } from '@/registry/registrars/DomainRegistrar';
