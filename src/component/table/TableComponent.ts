@@ -3,10 +3,7 @@ import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import type { ColumnDefOrGroup } from './column-types';
-import { DictionaryManager } from '@/entity';
-import { createEntityManager } from '@/entity';
-import type { BaseEntityManager } from '@/entity';
-import { ENTITY_LIST_EVENTS } from '@/events';
+import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
@@ -14,7 +11,8 @@ class TableComponent extends ItemGroupPooledComponent {
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
-    _entity: BaseEntityManager | null = null;
+    _entityItems: Record<string, any>[] = [];
+    _sourceData: Record<string, any>[] = [];
 
     get tpl(): TemplateDecl {
         return {
@@ -35,7 +33,10 @@ class TableComponent extends ItemGroupPooledComponent {
         this.defaultItemType = 'table-row';
         super.onAfterInit();
 
-        this._ensureEntity();
+        const source = this.getData('data');
+        if (Array.isArray(source)) this._sourceData = source;
+
+        this._connectEntity();
 
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
@@ -49,27 +50,29 @@ class TableComponent extends ItemGroupPooledComponent {
         this._reflow();
     }
 
-    _ensureEntity(): void {
-        if (this._entity) return;
-        const entityConfig = this.getData('entity');
-        if (entityConfig) {
-            if (typeof entityConfig.sort === 'function') {
-                this._entity = entityConfig;
-            } else {
-                this._entity = createEntityManager(entityConfig);
-            }
-        } else {
-            const data = this.getData('data') || [];
-            this._entity = new DictionaryManager({ data });
-        }
-        this._bindEntityEvents();
-    }
+    /**
+     * 对接实体：全部通过实体事件流程，组件不直接引用任何实体类。
+     * - 有 entityKey：发送 CONNECT 让 DataDispatchCenter 按注册表创建实例，
+     *   订阅 listed 事件获取数据，发送 LIST 命令触发加载。
+     * - 无 entityKey：纯本地模式，直接用 data 渲染。
+     */
+    _connectEntity(): void {
+        const entityKey = this.getData('entityKey');
+        if (!entityKey) return;
 
-    _bindEntityEvents(): void {
-        if (!this._entity) return;
-        this._entity.on(ENTITY_LIST_EVENTS.LISTED, () => {
+        this.entityOn(entityKey, ENTITY_LIST_EVENTS.LISTED, (items: any[]) => {
+            this._entityItems = Array.isArray(items) ? items : [];
             if (this._isAfterInit) this._reflow();
         });
+
+        this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, { entityKey });
+
+        this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
+
+        const data = this.getData('data');
+        if (Array.isArray(data) && data.length > 0) {
+            this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
+        }
     }
 
     _bindHeaderEvents(): void {
@@ -92,15 +95,34 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _onSortChange(colName: string, direction: 'asc' | 'desc' | null): void {
-        if (this._entity) {
-            const entity = this._entity as any;
-            if (direction) {
-                entity.sort(colName, direction);
-            } else {
-                entity.sort(colName, 'asc');
-                entity.sort(colName, 'asc');
-            }
+        const entityKey = this.getData('entityKey');
+        if (entityKey) {
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.SORT,
+                { sortBy: colName, sortOrder: direction ?? '' },
+                { source: entityKey }
+            );
+            return;
         }
+        this._sortLocal(colName, direction);
+    }
+
+    _sortLocal(colName: string, direction: 'asc' | 'desc' | null): void {
+        const source = this._sourceData ?? [];
+        if (!direction || !colName) {
+            this.setData('data', [...source], true);
+            this._reflow();
+            return;
+        }
+        const sorted = [...source].sort((a, b) => {
+            const va = a?.[colName];
+            const vb = b?.[colName];
+            if (va === vb) return 0;
+            const cmp = va > vb ? 1 : -1;
+            return direction === 'asc' ? cmp : -cmp;
+        });
+        this.setData('data', sorted, true);
+        this._reflow();
     }
 
     _onColumnResize(colName: string, width: number): void {
@@ -124,22 +146,13 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _onDataOptionChange(data: Record<string, any>[]): void {
-        if (this._entity) {
-            this._entity.setData('data', data);
+        if (Array.isArray(data)) this._sourceData = data;
+        const entityKey = this.getData('entityKey');
+        if (entityKey && Array.isArray(data) && data.length > 0) {
+            this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
+            return;
         }
-        if (this._isAfterInit) {
-            this._reflow();
-        }
-    }
-
-    _onEntityOptionChange(value: any): void {
-        if (!value) return;
-        if (typeof value.sort === 'function') {
-            this._entity = value;
-        } else {
-            this._entity = createEntityManager(value);
-        }
-        this._bindEntityEvents();
+        if (this._isAfterInit) this._reflow();
     }
 
     _reflow(): void {
@@ -156,7 +169,7 @@ class TableComponent extends ItemGroupPooledComponent {
         const metas = this._columnMetaManager.getAll();
         this.defaultItemOption = { columnMetas: metas };
 
-        const data = this._entity?.items ?? this.getData('data') ?? [];
+        const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
         const items = data.map((rowData: any) => ({ data: rowData }));
         super.setItems(items);
     }
@@ -222,19 +235,28 @@ class TableComponent extends ItemGroupPooledComponent {
             this._header.moveColumn(from, to);
         }
     }
+
+    override dispose(): void {
+        const entityKey = this.getData('entityKey');
+        if (entityKey) {
+            this.entityEmit(ENTITY_LIFECYCLE_EVENTS.DISCONNECT, { entityKey });
+        }
+        super.dispose();
+    }
 }
 
 const TableComponentDefs: Definitions = {
     options: {
         columns: null,
         data: null,
-        entity: null,
+        entityKey: null,
     },
     fields: {
         _isAfterInit: false,
         _columnMetaManager: null,
         _header: null,
-        _entity: null,
+        _entityItems: [],
+        _sourceData: [],
     },
 } as const;
 
