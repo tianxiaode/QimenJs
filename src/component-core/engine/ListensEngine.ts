@@ -204,7 +204,10 @@ export class ListensEngine {
         nodeName: string,
         events: Record<string, EventMapping>
     ): void {
-        const child = instance.getComponent?.(nodeName) ?? instance.nodeMap?.[nodeName]?.component ?? instance.nodeMap?.[nodeName];
+        const child =
+            instance.getComponent?.(nodeName) ??
+            instance.nodeMap?.[nodeName]?.component ??
+            instance.nodeMap?.[nodeName];
         if (!child || typeof child.on !== 'function') {
             console.warn(`ListensEngine: node "${nodeName}" not found or not a component`);
             return;
@@ -240,9 +243,8 @@ export class ListensEngine {
         source: string,
         events: Record<string, EventMapping>
     ): void {
-        const resolvedSource = source === 'self'
-            ? EventForwarder.resolveKey(instance.eventKey)
-            : source;
+        const resolvedSource =
+            source === 'self' ? EventForwarder.resolveKey(instance.eventKey) : source;
         if (!resolvedSource) return;
 
         const bus = ComponentEventBus.getInstance();
@@ -295,10 +297,7 @@ export class ListensEngine {
         }
     }
 
-    private static _bindRoute(
-        instance: any,
-        events: Record<string, EventMapping>
-    ): void {
+    private static _bindRoute(instance: any, events: Record<string, EventMapping>): void {
         const bus = RouteEventBus.getInstance();
 
         for (const [eventName, mapping] of Object.entries(events)) {

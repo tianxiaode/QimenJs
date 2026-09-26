@@ -159,6 +159,7 @@ const RowComponentDefs: Definitions = {
         columnMetas: null,
         data: null,
         eventKey: null,
+        entityKey: null,
         listens: [
             {
                 source: 'self',

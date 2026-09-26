@@ -26,8 +26,19 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical' };
+        return { direction: 'vertical', autoEventKey: true };
     }
+
+    listens = [
+        {
+            source: 'self',
+            events: {
+                sortChange: 'onSortChange',
+                resize: 'onColumnResize',
+                groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
+            },
+        },
+    ];
 
     onAfterInit(): void {
         this.defaultItemType = 'table-row';
@@ -41,7 +52,7 @@ class TableComponent extends ItemGroupPooledComponent {
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
             const columns = this.getData('columns') || [];
-            this._header = new TableHeaderComponent({ columns, eventKey: this.eventKey });
+            this._header = new TableHeaderComponent({ columns, eventKey: this.eventKey, entityKey: this.entityKey });
             headerArea.appendChild(this._header.el);
         }
 
@@ -155,7 +166,7 @@ class TableComponent extends ItemGroupPooledComponent {
         this._applyColumnWidths();
 
         const metas = this._columnMetaManager.getAll();
-        this.defaultItemOption = { columnMetas: metas, eventKey: this.eventKey };
+        this.defaultItemOption = { columnMetas: metas, eventKey: this.eventKey, entityKey: this.entityKey };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
         const items = data.map((rowData: any) => ({ data: rowData }));
@@ -226,17 +237,6 @@ const TableComponentDefs: Definitions = {
         columns: null,
         data: null,
         entityKey: null,
-        autoEventKey: true,
-        listens: [
-            {
-                source: 'self',
-                events: {
-                    sortChange: 'onSortChange',
-                    resize: 'onColumnResize',
-                    groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
-                },
-            },
-        ],
     },
     fields: {
         _isAfterInit: false,
