@@ -88,6 +88,11 @@ export const OptionAbility: AbilityDefinition = {
         if (old) this.removeCls('flex-' + old);
     },
 
+    _onFlexShrinkOptionChange(value: string, old: string) {
+        if (value === '0') this.addCls('flex-shrink-0');
+        if (old === '0') this.removeCls('flex-shrink-0');
+    },
+
     _onPositionOptionChange(value: string, old: string) {
         if (value) this.addCls(value);
         if (old) this.removeCls(old);

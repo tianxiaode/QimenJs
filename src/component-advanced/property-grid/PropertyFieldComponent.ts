@@ -80,7 +80,7 @@ class PropertyFieldComponent extends Component {
         const def = this._fieldDef;
 
         if (def.span && def.span > 1) {
-            this.el.style.gridColumn = `span ${def.span}`;
+            this.gridColumn = `span ${def.span}`;
         }
 
         if (def.labelCls) {

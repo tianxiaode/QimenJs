@@ -28,7 +28,6 @@ class RowComponent extends Component {
     }
 
     onAfterInit(): void {
-        this.el.style.display = 'flex';
         this._createCells();
 
         const cells = Array.from(this._cells.values());
@@ -148,6 +147,7 @@ class RowComponent extends Component {
 
 const RowComponentDefs: Definitions = {
     options: {
+        display: 'flex',
         columnMetas: null,
         data: null,
     },

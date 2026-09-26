@@ -92,7 +92,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
                     el.setAttribute('aria-checked', String(checked));
 
                     if (!opt.disabled && !this.disable) {
-                        el.style.cursor = 'pointer';
+                        itemObj.cursor = 'pointer';
                         el.addEventListener('click', () => {
                             this._onCheckboxClick(opt.value);
                         });

@@ -58,7 +58,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
             if (titleCls) this._titleComp.addCls(titleCls);
             const titleStyle = this.getData('titleStyle');
             if (titleStyle) this._titleComp.setStyles(titleStyle);
-            this._titleComp.el.style.order = String(TITLE_ORDER);
+            this._titleComp.order = TITLE_ORDER;
             container.appendChild(this._titleComp.el);
         } else if (!title && this._titleComp) {
             this._titleComp.dispose();
@@ -95,14 +95,14 @@ class HeaderComponent extends ItemGroupStaticComponent {
         if (nL > nR) {
             for (let i = 0; i < diff; i++) {
                 const spacer = new SpacerComponent({ width: spacerWidth });
-                spacer.el.style.order = String(RIGHT_SPACER_ORDER);
+                spacer.order = RIGHT_SPACER_ORDER;
                 container.appendChild(spacer.el);
                 this._rightSpacers.push(spacer);
             }
         } else {
             for (let i = 0; i < diff; i++) {
                 const spacer = new SpacerComponent({ width: spacerWidth });
-                spacer.el.style.order = String(LEFT_SPACER_ORDER);
+                spacer.order = LEFT_SPACER_ORDER;
                 container.appendChild(spacer.el);
                 this._leftSpacers.push(spacer);
             }
@@ -124,9 +124,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
     _createItem(data: Record<string, any>): any {
         const component = super._createItem(data);
         if (component) {
-            const order = data.order ?? 0;
-            component.order = order;
-            component.el.style.order = String(order);
+            component.order = data.order ?? 0;
         }
         return component;
     }
@@ -137,7 +135,6 @@ class HeaderComponent extends ItemGroupStaticComponent {
         const items = this.items;
         if (!Array.isArray(items)) return;
         for (const component of items) {
-            component.el.style.order = String(component.order ?? 0);
             container.appendChild(component.el);
         }
     }

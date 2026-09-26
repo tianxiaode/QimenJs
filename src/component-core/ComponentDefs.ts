@@ -57,8 +57,11 @@ export const ComponentDefs: Definitions = {
         justifyContent: null,
         /** flex 换行 — 'wrap'/'nowrap'/'wrap-reverse'，走 layout.css 全局类 */
         flexWrap: null,
+        /** flex 收缩 — '0'/'1'，走 layout.css 全局类（.flex-shrink-0） */
+        flexShrink: null,
         /** 定位方式 — 'relative'/'absolute'/'fixed'/'sticky'/'static'，走 layout.css 全局类 */
         position: null,
+        gridColumn: null,
         zIndex: null,
         transform: null,
         /** 权限配置 — 控制组件的访问权限 */

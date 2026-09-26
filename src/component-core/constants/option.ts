@@ -10,10 +10,12 @@ export const OPTION_STYLE_PROPS = new Set([
     'maxWidth',
     'minHeight',
     'maxHeight',
+    'order',
     'zIndex',
     'transform',
     'cursor',
     'pointerEvents',
+    'gridColumn',
 ]);
 
 /** 需要走 setAttribute 的选项属性 */
@@ -26,7 +28,6 @@ export const OPTION_CLS_PROPS = ['cls'] as const;
 export const OPTION_CUSTOM_PROPS = [
     'style',
     'attribute',
-    'order',
     'hidden',
     'disabled',
     'i18n',

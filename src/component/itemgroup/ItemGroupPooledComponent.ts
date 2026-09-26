@@ -393,11 +393,11 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!Array.isArray(items)) return;
 
         for (let i = 0; i < items.length; i++) {
-            const el = items[i]?.el;
-            if (!el) continue;
-            const customOrder = items[i]?.order;
-            el.style.order =
-                customOrder !== undefined ? String(customOrder) : String((i + 1) * step);
+            const component = items[i];
+            if (!component?.el) continue;
+            if (component.order === undefined) {
+                component.order = (i + 1) * step;
+            }
         }
 
         if (this._auxPools) {
@@ -406,9 +406,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                     const component = pool.items[i];
                     if (!component?.el) continue;
                     const orderIndex = component?.orderIndex ?? 0;
-                    component.el.style.order = String(
-                        Math.floor(orderIndex * step + step * pool.offset)
-                    );
+                    component.order = Math.floor(orderIndex * step + step * pool.offset);
                 }
             }
         }

@@ -18,7 +18,6 @@ class TableSummaryRowComponent extends Component {
     }
 
     onAfterInit(): void {
-        this.el.style.display = 'flex';
         this._createCells();
     }
 
@@ -34,7 +33,7 @@ class TableSummaryRowComponent extends Component {
 
             if (meta.width) {
                 cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
-                cell.el.style.flexShrink = '0';
+                cell.flexShrink = '0';
             }
         }
     }
@@ -84,6 +83,7 @@ class TableSummaryRowComponent extends Component {
 
 const TableSummaryRowComponentDefs: Definitions = {
     options: {
+        display: 'flex',
         columnMetas: null,
     },
     fields: {
