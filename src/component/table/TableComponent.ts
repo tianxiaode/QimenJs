@@ -2,8 +2,7 @@ import type { TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
-import { RowComponent } from './row/RowComponent';
-import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
+import type { ColumnDefOrGroup } from './column-types';
 import { DictionaryManager } from '@/entity';
 import { createEntityManager } from '@/entity';
 import type { BaseEntityManager } from '@/entity';
@@ -11,7 +10,7 @@ import { ENTITY_LIST_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
-    static type = 'q-table';
+    static type = 'table';
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
@@ -23,10 +22,7 @@ class TableComponent extends ItemGroupPooledComponent {
             classes: 'q-table',
             children: [
                 { tag: 'div', name: 'headerArea', classes: 'q-table__header-area' },
-                { tag: 'div', name: 'overflowPrev', classes: 'q-itemgroup__overflow-prev hidden' },
                 { tag: 'div', name: 'itemContainer', classes: 'q-table__body' },
-                { tag: 'div', name: 'overflowNext', classes: 'q-itemgroup__overflow-next hidden' },
-                { tag: 'div', name: 'overflowMore', classes: 'q-itemgroup__overflow-more hidden' },
             ],
         };
     }
@@ -36,7 +32,7 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     onAfterInit(): void {
-        this.defaultItemType = 'q-table-row';
+        this.defaultItemType = 'table-row';
         super.onAfterInit();
 
         this._ensureEntity();
