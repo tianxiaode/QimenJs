@@ -10,7 +10,6 @@ export const OPTION_STYLE_PROPS = new Set([
     'maxWidth',
     'minHeight',
     'maxHeight',
-    'position',
     'zIndex',
     'transform',
     'cursor',

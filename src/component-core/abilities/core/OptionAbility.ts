@@ -63,6 +63,36 @@ export const OptionAbility: AbilityDefinition = {
         this.el?.style.setProperty('border-radius', resolved);
     },
 
+    _onDisplayOptionChange(value: string, old: string) {
+        if (value) this.addCls(value);
+        if (old) this.removeCls(old);
+    },
+
+    _onFlexDirectionOptionChange(value: string, old: string) {
+        if (value) this.addCls('flex-' + value);
+        if (old) this.removeCls('flex-' + old);
+    },
+
+    _onAlignItemsOptionChange(value: string, old: string) {
+        if (value) this.addCls('items-' + value);
+        if (old) this.removeCls('items-' + old);
+    },
+
+    _onJustifyContentOptionChange(value: string, old: string) {
+        if (value) this.addCls('justify-' + value);
+        if (old) this.removeCls('justify-' + old);
+    },
+
+    _onFlexWrapOptionChange(value: string, old: string) {
+        if (value) this.addCls('flex-' + value);
+        if (old) this.removeCls('flex-' + old);
+    },
+
+    _onPositionOptionChange(value: string, old: string) {
+        if (value) this.addCls(value);
+        if (old) this.removeCls(old);
+    },
+
     _onHintOptionChange(value: any, _old: any) {
         if (value) {
             this.setNodeAttr('title', String(value));

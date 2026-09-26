@@ -2,11 +2,7 @@ import { BaseEntityManager } from './BaseEntityManager';
 import type { InferAbilities, Definitions } from '@/composable';
 import type { ILocalSearchParams, IEntity, RegistrSchema } from '@/schema';
 import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
-import {
-    FlatLocalStateAbility,
-    LocalListAbility,
-    LocalGetAbility,
-} from '../abilities';
+import { FlatLocalStateAbility, LocalListAbility, LocalGetAbility } from '../abilities';
 
 const LOCAL_READONLY_ABILITIES = [
     FlatLocalStateAbility,

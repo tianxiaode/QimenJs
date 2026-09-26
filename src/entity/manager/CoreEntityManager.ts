@@ -5,7 +5,7 @@ import { DomainAbility } from '@/system-abilities';
 import { SystemAbility } from '@/system-abilities';
 import { SchemaAbility } from '../abilities/SchemaAbility';
 import type { ENTITY_ACTION } from '../types';
-import type { Schema, RegistrSchema } from '@/schema';
+import type { Schema } from '@/schema';
 import type { HttpRequestOptions, HttpRequestTask } from '@/http';
 import type { RequestContext } from '@/context';
 import { RequestContextBuilder } from '@/context';
@@ -14,11 +14,7 @@ import { dataProcessorExecutor } from '@/data-processor';
 import { RegistryHub } from '@/registry';
 import { HttpExecutor } from '@/http';
 import { PermissionRegistrar } from '@/permission';
-import {
-    ENTITY_PERMISSION_EVENTS,
-    buildRequestEvent,
-    ENTITY_REQUEST_STATUS,
-} from '@/events/entity-events';
+import { buildRequestEvent, ENTITY_REQUEST_STATUS } from '@/events/entity-events';
 import { KernelError, KernelErrorCode } from '@/error';
 import { string } from '@/utils';
 import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
@@ -46,24 +42,11 @@ const CoreEntityManagerDefs: Definitions = {
 export abstract class CoreEntityManager extends ComposableBase {
     static entityType: string;
 
-    id: string;
-    entityKey: string;
-    domain: string;
-    url: string;
     eventMap: Record<string, string> = {};
-
-    cacheTTL: number;
-
-    schema: RegistrSchema;
-
-    permissions: Record<string, boolean | string>;
-
-    get defaultOptions(): Record<string, any> {
-        return { entityKey: (this.constructor as any).entityType };
-    }
 
     constructor(config?: Record<string, any>) {
         super(config);
+        const slef = this as any;
         const ctor = this.constructor as typeof CoreEntityManager;
         if (!ctor.entityType) {
             throw new KernelError(
@@ -72,28 +55,29 @@ export abstract class CoreEntityManager extends ComposableBase {
                 { className: ctor.name }
             );
         }
-        if (!this.entityKey) {
+        if (!slef.entityKey) {
             throw new KernelError(
                 `EntityKey is required for ${ctor.name}`,
                 KernelErrorCode.ENTITY_KEY_REQUIRED,
                 { className: ctor.name, entityType: ctor.entityType }
             );
         }
-        if (!this.id) {
-            this.id = string.getId(`mgr-${ctor.entityType}`);
+        if (!slef.id) {
+            slef.id = string.getId(`mgr-${ctor.entityType}`);
         }
-        this._bindEventMap();
+        slef._bindEventMap();
     }
 
     private _bindEventMap(): void {
-        const map = (this as any).eventMap;
+        const self = this as any;
+        const map = self.eventMap;
         if (!map) return;
 
         for (const [eventName, methodName] of Object.entries(map)) {
-            this.entityOn(this.entityKey!, eventName, (data: any) => {
-                const method = (this as any)[methodName as string];
+            this.entityOn(self.entityKey!, eventName, (data: any) => {
+                const method = self[methodName as string];
                 if (typeof method === 'function') {
-                    method.call(this, data);
+                    method.call(self, data);
                 }
             });
         }
@@ -104,7 +88,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected emitEvent(event: string, data?: any): void {
-        this.entityEmit(event, data, { source: this.entityKey });
+        this.entityEmit(event, data, { source: (this as any).entityKey });
     }
 
     get compiledSchema(): Schema {
@@ -112,7 +96,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected getDomainConfig(): any {
-        return (RegistryHub.get('domain') as any)?.get(this.domain);
+        return (RegistryHub.get('domain') as any)?.get((this as any).domain);
     }
 
     protected getDataProcessorPreset(): string {
@@ -128,15 +112,16 @@ export abstract class CoreEntityManager extends ComposableBase {
         const context = this.buildRequestContext(action, options);
 
         const execute = async (): Promise<RequestContext> => {
+            const self = this as any; // Cast to CoreEntityManager
             try {
-                this.logger.debug(`Executing Action [${action}] for Entity [${this.entityKey}]`);
-                await this.executeDataProcessor('pre', context);
+                this.logger.debug(`Executing Action [${action}] for Entity [${self.entityKey}]`);
+                await self.executeDataProcessor('pre', context);
                 const executor = new HttpExecutor();
                 await executor.execute(context);
-                await this.executeDataProcessor('post', context);
+                await self.executeDataProcessor('post', context);
                 return context;
             } catch (e) {
-                this.logger.error(`Request failed in Action [${action}]!`, e);
+                self.logger.error(`Request failed in Action [${action}]!`, e);
                 throw e;
             }
         };
@@ -152,16 +137,17 @@ export abstract class CoreEntityManager extends ComposableBase {
         action: ENTITY_ACTION,
         options: HttpRequestOptions
     ): RequestContext {
-        const schema = this.getSchema();
+        const self = this as any; // Cast to CoreEntityManager
+        const schema = self.getSchema();
 
         return RequestContextBuilder.create()
             .withIdentity({
-                domain: this.domain,
-                entityName: this.entityKey,
+                domain: self.domain,
+                entityName: self.entityKey,
                 action: action as string,
             })
             .withRequest({
-                url: this.url,
+                url: self.url,
                 method: 'GET',
                 body: options.body,
                 headers: options.headers,
@@ -190,7 +176,8 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected requirePermission(action: string): boolean {
-        const permConfig = this.permissions?.[action];
+        const self = this as any; // Cast to CoreEntityManager
+        const permConfig = self.permissions?.[action];
         if (permConfig === undefined) return true;
         if (permConfig === false) return false;
 
@@ -198,29 +185,30 @@ export abstract class CoreEntityManager extends ComposableBase {
 
         return PermissionRegistrar.getInstance().hasPermission({
             action: permAction,
-            entityKey: this.entityKey,
-            domain: this.domain,
+            entityKey: self.entityKey,
+            domain: self.domain,
         });
     }
 
     protected onPermissionDenied(action: string) {
+        const self = this as any; // Cast to CoreEntityManager
         const error = {
             code: KernelErrorCode.ENTITY_PERMISSION_DENIED,
             action,
-            entityKey: this.entityKey,
-            domain: this.domain,
-            message: `Permission denied: [${action}] on entity [${this.entityKey}] in domain [${this.domain}]`,
+            entityKey: self.entityKey,
+            domain: self.domain,
+            message: `Permission denied: [${action}] on entity [${self.entityKey}] in domain [${self.domain}]`,
         };
-        this.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), { error });
+        self.emitEvent(buildRequestEvent(action, ENTITY_REQUEST_STATUS.ERROR), { error });
         return { context: {}, cancel: () => {} } as HttpRequestTask;
     }
 
     cancelAll(): void {
-        this.logger.warn(`Cancelling all requests for Entity [${this.entityKey}]`);
+        this.logger.warn(`Cancelling all requests for Entity [${(this as any).entityKey}]`);
     }
 
     override dispose(): void {
-        this.logger.debug(`CoreEntityManager [${this.entityKey}] disposed.`);
+        this.logger.debug(`CoreEntityManager [${(this as any).entityKey}] disposed.`);
         super.dispose();
     }
 }

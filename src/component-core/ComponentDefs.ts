@@ -47,6 +47,17 @@ export const ComponentDefs: Definitions = {
         maxWidth: null,
         minHeight: null,
         maxHeight: null,
+        /** 显示类型 — 'flex'/'inline-flex'/'grid'，走 layout.css 全局类 */
+        display: null,
+        /** flex 方向 — 'row'/'col'/'row-reverse'/'col-reverse'，走 layout.css 全局类 */
+        flexDirection: null,
+        /** 交叉轴对齐 — 'start'/'center'/'end'/'stretch'/'baseline'，走 layout.css 全局类 */
+        alignItems: null,
+        /** 主轴对齐 — 'start'/'center'/'end'/'between'/'around'/'evenly'，走 layout.css 全局类 */
+        justifyContent: null,
+        /** flex 换行 — 'wrap'/'nowrap'/'wrap-reverse'，走 layout.css 全局类 */
+        flexWrap: null,
+        /** 定位方式 — 'relative'/'absolute'/'fixed'/'sticky'/'static'，走 layout.css 全局类 */
         position: null,
         zIndex: null,
         transform: null,

@@ -1,4 +1,4 @@
-import type { ENTITY_ACTION, IBaseEntityManager } from '../types';
+import type { ENTITY_ACTION } from '../types';
 import type { FieldDefinition, IEntity, SearchParams } from '@/schema';
 import type { HttpRequestOptions } from '@/http';
 import type { RequestContext } from '@/context';
@@ -11,10 +11,9 @@ import { buildRequestEvent, ENTITY_REQUEST_STATUS } from '@/events';
  *
  * 无额外能力，在 CoreEntityManager 基础上增加 fetch/buildOptions 等通用方法。
  */
-export abstract class BaseEntityManager<TSearch extends SearchParams = SearchParams>
-    extends CoreEntityManager
-    implements IBaseEntityManager<TSearch>
-{
+export abstract class BaseEntityManager<
+    TSearch extends SearchParams = SearchParams,
+> extends CoreEntityManager {
     // 数据字段
     loading: boolean = false;
     items: IEntity[] = [];
@@ -125,9 +124,9 @@ export abstract class BaseEntityManager<TSearch extends SearchParams = SearchPar
     protected onPrepareField(
         field: FieldDefinition,
         value: any,
-        rawData: any,
-        action: ENTITY_ACTION,
-        options: HttpRequestOptions
+        _rawData: any,
+        _action: ENTITY_ACTION,
+        _options: HttpRequestOptions
     ) {
         return value;
     }
