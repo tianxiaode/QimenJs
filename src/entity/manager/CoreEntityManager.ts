@@ -65,7 +65,11 @@ export abstract class CoreEntityManager extends ComposableBase {
         if (!slef.id) {
             slef.id = string.getId(`mgr-${ctor.entityType}`);
         }
-        slef._bindEventMap();
+    }
+
+    initOptions(): void {
+        super.initOptions();
+        this._bindEventMap();
     }
 
     private _bindEventMap(): void {
