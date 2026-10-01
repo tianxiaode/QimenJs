@@ -168,4 +168,10 @@ __qimen_i18n_register__('en-US', {
         notFound: 'The requested resource was not found',
         server: 'Server error, please try again later',
     },
+    table: {
+        sortAsc: 'Sort Ascending',
+        sortDesc: 'Sort Descending',
+        groupBy: 'Group by This Field',
+        hideColumn: 'Hide Column',
+    },
 });

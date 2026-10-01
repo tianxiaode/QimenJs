@@ -19,7 +19,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onHeaderCellClick', entities: 'sort' }],
+        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
     };
 
     _groupField: string = '';
@@ -28,7 +28,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return {
             sortBy: this.getData('sortBy') ?? '',
             sortOrder: this.getData('sortOrder') ?? '',
-            groupField: this._groupField,
+            groupField: this.getData('groupField') ?? '',
         };
     }
 
@@ -77,6 +77,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             minWidth: leaf.minWidth ?? 50,
             hideableColumns,
             groupable: leaf.groupable ?? false,
+            groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
             eventKey,
         };
@@ -161,6 +162,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const nextState =
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this._applySort(colName, nextState);
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
         }
     }
 
@@ -173,7 +175,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             this._applySort(colName, 'desc');
             this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
         } else if (action === 'groupBy') {
-            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField: colName }, { source: this.entityKey });
+            const currentGroupField = this.getData('groupField') ?? '';
+            const newGroupField = currentGroupField === colName ? '' : colName;
+            this.setData('groupField', newGroupField);
+            this._updateCellGroupField(newGroupField);
+            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField: newGroupField }, { source: this.entityKey });
         } else if (action?.startsWith('toggleColumn:')) {
             const targetColName = action.substring('toggleColumn:'.length);
             const columns = this.columns;
@@ -187,6 +193,17 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 } else {
                     this.hideColumn(targetColName);
                     this.componentEmit('hideColumn', { colName: targetColName });
+                }
+            }
+        }
+    }
+
+    _updateCellGroupField(groupField: string): void {
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (typeof item.setData === 'function') {
+                    item.setData('groupField', groupField);
                 }
             }
         }
@@ -251,6 +268,7 @@ const TableHeaderComponentDefs: Definitions = {
         direction: 'horizontal',
         sortBy: '',
         sortOrder: '',
+        groupField: '',
     },
 } as const;
 

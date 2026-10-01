@@ -20,6 +20,7 @@ const HeaderCellComponentDefs: Definitions = {
         menuDisabled: false,
         hideableColumns: null,
         groupable: false,
+        groupField: '',
         customMenuItems: null,
     },
 } as const;
@@ -48,7 +49,12 @@ class HeaderCellComponent extends Component {
             items.push({ text: '@table.sortDesc', action: 'sortDesc', order: 20 });
         }
         if (this.groupable) {
-            items.push({ text: '@table.groupBy', action: 'groupBy', order: 30 });
+            items.push({
+                text: '@table.groupBy',
+                action: 'groupBy',
+                order: 30,
+                checked: this.groupField === this.colName,
+            });
         }
         const hideable = this.hideableColumns;
         if (hideable?.length) {
@@ -97,7 +103,7 @@ class HeaderCellComponent extends Component {
             type: 'menu',
             trigger: 'click',
             anchor: 'menuIcon',
-            placement: 'bottom-end',
+            placement: 'bottom-start',
             options: { items: this._buildMenuItems() },
         });
         this._popoverInitialized = true;
@@ -170,6 +176,12 @@ class HeaderCellComponent extends Component {
     }
 
     _onGroupableOptionChange(_value: boolean): void {
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
+    }
+
+    _onGroupFieldOptionChange(_value: string): void {
         if (this._popoverInitialized && !this.menuDisabled) {
             this.updatePopover({ items: this._buildMenuItems() });
         }

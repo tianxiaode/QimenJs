@@ -168,4 +168,10 @@ __qimen_i18n_register__('zh-CN', {
         notFound: '请求的资源不存在',
         server: '服务器错误，请稍后重试',
     },
+    table: {
+        sortAsc: '升序排序',
+        sortDesc: '降序排序',
+        groupBy: '按此字段分组',
+        hideColumn: '隐藏列',
+    },
 });
