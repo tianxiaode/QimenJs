@@ -93,12 +93,12 @@ class TableComponent extends ItemGroupPooledComponent {
             entityType: this.getData('entityType') || DICTIONARY_MANAGER_ENTITY_TYPE,
         });
 
-        this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
-
         const data = this.getData('data');
         if (Array.isArray(data) && data.length > 0) {
             this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
         }
+
+        this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
     }
 
     onEntityListed(items: any[]): void {
@@ -153,11 +153,6 @@ class TableComponent extends ItemGroupPooledComponent {
 
     _onDataOptionChange(data: Record<string, any>[]): void {
         if (Array.isArray(data)) this._sourceData = data;
-        const entityKey = this.getData('entityKey');
-        if (entityKey && Array.isArray(data) && data.length > 0) {
-            this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
-            return;
-        }
         if (this._isAfterInit) this._reflow();
     }
 

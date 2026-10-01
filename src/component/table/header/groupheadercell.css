@@ -11,6 +11,12 @@
     overflow: hidden;
 }
 
+.q-header-cell__group-body .q-header-cell__title {
+    text-align: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--q-colors-border, #e0e0e0);
+}
+
 .q-header-cell__children {
     display: flex;
     flex-direction: row;
