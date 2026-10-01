@@ -11,6 +11,9 @@
 // component-core 全部组件集中注册
 import '@qimenjs/component-core/register';
 
+// entity 模块注册（触发各 Manager 的 register() 和 DataDispatchCenter 初始化）
+import '@qimenjs/entity';
+
 // component 包组件按需注册（深路径导入，避免全量打包）
 import {
     ButtonComponent,
