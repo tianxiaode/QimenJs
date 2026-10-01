@@ -77,6 +77,8 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         const container = this.getNodeEl('children');
         if (!container) return;
 
+        const eventKey = this.eventKey ?? this.getData?.('eventKey');
+
         for (const config of configs) {
             const ChildClass =
                 config.type === 'group' ? GroupHeaderCellComponent : HeaderCellComponent;
@@ -86,6 +88,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
                 title: config.title,
                 align: config.align,
                 minWidth: config.minWidth,
+                eventKey,
             };
 
             if (config.type === 'leaf') {
@@ -101,11 +104,6 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             }
 
             const instance = new ChildClass(childProps);
-            if (typeof instance.on === 'function') {
-                instance.on('menuSelect', (data: any) => {
-                    this.emit('menuSelect', data);
-                });
-            }
             this._childCells.push({ component: instance, el: instance.el as HTMLElement });
             container.appendChild(instance.el);
         }
