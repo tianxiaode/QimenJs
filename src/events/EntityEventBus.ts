@@ -52,13 +52,27 @@ export class EntityEventBus {
             'eventName =',
             eventName
         );
-        console.log('[EntityBus] entityEmit: entityKey =', entityKey, 'eventName =', eventName, 'event =', entityEvent);
 
         if (BROADCAST_EVENTS.has(eventName)) {
             this.entityScope.emit(entityEvent, { entityKey, ...ctx });
         } else {
             this.entityScope.emit(entityEvent, ctx);
         }
+    }
+
+    entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {
+        const entityEvent = encodeEntityEvent(entityKey, eventName);
+        this.logger.debug?.(
+            '[EntityEventBus] entityOn, entityKey =',
+            entityKey,
+            'eventName =',
+            eventName
+        );
+        return this.entityScope.on(entityEvent, (ctx: any) => {
+            const data = ctx?.data !== undefined ? ctx.data : ctx;
+            handler(data);
+        });
+    }
     }
 
     entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {

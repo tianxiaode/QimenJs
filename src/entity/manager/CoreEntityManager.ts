@@ -75,13 +75,10 @@ export abstract class CoreEntityManager extends ComposableBase {
     private _bindEventMap(): void {
         const self = this as any;
         const map = self.eventMap;
-        console.log('[CoreEM] _bindEventMap: entityKey =', self.entityKey, 'map =', map, 'entityOn type =', typeof this.entityOn);
         if (!map) return;
 
         for (const [eventName, methodName] of Object.entries(map)) {
-            console.log('[CoreEM] _bindEventMap: binding', eventName, '->', methodName);
             this.entityOn(self.entityKey!, eventName, (data: any) => {
-                console.log('[CoreEM] eventMap handler:', eventName, 'data type =', Array.isArray(data) ? `array(${data.length})` : typeof data);
                 const method = self[methodName as string];
                 if (typeof method === 'function') {
                     method.call(self, data);
@@ -95,7 +92,6 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected emitEvent(event: string, data?: any): void {
-        console.log('[CoreEM] emitEvent:', event, 'entityKey =', (this as any).entityKey, 'data length =', Array.isArray(data) ? data.length : typeof data);
         this.entityEmit(event, data, { source: (this as any).entityKey });
     }
 

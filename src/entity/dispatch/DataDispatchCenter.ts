@@ -19,12 +19,10 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
     private _listenLifecycleEvents(): void {
         const bus = EntityEventBus.getInstance();
         bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.CONNECT, (data: any) => {
-            console.log('[DDC] CONNECT handler triggered, data =', JSON.stringify(data));
             const entityKey = data?.entityKey;
             if (entityKey) this.connect(entityKey, data?.entityType);
         });
         bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.DISCONNECT, (data: any) => {
-            console.log('[DDC] DISCONNECT handler triggered, data =', JSON.stringify(data));
             const entityKey = data?.entityKey;
             if (entityKey) this.disconnect(entityKey);
         });
@@ -75,7 +73,6 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
     }
 
     connect(entityKey: string, entityType?: string): any {
-        console.log('[DDC] connect: entityKey =', entityKey, 'entityType =', entityType);
         const existing = this.instances.get(entityKey);
         if (existing) {
             existing.refCount++;

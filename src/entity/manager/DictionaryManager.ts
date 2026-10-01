@@ -86,7 +86,6 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
     }
 
     loadDictionary(data: any[]): void {
-        console.log('[DictMgr] loadDictionary: received', data.length, 'items, idField =', this.schema.idField);
         const idField = this.schema.idField || 'id';
         this.sourceData.clear();
         for (let i = 0; i < data.length; i++) {
@@ -99,7 +98,6 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
                 this.sourceData.set(`__auto_${i}`, item);
             }
         }
-        console.log('[DictMgr] loadDictionary: sourceData size =', this.sourceData.size);
         this.refreshView();
     }
 }

@@ -560,10 +560,8 @@ export const FlatLocalStateAbility = {
 
         try {
             const allData = Array.from(this.sourceData.values());
-            console.log('[FlatLocal] refreshView: sourceData size =', this.sourceData.size, 'allData =', allData.length);
             const filtered = allData.filter((item: any) => this.matchKeyword(item));
             this.items = this.applyGroup(this.applySort(filtered));
-            console.log('[FlatLocal] refreshView: items =', this.items.length, 'emitting LISTED');
             this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
         } finally {
             this.loading = false;
