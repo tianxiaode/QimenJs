@@ -92,7 +92,9 @@ function _forwardEntities(ctx: ForwardContext): void {
         ctx.config.entities === '[action]' && ctx.actualAction
             ? ctx.actualAction
             : ctx.config.entities!;
-    const entityKey = EventForwarder.resolveKey(ctx.instance.entityKey) ?? '';
+    const entityKey = EventForwarder.resolveKey(
+        ctx.instance.entityKey ?? ctx.instance.getData?.('entityKey')
+    ) ?? '';
     ComponentEntityDispatch.dispatch(ctx.instance, entityKey, resolvedName, ctx.data);
 }
 
@@ -143,7 +145,9 @@ const FORWARD_ROUTES: ForwardRoute[] = [
     },
     {
         key: 'entity',
-        canExecute: ctx => !!ctx.config.entities && !!ctx.instance.entityKey,
+        canExecute: ctx =>
+            !!ctx.config.entities &&
+            !!(ctx.instance.entityKey ?? ctx.instance.getData?.('entityKey')),
         execute: _forwardEntities,
     },
     {

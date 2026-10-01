@@ -34,6 +34,11 @@ export const InitAbility = {
             this.setData('eventKey', `evt-${this.id}`, true);
         }
 
+        const entKey = this.getData('entityKey');
+        if (entKey) this.entityKey = entKey;
+        const evtKey = this.getData('eventKey');
+        if (evtKey) this.eventKey = evtKey;
+
         this._initializing = true;
         this.isInstance = true;
         this.ready = new Promise(resolve => (this._readyResolve = resolve));

@@ -137,6 +137,10 @@ export const EventsAbility = {
             this.eventKey = key;
             EventSourceRegistrar.getInstance().register(key, this);
         }
+        const entKey = ctor.entityKey || this.getData('entityKey');
+        if (entKey) {
+            this.entityKey = entKey;
+        }
     },
 
     _unregisterEventKey() {

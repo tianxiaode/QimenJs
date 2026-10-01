@@ -491,9 +491,14 @@ const searchMethods: AbilityDefinition = {
         ]);
     },
 
-    sort(field: string, order: 'asc' | 'desc' = 'asc') {
-        (this.search as any).sortBy = field;
-        (this.search as any).sortOrder = order;
+    sort(fieldOrData: string | { sortBy?: string; sortOrder?: string }, order?: 'asc' | 'desc' | null) {
+        if (typeof fieldOrData === 'object' && fieldOrData !== null) {
+            (this.search as any).sortBy = fieldOrData.sortBy;
+            (this.search as any).sortOrder = fieldOrData.sortOrder || 'asc';
+        } else {
+            (this.search as any).sortBy = fieldOrData;
+            (this.search as any).sortOrder = order || 'asc';
+        }
         this.refreshView();
     },
 
@@ -503,8 +508,12 @@ const searchMethods: AbilityDefinition = {
      * 分组后 items 变为分组数组 [{ groupKey, groupItems }]，组内保持排序后的顺序。
      * 置空（undefined / ''）则恢复未分组状态。
      */
-    groupBy(field: string) {
-        (this.search as any).groupBy = field;
+    groupBy(fieldOrData: string | { groupField?: string }) {
+        if (typeof fieldOrData === 'object' && fieldOrData !== null) {
+            (this.search as any).groupBy = fieldOrData.groupField;
+        } else {
+            (this.search as any).groupBy = fieldOrData;
+        }
         this.refreshView();
     },
 
