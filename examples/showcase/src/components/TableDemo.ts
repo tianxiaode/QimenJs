@@ -20,10 +20,10 @@ const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
         title: '基本信息',
         children: [
             { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label' },
         ],
     },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum' },
 ];
 
 class ComprehensiveTableDemo extends Component {
@@ -91,10 +91,10 @@ export const TABLE_DEMO: DemoConfig = {
     {
         name: 'baseInfo', title: '基本信息', children: [
             { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label' },
         ]
     },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum' },
 ];
 const table = new TableComponent({ columns, data, groupField: 'dept' });
 

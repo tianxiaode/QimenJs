@@ -103,6 +103,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             resizable: leaf.resizable ?? true,
             reorderable: leaf.reorderable ?? false,
             minWidth: leaf.minWidth ?? 50,
+            groupable: leaf.groupable ?? false,
+            groupField: this.getData('groupField') ?? '',
+            hideableColumns: this._collectHideableColumns(),
         };
     }
 

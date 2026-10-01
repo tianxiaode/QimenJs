@@ -14,6 +14,9 @@ export interface GroupChildConfig {
     resizable?: boolean;
     reorderable?: boolean;
     minWidth?: number;
+    groupable?: boolean;
+    groupField?: string;
+    hideableColumns?: Array<{ colName: string; title?: string; hidden: boolean }>;
     children?: GroupChildConfig[];
 }
 
@@ -89,6 +92,9 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
                 childProps.sortable = config.sortable;
                 childProps.resizable = config.resizable;
                 childProps.reorderable = config.reorderable;
+                childProps.groupable = config.groupable ?? false;
+                childProps.groupField = config.groupField ?? '';
+                childProps.hideableColumns = config.hideableColumns ?? null;
             } else if (config.type === 'group' && config.children) {
                 childProps.childNames = config.children.map((c: GroupChildConfig) => c.colName);
                 childProps.childConfigs = config.children;
