@@ -16,6 +16,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _header: TableHeaderComponent | null = null;
     _entityItems: Record<string, any>[] = [];
     _sourceData: Record<string, any>[] = [];
+    _lastReflowData: any[] = [];
     _groupRowMap: Map<string, { summaryRow: any; dataRows: any[] }> = new Map();
 
     get tpl(): TemplateDecl {
@@ -156,6 +157,13 @@ class TableComponent extends ItemGroupPooledComponent {
         };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
+        const isGrouped = this._isGroupedData(data);
+        const wasGrouped = this._isGroupedData(this._lastReflowData);
+        if (wasGrouped !== isGrouped) {
+            this._disposeAllItems();
+        }
+        this._lastReflowData = data;
+
         const items = this._buildItems(data, metas);
         super.setItems(items);
         this._buildGroupRowMap(items);
