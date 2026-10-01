@@ -65,6 +65,7 @@ export class RemoteTreeEntityManager<
         [CMD.FILTER]: 'filter',
         [CMD.SEARCH_BY]: 'searchBy',
         [CMD.SORT]: 'sort',
+        [CMD.GROUP_BY]: 'groupBy',
         [CMD.RESET]: 'reset',
         [CMD.CREATE]: 'create',
         [CMD.UPDATE]: 'update',

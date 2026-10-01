@@ -74,6 +74,7 @@ export class RemoteCrudEntityManager<
         [CMD.FILTER]: 'filter',
         [CMD.SEARCH_BY]: 'searchBy',
         [CMD.SORT]: 'sort',
+        [CMD.GROUP_BY]: 'groupBy',
         [CMD.RESET]: 'reset',
         [CMD.PREV]: 'prev',
         [CMD.NEXT]: 'next',

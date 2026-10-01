@@ -115,6 +115,7 @@ export const ENTITY_COMMAND_EVENTS = {
     FILTER: 'filter',
     SEARCH_BY: 'searchBy',
     SORT: 'sort',
+    GROUP_BY: 'groupBy',
     RESET: 'reset',
 
     // 分页命令

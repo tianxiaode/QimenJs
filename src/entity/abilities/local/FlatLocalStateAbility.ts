@@ -496,6 +496,34 @@ const searchMethods: AbilityDefinition = {
         (this.search as any).sortOrder = order;
         this.refreshView();
     },
+
+    /**
+     * 按字段分组
+     *
+     * 分组后 items 变为分组数组 [{ groupKey, groupItems }]，组内保持排序后的顺序。
+     * 置空（undefined / ''）则恢复未分组状态。
+     */
+    groupBy(field: string) {
+        (this.search as any).groupBy = field;
+        this.refreshView();
+    },
+
+    applyGroup(list: any[]): any[] {
+        const groupBy = (this.search as any)?.groupBy;
+        if (!groupBy || !list || list.length === 0) return list;
+
+        const groups: { groupKey: any; groupItems: any[] }[] = [];
+        const groupMap = new Map<any, any[]>();
+        for (const item of list) {
+            const key = item?.[groupBy];
+            if (!groupMap.has(key)) {
+                groupMap.set(key, []);
+                groups.push({ groupKey: key, groupItems: groupMap.get(key)! });
+            }
+            groupMap.get(key)!.push(item);
+        }
+        return groups;
+    },
 };
 
 // ---- 合并导出 ----
@@ -533,7 +561,7 @@ export const FlatLocalStateAbility = {
         try {
             const allData = Array.from(this.sourceData.values());
             const filtered = allData.filter((item: any) => this.matchKeyword(item));
-            this.items = this.applySort(filtered);
+            this.items = this.applyGroup(this.applySort(filtered));
             this.emitEvent(ENTITY_LIST_EVENTS.LISTED, this.items);
         } finally {
             this.loading = false;

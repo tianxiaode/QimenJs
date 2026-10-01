@@ -42,6 +42,7 @@ export class LocalReadonlyEntityManager<
         [CMD.REFRESH]: 'refresh',
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
+        [CMD.GROUP_BY]: 'groupBy',
         [CMD.GET]: 'get',
     };
 

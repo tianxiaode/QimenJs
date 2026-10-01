@@ -25,6 +25,12 @@ export const FlatRemoteQueryAbility = {
         return await this._internalList(false);
     },
 
+    async groupBy(field: string) {
+        (this.search as any).groupBy = field;
+        this.page = 1;
+        return await this._internalList(false);
+    },
+
     toParams(): Record<string, any> {
         const { schema } = this;
         const params: Record<string, any> = {};

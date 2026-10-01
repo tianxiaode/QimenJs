@@ -1,13 +1,15 @@
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import type { ColumnDefOrGroup } from './column-types';
 import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS } from '@/events';
+import { DICTIONARY_MANAGER_ENTITY_TYPE } from '@/entity/types';
 import { Definitions } from '@/composable';
 
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
+    defaultItemType = 'table-row';
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
@@ -29,27 +31,28 @@ class TableComponent extends ItemGroupPooledComponent {
         return {
             direction: 'vertical',
             autoEventKey: true,
-            listens: [
-                {
-                    source: 'self',
-                    events: {
-                        sortChange: 'onSortChange',
-                        resize: 'onColumnResize',
-                        groupBy: { handler: 'onGroupBy', emits: ['groupBy'] },
-                    },
-                },
-                {
-                    entity: true,
-                    events: {
-                        listed: 'onEntityListed',
-                    },
-                },
-            ],
+            autoEntityKey: true,
         };
     }
 
+    listens: ListenItem[] = [
+        {
+            source: 'self',
+            events: {
+                sortChange: 'onSortChange',
+                resize: 'onColumnResize',
+                groupBy: 'onGroupBy',
+            },
+        },
+        {
+            entity: true,
+            events: {
+                listed: 'onEntityListed',
+            },
+        },
+    ];
+
     onAfterInit(): void {
-        this.defaultItemType = 'table-row';
         super.onAfterInit();
 
         const source = this.getData('data');
@@ -74,15 +77,18 @@ class TableComponent extends ItemGroupPooledComponent {
 
     /**
      * 对接实体：全部通过实体事件流程，组件不直接引用任何实体类。
-     * - 有 entityKey：发送 CONNECT 让 DataDispatchCenter 按注册表创建实例，
-     *   订阅 listed 事件获取数据，发送 LIST 命令触发加载。
-     * - 无 entityKey：纯本地模式，直接用 data 渲染。
+     * - 有 entityKey（自定义或 autoEntityKey 自动生成）：发送 CONNECT 让
+     *   DataDispatchCenter 按 entityType 注册表创建实例，订阅 listed 事件
+     *   获取数据，发送 LIST 命令触发加载。
      */
     _connectEntity(): void {
         const entityKey = this.getData('entityKey');
         if (!entityKey) return;
 
-        this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, { entityKey });
+        this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, {
+            entityKey,
+            entityType: this.getData('entityType') || DICTIONARY_MANAGER_ENTITY_TYPE,
+        });
 
         this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
 
@@ -101,33 +107,12 @@ class TableComponent extends ItemGroupPooledComponent {
         const colName = data.colName;
         const direction = data.direction;
         const entityKey = this.getData('entityKey');
-        if (entityKey) {
-            this.entityEmit(
-                ENTITY_COMMAND_EVENTS.SORT,
-                { sortBy: colName, sortOrder: direction ?? '' },
-                { source: entityKey }
-            );
-            return;
-        }
-        this._sortLocal(colName, direction);
-    }
-
-    _sortLocal(colName: string, direction: 'asc' | 'desc' | null): void {
-        const source = this._sourceData ?? [];
-        if (!direction || !colName) {
-            this.setData('data', [...source], true);
-            this._reflow();
-            return;
-        }
-        const sorted = [...source].sort((a, b) => {
-            const va = a?.[colName];
-            const vb = b?.[colName];
-            if (va === vb) return 0;
-            const cmp = va > vb ? 1 : -1;
-            return direction === 'asc' ? cmp : -cmp;
-        });
-        this.setData('data', sorted, true);
-        this._reflow();
+        if (!entityKey) return;
+        this.entityEmit(
+            ENTITY_COMMAND_EVENTS.SORT,
+            { sortBy: colName, sortOrder: direction ?? '' },
+            { source: entityKey }
+        );
     }
 
     _onColumnResize(data: any): void {
@@ -142,6 +127,14 @@ class TableComponent extends ItemGroupPooledComponent {
 
     onGroupBy(data: any): void {
         this.emit('groupBy', data);
+        const colName = data.colName;
+        const entityKey = this.getData('entityKey');
+        if (!entityKey) return;
+        this.entityEmit(
+            ENTITY_COMMAND_EVENTS.GROUP_BY,
+            { groupField: colName },
+            { source: entityKey }
+        );
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
@@ -253,6 +246,7 @@ const TableComponentDefs: Definitions = {
         columns: null,
         data: null,
         entityKey: null,
+        entityType: null,
     },
     fields: {
         _isAfterInit: false,

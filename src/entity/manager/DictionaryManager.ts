@@ -34,6 +34,7 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
         [CMD.LOAD_DICTIONARY]: 'loadDictionary',
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
+        [CMD.GROUP_BY]: 'groupBy',
         [CMD.REFRESH_VIEW]: 'refreshView',
         [CMD.REFRESH]: 'refreshView',
         [CMD.LIST]: 'refreshView',

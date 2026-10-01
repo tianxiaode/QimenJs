@@ -50,6 +50,7 @@ export class LocalCrudEntityManager<
         [CMD.REFRESH]: 'refresh',
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
+        [CMD.GROUP_BY]: 'groupBy',
         [CMD.GET]: 'get',
         [CMD.CREATE]: 'create',
         [CMD.UPDATE]: 'update',

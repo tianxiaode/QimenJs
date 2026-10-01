@@ -20,7 +20,7 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         const bus = EntityEventBus.getInstance();
         bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.CONNECT, (data: any) => {
             const entityKey = data?.entityKey;
-            if (entityKey) this.connect(entityKey);
+            if (entityKey) this.connect(entityKey, data?.entityType);
         });
         bus.entityOn('*', ENTITY_LIFECYCLE_EVENTS.DISCONNECT, (data: any) => {
             const entityKey = data?.entityKey;
@@ -72,7 +72,7 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         return colonIdx === -1 ? entityKey : entityKey.substring(0, colonIdx);
     }
 
-    connect(entityKey: string): any {
+    connect(entityKey: string, entityType?: string): any {
         const existing = this.instances.get(entityKey);
         if (existing) {
             existing.refCount++;
@@ -82,14 +82,14 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
             return existing.mgr;
         }
 
-        const entityType = this.resolveEntityType(entityKey);
-        const entry = this.storage.get(entityType);
+        const type = entityType || this.resolveEntityType(entityKey);
+        const entry = this.storage.get(type);
         if (!entry) {
-            this.logger.error?.(`[DataDispatchCenter] entityType="${entityType}" not registered`);
-            throw new Error(`DataDispatchCenter: entityType "${entityType}" not registered`);
+            this.logger.error?.(`[DataDispatchCenter] entityType="${type}" not registered`);
+            throw new Error(`DataDispatchCenter: entityType "${type}" not registered`);
         }
 
-        const dictEntry = this.dictStore.get(entityType);
+        const dictEntry = this.dictStore.get(type);
         const mgr = new entry.mgrType({
             entityKey,
             ...(dictEntry ? { ...dictEntry } : {}),
