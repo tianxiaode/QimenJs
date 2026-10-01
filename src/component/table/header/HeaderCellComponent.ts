@@ -215,6 +215,9 @@ class HeaderCellComponent extends Component {
     set sortState(v: SortState) {
         this._sortState = v;
         this._applySortIcon();
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
     }
 
     _applySortIcon(): void {
