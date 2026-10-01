@@ -60,7 +60,7 @@ export class RemoteTreeEntityManager<
 
     eventMap: Record<string, string> = {
         [CMD.LIST]: 'list',
-        [CMD.REFRESH]: 'refresh',
+        [CMD.REFRESH]: 'refreshChildren',
         [CMD.GET]: 'get',
         [CMD.FILTER]: 'filter',
         [CMD.SEARCH_BY]: 'searchBy',

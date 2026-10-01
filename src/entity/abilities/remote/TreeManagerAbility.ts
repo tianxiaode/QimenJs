@@ -30,7 +30,7 @@ export const TreeManagerAbility = {
     },
 
     // 数据获取与同步
-    refresh(pid: string | number | null) {
+    refreshChildren(pid: string | number | null) {
         return this.debounce(
             'refresh',
             (p: string | number | null) => this._refreshChildren(p),
