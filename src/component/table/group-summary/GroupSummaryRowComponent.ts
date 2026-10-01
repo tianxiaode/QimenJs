@@ -1,11 +1,12 @@
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
+import { GROUP_SUMMARY_ROW_TYPE } from '../constants';
 import { TextCellComponent } from '../cells/TextCellComponent';
 import { Definitions } from '@/composable';
 import './groupsummaryrow.css';
 
 class GroupSummaryRowComponent extends Component {
-    static type = 'q-table-group-summary-row';
+    static type = GROUP_SUMMARY_ROW_TYPE;
 
     _cells: Map<string, any> = new Map();
 
@@ -19,6 +20,11 @@ class GroupSummaryRowComponent extends Component {
 
     onAfterInit(): void {
         this._createCells();
+
+        const data = this.getData('data');
+        if (data) {
+            this._applyData(data);
+        }
     }
 
     _createCells(): void {
@@ -38,7 +44,12 @@ class GroupSummaryRowComponent extends Component {
         }
     }
 
-    update(data: any): void {
+    update(props: any): void {
+        if (!props?.data) return;
+        this._applyData(props.data);
+    }
+
+    _applyData(data: any): void {
         if (!data) return;
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         for (const meta of columns) {
@@ -87,6 +98,7 @@ const GroupSummaryRowComponentDefs: Definitions = {
     options: {
         display: 'flex',
         columnMetas: null,
+        data: null,
     },
     fields: {
         _cells: null,
@@ -94,5 +106,6 @@ const GroupSummaryRowComponentDefs: Definitions = {
 } as const;
 
 GroupSummaryRowComponent.define(GroupSummaryRowComponentDefs);
+GroupSummaryRowComponent.register();
 
 export { GroupSummaryRowComponent };

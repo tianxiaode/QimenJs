@@ -2,7 +2,8 @@ import type { ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
-import type { ColumnDefOrGroup } from './column-types';
+import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
+import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS } from '@/events';
 import { DICTIONARY_MANAGER_ENTITY_TYPE } from '@/entity/types';
 import { Definitions } from '@/composable';
@@ -178,8 +179,87 @@ class TableComponent extends ItemGroupPooledComponent {
         };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
-        const items = data.map((rowData: any) => ({ data: rowData }));
+        const items = this._buildItems(data, metas);
         super.setItems(items);
+    }
+
+    /**
+     * 构建 item 数组：分组数据展开为「组行 + 组内行」扁平数组，通过 order 排序。
+     */
+    _buildItems(data: any[], metas: ColumnMeta[]): Record<string, any>[] {
+        if (this._isGroupedData(data)) {
+            const items: Record<string, any>[] = [];
+            let order = 1;
+            for (const group of data) {
+                items.push({
+                    type: GROUP_SUMMARY_ROW_TYPE,
+                    data: this._buildGroupSummary(group, metas),
+                    order: order++,
+                });
+                for (const rowData of group.groupItems ?? []) {
+                    items.push({ data: rowData, order: order++ });
+                }
+            }
+            return items;
+        }
+        return data.map((rowData: any) => ({ data: rowData }));
+    }
+
+    /** 判断是否为分组数据（[{ groupKey, groupItems }]） */
+    _isGroupedData(data: any[]): boolean {
+        return (
+            Array.isArray(data) &&
+            data.length > 0 &&
+            data[0] !== null &&
+            typeof data[0] === 'object' &&
+            'groupKey' in data[0] &&
+            Array.isArray(data[0].groupItems)
+        );
+    }
+
+    /** 按 groupAggregator 计算分组汇总行数据 */
+    _buildGroupSummary(group: any, metas: ColumnMeta[]): Record<string, any> {
+        const summary: Record<string, any> = {};
+        for (const meta of metas) {
+            if (!meta.groupAggregator) continue;
+            if (meta.groupAggregator === 'label') {
+                summary[meta.name] = group.groupKey;
+            } else {
+                summary[meta.name] = this._aggregate(meta, group.groupItems ?? []);
+            }
+        }
+        return summary;
+    }
+
+    _aggregate(meta: ColumnMeta, items: any[]): any {
+        const values = items.map(row => this._getFieldValue(row, meta.field));
+        switch (meta.groupAggregator) {
+            case 'sum':
+                return values.reduce((acc, v) => acc + (Number(v) || 0), 0);
+            case 'count':
+                return items.length;
+            case 'avg':
+                return values.length
+                    ? values.reduce((acc, v) => acc + (Number(v) || 0), 0) / values.length
+                    : '';
+            case 'min':
+                return values.length ? Math.min(...values.map(v => Number(v))) : '';
+            case 'max':
+                return values.length ? Math.max(...values.map(v => Number(v))) : '';
+            default:
+                return '';
+        }
+    }
+
+    _getFieldValue(obj: any, path: string): any {
+        if (!obj || !path) return undefined;
+        const keys = path.split('.');
+        let val = obj;
+        for (const key of keys) {
+            val = val?.[key];
+            if (val === undefined) break;
+        }
+        return val;
     }
 
     _applyColumnWidths(): void {

@@ -1,11 +1,12 @@
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
+import { TABLE_SUMMARY_ROW_TYPE } from '../constants';
 import { TextCellComponent } from '../cells/TextCellComponent';
 import { Definitions } from '@/composable';
 import './tablesummaryrow.css';
 
 class TableSummaryRowComponent extends Component {
-    static type = 'q-table-summary-row';
+    static type = TABLE_SUMMARY_ROW_TYPE;
 
     _cells: Map<string, any> = new Map();
 
