@@ -73,23 +73,6 @@ export class EntityEventBus {
             handler(data);
         });
     }
-    }
-
-    entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {
-        const entityEvent = encodeEntityEvent(entityKey, eventName);
-        this.logger.debug?.(
-            '[EntityEventBus] entityOn, entityKey =',
-            entityKey,
-            'eventName =',
-            eventName
-        );
-        console.log('[EntityBus] entityOn: entityKey =', entityKey, 'eventName =', eventName, 'event =', entityEvent);
-        return this.entityScope.on(entityEvent, (ctx: any) => {
-            const data = ctx?.data !== undefined ? ctx.data : ctx;
-            console.log('[EntityBus] handler triggered: event =', entityEvent, 'data type =', Array.isArray(data) ? `array(${data.length})` : typeof data);
-            handler(data);
-        });
-    }
 
     entityOnce(entityKey: string, eventName: string, handler: (data: any) => void): void {
         const entityEvent = encodeEntityEvent(entityKey, eventName);
