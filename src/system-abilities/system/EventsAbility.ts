@@ -135,7 +135,10 @@ export const EventsAbility = {
         const key = ctor.eventKey || this.getData('eventKey');
         if (key) {
             this.eventKey = key;
-            EventSourceRegistrar.getInstance().register(key, this);
+            const registrar = EventSourceRegistrar.getInstance();
+            if (!registrar.has(key)) {
+                registrar.register(key, this);
+            }
         }
         const entKey = ctor.entityKey || this.getData('entityKey');
         if (entKey) {
@@ -146,7 +149,10 @@ export const EventsAbility = {
     _unregisterEventKey() {
         const eventKey = this.eventKey as string | undefined;
         if (eventKey) {
-            EventSourceRegistrar.getInstance().unregister(eventKey);
+            const registrar = EventSourceRegistrar.getInstance();
+            if (registrar.getComponent(eventKey) === this) {
+                registrar.unregister(eventKey);
+            }
         }
     },
 
