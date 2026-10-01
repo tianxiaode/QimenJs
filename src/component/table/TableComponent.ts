@@ -86,7 +86,12 @@ class TableComponent extends ItemGroupPooledComponent {
      */
     _connectEntity(): void {
         const entityKey = this.getData('entityKey');
-        if (!entityKey) return;
+        if (!entityKey) {
+            console.log('[Table] _connectEntity: no entityKey, skip');
+            return;
+        }
+
+        console.log('[Table] _connectEntity: entityKey =', entityKey);
 
         this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, {
             entityKey,
@@ -94,6 +99,7 @@ class TableComponent extends ItemGroupPooledComponent {
         });
 
         const data = this.getData('data');
+        console.log('[Table] _connectEntity: sourceData =', data?.length, 'items');
         if (Array.isArray(data) && data.length > 0) {
             this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
         }
@@ -102,6 +108,7 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     onEntityListed(items: any[]): void {
+        console.log('[Table] onEntityListed: received', Array.isArray(items) ? items.length : 'non-array', 'items');
         this._entityItems = Array.isArray(items) ? items : [];
         if (this._isAfterInit) this._reflow();
     }
@@ -175,7 +182,9 @@ class TableComponent extends ItemGroupPooledComponent {
         };
 
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
+        console.log('[Table] _reflow: entityKey =', this.getData('entityKey'), '_entityItems =', this._entityItems.length, 'data =', data.length);
         const items = this._buildItems(data, metas);
+        console.log('[Table] _reflow: built', items.length, 'items');
         super.setItems(items);
         this._buildGroupRowMap(items);
     }

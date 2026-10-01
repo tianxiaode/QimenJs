@@ -88,6 +88,7 @@ export abstract class CoreEntityManager extends ComposableBase {
     }
 
     protected emitEvent(event: string, data?: any): void {
+        console.log('[CoreEM] emitEvent:', event, 'entityKey =', (this as any).entityKey, 'data length =', Array.isArray(data) ? data.length : typeof data);
         this.entityEmit(event, data, { source: (this as any).entityKey });
     }
 

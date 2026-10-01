@@ -57,7 +57,7 @@ export const EventsAbility = {
         const ctx = EventContextBuilder.create()
             .withEvent(event)
             .withType(event)
-            .withSource(this.eventKey)
+            .withSource(this.getData('eventKey') ?? this.eventKey)
             .withSourceType(this.constructor.name)
             .withData(data)
             .build();
@@ -132,7 +132,7 @@ export const EventsAbility = {
 
     _initEventKey() {
         const ctor = this.constructor as any;
-        const key = ctor.eventKey;
+        const key = ctor.eventKey || this.getData('eventKey');
         if (key) {
             this.eventKey = key;
             EventSourceRegistrar.getInstance().register(key, this);

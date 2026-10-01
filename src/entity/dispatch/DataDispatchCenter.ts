@@ -73,6 +73,7 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
     }
 
     connect(entityKey: string, entityType?: string): any {
+        console.log('[DDC] connect: entityKey =', entityKey, 'entityType =', entityType);
         const existing = this.instances.get(entityKey);
         if (existing) {
             existing.refCount++;

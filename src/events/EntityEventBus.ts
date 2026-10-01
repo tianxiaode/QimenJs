@@ -52,6 +52,7 @@ export class EntityEventBus {
             'eventName =',
             eventName
         );
+        console.log('[EntityBus] entityEmit: entityKey =', entityKey, 'eventName =', eventName, 'event =', entityEvent);
 
         if (BROADCAST_EVENTS.has(eventName)) {
             this.entityScope.emit(entityEvent, { entityKey, ...ctx });
@@ -68,8 +69,10 @@ export class EntityEventBus {
             'eventName =',
             eventName
         );
+        console.log('[EntityBus] entityOn: entityKey =', entityKey, 'eventName =', eventName, 'event =', entityEvent);
         return this.entityScope.on(entityEvent, (ctx: any) => {
             const data = ctx?.data !== undefined ? ctx.data : ctx;
+            console.log('[EntityBus] handler triggered: event =', entityEvent, 'data type =', Array.isArray(data) ? `array(${data.length})` : typeof data);
             handler(data);
         });
     }
