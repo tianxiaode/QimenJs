@@ -1,7 +1,8 @@
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
-import { DomEventsMap } from '@qimenjs/component-core';
+import { DomEventsMap, type ListenItem } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { EntityDataAbility } from '@/component-abilities';
 import './treenav.css';
 
 const TreeNavComponentDefs: Definitions = {
@@ -10,6 +11,12 @@ const TreeNavComponentDefs: Definitions = {
         maxDepth: 5,
         activeIndex: -1,
         pathIndex: null,
+        entityKey: null,
+        entityType: null,
+        data: null,
+    },
+    fields: {
+        _entityItems: [],
     },
 } as const;
 
@@ -32,7 +39,10 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         },
     };
 
-    listens = [{ route: true, events: { change: 'onRouteChange' } }];
+    listens: ListenItem[] = [
+        { route: true, events: { change: 'onRouteChange' } },
+        { entity: true, events: { listed: 'onEntityListed' } },
+    ];
 
     _onItemClick(domEvt: any): void {
         const item = domEvt?.targetComponent as TreeNavItemComponent;
@@ -71,6 +81,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-tree-nav');
+        this._connectEntity();
         this._isAfterInit = true;
         if (this._treeData.length > 0) {
             this._flatData = this._flattenTree(this._treeData);
@@ -82,6 +93,14 @@ class TreeNavComponent extends ItemGroupPooledComponent {
             }
             this._reflow();
         }
+    }
+
+    _onEntityDataChange(): void {
+        this._treeData = [...this.getEntityItems()];
+        this._expandedPaths = new Set();
+        this._scanInitialExpanded(this._treeData);
+        if (!this.pathIndex) this._buildPathIndex(this._treeData);
+        this._reflow();
     }
 
     _onItemsOptionChange(value: any[]): void {
@@ -242,6 +261,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     }
 }
 
+TreeNavComponent.use(EntityDataAbility);
 TreeNavComponent.define(TreeNavComponentDefs);
 
 export { TreeNavComponent };

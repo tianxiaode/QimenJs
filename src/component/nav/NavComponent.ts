@@ -23,8 +23,9 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { NavItemComponent } from './NavItemComponent';
-import { DomEventsMap, type TemplateDecl } from '@qimenjs/component-core';
+import { DomEventsMap, type ListenItem, type TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { EntityDataAbility } from '@/component-abilities';
 import { NAV_TPL } from './nav-tpl';
 import './nav.css';
 
@@ -36,6 +37,12 @@ const NavComponentDefs: Definitions = {
         pathIndex: null,
         indexPath: null,
         showToggle: false,
+        entityKey: null,
+        entityType: null,
+        data: null,
+    },
+    fields: {
+        _entityItems: [],
     },
 } as const;
 
@@ -65,7 +72,10 @@ class NavComponent extends ItemGroupPooledComponent {
         ],
     };
 
-    listens = [{ route: true, events: { change: 'onRouteChange' } }];
+    listens: ListenItem[] = [
+        { route: true, events: { change: 'onRouteChange' } },
+        { entity: true, events: { listed: 'onEntityListed' } },
+    ];
 
     _onItemClick(domEvt: any): void {
         const target = domEvt.targetComponent;
@@ -107,12 +117,14 @@ class NavComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
 
+        this._connectEntity();
+
         this.addCls('q-nav');
         if (this.rawOptions?.anchor) this.addCls('q-nav--submenu');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
         if (container) container.classList.add('q-nav__items');
 
-        if (!this.pathIndex) this._buildPathIndex(this.getData('items'));
+        if (!this.pathIndex) this._buildPathIndex(this._getNavData());
 
         this.toggleCls('q-nav--collapsed', this.mode === 'collapsed');
 
@@ -132,6 +144,17 @@ class NavComponent extends ItemGroupPooledComponent {
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
         }
+    }
+
+    _onEntityDataChange(): void {
+        const items = this.getEntityItems();
+        this._buildPathIndex(items);
+        this.setItems([...items]);
+        this._syncItemConfig();
+    }
+
+    _getNavData(): Record<string, any>[] {
+        return this.hasEntity() ? this.getEntityItems() : (this.getData('items') ?? []);
     }
 
     show(): void {
@@ -201,6 +224,7 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 }
 
+NavComponent.use(EntityDataAbility);
 NavComponent.define(NavComponentDefs);
 
 export { NavComponent };

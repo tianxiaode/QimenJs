@@ -32,3 +32,6 @@ export {
     type OverflowState,
     type OverflowItem,
 } from './overflow';
+
+// 实体数据能力
+export { EntityDataAbility, type EntityDataHost } from './entity';

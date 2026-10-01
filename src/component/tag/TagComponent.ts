@@ -1,11 +1,11 @@
 import { Component } from '@qimenjs/component-core';
-import type { DomEventsMap, TemplateDecl } from '@/component-core';
+import type { DomEventsMap, ListenItem, TemplateDecl } from '@/component-core';
 import { TAG_TPL } from './tag-tpl';
 import { Definitions } from '@/composable';
 import { string } from '@/utils';
 import { resolveI18nValue } from '@/i18n';
+import { ColorAbility, SizeAbility, EntityDataAbility } from '@/component-abilities';
 import './tag.css';
-import { ColorAbility, SizeAbility } from '@/component-abilities';
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
 
@@ -19,6 +19,12 @@ const TagComponentDefs: Definitions = {
         collapsed: true,
         overflowTagType: 'info',
         direction: 'horizontal',
+        entityKey: null,
+        entityType: null,
+        data: null,
+    },
+    fields: {
+        _entityItems: [],
     },
 } as const;
 
@@ -37,10 +43,20 @@ class TagComponent extends Component {
         click: { path: 'items', handler: '_onTagClick' },
     };
 
+    listens: ListenItem[] = [{ entity: true, events: { listed: 'onEntityListed' } }];
+
     onAfterInit(): void {
         this._initialized = true;
+        this._connectEntity();
         this._render();
         this.registerI18nRefresh(() => this._render());
+    }
+
+    _onEntityDataChange(): void {
+        const items = this.getEntityItems();
+        const tags = items.map((item: any) => typeof item === 'string' ? item : (item.label ?? item.text ?? ''));
+        this.tags = tags;
+        this._scheduleRender();
     }
 
     _onOptionChange(key: string, value: any, old: any): void {
@@ -177,5 +193,5 @@ class TagComponent extends Component {
 }
 
 TagComponent.define(TagComponentDefs);
-TagComponent.use(SizeAbility, ColorAbility);
+TagComponent.use(SizeAbility, ColorAbility, EntityDataAbility);
 export { TagComponent };

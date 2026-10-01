@@ -4,9 +4,9 @@ import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
-import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS } from '@/events';
-import { DICTIONARY_MANAGER_ENTITY_TYPE } from '@/entity/types';
+import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
+import { EntityDataAbility } from '@/component-abilities';
 
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
@@ -14,8 +14,6 @@ class TableComponent extends ItemGroupPooledComponent {
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
-    _entityItems: Record<string, any>[] = [];
-    _sourceData: Record<string, any>[] = [];
     _lastReflowData: any[] = [];
     _groupRowMap: Map<string, { summaryRow: any; dataRows: any[] }> = new Map();
 
@@ -57,10 +55,12 @@ class TableComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
 
-        const source = this.getData('data');
-        if (Array.isArray(source)) this._sourceData = source;
-
         this._connectEntity();
+
+        const groupField = this.getData('groupField');
+        if (groupField && this.hasEntity()) {
+            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField }, { source: this.getData('entityKey') });
+        }
 
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
@@ -78,36 +78,7 @@ class TableComponent extends ItemGroupPooledComponent {
         this._reflow();
     }
 
-    /**
-     * 对接实体：全部通过实体事件流程，组件不直接引用任何实体类。
-     * - 有 entityKey（自定义或 autoEntityKey 自动生成）：发送 CONNECT 让
-     *   DataDispatchCenter 按 entityType 注册表创建实例，订阅 listed 事件
-     *   获取数据，发送 LIST 命令触发加载。
-     */
-    _connectEntity(): void {
-        const entityKey = this.getData('entityKey');
-        if (!entityKey) return;
-
-        this.entityEmit(ENTITY_LIFECYCLE_EVENTS.CONNECT, {
-            entityKey,
-            entityType: this.getData('entityType') || DICTIONARY_MANAGER_ENTITY_TYPE,
-        });
-
-        const data = this.getData('data');
-        if (Array.isArray(data) && data.length > 0) {
-            this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, data, { source: entityKey });
-        }
-
-        this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
-
-        const groupField = this.getData('groupField');
-        if (groupField) {
-            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField }, { source: entityKey });
-        }
-    }
-
-    onEntityListed(items: any[]): void {
-        this._entityItems = Array.isArray(items) ? items : [];
+    _onEntityDataChange(): void {
         if (this._isAfterInit) this._reflow();
     }
 
@@ -134,7 +105,6 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _onDataOptionChange(data: Record<string, any>[]): void {
-        if (Array.isArray(data)) this._sourceData = data;
         if (this._isAfterInit) this._reflow();
     }
 
@@ -156,7 +126,7 @@ class TableComponent extends ItemGroupPooledComponent {
             entityKey: this.entityKey,
         };
 
-        const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
+        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
         const isGrouped = this._isGroupedData(data);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
         if (wasGrouped !== isGrouped) {
@@ -327,13 +297,6 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    override dispose(): void {
-        const entityKey = this.getData('entityKey');
-        if (entityKey) {
-            this.entityEmit(ENTITY_LIFECYCLE_EVENTS.DISCONNECT, { entityKey });
-        }
-        super.dispose();
-    }
 }
 
 const TableComponentDefs: Definitions = {
@@ -348,12 +311,11 @@ const TableComponentDefs: Definitions = {
         _isAfterInit: false,
         _columnMetaManager: null,
         _header: null,
-        _entityItems: [],
-        _sourceData: [],
         _groupRowMap: null,
     },
 } as const;
 
+TableComponent.use(EntityDataAbility);
 TableComponent.define(TableComponentDefs);
 TableComponent.register();
 
