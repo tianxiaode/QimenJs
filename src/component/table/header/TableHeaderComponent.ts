@@ -3,6 +3,7 @@ import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-type
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { ENTITY_COMMAND_EVENTS } from '@/events';
 import './header.css';
 
 class TableHeaderComponent extends ItemGroupPooledComponent {
@@ -18,8 +19,20 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
+        click: [{ path: '[items]', handler: '_onHeaderCellClick', entities: 'sort' }],
     };
+
+    _sortBy: string = '';
+    _sortOrder: string = '';
+    _groupField: string = '';
+
+    get defaultEventData(): Record<string, any> {
+        return {
+            sortBy: this._sortBy,
+            sortOrder: this._sortOrder,
+            groupField: this._groupField,
+        };
+    }
 
     listens: ListenItem[] = [
         {
@@ -157,10 +170,12 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const { action, colName } = data;
         if (action === 'sortAsc') {
             this._applySort(colName, 'asc');
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, { sortBy: colName, sortOrder: 'asc' }, { source: this.entityKey });
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, { sortBy: colName, sortOrder: 'desc' }, { source: this.entityKey });
         } else if (action === 'groupBy') {
-            this.componentEmit('groupBy', { colName });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField: colName }, { source: this.entityKey });
         } else if (action?.startsWith('toggleColumn:')) {
             const targetColName = action.substring('toggleColumn:'.length);
             const columns = this.columns;
@@ -188,10 +203,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 }
             }
         }
-        this.componentEmit('sortChange', {
-            colName,
-            direction: direction === 'none' ? null : direction,
-        });
+        this._sortBy = colName;
+        this._sortOrder = direction === 'none' ? '' : direction;
     }
 
     hideColumn(name: string): void {

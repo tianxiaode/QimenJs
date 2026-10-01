@@ -41,9 +41,7 @@ class TableComponent extends ItemGroupPooledComponent {
         {
             source: 'self',
             events: {
-                sortChange: '_onSortChange',
                 resize: '_onColumnResize',
-                groupBy: 'onGroupBy',
                 groupToggle: 'onGroupToggle',
             },
         },
@@ -106,18 +104,6 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._isAfterInit) this._reflow();
     }
 
-    _onSortChange(data: any): void {
-        const colName = data.colName;
-        const direction = data.direction;
-        const entityKey = this.getData('entityKey');
-        if (!entityKey) return;
-        this.entityEmit(
-            ENTITY_COMMAND_EVENTS.SORT,
-            { sortBy: colName, sortOrder: direction ?? '' },
-            { source: entityKey }
-        );
-    }
-
     _onColumnResize(data: any): void {
         const colName = data.colName;
         const width = data.width;
@@ -126,17 +112,6 @@ class TableComponent extends ItemGroupPooledComponent {
             const meta = this._columnMetaManager.get(colName);
             if (meta) meta.width = `${width}px`;
         }
-    }
-
-    onGroupBy(data: any): void {
-        const colName = data.colName;
-        const entityKey = this.getData('entityKey');
-        if (!entityKey) return;
-        this.entityEmit(
-            ENTITY_COMMAND_EVENTS.GROUP_BY,
-            { groupField: colName },
-            { source: entityKey }
-        );
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
