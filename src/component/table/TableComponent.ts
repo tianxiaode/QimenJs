@@ -129,7 +129,6 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     onGroupBy(data: any): void {
-        this.emit('groupBy', data);
         const colName = data.colName;
         const entityKey = this.getData('entityKey');
         if (!entityKey) return;

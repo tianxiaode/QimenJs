@@ -1,5 +1,6 @@
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta, CellType } from '../column-types';
+import type { ListenItem } from '@qimenjs/component-core';
 import { TextCellComponent } from '../cells/TextCellComponent';
 import { TreeCellComponent } from '../cells/TreeCellComponent';
 import { CheckboxCellComponent } from '../cells/CheckboxCellComponent';
@@ -18,6 +19,16 @@ class RowComponent extends Component {
     static type = 'table-row';
 
     _cells: Map<string, any> = new Map();
+
+    listens: ListenItem[] = [
+        {
+            source: 'self',
+            events: {
+                hideColumn: 'onHideColumn',
+                showColumn: 'onShowColumn',
+            },
+        },
+    ];
 
     get tpl(): any {
         return {
@@ -160,15 +171,6 @@ const RowComponentDefs: Definitions = {
         data: null,
         eventKey: null,
         entityKey: null,
-        listens: [
-            {
-                source: 'self',
-                events: {
-                    hideColumn: 'onHideColumn',
-                    showColumn: 'onShowColumn',
-                },
-            },
-        ],
     },
     fields: {
         _cells: null,

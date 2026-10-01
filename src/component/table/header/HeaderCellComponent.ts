@@ -212,7 +212,7 @@ class HeaderCellComponent extends Component {
             inst._menuSelectBound = true;
             inst.on('select', (data: any) => {
                 const payload = data?.data ?? data;
-                this.emit('menuSelect', {
+                this.componentEmit('menuSelect', {
                     action: payload?.action,
                     colName: this.colName,
                 });
@@ -228,7 +228,7 @@ class HeaderCellComponent extends Component {
     onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable) return;
         const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
-        this.emit('resize', {
+        this.componentEmit('resize', {
             colName: this.colName,
             width: newWidth,
         });

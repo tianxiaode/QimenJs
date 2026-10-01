@@ -1,7 +1,7 @@
 import { ItemGroupPooledComponent } from '../../itemgroup/ItemGroupPooledComponent';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
-import type { DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
+import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
 
@@ -21,6 +21,15 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
     };
 
+    listens: ListenItem[] = [
+        {
+            source: 'self',
+            events: {
+                menuSelect: '_onMenuSelect',
+            },
+        },
+    ];
+
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
         const items = columns.map(col => this._buildItemData(col));
         this.setItems(items);
@@ -28,6 +37,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
 
     _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
         const hideableColumns = this._collectHideableColumns();
+        const eventKey = this.eventKey;
         if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
             const group = col as ColumnGroupDef;
             const childNames = this._collectLeafNames(group.children);
@@ -40,6 +50,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 childNames,
                 childConfigs,
                 hideableColumns,
+                eventKey,
             };
         }
         const leaf = col as ColumnDef;
@@ -56,6 +67,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             hideableColumns,
             groupable: leaf.groupable ?? false,
             customMenuItems: leaf.menuItems ?? null,
+            eventKey,
         };
     }
 
@@ -109,16 +121,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _createItem(data: Record<string, any>): any {
-        const item = super._createItem(data);
-        if (item && typeof item.on === 'function') {
-            item.on('resize', (resizeData: any) => {
-                this.emit('resize', resizeData);
-            });
-            item.on('menuSelect', (menuData: any) => {
-                this._onMenuSelect(menuData);
-            });
-        }
-        return item;
+        return super._createItem(data);
     }
 
     _onHeaderCellClick(domEvt: any): void {
