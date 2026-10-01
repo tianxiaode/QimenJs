@@ -238,6 +238,7 @@ export class ListensEngine {
     ): void {
         const resolvedSource =
             source === 'self' ? EventForwarder.resolveKey(instance.eventKey) : source;
+        console.log('[ListensEngine] _bindComponent: source =', source, 'resolvedSource =', resolvedSource, 'instance.eventKey =', instance.eventKey, 'getData(eventKey) =', instance.getData?.('eventKey'));
         if (!resolvedSource) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
@@ -254,6 +255,7 @@ export class ListensEngine {
 
     private static _bindEntity(instance: any, events: Record<string, EventMapping>): void {
         const entityKey = EventForwarder.resolveKey(instance.entityKey);
+        console.log('[ListensEngine] _bindEntity: entityKey =', entityKey, 'instance.entityKey =', instance.entityKey, 'getData(entityKey) =', instance.getData?.('entityKey'));
         if (!entityKey) return;
 
         for (const [eventName, mapping] of Object.entries(events)) {
