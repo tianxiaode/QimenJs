@@ -22,14 +22,12 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         click: [{ path: '[items]', handler: '_onHeaderCellClick', entities: 'sort' }],
     };
 
-    _sortBy: string = '';
-    _sortOrder: string = '';
     _groupField: string = '';
 
     get defaultEventData(): Record<string, any> {
         return {
-            sortBy: this._sortBy,
-            sortOrder: this._sortOrder,
+            sortBy: this.getData('sortBy') ?? '',
+            sortOrder: this.getData('sortOrder') ?? '',
             groupField: this._groupField,
         };
     }
@@ -170,10 +168,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const { action, colName } = data;
         if (action === 'sortAsc') {
             this._applySort(colName, 'asc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, { sortBy: colName, sortOrder: 'asc' }, { source: this.entityKey });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, { sortBy: colName, sortOrder: 'desc' }, { source: this.entityKey });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
         } else if (action === 'groupBy') {
             this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField: colName }, { source: this.entityKey });
         } else if (action?.startsWith('toggleColumn:')) {
@@ -203,8 +201,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 }
             }
         }
-        this._sortBy = colName;
-        this._sortOrder = direction === 'none' ? '' : direction;
+        this.setData('sortBy', colName);
+        this.setData('sortOrder', direction === 'none' ? '' : direction);
     }
 
     hideColumn(name: string): void {
@@ -251,6 +249,8 @@ const TableHeaderComponentDefs: Definitions = {
     options: {
         columns: null,
         direction: 'horizontal',
+        sortBy: '',
+        sortOrder: '',
     },
 } as const;
 
