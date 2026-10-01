@@ -16,6 +16,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _header: TableHeaderComponent | null = null;
     _entityItems: Record<string, any>[] = [];
     _sourceData: Record<string, any>[] = [];
+    _groupRowMap: Map<string, { summaryRow: any; dataRows: any[] }> = new Map();
 
     get tpl(): TemplateDecl {
         return {
@@ -43,6 +44,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 sortChange: 'onSortChange',
                 resize: 'onColumnResize',
                 groupBy: 'onGroupBy',
+                groupToggle: 'onGroupToggle',
             },
         },
         {
@@ -181,6 +183,7 @@ class TableComponent extends ItemGroupPooledComponent {
         const data = this.getData('entityKey') ? this._entityItems : (this.getData('data') ?? []);
         const items = this._buildItems(data, metas);
         super.setItems(items);
+        this._buildGroupRowMap(items);
     }
 
     /**
@@ -191,13 +194,15 @@ class TableComponent extends ItemGroupPooledComponent {
             const items: Record<string, any>[] = [];
             let order = 1;
             for (const group of data) {
+                const groupKey = group.groupKey;
                 items.push({
                     type: GROUP_SUMMARY_ROW_TYPE,
-                    data: this._buildGroupSummary(group, metas),
+                    data: { ...this._buildGroupSummary(group, metas), _groupKey: groupKey },
                     order: order++,
+                    _groupKey: groupKey,
                 });
                 for (const rowData of group.groupItems ?? []) {
-                    items.push({ data: rowData, order: order++ });
+                    items.push({ data: rowData, order: order++, _groupKey: groupKey });
                 }
             }
             return items;
@@ -262,6 +267,33 @@ class TableComponent extends ItemGroupPooledComponent {
         return val;
     }
 
+    _buildGroupRowMap(itemsData: Record<string, any>[]): void {
+        this._groupRowMap = new Map();
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (let i = 0; i < items.length; i++) {
+            const groupKey = itemsData[i]?._groupKey;
+            if (groupKey === undefined) continue;
+            let entry = this._groupRowMap.get(groupKey);
+            if (!entry) {
+                entry = { summaryRow: null, dataRows: [] };
+                this._groupRowMap.set(groupKey, entry);
+            }
+            if (itemsData[i]?.type === GROUP_SUMMARY_ROW_TYPE) {
+                entry.summaryRow = items[i];
+            } else {
+                entry.dataRows.push(items[i]);
+            }
+        }
+    }
+
+    onGroupToggle(data: { groupKey: string; collapsed: boolean }): void {
+        const entry = this._groupRowMap?.get(data.groupKey);
+        if (!entry) return;
+        for (const row of entry.dataRows) {
+            row.hidden = data.collapsed;
+        }
+    }
     _applyColumnWidths(): void {
         if (!this._columnMetaManager) return;
         const metas = this._columnMetaManager.getAll();
@@ -334,6 +366,7 @@ const TableComponentDefs: Definitions = {
         _header: null,
         _entityItems: [],
         _sourceData: [],
+        _groupRowMap: null,
     },
 } as const;
 

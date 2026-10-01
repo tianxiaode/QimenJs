@@ -2,6 +2,7 @@ import { Component } from '../../../component-core/Component';
 import type { ColumnMeta } from '../column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from '../constants';
 import { TextCellComponent } from '../cells/TextCellComponent';
+import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './groupsummaryrow.css';
 
@@ -9,6 +10,7 @@ class GroupSummaryRowComponent extends Component {
     static type = GROUP_SUMMARY_ROW_TYPE;
 
     _cells: Map<string, any> = new Map();
+    _collapsed: boolean = false;
 
     get tpl(): any {
         return {
@@ -18,6 +20,10 @@ class GroupSummaryRowComponent extends Component {
         };
     }
 
+    domEvents: DomEventsMap = {
+        click: { path: 'root', handler: '_onToggle' },
+    };
+
     onAfterInit(): void {
         this._createCells();
 
@@ -25,6 +31,19 @@ class GroupSummaryRowComponent extends Component {
         if (data) {
             this._applyData(data);
         }
+    }
+
+    _onToggle(): void {
+        this._collapsed = !this._collapsed;
+        if (this._collapsed) {
+            this.addCls('q-table-row--collapsed');
+        } else {
+            this.removeCls('q-table-row--collapsed');
+        }
+        this.componentEmit('groupToggle', {
+            groupKey: this.getData('data')?._groupKey,
+            collapsed: this._collapsed,
+        });
     }
 
     _createCells(): void {
@@ -102,6 +121,7 @@ const GroupSummaryRowComponentDefs: Definitions = {
     },
     fields: {
         _cells: null,
+        _collapsed: false,
     },
 } as const;
 
