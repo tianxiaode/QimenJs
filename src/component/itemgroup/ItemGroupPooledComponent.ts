@@ -412,9 +412,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         for (let i = 0; i < items.length; i++) {
             const component = items[i];
             if (!component?.el) continue;
-            if (component.order === undefined) {
-                component.order = (i + 1) * step;
-            }
+            component.order = (i + 1) * step;
         }
 
         if (this._auxPools) {
