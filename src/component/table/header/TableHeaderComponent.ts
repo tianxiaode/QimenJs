@@ -187,12 +187,16 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 const col = columns.find(
                     (c: any) => c.name === targetColName && !('children' in c)
                 ) as ColumnDef | undefined;
-                if (col?.hidden) {
-                    this.showColumn(targetColName);
-                    this.componentEmit('showColumn', { colName: targetColName });
-                } else {
-                    this.hideColumn(targetColName);
-                    this.componentEmit('hideColumn', { colName: targetColName });
+                if (col) {
+                    col.hidden = !col.hidden;
+                    if (col.hidden) {
+                        this.hideColumn(targetColName);
+                        this.componentEmit('hideColumn', { colName: targetColName });
+                    } else {
+                        this.showColumn(targetColName);
+                        this.componentEmit('showColumn', { colName: targetColName });
+                    }
+                    this._updateCellHideableColumns();
                 }
             }
         }
@@ -204,6 +208,18 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             for (const item of items) {
                 if (typeof item.setData === 'function') {
                     item.setData('groupField', groupField);
+                }
+            }
+        }
+    }
+
+    _updateCellHideableColumns(): void {
+        const hideableColumns = this._collectHideableColumns();
+        const items = this.items;
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (typeof item.setData === 'function') {
+                    item.setData('hideableColumns', hideableColumns);
                 }
             }
         }

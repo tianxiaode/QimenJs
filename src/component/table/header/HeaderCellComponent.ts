@@ -45,15 +45,31 @@ class HeaderCellComponent extends Component {
     _buildMenuItems(): any[] {
         const items: any[] = [];
         if (this.sortable) {
-            items.push({ text: '@table.sortAsc', action: 'sortAsc', order: 10 });
-            items.push({ text: '@table.sortDesc', action: 'sortDesc', order: 20 });
+            items.push({
+                text: '@table.sortAsc',
+                action: 'sortAsc',
+                group: 'sort',
+                groupMode: 'radio',
+                checked: this._sortState === 'asc',
+                order: 10,
+            });
+            items.push({
+                text: '@table.sortDesc',
+                action: 'sortDesc',
+                group: 'sort',
+                groupMode: 'radio',
+                checked: this._sortState === 'desc',
+                order: 20,
+            });
         }
         if (this.groupable) {
             items.push({
                 text: '@table.groupBy',
                 action: 'groupBy',
-                order: 30,
+                group: 'groupBy',
+                groupMode: 'checkbox',
                 checked: this.groupField === this.colName,
+                order: 30,
             });
         }
         const hideable = this.hideableColumns;
