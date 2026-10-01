@@ -126,7 +126,7 @@ describe('DictionaryManager', () => {
 
     describe('构造与默认值', () => {
         it('默认 schema 应使用 value/label/string', () => {
-            mgr = new DictionaryManager({ data: [] });
+            mgr = new DictionaryManager({ data: [], entityKey: 'test-dict' });
             expect(mgr.schema.idField).toBe('value');
             expect(mgr.schema.idType).toBe('string');
             expect(mgr.schema.nameField).toBe('label');
@@ -136,6 +136,7 @@ describe('DictionaryManager', () => {
         it('dictConfig 应覆盖 schema 字段', () => {
             mgr = new DictionaryManager({
                 data: [],
+                entityKey: 'test-dict',
                 valueField: 'code',
                 labelField: 'text',
                 idType: 'number',
@@ -160,6 +161,7 @@ describe('DictionaryManager', () => {
     describe('loadDictionary', () => {
         it('应按 valueField 填充 sourceData', () => {
             mgr = new DictionaryManager({
+                entityKey: 'test-dict',
                 data: [
                     { value: 'active', label: '启用' },
                     { value: 'disabled', label: '禁用' },
@@ -172,6 +174,7 @@ describe('DictionaryManager', () => {
 
         it('应支持自定义 valueField', () => {
             mgr = new DictionaryManager({
+                entityKey: 'test-dict',
                 data: [
                     { code: 1, text: '选项一' },
                     { code: 2, text: '选项二' },
@@ -185,6 +188,7 @@ describe('DictionaryManager', () => {
 
         it('应跳过 value 为 null/undefined 的项', () => {
             mgr = new DictionaryManager({
+                entityKey: 'test-dict',
                 data: [
                     { value: 'a', label: 'A' },
                     { value: null, label: 'B' },
@@ -194,8 +198,19 @@ describe('DictionaryManager', () => {
             expect(mgr.sourceData.size).toBe(1);
         });
 
+        it('无 valueField 字段的项应分配自动 ID', () => {
+            mgr = new DictionaryManager({
+                entityKey: 'test-dict',
+                data: [
+                    { name: '张三', age: 28 },
+                    { name: '李四', age: 35 },
+                ],
+            });
+            expect(mgr.sourceData.size).toBe(2);
+        });
+
         it('重复调用应清空旧数据', () => {
-            mgr = new DictionaryManager({ data: [{ value: 'old', label: '旧' }] });
+            mgr = new DictionaryManager({ data: [{ value: 'old', label: '旧' }], entityKey: 'test-dict' });
             expect(mgr.sourceData.size).toBe(1);
             mgr.loadDictionary([{ value: 'new', label: '新' }]);
             expect(mgr.sourceData.size).toBe(1);
@@ -207,6 +222,7 @@ describe('DictionaryManager', () => {
     describe('FlatLocalStateAbility 方法', () => {
         beforeEach(() => {
             mgr = new DictionaryManager({
+                entityKey: 'test-dict',
                 data: [
                     { value: 'active', label: '启用' },
                     { value: 'disabled', label: '禁用' },

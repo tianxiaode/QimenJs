@@ -88,10 +88,14 @@ export class DictionaryManager extends BaseEntityManager<ILocalSearchParams> {
     loadDictionary(data: any[]): void {
         const idField = this.schema.idField || 'id';
         this.sourceData.clear();
-        for (const item of data) {
-            const id = item[idField];
-            if (id !== undefined && id !== null) {
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            if (idField in item) {
+                const id = item[idField];
+                if (id === undefined || id === null) continue;
                 this.sourceData.set(id, item);
+            } else {
+                this.sourceData.set(`__auto_${i}`, item);
             }
         }
         this.refreshView();

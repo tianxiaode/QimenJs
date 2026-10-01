@@ -157,7 +157,10 @@ export const EventsAbility = {
     systemOn(event: string, handler: (data: any) => void): () => void {
         const off = SystemEventBus.getInstance().on(event, handler);
         const deregister = this.onCleanup(off);
-        return () => { off(); deregister(); };
+        return () => {
+            off();
+            deregister();
+        };
     },
 
     systemOnce(event: string, handler: (data: any) => void): void {
@@ -177,7 +180,10 @@ export const EventsAbility = {
     componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void {
         const off = ComponentEventBus.getInstance().componentOn(sourceId, eventName, handler);
         const deregister = this.onCleanup(off);
-        return () => { off(); deregister(); };
+        return () => {
+            off();
+            deregister();
+        };
     },
 
     componentOnce(sourceId: string, eventName: string, handler: (data: any) => void): void {
@@ -195,7 +201,10 @@ export const EventsAbility = {
     entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void {
         const off = EntityEventBus.getInstance().entityOn(entityKey, eventName, handler);
         const deregister = this.onCleanup(off);
-        return () => { off(); deregister(); };
+        return () => {
+            off();
+            deregister();
+        };
     },
 
     entityOnce(entityKey: string, eventName: string, handler: (data: any) => void): void {
@@ -213,7 +222,10 @@ export const EventsAbility = {
     routeOn(eventName: string, handler: (data: any) => void): () => void {
         const off = RouteEventBus.getInstance().routeOn(eventName, handler);
         const deregister = this.onCleanup(off);
-        return () => { off(); deregister(); };
+        return () => {
+            off();
+            deregister();
+        };
     },
 
     routeOnce(eventName: string, handler: (data: any) => void): void {
@@ -231,7 +243,10 @@ export const EventsAbility = {
     fileOn(fileKey: string, action: string, handler: (data: any) => void): () => void {
         const off = FileEventBus.getInstance().fileOn(fileKey, action, handler);
         const deregister = this.onCleanup(off);
-        return () => { off(); deregister(); };
+        return () => {
+            off();
+            deregister();
+        };
     },
 
     fileOnce(fileKey: string, action: string, handler: (data: any) => void): void {
