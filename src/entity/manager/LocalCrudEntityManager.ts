@@ -4,7 +4,6 @@ import type { ILocalSearchParams, IEntity, RegistrSchema } from '@/schema';
 import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
 import {
     FlatLocalStateAbility,
-    LocalListAbility,
     LocalGetAbility,
     FlatLocalMutationAbility,
     FlatLocalDeleteAbility,
@@ -12,7 +11,6 @@ import {
 
 const LOCAL_CRUD_ABILITIES = [
     FlatLocalStateAbility,
-    LocalListAbility,
     LocalGetAbility,
     FlatLocalMutationAbility,
     FlatLocalDeleteAbility,
@@ -46,8 +44,8 @@ export class LocalCrudEntityManager<
     };
 
     eventMap: Record<string, string> = {
-        [CMD.LIST]: 'list',
-        [CMD.REFRESH]: 'refresh',
+        [CMD.LIST]: 'refreshView',
+        [CMD.REFRESH]: 'refreshView',
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
         [CMD.GROUP_BY]: 'groupBy',

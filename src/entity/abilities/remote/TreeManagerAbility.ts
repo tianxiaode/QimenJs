@@ -43,18 +43,6 @@ export const TreeManagerAbility = {
         return this.getChildren(pid);
     },
 
-    isDirty(currentItem: any) {
-        return this.isDirty(currentItem);
-    },
-
-    edit(item: any) {
-        return this.startEdit(item);
-    },
-
-    rollback() {
-        return this.rollbackAll();
-    },
-
     // ---- 内部方法 ----
 
     _setExpandState(id: string | number, expanded: boolean): void {

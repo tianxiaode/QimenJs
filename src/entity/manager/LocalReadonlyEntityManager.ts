@@ -2,11 +2,10 @@ import { BaseEntityManager } from './BaseEntityManager';
 import type { InferAbilities, Definitions } from '@/composable';
 import type { ILocalSearchParams, IEntity, RegistrSchema } from '@/schema';
 import { ENTITY_COMMAND_EVENTS as CMD } from '@/events/entity-events';
-import { FlatLocalStateAbility, LocalListAbility, LocalGetAbility } from '../abilities';
+import { FlatLocalStateAbility, LocalGetAbility } from '../abilities';
 
 const LOCAL_READONLY_ABILITIES = [
     FlatLocalStateAbility,
-    LocalListAbility,
     LocalGetAbility,
 ] as const;
 
@@ -38,8 +37,8 @@ export class LocalReadonlyEntityManager<
     };
 
     eventMap: Record<string, string> = {
-        [CMD.LIST]: 'list',
-        [CMD.REFRESH]: 'refresh',
+        [CMD.LIST]: 'refreshView',
+        [CMD.REFRESH]: 'refreshView',
         [CMD.FILTER]: 'filter',
         [CMD.SORT]: 'sort',
         [CMD.GROUP_BY]: 'groupBy',
