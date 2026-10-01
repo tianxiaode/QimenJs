@@ -90,14 +90,31 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         for (let i = 0; i < Math.min(currentLength, newLength); i++) {
             const component = items[i];
-            if (typeof component.update === 'function') {
-                component.update(datas[i]);
+            const expectedType = datas[i].type ?? this.defaultItemType;
+            const actualType = component?.type ?? component?.constructor?.type;
+
+            if (expectedType !== actualType) {
+                component.addCls('hidden');
+                this._hiddenItems.push(component);
+                const reused = this._reuseFromPool(datas[i]);
+                if (reused) {
+                    items[i] = reused;
+                    this._emitItemRemove(i, component);
+                    this._emitItemAdd(i, reused);
+                } else {
+                    const newComponent = this._createItem(datas[i]);
+                    if (newComponent) {
+                        items[i] = newComponent;
+                        this._emitItemRemove(i, component);
+                        this._emitItemAdd(i, newComponent);
+                    }
+                }
             } else {
-                this.logger.warn(
-                    `item "${component.name || component.type || i}" missing update(), pooled data change will not reflect`
-                );
+                if (typeof component.update === 'function') {
+                    component.update(datas[i]);
+                }
+                component.removeCls('hidden');
             }
-            component.removeCls('hidden');
         }
 
         for (let i = currentLength; i < newLength; i++) {
