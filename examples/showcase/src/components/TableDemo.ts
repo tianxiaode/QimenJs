@@ -14,13 +14,13 @@ const TABLE_DATA = [
 ];
 
 const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, groupable: true },
+    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true },
     {
         name: 'baseInfo',
         title: '基本信息',
         children: [
             { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, sortable: true, groupable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true },
         ],
     },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true },
@@ -51,7 +51,7 @@ class ComprehensiveTableDemo extends Component {
     onAfterInit(): void {
         const container = this.getNodeEl('container') as HTMLElement;
         if (!container) return;
-        this._table = new TableComponent({ columns: COMPREHENSIVE_COLUMNS, data: TABLE_DATA });
+        this._table = new TableComponent({ columns: COMPREHENSIVE_COLUMNS, data: TABLE_DATA, groupField: 'dept' });
         container.appendChild(this._table.el);
 
         const toggleAgeBtn = this.getNodeEl('toggleAge');
@@ -87,16 +87,16 @@ export const TABLE_DEMO: DemoConfig = {
         {
             label: '综合表格',
             code: `const columns = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, groupable: true },
+    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true },
     {
         name: 'baseInfo', title: '基本信息', children: [
             { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, sortable: true, groupable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true },
         ]
     },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true },
 ];
-const table = new TableComponent({ columns, data });
+const table = new TableComponent({ columns, data, groupField: 'dept' });
 
 // 点击表头排序（sortable 列）
 // 表头菜单：分组（groupable 列）、隐藏/显示列

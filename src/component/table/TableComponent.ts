@@ -68,6 +68,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 columns,
                 eventKey: this.eventKey,
                 entityKey: this.entityKey,
+                groupField: this.getData('groupField') ?? '',
             });
             headerArea.appendChild(this._header.el);
         }
@@ -97,6 +98,11 @@ class TableComponent extends ItemGroupPooledComponent {
         }
 
         this.entityEmit(ENTITY_COMMAND_EVENTS.LIST, null, { source: entityKey });
+
+        const groupField = this.getData('groupField');
+        if (groupField) {
+            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField }, { source: entityKey });
+        }
     }
 
     onEntityListed(items: any[]): void {
@@ -328,6 +334,7 @@ const TableComponentDefs: Definitions = {
         data: null,
         entityKey: null,
         entityType: null,
+        groupField: '',
     },
     fields: {
         _isAfterInit: false,
