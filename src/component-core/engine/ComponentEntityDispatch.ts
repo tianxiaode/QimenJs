@@ -20,6 +20,7 @@ export const ACTION_PAIRS: Record<string, { success: string; error: string; load
     batchDelete: { success: 'deleted', error: 'batchDelete:error', loading: 'batchDelete:loading' },
     filter: { success: 'listed', error: 'filter:error', loading: 'filter:loading' },
     sort: { success: 'listed', error: 'sort:error', loading: 'sort:loading' },
+    groupBy: { success: 'listed', error: 'groupBy:error', loading: 'groupBy:loading' },
     refresh: { success: 'listed', error: 'refresh:error', loading: 'refresh:loading' },
     searchBy: { success: 'listed', error: 'searchBy:error', loading: 'searchBy:loading' },
     reset: { success: 'listed', error: 'reset:error', loading: 'reset:loading' },

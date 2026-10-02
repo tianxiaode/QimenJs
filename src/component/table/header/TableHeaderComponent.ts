@@ -3,7 +3,6 @@ import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-type
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { ENTITY_COMMAND_EVENTS } from '@/events';
 import './header.css';
 
 class TableHeaderComponent extends ItemGroupPooledComponent {
@@ -38,7 +37,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         {
             source: 'self',
             events: {
-                menuSelect: '_onMenuSelect',
+                sort: { handler: '_onSort', entities: '[action]' },
+                groupBy: { handler: '_onGroupBy', entities: '[action]' },
+                toggleColumn: '_onToggleColumn',
             },
         },
     ];
@@ -278,53 +279,38 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const currentState = target.sortState || 'none';
             const nextState =
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
-            this._applySort(colName, nextState);
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
-                source: this.entityKey,
-            });
+            this.componentEmit('sort', { colName, direction: nextState });
         }
     }
 
-    _onMenuSelect(data: any): void {
-        const { action, colName } = data;
-        if (action === 'sortAsc') {
-            this._applySort(colName, 'asc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
-                source: this.entityKey,
-            });
-        } else if (action === 'sortDesc') {
-            this._applySort(colName, 'desc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
-                source: this.entityKey,
-            });
-        } else if (action === 'groupBy') {
-            const currentGroupField = this.getData('groupField') ?? '';
-            const newGroupField = currentGroupField === colName ? '' : colName;
-            this.setData('groupField', newGroupField);
-            this._updateCellGroupField(newGroupField);
-            this.entityEmit(
-                ENTITY_COMMAND_EVENTS.GROUP_BY,
-                { groupField: newGroupField },
-                { source: this.entityKey }
-            );
-        } else if (action?.startsWith('toggleColumn:')) {
-            const targetColName = action.substring('toggleColumn:'.length);
-            const columns = this.columns;
-            if (Array.isArray(columns)) {
-                const col = columns.find(
-                    (c: any) => c.name === targetColName && !('children' in c)
-                ) as ColumnDef | undefined;
-                if (col) {
-                    col.hidden = !col.hidden;
-                    if (col.hidden) {
-                        this.hideColumn(targetColName);
-                        this.componentEmit('hideColumn', { colName: targetColName });
-                    } else {
-                        this.showColumn(targetColName);
-                        this.componentEmit('showColumn', { colName: targetColName });
-                    }
-                    this._updateCellHideableColumns();
+    _onSort(data: any): void {
+        this._applySort(data.colName, data.direction);
+    }
+
+    _onGroupBy(data: any): void {
+        const currentGroupField = this.getData('groupField') ?? '';
+        const newGroupField = currentGroupField === data.colName ? '' : data.colName;
+        this.setData('groupField', newGroupField);
+        this._updateCellGroupField(newGroupField);
+    }
+
+    _onToggleColumn(data: any): void {
+        const targetColName = data.colName;
+        const columns = this.columns;
+        if (Array.isArray(columns)) {
+            const col = columns.find(
+                (c: any) => c.name === targetColName && !('children' in c)
+            ) as ColumnDef | undefined;
+            if (col) {
+                col.hidden = !col.hidden;
+                if (col.hidden) {
+                    this.hideColumn(targetColName);
+                    this.componentEmit('hideColumn', { colName: targetColName });
+                } else {
+                    this.showColumn(targetColName);
+                    this.componentEmit('showColumn', { colName: targetColName });
                 }
+                this._updateCellHideableColumns();
             }
         }
     }

@@ -250,10 +250,21 @@ class HeaderCellComponent extends Component {
             inst._menuSelectBound = true;
             inst.on('select', (data: any) => {
                 const payload = data?.data ?? data;
-                this.componentEmit('menuSelect', {
-                    action: payload?.action,
-                    colName: this.colName,
-                });
+                const action = payload?.action;
+                const colName = this.colName;
+                if (action === 'sortAsc') {
+                    this.componentEmit('sort', { colName, direction: 'asc' });
+                } else if (action === 'sortDesc') {
+                    this.componentEmit('sort', { colName, direction: 'desc' });
+                } else if (action === 'groupBy') {
+                    this.componentEmit('groupBy', { colName });
+                } else if (action?.startsWith('toggleColumn:')) {
+                    this.componentEmit('toggleColumn', {
+                        colName: action.substring('toggleColumn:'.length),
+                    });
+                } else {
+                    this.componentEmit('menuSelect', { action, colName });
+                }
             });
         }
     }
