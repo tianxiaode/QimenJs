@@ -39,7 +39,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             events: {
                 sort: { handler: '_onSort', entities: '[action]' },
                 groupBy: { handler: '_onGroupBy', entities: '[action]' },
-                toggleColumn: '_onToggleColumn',
+                hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
+                showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
             },
         },
     ];
@@ -294,22 +295,31 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         this._updateCellGroupField(newGroupField);
     }
 
-    _onToggleColumn(data: any): void {
-        const targetColName = data.colName;
+    _onHideColumn(data: any): void {
+        const colName = data.colName;
         const columns = this.columns;
         if (Array.isArray(columns)) {
-            const col = columns.find(
-                (c: any) => c.name === targetColName && !('children' in c)
-            ) as ColumnDef | undefined;
+            const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
+                | ColumnDef
+                | undefined;
             if (col) {
-                col.hidden = !col.hidden;
-                if (col.hidden) {
-                    this.hideColumn(targetColName);
-                    this.componentEmit('hideColumn', { colName: targetColName });
-                } else {
-                    this.showColumn(targetColName);
-                    this.componentEmit('showColumn', { colName: targetColName });
-                }
+                col.hidden = true;
+                this.hideColumn(colName);
+                this._updateCellHideableColumns();
+            }
+        }
+    }
+
+    _onShowColumn(data: any): void {
+        const colName = data.colName;
+        const columns = this.columns;
+        if (Array.isArray(columns)) {
+            const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
+                | ColumnDef
+                | undefined;
+            if (col) {
+                col.hidden = false;
+                this.showColumn(colName);
                 this._updateCellHideableColumns();
             }
         }

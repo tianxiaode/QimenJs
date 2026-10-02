@@ -78,7 +78,7 @@ class HeaderCellComponent extends Component {
                 for (const col of hideable) {
                     items.push({
                         text: col.title ?? col.colName,
-                        action: `toggleColumn:${col.colName}`,
+                        action: col.hidden ? `showColumn:${col.colName}` : `hideColumn:${col.colName}`,
                         group: 'hideableColumns',
                         groupMode: 'checkbox',
                         checked: !col.hidden,
@@ -94,7 +94,7 @@ class HeaderCellComponent extends Component {
                         options: {
                             items: hideable.map((col: any) => ({
                                 text: col.title ?? col.colName,
-                                action: `toggleColumn:${col.colName}`,
+                                action: col.hidden ? `showColumn:${col.colName}` : `hideColumn:${col.colName}`,
                                 group: 'hideableColumns',
                                 groupMode: 'checkbox',
                                 checked: !col.hidden,
@@ -258,9 +258,13 @@ class HeaderCellComponent extends Component {
                     this.componentEmit('sort', { colName, direction: 'desc' });
                 } else if (action === 'groupBy') {
                     this.componentEmit('groupBy', { colName });
-                } else if (action?.startsWith('toggleColumn:')) {
-                    this.componentEmit('toggleColumn', {
-                        colName: action.substring('toggleColumn:'.length),
+                } else if (action?.startsWith('hideColumn:')) {
+                    this.componentEmit('hideColumn', {
+                        colName: action.substring('hideColumn:'.length),
+                    });
+                } else if (action?.startsWith('showColumn:')) {
+                    this.componentEmit('showColumn', {
+                        colName: action.substring('showColumn:'.length),
                     });
                 } else {
                     this.componentEmit('menuSelect', { action, colName });
