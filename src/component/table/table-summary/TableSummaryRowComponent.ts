@@ -49,7 +49,7 @@ class TableSummaryRowComponent extends Component {
             align: meta.align,
             colName: meta.name,
             fixed: meta.fixed ?? null,
-            order: (index + 1) * 10,
+            order: `var(--q-table-col-${meta.name}-order)`,
         };
         if (meta.width) {
             options.width = `var(--q-table-col-${meta.name}-width)`;
@@ -103,19 +103,6 @@ class TableSummaryRowComponent extends Component {
     }
 
     moveColumn(from: number, to: number): void {
-        if (from === to || from < 0 || to < 0) return;
-        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-        if (from >= columns.length || to >= columns.length) return;
-        const fromName = columns[from].name;
-        const toName = columns[to].name;
-        const fromCell = this._cells.get(fromName);
-        const toCell = this._cells.get(toName);
-        if (fromCell && toCell) {
-            const fromOrder = fromCell.getData('order');
-            const toOrder = toCell.getData('order');
-            fromCell.setData('order', toOrder);
-            toCell.setData('order', fromOrder);
-        }
     }
 }
 

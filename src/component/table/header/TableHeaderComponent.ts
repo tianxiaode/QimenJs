@@ -279,7 +279,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const nextState =
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this._applySort(colName, nextState);
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         }
     }
 
@@ -287,16 +289,24 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const { action, colName } = data;
         if (action === 'sortAsc') {
             this._applySort(colName, 'asc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, { source: this.entityKey });
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         } else if (action === 'groupBy') {
             const currentGroupField = this.getData('groupField') ?? '';
             const newGroupField = currentGroupField === colName ? '' : colName;
             this.setData('groupField', newGroupField);
             this._updateCellGroupField(newGroupField);
-            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField: newGroupField }, { source: this.entityKey });
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.GROUP_BY,
+                { groupField: newGroupField },
+                { source: this.entityKey }
+            );
         } else if (action?.startsWith('toggleColumn:')) {
             const targetColName = action.substring('toggleColumn:'.length);
             const columns = this.columns;

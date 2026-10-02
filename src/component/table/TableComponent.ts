@@ -50,7 +50,11 @@ class TableComponent extends ItemGroupPooledComponent {
 
         const groupField = this.getData('groupField');
         if (groupField && this.hasEntity()) {
-            this.entityEmit(ENTITY_COMMAND_EVENTS.GROUP_BY, { groupField }, { source: this.getData('entityKey') });
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.GROUP_BY,
+                { groupField },
+                { source: this.getData('entityKey') }
+            );
         }
 
         const headerArea = this.getNodeEl('headerArea');
@@ -90,11 +94,14 @@ class TableComponent extends ItemGroupPooledComponent {
         if (!this._columnMetaManager) {
             this._columnMetaManager = new ColumnMetaManager();
         }
+        const oldMetas = this._columnMetaManager.getAll();
         this._columnMetaManager.compile(columns);
-        this._applyColumnWidths();
+        this._applyColumnStyles();
         if (this._isAfterInit) {
-            this._disposeAllItems();
-            this._reflow();
+            if (!this._isReorderOnly(oldMetas, this._columnMetaManager.getAll())) {
+                this._disposeAllItems();
+                this._reflow();
+            }
         }
     }
 
@@ -111,7 +118,7 @@ class TableComponent extends ItemGroupPooledComponent {
             this._columnMetaManager.compile(columns);
         }
 
-        this._applyColumnWidths();
+        this._applyColumnStyles();
 
         const metas = this._columnMetaManager.getAll();
         this.defaultItemOption = {
@@ -241,14 +248,25 @@ class TableComponent extends ItemGroupPooledComponent {
             row.hidden = data.collapsed;
         }
     }
-    _applyColumnWidths(): void {
+    _applyColumnStyles(): void {
         if (!this._columnMetaManager) return;
         const metas = this._columnMetaManager.getAll();
-        for (const meta of metas) {
+        for (let i = 0; i < metas.length; i++) {
+            const meta = metas[i];
             if (meta.width) {
                 this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
             }
+            this.el!.style.setProperty(`--q-table-col-${meta.name}-order`, String((i + 1) * 10));
         }
+    }
+
+    _isReorderOnly(oldMetas: ColumnMeta[], newMetas: ColumnMeta[]): boolean {
+        if (oldMetas.length !== newMetas.length) return false;
+        const oldNames = new Set(oldMetas.map(m => m.name));
+        for (const m of newMetas) {
+            if (!oldNames.has(m.name)) return false;
+        }
+        return true;
     }
 
     _disposeAllItems(): void {
@@ -280,17 +298,10 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     moveColumn(from: number, to: number): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const row of items) {
-                if (typeof row.moveColumn === 'function') row.moveColumn(from, to);
-            }
-        }
         if (this._header && typeof this._header.moveColumn === 'function') {
             this._header.moveColumn(from, to);
         }
     }
-
 }
 
 const TableComponentDefs: Definitions = {
