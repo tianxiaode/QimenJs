@@ -206,6 +206,31 @@ export class DomEventAdapter {
 
         const unbindFunctions: (() => void)[] = [];
 
+        if (semantic === 'drag' && target instanceof HTMLElement) {
+            const captureHandler = (event: PointerEvent) => {
+                try {
+                    target.setPointerCapture(event.pointerId);
+                } catch {
+                    // setPointerCapture can fail if pointerId is invalid
+                }
+            };
+            const releaseHandler = (event: PointerEvent) => {
+                try {
+                    target.releasePointerCapture(event.pointerId);
+                } catch {
+                    // releasePointerCapture can fail if pointerId is invalid
+                }
+            };
+            target.addEventListener('pointerdown', captureHandler);
+            target.addEventListener('pointerup', releaseHandler);
+            target.addEventListener('pointercancel', releaseHandler);
+            unbindFunctions.push(() => {
+                target.removeEventListener('pointerdown', captureHandler);
+                target.removeEventListener('pointerup', releaseHandler);
+                target.removeEventListener('pointercancel', releaseHandler);
+            });
+        }
+
         this.bindInputSignals(
             target,
             descriptor.requires,
