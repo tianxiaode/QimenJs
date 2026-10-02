@@ -4,7 +4,7 @@
     min-width: 120px;
     padding: 4px 0;
     background: var(--q-color-bg, #fff);
-    border: 2px solid var(--q-colors-border, #e0e0e0);
+    border: var(--q-border);
     border-radius: var(--q-radius-md, 0);
     box-shadow: none;
 }

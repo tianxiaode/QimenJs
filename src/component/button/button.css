@@ -13,7 +13,7 @@
     justify-content: center;
     gap: 6px;
     padding: 0 16px;
-    border: 2px solid var(--q-color-border, #dcdfe6);
+    border: var(--q-border);
     font-family: inherit;
     font-size: var(--q-font-size-md);
     font-weight: var(--q-font-weight-semibold);

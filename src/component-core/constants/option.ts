@@ -16,6 +16,7 @@ export const OPTION_STYLE_PROPS = new Set([
     'cursor',
     'pointerEvents',
     'gridColumn',
+    'textDecoration',
 ]);
 
 /** 需要走 setAttribute 的选项属性 */

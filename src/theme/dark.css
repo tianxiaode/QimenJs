@@ -192,6 +192,8 @@
     --q-color-border-light: #2d2621;
     --q-color-border-dark: #5a4f42;
     --q-color-border-disabled: #2d2621;
+    /* 全局边框默认值 — 组件外框统一引用，主题改此一处全生效 */
+    --q-border: 2px solid var(--q-color-border);
 
     /* -------- 分隔线 -------- */
     --q-color-divider: #2d2621;

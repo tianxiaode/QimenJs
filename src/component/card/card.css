@@ -2,7 +2,7 @@
 .q-card {
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--q-color-border, #c8bdb0);
+    border: var(--q-border);
     border-radius: var(--q-radius-md);
     background: var(--q-color-bg, #f7f2e8);
     box-sizing: border-box;

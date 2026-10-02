@@ -4,7 +4,7 @@
     max-height: calc(100vh - 64px);
     display: flex;
     flex-direction: column;
-    border: 2px solid var(--q-color-border);
+    border: var(--q-border);
     border-radius: var(--q-radius-md);
     background: var(--q-color-bg);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);

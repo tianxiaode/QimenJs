@@ -145,6 +145,14 @@
 }
 
 /* ===== 边框 ===== */
+.q-border {
+    border: var(--q-border);
+}
+
+.q-border-none {
+    border: none !important;
+}
+
 .border {
     border: 1px solid var(--q-color-border);
 }

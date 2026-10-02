@@ -63,6 +63,28 @@ export const OptionAbility: AbilityDefinition = {
         this.el?.style.setProperty('border-radius', resolved);
     },
 
+    _onBorderOptionChange(value: any, _old: any) {
+        if (value === true) {
+            this.removeCls('q-border-none');
+            this.addCls('q-border');
+            return;
+        }
+        if (value === false || value === 'none') {
+            this.removeCls('q-border');
+            this.addCls('q-border-none');
+            return;
+        }
+        if (value === null || value === undefined) {
+            this.removeCls('q-border');
+            this.removeCls('q-border-none');
+            this.el?.style.removeProperty('border');
+            return;
+        }
+        this.removeCls('q-border');
+        this.removeCls('q-border-none');
+        this.setStyles({ border: value });
+    },
+
     _onDisplayOptionChange(value: string, old: string) {
         if (value) this.addCls(value);
         if (old) this.removeCls(old);

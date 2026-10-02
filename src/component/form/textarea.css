@@ -16,7 +16,7 @@
     width: 100%;
     min-height: var(--q-textarea-field-min-height);
     padding: var(--q-textarea-field-padding);
-    border: 2px solid var(--q-color-border);
+    border: var(--q-border);
     border-radius: var(--q-radius-md);
     font-size: var(--q-textarea-field-font-size);
     line-height: var(--q-textarea-field-line-height);

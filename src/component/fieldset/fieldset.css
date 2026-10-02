@@ -1,6 +1,6 @@
 .q-fieldset {
     position: relative;
-    border: 2px solid var(--q-color-border, #dcdfe6);
+    border: var(--q-border);
     border-radius: var(--q-radius-md);
     padding: var(--q-space-md, 16px);
     margin: 0;

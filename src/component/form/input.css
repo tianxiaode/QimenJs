@@ -15,7 +15,7 @@
     width: 100%;
     height: var(--q-input-field-height);
     padding: var(--q-input-field-padding);
-    border: 2px solid var(--q-color-border);
+    border: var(--q-border);
     border-radius: var(--q-radius-md);
     font-size: var(--q-input-field-font-size);
     line-height: var(--q-line-height-normal);

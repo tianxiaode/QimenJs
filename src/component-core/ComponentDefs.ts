@@ -32,6 +32,17 @@ export const ComponentDefs: Definitions = {
         cursor: null,
         /** 组件圆角 — 档位名(none/xs/sm/md/lg/xl/round)或直接CSS值(如4px)，null跟随全局 */
         radius: null,
+        /** 文字装饰 — 'underline'/'line-through'/'overline'/'none'，走 setStyles 透传 */
+        textDecoration: null,
+        /**
+         * 边框开关 — 控制组件边框
+         *
+         * - null（默认）：不干预，恢复组件自身边框样式
+         * - true：附加全局默认边框（q-border 类）
+         * - false/'none'：去除边框（q-border-none 类，!important 压过组件默认边框）
+         * - CSS 简写字符串（如 '1px solid red'）或 { width, style, color } 对象：直接覆盖
+         */
+        border: null,
         /** 是否浮动组件 — 浮动组件初始化时不播放进入动画 */
         isFloat: false,
         /** 是否常驻浮层 — hide 时 display:none 而非从 DOM 移除，show 时复用已挂载元素 */
