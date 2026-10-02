@@ -94,7 +94,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             const actualType = component?.type ?? component?.constructor?.type;
 
             if (expectedType !== actualType) {
-                component.addCls('hidden');
+                component.hidden = true;
                 this._hiddenItems.push(component);
                 const reused = this._reuseFromPool(datas[i]);
                 if (reused) {
@@ -113,7 +113,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                 if (typeof component.update === 'function') {
                     component.update(datas[i]);
                 }
-                component.removeCls('hidden');
+                component.hidden = false;
             }
         }
 
@@ -133,7 +133,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         for (let i = newLength; i < currentLength; i++) {
             const component = items[i];
-            component.addCls('hidden');
+            component.hidden = true;
             this._hiddenItems.push(component);
             this._emitItemRemove(i, component);
         }
@@ -189,7 +189,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const items = this.items;
         if (index < 0 || index >= items.length) return undefined;
         const [component] = items.splice(index, 1);
-        component.addCls('hidden');
+        component.hidden = true;
         this._hiddenItems.push(component);
         this._applyOrders();
         this._emitItemRemove(index, component);
@@ -201,7 +201,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; i++) {
                 const component = items[i];
-                component.addCls('hidden');
+                component.hidden = true;
                 this._hiddenItems.push(component);
                 this._emitItemRemove(i, component);
             }
@@ -209,7 +209,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         }
         for (const pool of this._auxPools.values()) {
             for (const component of pool.items) {
-                component.addCls('hidden');
+                component.hidden = true;
                 pool.hiddenItems.push(component);
             }
             pool.items = [];
@@ -230,7 +230,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                 if (typeof component.update === 'function') {
                     component.update(data);
                 }
-                component.removeCls('hidden');
+                component.hidden = false;
                 return component;
             }
         }
@@ -273,7 +273,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             if (typeof component.update === 'function') {
                 component.update(datas[i]);
             }
-            component.removeCls('hidden');
+            component.hidden = false;
         }
 
         for (let i = currentLength; i < newLength; i++) {
@@ -290,7 +290,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         for (let i = newLength; i < currentLength; i++) {
             const component = pool.items[i];
-            component.addCls('hidden');
+            component.hidden = true;
             pool.hiddenItems.push(component);
         }
         pool.items.length = newLength;
@@ -324,7 +324,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (index < 0 || index >= pool.items.length) return undefined;
 
         const [component] = pool.items.splice(index, 1);
-        component.addCls('hidden');
+        component.hidden = true;
         pool.hiddenItems.push(component);
         this._applyOrders();
         return component;
@@ -335,7 +335,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         if (!pool) return;
 
         for (const component of pool.items) {
-            component.addCls('hidden');
+            component.hidden = true;
             pool.hiddenItems.push(component);
         }
         pool.items = [];
@@ -377,7 +377,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                 if (typeof component.update === 'function') {
                     component.update(data);
                 }
-                component.removeCls('hidden');
+                component.hidden = false;
                 return component;
             }
         }
@@ -412,9 +412,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         for (let i = 0; i < items.length; i++) {
             const component = items[i];
             if (!component?.el) continue;
-            const orderVal = (i + 1) * step;
-            component.order = orderVal;
-            component.el.style.order = String(orderVal);
+            component.order = (i + 1) * step;
         }
 
         if (this._auxPools) {
@@ -423,9 +421,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
                     const component = pool.items[i];
                     if (!component?.el) continue;
                     const orderIndex = component?.orderIndex ?? 0;
-                    const orderVal = Math.floor(orderIndex * step + step * pool.offset);
-                    component.order = orderVal;
-                    component.el.style.order = String(orderVal);
+                    component.order = Math.floor(orderIndex * step + step * pool.offset);
                 }
             }
         }
