@@ -1,8 +1,8 @@
 .q-table-header {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     box-sizing: border-box;
-    border-bottom: 1px solid var(--q-colors-border, #e0e0e0);
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
     background: var(--q-color-bg-secondary, #f5f5f5);
     min-height: 36px;
 }
@@ -14,7 +14,7 @@
     display: flex;
     align-items: center;
     height: 100%;
-    border-right: 1px solid var(--q-colors-border, #e0e0e0);
+    border-right: 1px solid var(--q-color-border, #e0e0e0);
     position: relative;
 }
 
@@ -56,12 +56,12 @@
 
 .q-header-cell__sort--asc {
     border-width: 0 4px 5px 4px;
-    border-color: transparent transparent var(--q-colors-primary, #0078d4) transparent;
+    border-color: transparent transparent var(--q-color-primary, #0078d4) transparent;
 }
 
 .q-header-cell__sort--desc {
     border-width: 5px 4px 0 4px;
-    border-color: var(--q-colors-primary, #0078d4) transparent transparent transparent;
+    border-color: var(--q-color-primary, #0078d4) transparent transparent transparent;
 }
 
 .q-header-cell--sortable .q-header-cell__content {
@@ -85,12 +85,12 @@
     top: 25%;
     width: 2px;
     height: 50%;
-    background: var(--q-colors-border, #e0e0e0);
+    background: var(--q-color-border, #e0e0e0);
     border-radius: 1px;
 }
 
 .q-header-cell__resize:hover::after {
-    background: var(--q-colors-primary, #0078d4);
+    background: var(--q-color-primary, #0078d4);
     width: 3px;
 }
 
@@ -99,8 +99,8 @@
 }
 
 .q-header-cell--drop-target {
-    background: var(--q-colors-primary-light, #e6f2ff);
-    border-left: 2px solid var(--q-colors-primary, #0078d4);
+    background: var(--q-color-primary-light, #e6f2ff);
+    border-left: 2px solid var(--q-color-primary, #0078d4);
 }
 
 .q-header-cell--group {
@@ -113,9 +113,9 @@
     margin-left: 4px;
     cursor: pointer;
     flex-shrink: 0;
-    color: var(--q-colors-text-secondary, #909399);
+    color: var(--q-color-text-secondary, #909399);
 }
 
 .q-header-cell__menu-icon:hover {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
 }

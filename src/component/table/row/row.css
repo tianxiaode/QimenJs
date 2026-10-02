@@ -3,7 +3,7 @@
     align-items: center;
     height: var(--q-table-row-height, 36px);
     box-sizing: border-box;
-    border-bottom: 1px solid var(--q-colors-border, #e0e0e0);
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
     transition: background 0.1s;
 }
 
@@ -30,19 +30,19 @@
 }
 
 .q-table-row--selected {
-    background: var(--q-colors-primary-light, #e6f2ff);
+    background: var(--q-color-primary-light, #e6f2ff);
 }
 
 .q-table-row--group-summary {
     background: var(--q-color-bg-secondary, #f9f9f9);
     font-weight: 600;
-    border-bottom: 2px solid var(--q-colors-border, #e0e0e0);
+    border-bottom: 2px solid var(--q-color-border, #e0e0e0);
 }
 
 .q-table-row--table-summary {
     background: var(--q-color-bg-secondary, #f5f5f5);
     font-weight: 700;
-    border-top: 2px solid var(--q-colors-border, #e0e0e0);
+    border-top: 2px solid var(--q-color-border, #e0e0e0);
     border-bottom: none;
 }
 
@@ -50,7 +50,7 @@
     position: absolute;
     z-index: 100;
     background: var(--q-color-bg, #fff);
-    border: 1px solid var(--q-colors-border, #e0e0e0);
+    border: 1px solid var(--q-color-border, #e0e0e0);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     padding: 8px;
     border-radius: 2px;
@@ -66,14 +66,14 @@
     flex: 1;
     min-width: 120px;
     padding: 4px 8px;
-    border: 1px solid var(--q-colors-border, #dcdfe6);
+    border: 1px solid var(--q-color-border, #dcdfe6);
     border-radius: 2px;
     font-size: 13px;
     outline: none;
 }
 
 .q-edit-overlay__input:focus {
-    border-color: var(--q-colors-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
 }
 
 .q-edit-overlay__actions {
@@ -92,18 +92,18 @@
 }
 
 .q-edit-overlay__save {
-    background: var(--q-colors-primary, #0078d4);
-    color: var(--q-colors-on-primary, #fff);
+    background: var(--q-color-primary, #0078d4);
+    color: var(--q-color-on-primary, #fff);
 }
 
 .q-edit-overlay__cancel {
     background: var(--q-color-bg-secondary, #f5f5f5);
-    color: var(--q-colors-text, #1a1a1a);
-    border: 1px solid var(--q-colors-border, #dcdfe6);
+    color: var(--q-color-text, #1a1a1a);
+    border: 1px solid var(--q-color-border, #dcdfe6);
 }
 
 .q-edit-overlay__error {
-    color: var(--q-colors-danger, #d13438);
+    color: var(--q-color-danger, #d13438);
     font-size: 12px;
     margin-top: 4px;
 }
