@@ -78,8 +78,8 @@ class TagComponent extends Component {
             const tagEl = closeEl.closest('.q-tag');
             if (!tagEl) return;
             const index = parseInt(tagEl.getAttribute('data-index') ?? '-1', 10);
-            if (index < 0 || index >= this._allTags.length) return;
-            this.emit('tagclose', { index, text: this._allTags[index] });
+            if (index < 0 || index >= this.tags.length) return;
+            this.emit('tagclose', { index, text: this.tags[index] });
             this.removeTagAt(index);
             return;
         }
@@ -138,7 +138,7 @@ class TagComponent extends Component {
 
     get defaultEventData(): Record<string, any> {
         return {
-            tagCount: this._allTags.length,
+            tagCount: this.tags.length,
             maxCount: this.maxCount,
             collapsed: this.collapsed,
         };
