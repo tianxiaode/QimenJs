@@ -39,8 +39,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             source: 'self',
             events: {
                 menuSelect: '_onMenuSelect',
-                sort: { entities: ENTITY_COMMAND_EVENTS.SORT },
-                groupBy: { entities: ENTITY_COMMAND_EVENTS.GROUP_BY },
             },
         },
     ];
@@ -281,7 +279,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const nextState =
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this._applySort(colName, nextState);
-            this.componentEmit('sort', this.defaultEventData);
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         }
     }
 
@@ -289,16 +289,24 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const { action, colName } = data;
         if (action === 'sortAsc') {
             this._applySort(colName, 'asc');
-            this.componentEmit('sort', this.defaultEventData);
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         } else if (action === 'sortDesc') {
             this._applySort(colName, 'desc');
-            this.componentEmit('sort', this.defaultEventData);
+            this.entityEmit(ENTITY_COMMAND_EVENTS.SORT, this.defaultEventData, {
+                source: this.entityKey,
+            });
         } else if (action === 'groupBy') {
             const currentGroupField = this.getData('groupField') ?? '';
             const newGroupField = currentGroupField === colName ? '' : colName;
             this.setData('groupField', newGroupField);
             this._updateCellGroupField(newGroupField);
-            this.componentEmit('groupBy', this.defaultEventData);
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.GROUP_BY,
+                { groupField: newGroupField },
+                { source: this.entityKey }
+            );
         } else if (action?.startsWith('toggleColumn:')) {
             const targetColName = action.substring('toggleColumn:'.length);
             const columns = this.columns;
