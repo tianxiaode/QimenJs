@@ -118,7 +118,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         if (!this.resizable || this.childNames.length === 0) return;
         const targetCol = this.childNames[this.childNames.length - 1];
         const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
-        this.emit('resize', {
+        this.componentEmit('resize', {
             colName: targetCol,
             width: newWidth,
         });
