@@ -1,6 +1,6 @@
 import type { DemoConfig } from './types';
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { TableComponent } from '@qimenjs/component';
+import { TableComponent, TableSummaryRowComponent } from '@qimenjs/component';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
@@ -14,16 +14,16 @@ const TABLE_DATA = [
 ];
 
 const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true },
+    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, reorderable: true },
     {
         name: 'baseInfo',
         title: '基本信息',
         children: [
-            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label' },
+            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true, reorderable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label', reorderable: true },
         ],
     },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum', reorderable: true },
 ];
 
 class ComprehensiveTableDemo extends Component {
@@ -35,14 +35,6 @@ class ComprehensiveTableDemo extends Component {
             tag: 'div',
             classes: 'q-demo__column',
             children: [
-                {
-                    tag: 'div',
-                    classes: 'q-demo__controls',
-                    children: [
-                        { tag: 'button', name: 'toggleAge', classes: 'q-demo__btn', options: { text: '隐藏/显示 年龄列' } },
-                        { tag: 'button', name: 'swapColumns', classes: 'q-demo__btn', options: { text: '交换 姓名←→薪资' } },
-                    ],
-                },
                 { tag: 'div', name: 'container', classes: 'q-table' },
             ],
         };
@@ -53,25 +45,6 @@ class ComprehensiveTableDemo extends Component {
         if (!container) return;
         this._table = new TableComponent({ columns: COMPREHENSIVE_COLUMNS, data: TABLE_DATA, groupField: 'dept' });
         container.appendChild(this._table.el);
-
-        const toggleAgeBtn = this.getNodeEl('toggleAge');
-        const swapColumnsBtn = this.getNodeEl('swapColumns');
-        let ageHidden = false;
-
-        this.bind(toggleAgeBtn, 'click');
-        this.on('dom:click', (e: any) => {
-            if (e?.target === toggleAgeBtn || toggleAgeBtn?.contains(e?.target)) {
-                ageHidden = !ageHidden;
-                if (ageHidden) this._table?.hideColumn('age');
-                else this._table?.showColumn('age');
-            }
-        });
-        this.bind(swapColumnsBtn, 'click');
-        this.on('dom:click', (e: any) => {
-            if (e?.target === swapColumnsBtn || swapColumnsBtn?.contains(e?.target)) {
-                this._table?.moveColumn(0, 3);
-            }
-        });
     }
 
     onDestroy(): void {
@@ -80,30 +53,105 @@ class ComprehensiveTableDemo extends Component {
     }
 }
 
+const SUMMARY_DATA = [
+    { product: '笔记本电脑', q1: 120, q2: 150, q3: 180, q4: 200 },
+    { product: '手机', q1: 300, q2: 280, q3: 320, q4: 350 },
+    { product: '平板', q1: 80, q2: 90, q3: 110, q4: 130 },
+    { product: '耳机', q1: 200, q2: 220, q3: 250, q4: 280 },
+];
+
+const SUMMARY_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'product', field: 'product', title: '产品', width: 140, sortable: true },
+    { name: 'q1', field: 'q1', title: 'Q1', width: 100, align: 'right', sortable: true },
+    { name: 'q2', field: 'q2', title: 'Q2', width: 100, align: 'right', sortable: true },
+    { name: 'q3', field: 'q3', title: 'Q3', width: 100, align: 'right', sortable: true },
+    { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right', sortable: true },
+    { name: 'total', field: 'total', title: '全年总计', width: 120, align: 'right', format: 'number' },
+];
+
+const SUMMARY_ROW_DATA = { product: '合计', q1: 700, q2: 740, q3: 860, q4: 960, total: 3260 };
+
+class SummaryTableDemo extends Component {
+    static type = 'summary-table-demo';
+    _table: TableComponent | null = null;
+    _summaryRow: any = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                { tag: 'div', name: 'container', classes: 'q-table' },
+            ],
+        };
+    }
+
+    onAfterInit(): void {
+        const container = this.getNodeEl('container') as HTMLElement;
+        if (!container) return;
+
+        const dataWithTotal = SUMMARY_DATA.map(row => ({
+            ...row,
+            total: row.q1 + row.q2 + row.q3 + row.q4,
+        }));
+
+        this._table = new TableComponent({ columns: SUMMARY_COLUMNS, data: dataWithTotal });
+        container.appendChild(this._table.el);
+
+        this._table.ready.then(() => {
+            const columnMetas = this._table!._columnMetaManager?.getAll() ?? [];
+            this._summaryRow = new TableSummaryRowComponent({ columnMetas });
+            this._summaryRow.update(SUMMARY_ROW_DATA);
+            container.appendChild(this._summaryRow.el);
+        });
+    }
+
+    onDestroy(): void {
+        this._summaryRow?.dispose?.();
+        this._summaryRow = null;
+        this._table?.dispose();
+        this._table = null;
+    }
+}
+
 export const TABLE_DEMO: DemoConfig = {
     title: 'Table',
-    description: '表格组件 — 综合演示：排序、分组列头、隐藏/显示列、交换列位置、列宽调整',
+    description: '表格组件 — 综合演示：排序、分组列头、列拖拽重排序、列宽调整、统计行',
     sections: [
         {
             label: '综合表格',
             code: `const columns = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true },
+    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, reorderable: true },
     {
         name: 'baseInfo', title: '基本信息', children: [
-            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label' },
+            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true, reorderable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label', reorderable: true },
         ]
     },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum', reorderable: true },
 ];
 const table = new TableComponent({ columns, data, groupField: 'dept' });
 
 // 点击表头排序（sortable 列）
-// 表头菜单：分组（groupable 列）、隐藏/显示列
+// 拖拽表头列重排序（reorderable 列）
 // 拖拽表头边缘调整列宽（resizable 列）
-// table.hideColumn('age') / table.showColumn('age')
-// table.moveColumn(0, 3)`,
+// 表头菜单：分组（groupable 列）、隐藏/显示列`,
             component: ComprehensiveTableDemo,
+        },
+        {
+            label: '统计行',
+            code: `const columns = [
+    { name: 'product', field: 'product', title: '产品', width: 140 },
+    { name: 'q1', field: 'q1', title: 'Q1', width: 100, align: 'right' },
+    { name: 'q2', field: 'q2', title: 'Q2', width: 100, align: 'right' },
+    { name: 'q3', field: 'q3', title: 'Q3', width: 100, align: 'right' },
+    { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right' },
+    { name: 'total', field: 'total', title: '全年总计', width: 120, align: 'right' },
+];
+const table = new TableComponent({ columns, data });
+
+// 统计行显示各列汇总值`,
+            component: SummaryTableDemo,
         },
     ],
 };

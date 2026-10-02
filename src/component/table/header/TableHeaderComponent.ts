@@ -23,6 +23,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     };
 
     _groupField: string = '';
+    _dragColName: string = '';
+    _dropIndicator: HTMLElement | null = null;
 
     get defaultEventData(): Record<string, any> {
         return {
@@ -40,6 +42,118 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             },
         },
     ];
+
+    onAfterInit(): void {
+        super.onAfterInit();
+        const el = this.el;
+        if (!el) return;
+        el.addEventListener('dragstart', this._onDragStart);
+        el.addEventListener('dragover', this._onDragOver);
+        el.addEventListener('dragleave', this._onDragLeave);
+        el.addEventListener('drop', this._onDrop);
+        el.addEventListener('dragend', this._onDragEnd);
+        this.onCleanup(() => {
+            el.removeEventListener('dragstart', this._onDragStart);
+            el.removeEventListener('dragover', this._onDragOver);
+            el.removeEventListener('dragleave', this._onDragLeave);
+            el.removeEventListener('drop', this._onDrop);
+            el.removeEventListener('dragend', this._onDragEnd);
+        });
+    }
+
+    _findCellByTarget(target: HTMLElement): any {
+        const items = this.items;
+        if (!Array.isArray(items)) return null;
+        for (const item of items) {
+            if (item?.el && item.el.contains(target)) return item;
+        }
+        return null;
+    }
+
+    _onDragStart = (e: DragEvent): void => {
+        const cell = this._findCellByTarget(e.target as HTMLElement);
+        if (!cell) return;
+        if (!cell.reorderable) {
+            e.preventDefault();
+            return;
+        }
+        this._dragColName = cell.colName ?? cell.action ?? '';
+        e.dataTransfer!.effectAllowed = 'move';
+        e.dataTransfer!.setData('text/plain', this._dragColName);
+    };
+
+    _onDragOver = (e: DragEvent): void => {
+        if (!this._dragColName) return;
+        e.preventDefault();
+        e.dataTransfer!.dropEffect = 'move';
+        const cell = this._findCellByTarget(e.target as HTMLElement);
+        if (!cell) return;
+        const targetColName = cell.colName ?? cell.action ?? '';
+        if (targetColName === this._dragColName) {
+            this._hideDropIndicator();
+            return;
+        }
+        const rect = cell.el.getBoundingClientRect();
+        const isLeft = e.clientX < rect.left + rect.width / 2;
+        this._showDropIndicator(cell.el, isLeft);
+    };
+
+    _onDragLeave = (e: DragEvent): void => {
+        if (!this.el?.contains(e.relatedTarget as HTMLElement)) {
+            this._hideDropIndicator();
+        }
+    };
+
+    _onDrop = (e: DragEvent): void => {
+        e.preventDefault();
+        this._hideDropIndicator();
+        if (!this._dragColName) return;
+        const cell = this._findCellByTarget(e.target as HTMLElement);
+        if (!cell) return;
+        const targetColName = cell.colName ?? cell.action ?? '';
+        if (targetColName === this._dragColName) return;
+        this._reorderColumns(this._dragColName, targetColName);
+        this._dragColName = '';
+    };
+
+    _onDragEnd = (): void => {
+        this._dragColName = '';
+        this._hideDropIndicator();
+    };
+
+    _showDropIndicator(cellEl: HTMLElement, isLeft: boolean): void {
+        if (!this._dropIndicator) {
+            this._dropIndicator = document.createElement('div');
+            this._dropIndicator.className = 'q-header-cell__drop-indicator';
+        }
+        const rect = cellEl.getBoundingClientRect();
+        const headerRect = this.el!.getBoundingClientRect();
+        this._dropIndicator.style.left = `${(isLeft ? rect.left : rect.right) - headerRect.left}px`;
+        this._dropIndicator.style.top = '0';
+        this._dropIndicator.style.height = `${headerRect.height}px`;
+        if (this._dropIndicator.parentNode !== this.el) {
+            this.el!.appendChild(this._dropIndicator);
+        }
+    }
+
+    _hideDropIndicator(): void {
+        if (this._dropIndicator?.parentNode) {
+            this._dropIndicator.parentNode.removeChild(this._dropIndicator);
+        }
+    }
+
+    _reorderColumns(fromName: string, toName: string): void {
+        const columns = this.columns;
+        if (!Array.isArray(columns)) return;
+        const fromIdx = columns.findIndex((c: any) => c.name === fromName);
+        const toIdx = columns.findIndex((c: any) => c.name === toName);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+        const newColumns = [...columns];
+        const [moved] = newColumns.splice(fromIdx, 1);
+        newColumns.splice(toIdx, 0, moved);
+        this.setData('columns', newColumns);
+        this.componentEmit('reorder', { columns: newColumns, from: fromName, to: toName });
+    }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
         const items = columns.map(col => this._buildItemData(col));

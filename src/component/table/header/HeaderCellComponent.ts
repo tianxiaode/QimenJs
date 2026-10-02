@@ -132,6 +132,13 @@ class HeaderCellComponent extends Component {
         } else {
             this._applyPopover();
         }
+        if (this.reorderable && this.el) {
+            this.el.draggable = true;
+        }
+    }
+
+    _onReorderableOptionChange(_value: boolean): void {
+        if (this.el) this.el.draggable = !!this.reorderable;
     }
 
     _onAlignOptionChange(_value: string): void {
