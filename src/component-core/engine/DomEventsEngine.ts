@@ -224,6 +224,7 @@ export class DomEventsEngine {
 
             domEvt.targetComponent = matched;
             if (matched.action) domEvt.action = matched.action;
+            if (matched.actionData) domEvt.actionData = matched.actionData;
 
             const dispatch = dispatchers?.get(DomEventsEngine._ruleKey(rule));
             if (dispatch) {
@@ -386,6 +387,9 @@ export class DomEventsEngine {
         const extraData = DomEventsEngine._buildPayload(instance, rule);
         if (domEvt?.action) {
             extraData.action = domEvt.action;
+        }
+        if (domEvt?.actionData) {
+            extraData.actionData = domEvt.actionData;
         }
         EventForwarder.forward(instance, rule, extraData, domEvt, domEvt?.action);
     }

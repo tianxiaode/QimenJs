@@ -18,6 +18,8 @@ export const ComponentDefs: Definitions = {
         order: 0,
         /** 组件行为 -与事件绑定相关，不如发布实体的save事件 */
         action: null,
+        /** 组件行为数据 — 与 action 配合，携带额外事件数据，自动流入 defaultEventData 和委托事件 */
+        actionData: null,
         /** 组件角色 — 控制组件的类型和用途 */
         role: null,
         /** 组件样式 — 控制组件的样式 */

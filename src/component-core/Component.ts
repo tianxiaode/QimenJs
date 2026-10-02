@@ -96,6 +96,7 @@ export class Component extends ComposableBase implements IComponent {
             id: this.id,
             type: this.type,
             action: this.action,
+            actionData: this.actionData,
         };
     }
 

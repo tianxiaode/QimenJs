@@ -105,7 +105,7 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onDataOptionChange(data: Record<string, any>[]): void {
+    _onDataOptionChange(_data: Record<string, any>[]): void {
         if (this._isAfterInit) this._reflow();
     }
 
