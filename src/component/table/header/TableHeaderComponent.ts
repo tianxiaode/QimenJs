@@ -152,7 +152,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const [moved] = newColumns.splice(fromIdx, 1);
         newColumns.splice(toIdx, 0, moved);
         this.setData('columns', newColumns);
-        this.componentEmit('reorder', { columns: newColumns, from: fromName, to: toName });
+        this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
