@@ -1,6 +1,6 @@
 import { HeaderCellComponent } from './HeaderCellComponent';
 import type { ColumnAlign } from '../column-types';
-import type { DragOptions, TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { GROUP_HEADER_CELL_TPL } from './group-header-cell-tpl';
 import './groupheadercell.css';
@@ -37,12 +37,6 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
     get tpl(): TemplateDecl {
         return GROUP_HEADER_CELL_TPL;
     }
-
-    drag?: boolean | DragOptions = {
-        axis: 'x',
-        activeClass: 'q-header-cell__resize--active',
-        handle: 'resizeHandle',
-    };
 
     _childCells: Array<{ component: any; el: HTMLElement }> = [];
     _resizeStartWidth: number = 0;
@@ -109,23 +103,22 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         }
     }
 
-    onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
+    _onResizeDrag(domEvt: any): void {
         if (!this.resizable || this.childNames.length === 0) return;
-        const lastChild = this._childCells[this._childCells.length - 1];
-        this._resizeStartWidth = lastChild?.el?.offsetWidth ?? this.el!.offsetWidth;
+        const phase = domEvt?.data?.phase;
+        if (phase === 'start') {
+            const lastChild = this._childCells[this._childCells.length - 1];
+            this._resizeStartWidth = lastChild?.el?.offsetWidth ?? this.el!.offsetWidth;
+        } else if (phase === 'move') {
+            const dx = domEvt.data.dx ?? 0;
+            const targetCol = this.childNames[this.childNames.length - 1];
+            const newWidth = Math.max(this.minWidth, this._resizeStartWidth + dx);
+            this.componentEmit('resize', {
+                colName: targetCol,
+                width: newWidth,
+            });
+        }
     }
-
-    onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
-        if (!this.resizable || this.childNames.length === 0) return;
-        const targetCol = this.childNames[this.childNames.length - 1];
-        const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
-        this.componentEmit('resize', {
-            colName: targetCol,
-            width: newWidth,
-        });
-    }
-
-    onDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
 
     update(data: any): void {
         if (data?.title !== undefined) {

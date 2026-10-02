@@ -41,87 +41,70 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 groupBy: { handler: '_onGroupBy', entities: '[action]' },
                 hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
                 showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
+                reorderStart: { handler: '_onReorderStart' },
+                reorderMove: { handler: '_onReorderMove' },
+                reorderEnd: { handler: '_onReorderEnd' },
             },
         },
     ];
 
-    onAfterInit(): void {
-        super.onAfterInit();
-        const el = this.el;
-        if (!el) return;
-        el.addEventListener('dragstart', this._onDragStart);
-        el.addEventListener('dragover', this._onDragOver);
-        el.addEventListener('dragleave', this._onDragLeave);
-        el.addEventListener('drop', this._onDrop);
-        el.addEventListener('dragend', this._onDragEnd);
-        this.onCleanup(() => {
-            el.removeEventListener('dragstart', this._onDragStart);
-            el.removeEventListener('dragover', this._onDragOver);
-            el.removeEventListener('dragleave', this._onDragLeave);
-            el.removeEventListener('drop', this._onDrop);
-            el.removeEventListener('dragend', this._onDragEnd);
-        });
-    }
-
-    _findCellByTarget(target: HTMLElement): any {
+    _findCellAtPosition(clientX: number, clientY: number): any {
         const items = this.items;
         if (!Array.isArray(items)) return null;
         for (const item of items) {
-            if (item?.el && item.el.contains(target)) return item;
+            if (!item?.el) continue;
+            const rect = item.el.getBoundingClientRect();
+            if (
+                clientX >= rect.left &&
+                clientX <= rect.right &&
+                clientY >= rect.top &&
+                clientY <= rect.bottom
+            ) {
+                return item;
+            }
         }
         return null;
     }
 
-    _onDragStart = (e: DragEvent): void => {
-        const cell = this._findCellByTarget(e.target as HTMLElement);
-        if (!cell) return;
-        if (!cell.reorderable) {
-            e.preventDefault();
+    _onReorderStart(data: any): void {
+        this._dragColName = data?.colName ?? '';
+    }
+
+    _onReorderMove(data: any): void {
+        if (!this._dragColName) return;
+        const clientX = data?.clientX ?? 0;
+        const clientY = data?.clientY ?? 0;
+        const cell = this._findCellAtPosition(clientX, clientY);
+        if (!cell) {
+            this._hideDropIndicator();
             return;
         }
-        this._dragColName = cell.colName ?? cell.action ?? '';
-        e.dataTransfer!.effectAllowed = 'move';
-        e.dataTransfer!.setData('text/plain', this._dragColName);
-    };
-
-    _onDragOver = (e: DragEvent): void => {
-        if (!this._dragColName) return;
-        e.preventDefault();
-        e.dataTransfer!.dropEffect = 'move';
-        const cell = this._findCellByTarget(e.target as HTMLElement);
-        if (!cell) return;
         const targetColName = cell.colName ?? cell.action ?? '';
         if (targetColName === this._dragColName) {
             this._hideDropIndicator();
             return;
         }
         const rect = cell.el.getBoundingClientRect();
-        const isLeft = e.clientX < rect.left + rect.width / 2;
+        const isLeft = clientX < rect.left + rect.width / 2;
         this._showDropIndicator(cell.el, isLeft);
-    };
+    }
 
-    _onDragLeave = (e: DragEvent): void => {
-        if (!this.el?.contains(e.relatedTarget as HTMLElement)) {
-            this._hideDropIndicator();
-        }
-    };
-
-    _onDrop = (e: DragEvent): void => {
-        e.preventDefault();
-        this._hideDropIndicator();
+    _onReorderEnd(data: any): void {
         if (!this._dragColName) return;
-        const cell = this._findCellByTarget(e.target as HTMLElement);
-        if (!cell) return;
-        const targetColName = cell.colName ?? cell.action ?? '';
-        if (targetColName === this._dragColName) return;
-        this._reorderColumns(this._dragColName, targetColName);
-        this._dragColName = '';
-    };
-
-    _onDragEnd = (): void => {
-        this._dragColName = '';
+        const clientX = data?.clientX ?? 0;
+        const clientY = data?.clientY ?? 0;
+        const cell = this._findCellAtPosition(clientX, clientY);
         this._hideDropIndicator();
-    };
+        if (!cell) {
+            this._dragColName = '';
+            return;
+        }
+        const targetColName = cell.colName ?? cell.action ?? '';
+        if (targetColName !== this._dragColName) {
+            this._reorderColumns(this._dragColName, targetColName);
+        }
+        this._dragColName = '';
+    }
 
     _showDropIndicator(cellEl: HTMLElement, isLeft: boolean): void {
         if (!this._dropIndicator) {

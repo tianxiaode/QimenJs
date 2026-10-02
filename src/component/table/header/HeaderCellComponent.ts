@@ -1,5 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl, DragOptions } from '@qimenjs/component-core';
+import { DomEventsEngine } from '@/component-core/engine';
 import { Definitions } from '@/composable';
 import { HEADER_CELL_TPL } from './header-cell-tpl';
 
@@ -32,15 +33,12 @@ class HeaderCellComponent extends Component {
         return HEADER_CELL_TPL;
     }
 
-    drag?: boolean | DragOptions = {
-        axis: 'x',
-        activeClass: 'q-header-cell__resize--active',
-        handle: 'resizeHandle',
-    };
+    drag?: boolean | DragOptions = false;
 
     _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
     _popoverInitialized: boolean = false;
+    _resizeRule: any = null;
 
     _buildMenuItems(): any[] {
         const items: any[] = [];
@@ -132,13 +130,46 @@ class HeaderCellComponent extends Component {
         } else {
             this._applyPopover();
         }
-        if (this.reorderable && this.el) {
-            this.el.draggable = true;
+        this._initResizeRule();
+    }
+
+    _initResizeRule(): void {
+        const resizeHandle = this.getNodeEl('resizeHandle');
+        if (!resizeHandle) return;
+        this._resizeRule = {
+            event: 'drag',
+            path: resizeHandle,
+            handler: '_onResizeDrag',
+            needsBinding: true,
+        };
+        DomEventsEngine.addEventRule(this, this._resizeRule);
+        this.onCleanup(() => {
+            DomEventsEngine.removeEventRule(this, this._resizeRule);
+        });
+    }
+
+    _onResizeDrag(domEvt: any): void {
+        if (!this.resizable) return;
+        const phase = domEvt?.data?.phase;
+        if (phase === 'start') {
+            this._resizeStartWidth = this.el!.offsetWidth;
+        } else if (phase === 'move') {
+            const dx = domEvt.data.dx ?? 0;
+            const newWidth = Math.max(this.minWidth, this._resizeStartWidth + dx);
+            this.componentEmit('resize', {
+                colName: this.colName,
+                width: newWidth,
+            });
         }
     }
 
     _onReorderableOptionChange(_value: boolean): void {
-        if (this.el) this.el.draggable = !!this.reorderable;
+        if (this.reorderable) {
+            this.drag = { axis: 'x', activeClass: 'q-header-cell--dragging', handle: 'content' };
+        } else {
+            this.drag = false;
+        }
+        this._commitDrags();
     }
 
     _onAlignOptionChange(_value: string): void {
@@ -274,20 +305,42 @@ class HeaderCellComponent extends Component {
     }
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
-        if (!this.resizable) return;
-        this._resizeStartWidth = this.el!.offsetWidth;
+        this.componentEmit('reorderStart', { colName: this.colName });
     }
 
     onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
-        if (!this.resizable) return;
-        const newWidth = Math.max(this.minWidth, this._resizeStartWidth + ctx.dx);
-        this.componentEmit('resize', {
-            colName: this.colName,
-            width: newWidth,
-        });
+        const oe = ctx.originalEvent as any;
+        let clientX = 0;
+        let clientY = 0;
+        if (oe?.clientX !== undefined) {
+            clientX = oe.clientX;
+            clientY = oe.clientY;
+        } else if (oe?.touches?.[0]) {
+            clientX = oe.touches[0].clientX;
+            clientY = oe.touches[0].clientY;
+        } else if (oe?.changedTouches?.[0]) {
+            clientX = oe.changedTouches[0].clientX;
+            clientY = oe.changedTouches[0].clientY;
+        }
+        this.componentEmit('reorderMove', { colName: this.colName, clientX, clientY });
     }
 
-    onDragEnd(_ctx: { el: HTMLElement; originalEvent: Event }): void {}
+    onDragEnd(ctx: { el: HTMLElement; originalEvent: Event }): void {
+        const oe = ctx.originalEvent as any;
+        let clientX = 0;
+        let clientY = 0;
+        if (oe?.clientX !== undefined) {
+            clientX = oe.clientX;
+            clientY = oe.clientY;
+        } else if (oe?.touches?.[0]) {
+            clientX = oe.touches[0].clientX;
+            clientY = oe.touches[0].clientY;
+        } else if (oe?.changedTouches?.[0]) {
+            clientX = oe.changedTouches[0].clientX;
+            clientY = oe.changedTouches[0].clientY;
+        }
+        this.componentEmit('reorderEnd', { colName: this.colName, clientX, clientY });
+    }
 
     update(data: any): void {
         if (data?.title !== undefined) {
