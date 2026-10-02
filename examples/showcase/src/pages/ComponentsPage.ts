@@ -35,6 +35,7 @@ import { PROGRESS_DEMO } from '../components/ProgressDemo';
 import { STATISTIC_DEMO } from '../components/StatisticDemo';
 import { TABLE_DEMO } from '../components/TableDemo';
 import { TAG_DEMO } from '../components/TagDemo';
+import { ENTITY_SOURCE_DEMO } from '../components/EntitySourceDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -72,6 +73,10 @@ const COMPONENT_CATEGORIES = [
         label: '交互工具',
         components: ['Dialog', 'EntityToolbar', 'ItemGroup', 'Toolbar'],
     },
+    {
+        label: '数据来源',
+        components: ['EntitySource'],
+    },
 ];
 
 /** 组件演示映射 */
@@ -104,6 +109,7 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Statistic: STATISTIC_DEMO,
     Table: TABLE_DEMO,
     Tag: TAG_DEMO,
+    EntitySource: ENTITY_SOURCE_DEMO,
 };
 
 /** 首页模板 */
@@ -324,7 +330,11 @@ export class ComponentsPage extends Component {
             this._currentDemo = null;
         }
         this._interactiveInstances.forEach(inst => {
-            try { inst.dispose(); } catch (e) { console.error('[ComponentsPage] interactive dispose error', e); }
+            try {
+                inst.dispose();
+            } catch (e) {
+                console.error('[ComponentsPage] interactive dispose error', e);
+            }
         });
         this._interactiveInstances = [];
         contentEl.innerHTML = '';
