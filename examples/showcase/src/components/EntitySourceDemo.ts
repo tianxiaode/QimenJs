@@ -1,6 +1,7 @@
 import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
 import { TableComponent, NavComponent, TagComponent } from '@qimenjs/component';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
+import { ENTITY_COMMAND_EVENTS } from '@qimenjs/events';
 import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
 import type { DemoConfig } from './types';
@@ -173,7 +174,7 @@ class EntitySourceInteractiveDemo extends Component {
     }
 
     _reloadData(): void {
-        this.entityEmit('load_dictionary', this._currentData, { source: ENTITY_KEY });
+        this.entityEmit(ENTITY_COMMAND_EVENTS.LOAD_DICTIONARY, this._currentData, { source: ENTITY_KEY });
     }
 
     _updateStatus(): void {
