@@ -55,19 +55,19 @@ class RowComponent extends Component {
 
         for (let i = 0; i < columns.length; i++) {
             const meta = columns[i];
-            const cell = this._createCell(meta);
+            const cell = this._createCell(meta, i);
             this.el!.appendChild(cell.el);
             this._cells.set(meta.name, cell);
-            cell.order = (i + 1) * 10;
         }
     }
 
-    _createCell(meta: ColumnMeta): any {
+    _createCell(meta: ColumnMeta, index: number): any {
         const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
         const options: Record<string, any> = {
             align: meta.align,
             colName: meta.name,
             fixed: meta.fixed ?? null,
+            order: (index + 1) * 10,
         };
         if (meta.width) {
             options.width = `var(--q-table-col-${meta.name}-width)`;
@@ -156,10 +156,10 @@ class RowComponent extends Component {
         const fromCell = this._cells.get(fromName);
         const toCell = this._cells.get(toName);
         if (fromCell && toCell) {
-            const fromOrder = fromCell.order;
-            const toOrder = toCell.order;
-            fromCell.order = toOrder;
-            toCell.order = fromOrder;
+            const fromOrder = fromCell.getData('order');
+            const toOrder = toCell.getData('order');
+            fromCell.setData('order', toOrder);
+            toCell.setData('order', fromOrder);
         }
     }
 }

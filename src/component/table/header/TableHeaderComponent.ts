@@ -387,10 +387,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const fromItem = items[from];
         const toItem = items[to];
         if (fromItem && toItem) {
-            const fromOrder = fromItem.order;
-            const toOrder = toItem.order;
-            fromItem.order = toOrder;
-            toItem.order = fromOrder;
+            const fromOrder = fromItem.getData('order');
+            const toOrder = toItem.getData('order');
+            fromItem.setData('order', toOrder);
+            toItem.setData('order', fromOrder);
         }
     }
 }
