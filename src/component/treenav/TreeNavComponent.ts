@@ -2,7 +2,6 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { TreeNavItemComponent } from './TreeNavItemComponent';
 import { DomEventsMap, type ListenItem } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { EntityDataAbility } from '@/component-abilities';
 import './treenav.css';
 
 const TreeNavComponentDefs: Definitions = {
@@ -11,12 +10,6 @@ const TreeNavComponentDefs: Definitions = {
         maxDepth: 5,
         activeIndex: -1,
         pathIndex: null,
-        entityKey: null,
-        entityType: null,
-        data: null,
-    },
-    fields: {
-        _entityItems: [],
     },
 } as const;
 
@@ -39,10 +32,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         },
     };
 
-    listens: ListenItem[] = [
-        { route: true, events: { change: 'onRouteChange' } },
-        { entity: true, events: { listed: 'onEntityListed' } },
-    ];
+    listens: ListenItem[] = [{ route: true, events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
         const item = domEvt?.targetComponent as TreeNavItemComponent;
@@ -81,9 +71,10 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-tree-nav');
-        this._connectEntity();
         this._isAfterInit = true;
-        if (this._treeData.length > 0) {
+        if (this.hasEntity()) {
+            this._onEntityDataChange();
+        } else if (this._treeData.length > 0) {
             this._flatData = this._flattenTree(this._treeData);
             if (this.activeIndex >= 0 && this.activeIndex < this._flatData.length) {
                 const data = this._flatData[this.activeIndex];
@@ -261,7 +252,6 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     }
 }
 
-TreeNavComponent.use(EntityDataAbility);
 TreeNavComponent.define(TreeNavComponentDefs);
 
 export { TreeNavComponent };

@@ -43,11 +43,14 @@ class TagComponent extends Component {
         click: { path: 'items', handler: '_onTagClick' },
     };
 
-    listens: ListenItem[] = [{ entity: true, events: { listed: 'onEntityListed' } }];
+    listens: ListenItem[] = [];
 
     onAfterInit(): void {
         this._initialized = true;
         this._connectEntity();
+        if (this.hasEntity() && this.getEntityItems().length > 0) {
+            this._onEntityDataChange();
+        }
         this._render();
         this.registerI18nRefresh(() => this._render());
     }

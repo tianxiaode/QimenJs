@@ -1,5 +1,5 @@
 import type { AbilityDefinition } from '@/composable';
-import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS } from '@/events';
+import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { DICTIONARY_MANAGER_ENTITY_TYPE } from '@/entity/types';
 import type { EntityDataHost } from './types';
 
@@ -12,6 +12,11 @@ export const EntityDataAbility = {
             entityKey,
             entityType: this.getData('entityType') || DICTIONARY_MANAGER_ENTITY_TYPE,
         });
+
+        const offListed = this.entityOn(entityKey, ENTITY_LIST_EVENTS.LISTED, (items: any[]) => {
+            this.onEntityListed(items);
+        });
+        this.onCleanup(offListed);
 
         const data = this.getData('data');
         if (Array.isArray(data) && data.length > 0) {

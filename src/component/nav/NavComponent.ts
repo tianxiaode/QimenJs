@@ -25,7 +25,6 @@ import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent'
 import type { NavItemComponent } from './NavItemComponent';
 import { DomEventsMap, type ListenItem, type TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { EntityDataAbility } from '@/component-abilities';
 import { NAV_TPL } from './nav-tpl';
 import './nav.css';
 
@@ -37,12 +36,9 @@ const NavComponentDefs: Definitions = {
         pathIndex: null,
         indexPath: null,
         showToggle: false,
-        entityKey: null,
-        entityType: null,
-        data: null,
     },
     fields: {
-        _entityItems: [],
+        _isAfterInit: false,
     },
 } as const;
 
@@ -72,10 +68,7 @@ class NavComponent extends ItemGroupPooledComponent {
         ],
     };
 
-    listens: ListenItem[] = [
-        { route: true, events: { change: 'onRouteChange' } },
-        { entity: true, events: { listed: 'onEntityListed' } },
-    ];
+    listens: ListenItem[] = [{ route: true, events: { change: 'onRouteChange' } }];
 
     _onItemClick(domEvt: any): void {
         const target = domEvt.targetComponent;
@@ -117,8 +110,6 @@ class NavComponent extends ItemGroupPooledComponent {
     onAfterInit(): void {
         super.onAfterInit();
 
-        this._connectEntity();
-
         this.addCls('q-nav');
         if (this.rawOptions?.anchor) this.addCls('q-nav--submenu');
         const container = (this as any).itemContainer?.el as HTMLElement | undefined;
@@ -144,9 +135,15 @@ class NavComponent extends ItemGroupPooledComponent {
         if (this.activeIndex >= 0) {
             this.selectAt(this.activeIndex, true);
         }
+
+        this._isAfterInit = true;
+        if (this.hasEntity() && this.getEntityItems().length > 0) {
+            this._onEntityDataChange();
+        }
     }
 
     _onEntityDataChange(): void {
+        if (!this._isAfterInit) return;
         const items = this.getEntityItems();
         this._buildPathIndex(items);
         this.setItems([...items]);
@@ -224,7 +221,6 @@ class NavComponent extends ItemGroupPooledComponent {
     }
 }
 
-NavComponent.use(EntityDataAbility);
 NavComponent.define(NavComponentDefs);
 
 export { NavComponent };

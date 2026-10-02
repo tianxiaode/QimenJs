@@ -6,7 +6,6 @@ import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
-import { EntityDataAbility } from '@/component-abilities';
 
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
@@ -44,18 +43,10 @@ class TableComponent extends ItemGroupPooledComponent {
                 groupToggle: 'onGroupToggle',
             },
         },
-        {
-            entity: true,
-            events: {
-                listed: 'onEntityListed',
-            },
-        },
     ];
 
     onAfterInit(): void {
         super.onAfterInit();
-
-        this._connectEntity();
 
         const groupField = this.getData('groupField');
         if (groupField && this.hasEntity()) {
@@ -302,9 +293,6 @@ class TableComponent extends ItemGroupPooledComponent {
 const TableComponentDefs: Definitions = {
     options: {
         columns: null,
-        data: null,
-        entityKey: null,
-        entityType: null,
         groupField: '',
     },
     fields: {
@@ -315,7 +303,6 @@ const TableComponentDefs: Definitions = {
     },
 } as const;
 
-TableComponent.use(EntityDataAbility);
 TableComponent.define(TableComponentDefs);
 TableComponent.register();
 

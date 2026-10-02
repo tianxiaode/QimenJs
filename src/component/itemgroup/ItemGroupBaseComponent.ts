@@ -1,6 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
-import { OverflowAbility } from '@qimenjs/component-abilities';
+import { EntityDataAbility, OverflowAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { ITEMGROUP_BASE_TPL } from './itemgroup-tpl';
 import './itemgroup.css';
@@ -19,11 +19,15 @@ const ItemGroupBaseComponentDefs: Definitions = {
         items: null,
         /** 全部 items 的默认属性 — items 自身属性优先 */
         defaultItemOption: null,
+        entityKey: null,
+        entityType: null,
+        data: null,
     },
     fields: {
         defaultItemType: '',
         indicator: undefined,
         isItemContainer: true,
+        _entityItems: [],
     },
 } as const;
 
@@ -70,7 +74,9 @@ class ItemGroupBaseComponent extends Component {
         if (value) this.setItems([...value]);
     }
 
-    onAfterInit(): void {}
+    onAfterInit(): void {
+        this._connectEntity();
+    }
 
     get count(): number {
         return (this.items || []).length;
@@ -211,7 +217,7 @@ class ItemGroupBaseComponent extends Component {
     }
 }
 
-ItemGroupBaseComponent.use([OverflowAbility]);
+ItemGroupBaseComponent.use([EntityDataAbility, OverflowAbility]);
 ItemGroupBaseComponent.define(ItemGroupBaseComponentDefs);
 
 export { ItemGroupBaseComponent };
