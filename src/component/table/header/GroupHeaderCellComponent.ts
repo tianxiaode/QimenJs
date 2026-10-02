@@ -111,7 +111,8 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
         if (!this.resizable || this.childNames.length === 0) return;
-        this._resizeStartWidth = this.el!.offsetWidth;
+        const lastChild = this._childCells[this._childCells.length - 1];
+        this._resizeStartWidth = lastChild?.el?.offsetWidth ?? this.el!.offsetWidth;
     }
 
     onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
