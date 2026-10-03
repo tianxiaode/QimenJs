@@ -120,9 +120,36 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         }
     }
 
+    _destroyChildren(): void {
+        for (const { component } of this._childCells) {
+            component.dispose?.();
+        }
+        this._childCells = [];
+        const container = this.getNodeEl('children');
+        if (container) container.innerHTML = '';
+    }
+
     update(data: any): void {
         if (data?.title !== undefined) {
             this.setData('title', data.title);
+        }
+        if (data?.childConfigs !== undefined) {
+            const oldConfigs = this.childConfigs;
+            const newConfigs = data.childConfigs;
+            const changed =
+                !oldConfigs ||
+                oldConfigs.length !== newConfigs.length ||
+                oldConfigs.some(
+                    (c: GroupChildConfig, i: number) => c.colName !== newConfigs[i]?.colName
+                );
+            if (changed) {
+                this.setData('childConfigs', newConfigs);
+                if (data?.childNames !== undefined) {
+                    this.setData('childNames', data.childNames);
+                }
+                this._destroyChildren();
+                this._createChildren(newConfigs);
+            }
         }
     }
 }
