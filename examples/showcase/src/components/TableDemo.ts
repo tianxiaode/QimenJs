@@ -66,10 +66,22 @@ const SUMMARY_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'q2', field: 'q2', title: 'Q2', width: 100, align: 'right', sortable: true },
     { name: 'q3', field: 'q3', title: 'Q3', width: 100, align: 'right', sortable: true },
     { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right', sortable: true },
-    { name: 'total', field: 'total', title: '全年总计', width: 120, align: 'right', format: 'number' },
 ];
 
-const SUMMARY_ROW_DATA = { product: '合计', q1: 700, q2: 740, q3: 860, q4: 960, total: 3260 };
+function computeColumnSummary(data: any[], columns: ColumnDefOrGroup[]): Record<string, any> {
+    const summary: Record<string, any> = {};
+    for (const col of columns) {
+        if ('children' in col) continue;
+        const field = (col as any).field;
+        if (!field) continue;
+        const values = data.map(row => row[field]).filter(v => typeof v === 'number');
+        if (values.length > 0) {
+            summary[(col as any).name] = values.reduce((sum, v) => sum + v, 0);
+        }
+    }
+    summary.product = '合计';
+    return summary;
+}
 
 class SummaryTableDemo extends Component {
     static type = 'summary-table-demo';
@@ -90,19 +102,15 @@ class SummaryTableDemo extends Component {
         const container = this.getNodeEl('container') as HTMLElement;
         if (!container) return;
 
-        const dataWithTotal = SUMMARY_DATA.map(row => ({
-            ...row,
-            total: row.q1 + row.q2 + row.q3 + row.q4,
-        }));
-
-        this._table = new TableComponent({ columns: SUMMARY_COLUMNS, data: dataWithTotal });
+        this._table = new TableComponent({ columns: SUMMARY_COLUMNS, data: SUMMARY_DATA });
         container.appendChild(this._table.el);
 
         this._table.ready.then(() => {
             const columnMetas = this._table!._columnMetaManager?.getAll() ?? [];
+            const summaryData = computeColumnSummary(SUMMARY_DATA, SUMMARY_COLUMNS);
             this._summaryRow = new TableSummaryRowComponent({ columnMetas });
-            this._summaryRow.update(SUMMARY_ROW_DATA);
-            container.appendChild(this._summaryRow.el);
+            this._summaryRow.update(summaryData);
+            this._table!.el.appendChild(this._summaryRow.el);
         });
     }
 
@@ -139,18 +147,17 @@ const table = new TableComponent({ columns, data, groupField: 'dept' });
             component: ComprehensiveTableDemo,
         },
         {
-            label: '统计行',
+            label: '列统计行',
             code: `const columns = [
     { name: 'product', field: 'product', title: '产品', width: 140 },
     { name: 'q1', field: 'q1', title: 'Q1', width: 100, align: 'right' },
     { name: 'q2', field: 'q2', title: 'Q2', width: 100, align: 'right' },
     { name: 'q3', field: 'q3', title: 'Q3', width: 100, align: 'right' },
     { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right' },
-    { name: 'total', field: 'total', title: '全年总计', width: 120, align: 'right' },
 ];
 const table = new TableComponent({ columns, data });
 
-// 统计行显示各列汇总值`,
+// 使用 TableSummaryRowComponent 在表格底部显示各列合计`,
             component: SummaryTableDemo,
         },
     ],
