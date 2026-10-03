@@ -81,7 +81,9 @@ _createCell(meta: ColumnMeta, index: number): any {
     }
     const cell = new CellClass(options);
     cell.el?.style.setProperty('order', `var(--q-table-col-${meta.name}-order)`);
-    console.log(`[RowComponent._createCell] ${meta.name} cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order);
+    const rowDisplay = this.el ? getComputedStyle(this.el).display : 'N/A';
+    const rowClasses = this.el?.className || '';
+    console.log(`[RowComponent._createCell] ${meta.name} cell.el.style.order=`, cell.el?.style?.order, `rowDisplay=`, rowDisplay, `rowClasses=`, rowClasses);
     setTimeout(() => {
         console.log(`[RowComponent._createCell DELAYED] ${meta.name} cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order, `computed=`, cell.el ? getComputedStyle(cell.el).order : 'N/A');
     }, 200);
