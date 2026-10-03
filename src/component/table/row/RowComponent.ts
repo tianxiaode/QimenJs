@@ -79,7 +79,11 @@ _createCell(meta: ColumnMeta, index: number): any {
         options.format = meta.format;
     }
     const cell = new CellClass(options);
-    console.log(`[RowComponent._createCell] ${meta.name} order=var(--q-table-col-${meta.name}-order), cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order);
+    cell.el?.style.setProperty('order', `var(--q-table-col-${meta.name}-order)`);
+    console.log(`[RowComponent._createCell] ${meta.name} cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order);
+    setTimeout(() => {
+        console.log(`[RowComponent._createCell DELAYED] ${meta.name} cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order, `computed=`, cell.el ? getComputedStyle(cell.el).order : 'N/A');
+    }, 200);
     return cell;
 }
 
