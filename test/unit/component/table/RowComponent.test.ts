@@ -114,7 +114,7 @@ describe('RowComponent', () => {
             expect(row.getData('columnMetas')).toEqual(REORDERED_METAS);
         });
 
-        it('update 仅传入 columnMetas（无 data）应更新列元数据并重建 cells', async () => {
+        it('update 仅传入 columnMetas（无 data）应更新列元数据，纯重排不重建 cells', async () => {
             row = new RowComponent({ columnMetas: SAMPLE_METAS, data: SAMPLE_DATA });
             container.appendChild(row.el);
 
@@ -127,9 +127,8 @@ describe('RowComponent', () => {
 
             expect(row.getData('columnMetas')).toEqual(REORDERED_METAS);
             expect(row._cells.size).toBe(4);
-
-            const newCellKeys = Array.from(row._cells.keys());
-            expect(newCellKeys).toEqual(['salary', 'name', 'age', 'dept']);
+            const newCellEls = Array.from(row._cells.values()).map(c => c.el);
+            expect(newCellEls).toEqual(originalCellEls);
         });
     });
 
@@ -151,7 +150,7 @@ describe('RowComponent', () => {
     });
 
     describe('_rebuildCellsIfChanged — 列顺序变化检测', () => {
-        it('列名不变但顺序变化时应重建 cells', async () => {
+        it('列名不变但顺序变化时不应重建 cells（CSS order 自动处理）', async () => {
             row = new RowComponent({ columnMetas: SAMPLE_METAS, data: SAMPLE_DATA });
             container.appendChild(row.el);
 
@@ -162,8 +161,8 @@ describe('RowComponent', () => {
             row.setData('columnMetas', REORDERED_METAS, true);
             (row as any)._rebuildCellsIfChanged();
 
-            const newCellKeys = Array.from(row._cells.keys());
-            expect(newCellKeys).toEqual(['salary', 'name', 'age', 'dept']);
+            const newCells = Array.from(row._cells.values());
+            expect(newCells).toEqual(originalCells);
             expect(row.el.children.length).toBe(4);
         });
 

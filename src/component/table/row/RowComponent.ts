@@ -109,29 +109,30 @@ class RowComponent extends Component {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         const cellKeys = Array.from(this._cells.keys());
 
-        let needsRebuild = false;
         if (cellKeys.length !== columns.length) {
-            needsRebuild = true;
-        } else {
-            for (let i = 0; i < columns.length; i++) {
-                if (cellKeys[i] !== columns[i].name) {
-                    needsRebuild = true;
-                    break;
-                }
-            }
+            this._rebuildCells(columns);
+            return;
         }
 
-        if (needsRebuild) {
-            for (const cell of this._cells.values()) {
-                cell.el?.remove?.();
+        const keySet = new Set(cellKeys);
+        for (const col of columns) {
+            if (!keySet.has(col.name)) {
+                this._rebuildCells(columns);
+                return;
             }
-            this._cells.clear();
-            for (let i = 0; i < columns.length; i++) {
-                const meta = columns[i];
-                const cell = this._createCell(meta, i);
-                this.el!.appendChild(cell.el);
-                this._cells.set(meta.name, cell);
-            }
+        }
+    }
+
+    _rebuildCells(columns: ColumnMeta[]): void {
+        for (const cell of this._cells.values()) {
+            cell.el?.remove?.();
+        }
+        this._cells.clear();
+        for (let i = 0; i < columns.length; i++) {
+            const meta = columns[i];
+            const cell = this._createCell(meta, i);
+            this.el!.appendChild(cell.el);
+            this._cells.set(meta.name, cell);
         }
     }
 
