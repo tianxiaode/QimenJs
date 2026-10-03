@@ -101,6 +101,8 @@ class TableComponent extends ItemGroupPooledComponent {
             if (!this._isReorderOnly(oldMetas, this._columnMetaManager.getAll())) {
                 this._disposeAllItems();
                 this._reflow();
+            } else {
+                this._updateItemsColumnMetas();
             }
         }
     }
@@ -152,16 +154,17 @@ class TableComponent extends ItemGroupPooledComponent {
                 items.push({
                     type: GROUP_SUMMARY_ROW_TYPE,
                     data: { ...this._buildGroupSummary(group, metas), _groupKey: groupKey },
+                    columnMetas: metas,
                     order: order++,
                     _groupKey: groupKey,
                 });
                 for (const rowData of group.groupItems ?? []) {
-                    items.push({ data: rowData, order: order++, _groupKey: groupKey });
+                    items.push({ data: rowData, columnMetas: metas, order: order++, _groupKey: groupKey });
                 }
             }
             return items;
         }
-        return data.map((rowData: any) => ({ data: rowData }));
+        return data.map((rowData: any) => ({ data: rowData, columnMetas: metas }));
     }
 
     /** 判断是否为分组数据（[{ groupKey, groupItems }]） */
@@ -257,6 +260,17 @@ class TableComponent extends ItemGroupPooledComponent {
                 this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
             }
             this.el!.style.setProperty(`--q-table-col-${meta.name}-order`, String((i + 1) * 10));
+        }
+    }
+
+    _updateItemsColumnMetas(): void {
+        const metas = this._columnMetaManager!.getAll();
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (typeof item.update === 'function') {
+                item.update({ columnMetas: metas });
+            }
         }
     }
 

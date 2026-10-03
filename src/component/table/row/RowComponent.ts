@@ -51,6 +51,8 @@ class RowComponent extends Component {
     }
 
     _createCells(): void {
+        if (this._cells.size > 0) return;
+
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
 
         for (let i = 0; i < columns.length; i++) {
@@ -80,25 +82,39 @@ class RowComponent extends Component {
     }
 
     update(props: any): void {
-        if (!props?.data) return;
-        const metas = props.columnMetas;
+        const metas = props?.columnMetas;
         if (Array.isArray(metas)) {
             this.setData('columnMetas', metas, true);
         }
-        this._doUpdate(props.data);
+        if (props?.data) {
+            this._doUpdate(props.data);
+        } else if (Array.isArray(metas)) {
+            this._rebuildCellsIfChanged();
+        }
     }
 
     _doUpdate(data: any): void {
+        this._rebuildCellsIfChanged();
+
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-        const cellNames = new Set(this._cells.keys());
-        const metaNames = new Set(columns.map(m => m.name));
+        for (const meta of columns) {
+            const cell = this._cells.get(meta.name);
+            if (cell && typeof cell.update === 'function') {
+                cell.update(this._getCellData(meta, data));
+            }
+        }
+    }
+
+    _rebuildCellsIfChanged(): void {
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        const cellKeys = Array.from(this._cells.keys());
 
         let needsRebuild = false;
-        if (cellNames.size !== metaNames.size) {
+        if (cellKeys.length !== columns.length) {
             needsRebuild = true;
         } else {
-            for (const name of metaNames) {
-                if (!cellNames.has(name)) {
+            for (let i = 0; i < columns.length; i++) {
+                if (cellKeys[i] !== columns[i].name) {
                     needsRebuild = true;
                     break;
                 }
@@ -115,13 +131,6 @@ class RowComponent extends Component {
                 const cell = this._createCell(meta, i);
                 this.el!.appendChild(cell.el);
                 this._cells.set(meta.name, cell);
-            }
-        }
-
-        for (const meta of columns) {
-            const cell = this._cells.get(meta.name);
-            if (cell && typeof cell.update === 'function') {
-                cell.update(this._getCellData(meta, data));
             }
         }
     }
