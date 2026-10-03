@@ -81,9 +81,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _onReorderStart(data: any): void {
-        console.log('[reorder] _onReorderStart called, data:', data);
         this._dragColName = data?.colName ?? '';
-        console.log('[reorder] _onReorderStart: _dragColName set to:', this._dragColName);
     }
 
     _onReorderMove(data: any): void {
@@ -106,31 +104,20 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _onReorderEnd(data: any): void {
-        console.log('[reorder] _onReorderEnd called, data:', data, '_dragColName:', this._dragColName);
-        if (!this._dragColName) {
-            console.log('[reorder] _onReorderEnd: _dragColName is empty, returning');
-            return;
-        }
+        if (!this._dragColName) return;
         const clientX = data?.clientX ?? 0;
         const clientY = data?.clientY ?? 0;
-        console.log('[reorder] _onReorderEnd: clientX:', clientX, 'clientY:', clientY);
         const cell = this._findCellAtPosition(clientX, clientY);
-        console.log('[reorder] _onReorderEnd: cell found:', cell?.colName ?? cell?.action ?? 'null');
         this._hideDropIndicator();
         if (!cell) {
-            console.log('[reorder] _onReorderEnd: no cell found, returning');
             this._dragColName = '';
             return;
         }
         const targetColName = cell.colName ?? cell.action ?? '';
-        console.log('[reorder] _onReorderEnd: targetColName:', targetColName, 'dragColName:', this._dragColName);
         if (targetColName !== this._dragColName) {
             const rect = cell.el.getBoundingClientRect();
             const isLeft = clientX < rect.left + rect.width / 2;
-            console.log('[reorder] _onReorderEnd: calling _reorderColumns', this._dragColName, targetColName, isLeft);
             this._reorderColumns(this._dragColName, targetColName, isLeft);
-        } else {
-            console.log('[reorder] _onReorderEnd: target === drag, skipping');
         }
         this._dragColName = '';
     }
@@ -157,29 +144,19 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _reorderColumns(fromName: string, toName: string, isLeft: boolean = true): void {
-        console.log('[reorder] _reorderColumns called:', fromName, '->', toName, 'isLeft:', isLeft);
         const columns = this.columns;
-        if (!Array.isArray(columns)) {
-            console.log('[reorder] _reorderColumns: columns is not an array');
-            return;
-        }
+        if (!Array.isArray(columns)) return;
 
         const fromIdx = columns.findIndex((c: any) => c.name === fromName);
         const toIdx = columns.findIndex((c: any) => c.name === toName);
-        console.log('[reorder] _reorderColumns: fromIdx:', fromIdx, 'toIdx:', toIdx);
 
         if (fromIdx !== -1 && toIdx !== -1) {
-            if (fromIdx === toIdx) {
-                console.log('[reorder] _reorderColumns: fromIdx === toIdx, returning');
-                return;
-            }
+            if (fromIdx === toIdx) return;
             const newColumns = [...columns];
             const [moved] = newColumns.splice(fromIdx, 1);
             const adjustedToIdx = fromIdx < toIdx ? toIdx - 1 : toIdx;
             const insertIdx = isLeft ? adjustedToIdx : adjustedToIdx + 1;
-            console.log('[reorder] _reorderColumns: adjustedToIdx:', adjustedToIdx, 'insertIdx:', insertIdx);
             newColumns.splice(insertIdx, 0, moved);
-            console.log('[reorder] _reorderColumns: new order:', newColumns.map((c: any) => c.name));
             this.setData('columns', newColumns);
             this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
             return;
@@ -192,25 +169,19 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const childFromIdx = group.children.findIndex((c: any) => c.name === fromName);
             const childToIdx = group.children.findIndex((c: any) => c.name === toName);
             if (childFromIdx !== -1 && childToIdx !== -1) {
-                if (childFromIdx === childToIdx) {
-                    console.log('[reorder] _reorderColumns: childFromIdx === childToIdx, returning');
-                    return;
-                }
+                if (childFromIdx === childToIdx) return;
                 const newChildren = [...group.children];
                 const [moved] = newChildren.splice(childFromIdx, 1);
                 const adjustedToIdx = childFromIdx < childToIdx ? childToIdx - 1 : childToIdx;
                 const insertIdx = isLeft ? adjustedToIdx : adjustedToIdx + 1;
-                console.log('[reorder] _reorderColumns (nested): adjustedToIdx:', adjustedToIdx, 'insertIdx:', insertIdx);
                 newChildren.splice(insertIdx, 0, moved);
                 const newColumns = [...columns];
                 newColumns[i] = { ...group, children: newChildren };
-                console.log('[reorder] _reorderColumns (nested): new children order:', newChildren.map((c: any) => c.name));
                 this.setData('columns', newColumns);
                 this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
                 return;
             }
         }
-        console.log('[reorder] _reorderColumns: from/to not found in any level');
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {

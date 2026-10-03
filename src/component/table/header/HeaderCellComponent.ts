@@ -343,6 +343,12 @@ class HeaderCellComponent extends Component {
     }
 
     update(data: any): void {
+        if (data?.colName !== undefined && data.colName !== this.colName) {
+            this.setData('colName', data.colName);
+        }
+        if (data?.action !== undefined && data.action !== this.action) {
+            this.setData('action', data.action);
+        }
         if (data?.title !== undefined) {
             this.setData('title', data.title);
         }
