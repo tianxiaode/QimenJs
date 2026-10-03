@@ -269,6 +269,8 @@ _applyColumnStyles(): void {
         }
         this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
     }
+    console.log('[TableComponent._applyColumnStyles] CSS vars:', metas.map((m, i) => `${m.name}=${(i+1)*100}`).join(', '));
+    console.log('[TableComponent._applyColumnStyles] el.style.cssText:', this.el?.style.cssText?.substring(0, 500));
 }
 
     _updateItemsColumnMetas(): void {

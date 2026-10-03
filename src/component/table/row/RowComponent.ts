@@ -63,23 +63,25 @@ class RowComponent extends Component {
         }
     }
 
-    _createCell(meta: ColumnMeta, index: number): any {
-        const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
-        const options: Record<string, any> = {
-            align: meta.align,
-            colName: meta.name,
-            fixed: meta.fixed ?? null,
-            order: `var(--q-table-col-${meta.name}-order)`,
-        };
-        if (meta.width) {
-            options.width = `var(--q-table-col-${meta.name}-width)`;
-            options.minWidth = '0';
-        }
-        if (meta.format && meta.cellType === 'text') {
-            options.format = meta.format;
-        }
-        return new CellClass(options);
+_createCell(meta: ColumnMeta, index: number): any {
+    const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
+    const options: Record<string, any> = {
+        align: meta.align,
+        colName: meta.name,
+        fixed: meta.fixed ?? null,
+        order: `var(--q-table-col-${meta.name}-order)`,
+    };
+    if (meta.width) {
+        options.width = `var(--q-table-col-${meta.name}-width)`;
+        options.minWidth = '0';
     }
+    if (meta.format && meta.cellType === 'text') {
+        options.format = meta.format;
+    }
+    const cell = new CellClass(options);
+    console.log(`[RowComponent._createCell] ${meta.name} order=var(--q-table-col-${meta.name}-order), cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order);
+    return cell;
+}
 
     update(props: any): void {
         const metas = props?.columnMetas;
