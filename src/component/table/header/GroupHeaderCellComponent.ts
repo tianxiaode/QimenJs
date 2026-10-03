@@ -77,13 +77,14 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             const ChildClass =
                 config.type === 'group' ? GroupHeaderCellComponent : HeaderCellComponent;
 
-            const childProps: any = {
-                colName: config.colName,
-                title: config.title,
-                align: config.align,
-                minWidth: config.minWidth,
-                eventKey,
-            };
+        const childProps: any = {
+            colName: config.colName,
+            title: config.title,
+            align: config.align,
+            minWidth: config.minWidth,
+            order: `var(--q-table-col-${config.colName}-order)`,
+            eventKey,
+        };
 
             if (config.type === 'leaf') {
                 childProps.sortable = config.sortable;

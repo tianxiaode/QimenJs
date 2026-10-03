@@ -269,8 +269,30 @@ _applyColumnStyles(): void {
         }
         this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
     }
-    console.log('[TableComponent._applyColumnStyles] CSS vars:', metas.map((m, i) => `${m.name}=${(i+1)*100}`).join(', '));
-    console.log('[TableComponent._applyColumnStyles] el.style.cssText:', this.el?.style.cssText?.substring(0, 500));
+    this._setGroupColumnOrderVars();
+}
+
+_setGroupColumnOrderVars(): void {
+    const columns = this.getData('columns') || [];
+    const step = this.step ?? 100;
+    this._traverseGroupOrders(columns, 0, step);
+}
+
+_traverseGroupOrders(columns: ColumnDefOrGroup[], startLeafIndex: number, step: number): number {
+    let leafIndex = startLeafIndex;
+    for (const col of columns) {
+        if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+            const group = col as ColumnGroupDef;
+            const childStartLeafIndex = leafIndex;
+            leafIndex = this._traverseGroupOrders(group.children, leafIndex, step);
+            const minOrder = (childStartLeafIndex + 1) * step;
+            const groupOrder = minOrder - Math.floor(step / 2);
+            this.el!.style.setProperty(`--q-table-col-${group.name}-order`, String(groupOrder));
+        } else {
+            leafIndex++;
+        }
+    }
+    return leafIndex;
 }
 
     _updateItemsColumnMetas(): void {

@@ -227,15 +227,41 @@ _registerColumnOrders(): void {
     if (!this.getColumnOrderCount()) {
         this.initColumnOrder({ useCssVar: false, step: this.step });
     }
+    const columns = this.columns;
+    if (!Array.isArray(columns)) return;
+
+    const leafNames = this._collectLeafNames(columns);
+    const leafIndexMap = new Map<string, number>();
+    for (let i = 0; i < leafNames.length; i++) {
+        leafIndexMap.set(leafNames[i], i);
+    }
+
     const items = this.items;
     if (!Array.isArray(items)) return;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+
+    for (const item of items) {
         if (!item?.el) continue;
         const colName = item.colName || item.action;
-        if (colName) {
-            this.registerColumnEntry(colName, item, i, {
-                isLeaf: item.type !== 'group-header-cell',
+        if (!colName) continue;
+
+        if (item.type === 'group-header-cell') {
+            const childLeafNames: string[] = item.childNames || [];
+            const childIndices = childLeafNames
+                .map((n: string) => leafIndexMap.get(n))
+                .filter((i: number | undefined) => i !== undefined) as number[];
+            if (childIndices.length > 0) {
+                const minLeafIndex = Math.min(...childIndices);
+                const step = this.step ?? 100;
+                const groupOrder = (minLeafIndex + 1) * step - Math.floor(step / 2);
+                this.registerColumnEntry(colName, item, minLeafIndex, {
+                    isLeaf: false,
+                    order: groupOrder,
+                });
+            }
+        } else {
+            const leafIndex = leafIndexMap.get(colName) ?? 0;
+            this.registerColumnEntry(colName, item, leafIndex, {
+                isLeaf: true,
             });
         }
     }

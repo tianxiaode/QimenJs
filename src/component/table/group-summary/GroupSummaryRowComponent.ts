@@ -56,7 +56,6 @@ class GroupSummaryRowComponent extends Component {
                 format: meta.format,
                 order: `var(--q-table-col-${meta.name}-order)`,
             });
-            cell.el.style.setProperty('order', `var(--q-table-col-${meta.name}-order)`);
             this.el.appendChild(cell.el);
             this._cells.set(meta.name, cell);
 

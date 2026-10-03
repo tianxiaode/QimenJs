@@ -50,19 +50,18 @@ class RowComponent extends Component {
         }
     }
 
-    _createCells(): void {
-        if (this._cells.size > 0) return;
+_createCells(): void {
+    if (this._cells.size > 0) return;
 
-        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-        console.log(`[RowComponent._createCells] display=`, this.el?.style?.display, `computed=`, this.el ? getComputedStyle(this.el).display : 'N/A', `classes=`, this.el?.className);
+    const columns: ColumnMeta[] = this.getData('columnMetas') || [];
 
-        for (let i = 0; i < columns.length; i++) {
-            const meta = columns[i];
-            const cell = this._createCell(meta, i);
-            this.el!.appendChild(cell.el);
-            this._cells.set(meta.name, cell);
-        }
+    for (let i = 0; i < columns.length; i++) {
+        const meta = columns[i];
+        const cell = this._createCell(meta, i);
+        this.el!.appendChild(cell.el);
+        this._cells.set(meta.name, cell);
     }
+}
 
 _createCell(meta: ColumnMeta, index: number): any {
     const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
@@ -80,13 +79,6 @@ _createCell(meta: ColumnMeta, index: number): any {
         options.format = meta.format;
     }
     const cell = new CellClass(options);
-    cell.el?.style.setProperty('order', `var(--q-table-col-${meta.name}-order)`);
-    const rowDisplay = this.el ? getComputedStyle(this.el).display : 'N/A';
-    const rowClasses = this.el?.className || '';
-    console.log(`[RowComponent._createCell] ${meta.name} cell.el.style.order=`, cell.el?.style?.order, `rowDisplay=`, rowDisplay, `rowClasses=`, rowClasses);
-    setTimeout(() => {
-        console.log(`[RowComponent._createCell DELAYED] ${meta.name} cell.order=`, cell.order, `cell.el.style.order=`, cell.el?.style?.order, `computed=`, cell.el ? getComputedStyle(cell.el).order : 'N/A');
-    }, 200);
     return cell;
 }
 
