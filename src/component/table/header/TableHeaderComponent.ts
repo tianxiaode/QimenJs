@@ -143,6 +143,20 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
+    _findParentGroup(colName: string): string | null {
+        const columns = this.columns;
+        if (!Array.isArray(columns)) return null;
+        for (const col of columns) {
+            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+                const group = col as ColumnGroupDef;
+                if (group.children.some((c: any) => c.name === colName)) {
+                    return group.name;
+                }
+            }
+        }
+        return null;
+    }
+
     _reorderColumns(fromName: string, toName: string, isLeft: boolean = true): void {
         const columns = this.columns;
         if (!Array.isArray(columns)) return;
@@ -179,6 +193,22 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 newColumns[i] = { ...group, children: newChildren };
                 this.setData('columns', newColumns);
                 this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+                return;
+            }
+        }
+
+        if (fromIdx !== -1 && toIdx === -1) {
+            const parentName = this._findParentGroup(toName);
+            if (parentName) {
+                this._reorderColumns(fromName, parentName, isLeft);
+                return;
+            }
+        }
+
+        if (fromIdx === -1 && toIdx !== -1) {
+            const parentName = this._findParentGroup(fromName);
+            if (parentName) {
+                this._reorderColumns(parentName, toName, isLeft);
                 return;
             }
         }
