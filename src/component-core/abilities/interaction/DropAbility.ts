@@ -29,8 +29,8 @@ export const DropAbility: AbilityDefinition = {
         this._dropEl = el;
         this._dropEntered = false;
 
-        this.bind(el, 'enter');
-        this.bind(el, 'leave');
+        this._dropEnterBindOff = this.bind(el, 'enter');
+        this._dropLeaveBindOff = this.bind(el, 'leave');
 
         this._dropEnterHandler = () => {
             if (!dragStateManager.isDragging()) return;
@@ -106,20 +106,31 @@ export const DropAbility: AbilityDefinition = {
             this._dropEndOff = undefined;
         };
 
-        this.on('dom:enter', this._dropEnterHandler);
-        this.on('dom:leave', this._dropLeaveHandler);
+        this._dropEnterHandlerOff = this.on('dom:enter', this._dropEnterHandler);
+        this._dropLeaveHandlerOff = this.on('dom:leave', this._dropLeaveHandler);
 
         this.onCleanup(() => this._disposeDropZone(zone));
     },
 
     _disposeDropZone(_zone: string): void {
-        if (this._dropEnterHandler) {
-            this.off('dom:enter', this._dropEnterHandler);
-            this._dropEnterHandler = undefined;
+        if (this._dropEnterHandlerOff) {
+            this._dropEnterHandlerOff();
+            this._dropEnterHandlerOff = undefined;
         }
-        if (this._dropLeaveHandler) {
-            this.off('dom:leave', this._dropLeaveHandler);
-            this._dropLeaveHandler = undefined;
+        if (this._dropLeaveHandlerOff) {
+            this._dropLeaveHandlerOff();
+            this._dropLeaveHandlerOff = undefined;
+        }
+        this._dropEnterHandler = undefined;
+        this._dropLeaveHandler = undefined;
+
+        if (this._dropEnterBindOff) {
+            this._dropEnterBindOff();
+            this._dropEnterBindOff = undefined;
+        }
+        if (this._dropLeaveBindOff) {
+            this._dropLeaveBindOff();
+            this._dropLeaveBindOff = undefined;
         }
 
         this._dropEndOff?.();

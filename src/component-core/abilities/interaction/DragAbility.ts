@@ -32,7 +32,7 @@ export const DragAbility: AbilityDefinition = {
         this._dragConfig = config;
         this._dragEl = el;
 
-        this.bind(el, 'drag');
+        this._dragBindOff = this.bind(el, 'drag');
 
         this._dragHandler = (ctx: any) => {
             const gesture = ctx?.data ?? ctx;
@@ -56,7 +56,7 @@ export const DragAbility: AbilityDefinition = {
                 this._onDragCancel(gesture);
             }
         };
-        this.on('dom:drag', this._dragHandler);
+        this._dragHandlerOff = this.on('dom:drag', this._dragHandler);
 
         this.onCleanup(() => this._disposeDrag());
     },
@@ -65,9 +65,15 @@ export const DragAbility: AbilityDefinition = {
         const componentId = this.id;
         if (!componentId) return;
 
-        if (this._dragHandler) {
-            this.off('dom:drag', this._dragHandler);
-            this._dragHandler = undefined;
+        if (this._dragHandlerOff) {
+            this._dragHandlerOff();
+            this._dragHandlerOff = undefined;
+        }
+        this._dragHandler = undefined;
+
+        if (this._dragBindOff) {
+            this._dragBindOff();
+            this._dragBindOff = undefined;
         }
 
         if (this._dragConfig?.activeClass && this._dragEl) {
