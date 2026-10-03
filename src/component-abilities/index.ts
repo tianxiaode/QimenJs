@@ -35,3 +35,11 @@ export {
 
 // 实体数据能力
 export { EntityDataAbility, type EntityDataHost } from './entity';
+
+// 列顺序映射表能力
+export {
+    ColumnOrderAbility,
+    type ColumnOrderEntry,
+    type ColumnOrderState,
+    type ColumnOrderConfig,
+} from './column-order';

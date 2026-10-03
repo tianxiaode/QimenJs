@@ -51,10 +51,13 @@ class GroupSummaryRowComponent extends Component {
 
         for (let i = 0; i < columns.length; i++) {
             const meta = columns[i];
-            const cell = new TextCellComponent({ align: meta.align, format: meta.format });
+            const cell = new TextCellComponent({
+                align: meta.align,
+                format: meta.format,
+                order: `var(--q-table-col-${meta.name}-order)`,
+            });
             this.el.appendChild(cell.el);
             this._cells.set(meta.name, cell);
-            cell.order = (i + 1) * 10;
 
             if (meta.width) {
                 cell.el.style.width = `var(--q-table-col-${meta.name}-width)`;
@@ -100,16 +103,6 @@ class GroupSummaryRowComponent extends Component {
         if (from === to || from < 0 || to < 0) return;
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         if (from >= columns.length || to >= columns.length) return;
-        const fromName = columns[from].name;
-        const toName = columns[to].name;
-        const fromCell = this._cells.get(fromName);
-        const toCell = this._cells.get(toName);
-        if (fromCell && toCell) {
-            const fromOrder = fromCell.order;
-            const toOrder = toCell.order;
-            fromCell.order = toOrder;
-            toCell.order = fromOrder;
-        }
     }
 }
 

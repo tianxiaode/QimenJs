@@ -1,4 +1,5 @@
 import { ItemGroupPooledComponent } from '../../itemgroup/ItemGroupPooledComponent';
+import { ColumnOrderAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
@@ -171,8 +172,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const adjustedToIdx = fromIdx < toIdx ? toIdx - 1 : toIdx;
             const insertIdx = isLeft ? adjustedToIdx : adjustedToIdx + 1;
             newColumns.splice(insertIdx, 0, moved);
-            this.setData('columns', newColumns);
-            this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+            this.setData('columns', newColumns, true);
+            this.reorderColumn(fromName, toName, isLeft);
+            this.emit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
             return;
         }
 
@@ -191,8 +193,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 newChildren.splice(insertIdx, 0, moved);
                 const newColumns = [...columns];
                 newColumns[i] = { ...group, children: newChildren };
-                this.setData('columns', newColumns);
-                this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+                this.setData('columns', newColumns, true);
+                this.reorderColumn(fromName, toName, isLeft);
+                this.emit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
                 return;
             }
         }
@@ -214,10 +217,29 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
-        const items = columns.map(col => this._buildItemData(col));
-        this.setItems(items);
+_onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+    const items = columns.map(col => this._buildItemData(col));
+    this.setItems(items);
+    this._registerColumnOrders();
+}
+
+_registerColumnOrders(): void {
+    if (!this.getColumnOrderCount()) {
+        this.initColumnOrder({ useCssVar: false, step: this.step });
     }
+    const items = this.items;
+    if (!Array.isArray(items)) return;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item?.el) continue;
+        const colName = item.colName || item.action;
+        if (colName) {
+            this.registerColumnEntry(colName, item, i, {
+                isLeaf: item.type !== 'group-header-cell',
+            });
+        }
+    }
+}
 
     _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
         const hideableColumns = this._collectHideableColumns();
@@ -468,6 +490,7 @@ const TableHeaderComponentDefs: Definitions = {
     },
 } as const;
 
+TableHeaderComponent.use([ColumnOrderAbility]);
 TableHeaderComponent.define(TableHeaderComponentDefs);
 
 export { TableHeaderComponent };

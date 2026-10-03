@@ -1,5 +1,6 @@
 import type { ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
+import { ColumnOrderAbility } from '@qimenjs/component-abilities';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
@@ -66,9 +67,12 @@ class TableComponent extends ItemGroupPooledComponent {
                 entityKey: this.entityKey,
                 groupField: this.getData('groupField') ?? '',
             });
-            this._header.on('reorder', (ctx: any) => {
-                this.setData('columns', ctx.data.columns);
-            });
+this._header.on('reorder', (ctx: any) => {
+    if (ctx.data.from && ctx.data.to) {
+        this.reorderColumn(ctx.data.from, ctx.data.to, ctx.data.isLeft);
+    }
+    this.setData('columns', ctx.data.columns, true);
+});
             headerArea.appendChild(this._header.el);
         }
 
@@ -90,22 +94,23 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
-        if (!this._columnMetaManager) {
-            this._columnMetaManager = new ColumnMetaManager();
-        }
-        const oldMetas = this._columnMetaManager.getAll();
-        this._columnMetaManager.compile(columns);
+_onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+    if (!this._columnMetaManager) {
+        this._columnMetaManager = new ColumnMetaManager();
+    }
+    const oldMetas = this._columnMetaManager.getAll();
+    this._columnMetaManager.compile(columns);
+    const isReorderOnly = this._isReorderOnly(oldMetas, this._columnMetaManager.getAll());
+    if (!isReorderOnly) {
         this._applyColumnStyles();
-        if (this._isAfterInit) {
-            if (!this._isReorderOnly(oldMetas, this._columnMetaManager.getAll())) {
-                this._disposeAllItems();
-                this._reflow();
-            } else {
-                this._updateItemsColumnMetas();
-            }
+    }
+    if (this._isAfterInit) {
+        if (!isReorderOnly) {
+            this._disposeAllItems();
+            this._reflow();
         }
     }
+}
 
     _onDataOptionChange(_data: Record<string, any>[]): void {
         if (this._isAfterInit) this._reflow();
@@ -251,17 +256,20 @@ class TableComponent extends ItemGroupPooledComponent {
             row.hidden = data.collapsed;
         }
     }
-    _applyColumnStyles(): void {
-        if (!this._columnMetaManager) return;
-        const metas = this._columnMetaManager.getAll();
-        for (let i = 0; i < metas.length; i++) {
-            const meta = metas[i];
-            if (meta.width) {
-                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
-            }
-            this.el!.style.setProperty(`--q-table-col-${meta.name}-order`, String((i + 1) * 10));
-        }
+_applyColumnStyles(): void {
+    if (!this._columnMetaManager) return;
+    const metas = this._columnMetaManager.getAll();
+    if (!this.getColumnOrderCount()) {
+        this.initColumnOrder({ useCssVar: true, cssVarPrefix: '--q-table-col-' });
     }
+    for (let i = 0; i < metas.length; i++) {
+        const meta = metas[i];
+        if (meta.width) {
+            this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
+        }
+        this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
+    }
+}
 
     _updateItemsColumnMetas(): void {
         const metas = this._columnMetaManager!.getAll();
@@ -331,6 +339,7 @@ const TableComponentDefs: Definitions = {
     },
 } as const;
 
+TableComponent.use([ColumnOrderAbility]);
 TableComponent.define(TableComponentDefs);
 TableComponent.register();
 
