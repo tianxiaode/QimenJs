@@ -60,6 +60,20 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 clientY >= rect.top &&
                 clientY <= rect.bottom
             ) {
+                if (Array.isArray(item._childCells) && item._childCells.length > 0) {
+                    for (const childCell of item._childCells) {
+                        if (!childCell?.el) continue;
+                        const childRect = childCell.el.getBoundingClientRect();
+                        if (
+                            clientX >= childRect.left &&
+                            clientX <= childRect.right &&
+                            clientY >= childRect.top &&
+                            clientY <= childRect.bottom
+                        ) {
+                            return childCell.component;
+                        }
+                    }
+                }
                 return item;
             }
         }
@@ -101,7 +115,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
         const targetColName = cell.colName ?? cell.action ?? '';
         if (targetColName !== this._dragColName) {
-            this._reorderColumns(this._dragColName, targetColName);
+            const rect = cell.el.getBoundingClientRect();
+            const isLeft = clientX < rect.left + rect.width / 2;
+            this._reorderColumns(this._dragColName, targetColName, isLeft);
         }
         this._dragColName = '';
     }
@@ -127,17 +143,45 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _reorderColumns(fromName: string, toName: string): void {
+    _reorderColumns(fromName: string, toName: string, isLeft: boolean = true): void {
         const columns = this.columns;
         if (!Array.isArray(columns)) return;
+
         const fromIdx = columns.findIndex((c: any) => c.name === fromName);
         const toIdx = columns.findIndex((c: any) => c.name === toName);
-        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
-        const newColumns = [...columns];
-        const [moved] = newColumns.splice(fromIdx, 1);
-        newColumns.splice(toIdx, 0, moved);
-        this.setData('columns', newColumns);
-        this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+
+        if (fromIdx !== -1 && toIdx !== -1) {
+            if (fromIdx === toIdx) return;
+            const newColumns = [...columns];
+            const [moved] = newColumns.splice(fromIdx, 1);
+            const adjustedToIdx = fromIdx < toIdx ? toIdx - 1 : toIdx;
+            const insertIdx = isLeft ? adjustedToIdx : adjustedToIdx + 1;
+            newColumns.splice(insertIdx, 0, moved);
+            this.setData('columns', newColumns);
+            this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+            return;
+        }
+
+        for (let i = 0; i < columns.length; i++) {
+            const col = columns[i];
+            if (!('children' in col) || !Array.isArray((col as ColumnGroupDef).children)) continue;
+            const group = col as ColumnGroupDef;
+            const childFromIdx = group.children.findIndex((c: any) => c.name === fromName);
+            const childToIdx = group.children.findIndex((c: any) => c.name === toName);
+            if (childFromIdx !== -1 && childToIdx !== -1) {
+                if (childFromIdx === childToIdx) return;
+                const newChildren = [...group.children];
+                const [moved] = newChildren.splice(childFromIdx, 1);
+                const adjustedToIdx = childFromIdx < childToIdx ? childToIdx - 1 : childToIdx;
+                const insertIdx = isLeft ? adjustedToIdx : adjustedToIdx + 1;
+                newChildren.splice(insertIdx, 0, moved);
+                const newColumns = [...columns];
+                newColumns[i] = { ...group, children: newChildren };
+                this.setData('columns', newColumns);
+                this.emit('reorder', { columns: newColumns, from: fromName, to: toName });
+                return;
+            }
+        }
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
