@@ -68,10 +68,12 @@ class TableComponent extends ItemGroupPooledComponent {
                 groupField: this.getData('groupField') ?? '',
             });
 this._header.on('reorder', (ctx: any) => {
-    if (ctx.data.from && ctx.data.to) {
-        this.reorderColumn(ctx.data.from, ctx.data.to, ctx.data.isLeft);
-    }
     this.setData('columns', ctx.data.columns, true);
+    const metas = this._columnMetaManager?.getAll() ?? [];
+    if (metas.length > 0) {
+        this.rebuildColumnOrders(metas.map(m => m.name));
+        this._setGroupColumnOrderVars();
+    }
 });
             headerArea.appendChild(this._header.el);
         }
