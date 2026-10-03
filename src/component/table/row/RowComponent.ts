@@ -54,6 +54,7 @@ class RowComponent extends Component {
         if (this._cells.size > 0) return;
 
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        console.log(`[RowComponent._createCells] display=`, this.el?.style?.display, `computed=`, this.el ? getComputedStyle(this.el).display : 'N/A', `classes=`, this.el?.className);
 
         for (let i = 0; i < columns.length; i++) {
             const meta = columns[i];
