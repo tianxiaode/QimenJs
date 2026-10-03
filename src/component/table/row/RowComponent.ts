@@ -81,11 +81,43 @@ class RowComponent extends Component {
 
     update(props: any): void {
         if (!props?.data) return;
+        const metas = props.columnMetas;
+        if (Array.isArray(metas)) {
+            this.setData('columnMetas', metas, true);
+        }
         this._doUpdate(props.data);
     }
 
     _doUpdate(data: any): void {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        const cellNames = new Set(this._cells.keys());
+        const metaNames = new Set(columns.map(m => m.name));
+
+        let needsRebuild = false;
+        if (cellNames.size !== metaNames.size) {
+            needsRebuild = true;
+        } else {
+            for (const name of metaNames) {
+                if (!cellNames.has(name)) {
+                    needsRebuild = true;
+                    break;
+                }
+            }
+        }
+
+        if (needsRebuild) {
+            for (const cell of this._cells.values()) {
+                cell.el?.remove?.();
+            }
+            this._cells.clear();
+            for (let i = 0; i < columns.length; i++) {
+                const meta = columns[i];
+                const cell = this._createCell(meta, i);
+                this.el!.appendChild(cell.el);
+                this._cells.set(meta.name, cell);
+            }
+        }
+
         for (const meta of columns) {
             const cell = this._cells.get(meta.name);
             if (cell && typeof cell.update === 'function') {
