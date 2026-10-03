@@ -66,8 +66,8 @@ class TableComponent extends ItemGroupPooledComponent {
                 entityKey: this.entityKey,
                 groupField: this.getData('groupField') ?? '',
             });
-            this._header.on('reorder', (data: any) => {
-                this.setData('columns', data.columns);
+            this._header.on('reorder', (ctx: any) => {
+                this.setData('columns', ctx.data.columns);
             });
             headerArea.appendChild(this._header.el);
         }
