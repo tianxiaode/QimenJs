@@ -68,7 +68,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 groupField: this.getData('groupField') ?? '',
             });
 this._header.on('reorder', (ctx: any) => {
-    this.setData('columns', ctx.data.columns, true);
+    this.setData('columns', ctx.data.columns);
     const metas = this._columnMetaManager?.getAll() ?? [];
     if (metas.length > 0) {
         this.rebuildColumnOrders(metas.map(m => m.name));
