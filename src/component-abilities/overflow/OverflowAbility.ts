@@ -41,6 +41,7 @@ export interface OverflowItem {
 }
 
 const STATE_KEY = 'OverflowAbility:state';
+const POPOVER_STATE_KEY = 'OverflowAbility:popover';
 
 interface InternalState {
     mode: OverflowMode;
@@ -161,7 +162,41 @@ export const OverflowAbility = {
         const state = this.abilityState(STATE_KEY) as InternalState | undefined;
         if (!state || state.mode !== 'menu') return;
         if (state.overflowItems.length === 0) return;
-        this.togglePopover();
+        this._toggleOverflowPopover();
+    },
+
+    _ensureOverflowPopover(): any {
+        const existing = this.abilityState(POPOVER_STATE_KEY);
+        if (existing) return existing;
+
+        const moreEl = this.getNodeEl('overflowMore');
+        if (!moreEl) return null;
+
+        const MenuClass = this.resolveComponent?.('menu');
+        if (!MenuClass) return null;
+
+        const menu = new MenuClass({
+            anchor: moreEl,
+            placement: 'bottom',
+            trigger: 'click',
+            eventKey: this.id,
+        });
+        this.setAbilityState(POPOVER_STATE_KEY, menu);
+        this.onCleanup(() => {
+            menu.dispose();
+            this.setAbilityState(POPOVER_STATE_KEY, undefined);
+        });
+        return menu;
+    },
+
+    _toggleOverflowPopover(): void {
+        const menu = this._ensureOverflowPopover();
+        if (!menu) return;
+        if (menu.isOpen) {
+            menu.hide();
+        } else {
+            menu.show();
+        }
     },
 
     /**
@@ -263,7 +298,6 @@ export const OverflowAbility = {
             this.setNodeHidden(false, 'overflowPrev');
             this.setNodeHidden(false, 'overflowNext');
             this.setNodeHidden(true, 'overflowMore');
-            this.setData('popover', null);
         } else if (mode === 'menu') {
             this.el.classList.add('q-itemgroup--overflow-menu');
             this.el.classList.remove('q-itemgroup--overflow-scroll');
@@ -280,15 +314,6 @@ export const OverflowAbility = {
             this.setNodeHidden(false, 'overflowPrev');
             this.setNodeHidden(true, 'overflowNext');
             this.setNodeHidden(false, 'overflowMore');
-            this.setData('popover', {
-                type: 'menu',
-                anchor: 'overflowMore',
-                trigger: 'click',
-                placement: 'bottom',
-                options: {
-                    eventKey: this.id,
-                },
-            });
         }
 
         this._setupOverflowListeners();
@@ -315,8 +340,6 @@ export const OverflowAbility = {
 
         state.mutationObserver?.disconnect();
         state.mutationObserver = null;
-
-        this.setData('popover', null);
 
         this.el.classList.remove(
             'q-itemgroup--overflow',
@@ -535,12 +558,15 @@ export const OverflowAbility = {
             this.el.classList.toggle('q-itemgroup--has-overflow', hasOverflow);
 
             if (hasOverflow) {
-                this.updatePopover({
-                    items: state.overflowItems.map(item => ({
-                        text: item.label,
-                        action: String(item.index),
-                    })),
-                });
+                const menu = this._ensureOverflowPopover();
+                if (menu) {
+                    menu.update({
+                        items: state.overflowItems.map(item => ({
+                            text: item.label,
+                            action: String(item.index),
+                        })),
+                    });
+                }
             }
         }
     },
