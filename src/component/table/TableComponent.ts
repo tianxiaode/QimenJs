@@ -4,7 +4,13 @@ import { ColumnOrderAbility, SelectionAbility } from '@qimenjs/component-abiliti
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import { TableSummaryRowComponent } from './table-summary/TableSummaryRowComponent';
-import type { ColumnDefOrGroup, ColumnGroupDef, ColumnMeta, AggregatorType, TableSelectMode } from './column-types';
+import type {
+    ColumnDefOrGroup,
+    ColumnGroupDef,
+    ColumnMeta,
+    AggregatorType,
+    TableSelectMode,
+} from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
@@ -50,15 +56,18 @@ class TableComponent extends ItemGroupPooledComponent {
     ];
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onRowClick' }],
+        click: [{ path: '[items]', handler: '_onRowClick', emits: ['selectionChanged'] }],
     };
+
+    get defaultEventData(): Record<string, any> {
+        return {
+            selectedKeys: this.getSelectedKeys?.() ?? [],
+            selectedData: this.getSelectedData?.() ?? [],
+        };
+    }
 
     onAfterInit(): void {
         super.onAfterInit();
-
-        this.on('selectionChange', (data: any) => {
-            this._onSelectionChange(data);
-        });
 
         const groupField = this.getData('groupField');
         if (groupField && this.hasEntity()) {
@@ -104,13 +113,16 @@ class TableComponent extends ItemGroupPooledComponent {
     _onSelectableOptionChange(value: TableSelectMode): void {
         if (value === 'none') {
             this.clearSelection();
+            this._syncRowSelectedStates();
+            this._updateHeaderSelectAllState();
             return;
         }
         this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
     }
 
     /**
-     * 行点击 — domEvents 委托，选择模式下切换选中
+     * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
+     * selectionChanged 事件由 domEvents emits 配置自动转发
      */
     _onRowClick(domEvt: any): void {
         if (this.getData('selectable') === 'none') return;
@@ -119,15 +131,8 @@ class TableComponent extends ItemGroupPooledComponent {
         const data = item.getData?.('data');
         if (!data || data._selectDisabled || !data._rowKey) return;
         this.toggleSelect(data._rowKey, data);
-    }
-
-    /**
-     * 选中变化 — 同步行 selected option + 表头全选状态，并转发给外部
-     */
-    _onSelectionChange(data: any): void {
         this._syncRowSelectedStates();
         this._updateHeaderSelectAllState();
-        this.emit('selectionChanged', data);
     }
 
     /**
@@ -156,6 +161,9 @@ class TableComponent extends ItemGroupPooledComponent {
         } else {
             this.selectAll(entries);
         }
+        this._syncRowSelectedStates();
+        this._updateHeaderSelectAllState();
+        this.emit('selectionChanged', this.defaultEventData);
     }
 
     _syncRowSelectedStates(): void {

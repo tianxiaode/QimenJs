@@ -19,12 +19,7 @@
  */
 
 import type { AbilityDefinition } from '../../composable/types/ability';
-import type {
-    SelectionConfig,
-    SelectionEntry,
-    SelectionState,
-    SelectionChangeData,
-} from './types';
+import type { SelectionConfig, SelectionEntry, SelectionState, SelectionChangeData } from './types';
 
 const STATE_KEY = 'SelectionAbility:state';
 
