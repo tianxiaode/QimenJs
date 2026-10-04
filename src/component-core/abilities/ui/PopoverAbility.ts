@@ -106,7 +106,9 @@ export const PopoverAbility: AbilityDefinition = {
     showPopover(): void {
         const inst = this._ensurePopover();
         if (inst) {
-            inst.ready.then(() => inst.show());
+            inst.ready.then(() => {
+                inst.show();
+            });
         }
     },
 
@@ -154,8 +156,9 @@ export const PopoverAbility: AbilityDefinition = {
     },
 
     _onPopoverClick(): void {
-        if (!floatTriggerMatches(this._getPopoverDecl(), 'click', TRIGGER_SPEC.defaultTrigger))
-            return;
+        const decl = this._getPopoverDecl();
+        const matches = floatTriggerMatches(decl, 'click', TRIGGER_SPEC.defaultTrigger);
+        if (!matches) return;
         this.togglePopover();
     },
 } satisfies AbilityDefinition;

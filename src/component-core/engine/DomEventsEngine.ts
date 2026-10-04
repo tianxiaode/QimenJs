@@ -470,9 +470,12 @@ export class DomEventsEngine {
             });
 
             const domEventKey = `${DOM_EVENT_PREFIX}${rule.event}`;
+            const processedOriginals = new WeakSet();
             const handler = (domEvt: any) => {
                 if (isDirect) {
                     const originalEvent = domEvt?.data?.originalEvent;
+                    if (originalEvent && processedOriginals.has(originalEvent)) return;
+                    if (originalEvent) processedOriginals.add(originalEvent);
                     const target = originalEvent?.target ?? domEvt?.target;
                     if (target && !targetEl.contains(target)) return;
                     DomEventsEngine._dispatchRule(instance, rule, domEvt);

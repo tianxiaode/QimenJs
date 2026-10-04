@@ -145,12 +145,9 @@ export const OverlayAbility: AbilityDefinition = {
             }
 
             if (event instanceof MouseEvent) {
-                if (
-                    el &&
-                    anchor &&
-                    !el.contains(event.target as Node) &&
-                    !anchor.contains(event.target as Node)
-                ) {
+                const inEl = el && el.contains(event.target as Node);
+                const inAnchor = anchor && anchor.contains(event.target as Node);
+                if (!inEl && !inAnchor) {
                     this.hide();
                 }
             }
