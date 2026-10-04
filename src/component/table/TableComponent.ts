@@ -1,4 +1,4 @@
-import type { ListenItem, TemplateDecl } from '@qimenjs/component-core';
+import type { ListenItem, TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnOrderAbility, SelectionAbility } from '@qimenjs/component-abilities';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
@@ -45,14 +45,20 @@ class TableComponent extends ItemGroupPooledComponent {
             events: {
                 resize: '_onColumnResize',
                 groupToggle: 'onGroupToggle',
-                rowSelect: '_onRowSelect',
-                selectionChange: '_onSelectionChange',
             },
         },
     ];
 
+    domEvents: DomEventsMap = {
+        click: [{ path: '[items]', handler: '_onRowClick' }],
+    };
+
     onAfterInit(): void {
         super.onAfterInit();
+
+        this.on('selectionChange', (data: any) => {
+            this._onSelectionChange(data);
+        });
 
         const groupField = this.getData('groupField');
         if (groupField && this.hasEntity()) {
@@ -104,15 +110,19 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     /**
-     * 行选择事件（RowComponent 冒泡）→ 切换选中
+     * 行点击 — domEvents 委托，选择模式下切换选中
      */
-    _onRowSelect(data: any): void {
-        if (!data?.key) return;
-        this.toggleSelect(data.key, data.data);
+    _onRowClick(domEvt: any): void {
+        if (this.getData('selectable') === 'none') return;
+        const item = domEvt?.targetComponent;
+        if (!item) return;
+        const data = item.getData?.('data');
+        if (!data || data._selectDisabled || !data._rowKey) return;
+        this.toggleSelect(data._rowKey, data);
     }
 
     /**
-     * 选中变化 — 同步行选中状态 + 表头全选状态，并转发给外部
+     * 选中变化 — 同步行 selected option + 表头全选状态，并转发给外部
      */
     _onSelectionChange(data: any): void {
         this._syncRowSelectedStates();
@@ -152,13 +162,12 @@ class TableComponent extends ItemGroupPooledComponent {
         const items = this.items;
         if (!Array.isArray(items)) return;
         for (const item of items) {
-            if (typeof item.setRowSelected !== 'function') continue;
             const data = item.getData?.('data');
             if (!data?._rowKey) continue;
             const selected = this.isSelected(data._rowKey);
             Promise.resolve(item.ready).then(() => {
                 if (typeof item.dispose === 'function' && item.isDisposed?.()) return;
-                item.setRowSelected(selected);
+                item.setData('selected', selected);
             });
         }
     }

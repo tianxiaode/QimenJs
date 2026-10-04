@@ -1,6 +1,6 @@
 import { Component } from '../../../component-core/Component';
 import type { ColumnMeta, CellType } from '../column-types';
-import type { DomEventsMap, ListenItem } from '@qimenjs/component-core';
+import type { ListenItem } from '@qimenjs/component-core';
 import { TextCellComponent } from '../cells/TextCellComponent';
 import { TreeCellComponent } from '../cells/TreeCellComponent';
 import { CheckboxCellComponent } from '../cells/CheckboxCellComponent';
@@ -21,7 +21,6 @@ class RowComponent extends Component {
     static type = 'table-row';
 
     _cells: Map<string, any> = new Map();
-    _selected: boolean = false;
 
     listens: ListenItem[] = [
         {
@@ -32,10 +31,6 @@ class RowComponent extends Component {
             },
         },
     ];
-
-    domEvents: DomEventsMap = {
-        click: [{ path: 'root', handler: '_onRowClick' }],
-    };
 
     get tpl(): any {
         return {
@@ -56,41 +51,41 @@ class RowComponent extends Component {
             });
         }
     }
-    
-_createCells(): void {
-    if (this._cells.size > 0) return;
 
-    const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+    _createCells(): void {
+        if (this._cells.size > 0) return;
 
-    for (let i = 0; i < columns.length; i++) {
-        const meta = columns[i];
-        const cell = this._createCell(meta, i);
-        this.el!.appendChild(cell.el);
-        this._cells.set(meta.name, cell);
-    }
-}
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
 
-_createCell(meta: ColumnMeta, index: number): any {
-    const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
-    const options: Record<string, any> = {
-        align: meta.align,
-        colName: meta.name,
-        fixed: meta.fixed ?? null,
-        order: `var(--q-table-col-${meta.name}-order)`,
-    };
-    if (meta.width) {
-        options.width = `var(--q-table-col-${meta.name}-width)`;
-        options.minWidth = '0';
+        for (let i = 0; i < columns.length; i++) {
+            const meta = columns[i];
+            const cell = this._createCell(meta, i);
+            this.el!.appendChild(cell.el);
+            this._cells.set(meta.name, cell);
+        }
     }
-    if (meta.format && meta.cellType === 'text') {
-        options.format = meta.format;
+
+    _createCell(meta: ColumnMeta, _index: number): any {
+        const CellClass = CELL_CLASS_MAP[meta.cellType] || TextCellComponent;
+        const options: Record<string, any> = {
+            align: meta.align,
+            colName: meta.name,
+            fixed: meta.fixed ?? null,
+            order: `var(--q-table-col-${meta.name}-order)`,
+        };
+        if (meta.width) {
+            options.width = `var(--q-table-col-${meta.name}-width)`;
+            options.minWidth = '0';
+        }
+        if (meta.format && meta.cellType === 'text') {
+            options.format = meta.format;
+        }
+        if (meta.selection) {
+            options.controlled = true;
+        }
+        const cell = new CellClass(options);
+        return cell;
     }
-    if (meta.selection) {
-        options.controlled = true;
-    }
-    const cell = new CellClass(options);
-    return cell;
-}
 
     update(props: any): void {
         const metas = props?.columnMetas;
@@ -160,7 +155,7 @@ _createCell(meta: ColumnMeta, index: number): any {
             case 'checkbox':
             case 'radio':
                 if (meta.selection) {
-                    return { checked: this._selected, disabled: !!data._selectDisabled };
+                    return { checked: this.selected, disabled: !!data._selectDisabled };
                 }
                 return { checked: !!value };
             case 'action':
@@ -199,49 +194,28 @@ _createCell(meta: ColumnMeta, index: number): any {
         this.showColumn(data.colName);
     }
 
-    setColumnOrder(name: string, order: number): void {
-    }
+    setColumnOrder(_name: string, _order: number): void {}
 
-    moveColumn(from: number, to: number): void {
-    }
+    moveColumn(_from: number, _to: number): void {}
 
     _onSelectableOptionChange(value: string): void {
         this.toggleCls('q-table-row--selectable', value !== 'none');
     }
 
-    /**
-     * 行点击 — 选择模式下触发行选择
-     *
-     * selectable 为 none 或该行 _selectDisabled 时忽略。
-     * 选择列 checkbox/radio 的点击也冒泡到行，统一由此处理。
-     */
-    _onRowClick(_domEvt: any): void {
-        if (this.selectable === 'none') return;
-        const data = this.getData('data');
-        if (!data || data._selectDisabled) return;
-        this.componentEmit('rowSelect', { key: data._rowKey, data });
+    _onSelectedOptionChange(value: boolean): void {
+        this.toggleCls('q-table-row--selected', value);
+        this._syncSelectCellChecked();
     }
 
-    /**
-     * 设置行选中状态 — 由 Table 在 selectionChange 后同步
-     *
-     * 切换选中样式，并同步选择列 checkbox/radio 的 checked。
-     */
-    setRowSelected(selected: boolean): void {
-        this._selected = selected;
-        this.toggleCls('q-table-row--selected', selected);
-        this._syncSelectCell();
-    }
-
-    _syncSelectCell(): void {
+    _syncSelectCellChecked(): void {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        const data = this.getData('data');
         for (const meta of columns) {
             if (!meta.selection) continue;
             const cell = this._cells.get(meta.name);
             if (!cell) continue;
-            const data = this.getData('data');
             Promise.resolve(cell.ready).then(() => {
-                cell.update({ checked: this._selected, disabled: !!data?._selectDisabled });
+                cell.update({ checked: this.selected, disabled: !!data?._selectDisabled });
             });
         }
     }
@@ -255,10 +229,10 @@ const RowComponentDefs: Definitions = {
         eventKey: null,
         entityKey: null,
         selectable: 'none',
+        selected: false,
     },
     fields: {
         _cells: null,
-        _selected: false,
     },
 } as const;
 
