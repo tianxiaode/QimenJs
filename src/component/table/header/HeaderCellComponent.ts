@@ -24,6 +24,7 @@ const HeaderCellComponentDefs: Definitions = {
         groupField: '',
         customMenuItems: null,
         selectionAll: false,
+        sortState: 'none',
     },
 } as const;
 
@@ -40,28 +41,31 @@ class HeaderCellComponent extends Component {
 
     drag?: boolean | DragOptions = false;
 
-    _sortState: SortState = 'none';
     _resizeStartWidth: number = 0;
     _popoverInitialized: boolean = false;
     _resizeRule: any = null;
 
     _buildMenuItems(): any[] {
+        const colName = this.colName;
+        const sortState = this.getData('sortState') as SortState;
         const items: any[] = [];
         if (this.sortable) {
             items.push({
                 text: '@table.sortAsc',
-                action: 'sortAsc',
+                action: 'sort',
+                actionData: { colName, direction: 'asc' },
                 group: 'sort',
                 groupMode: 'radio',
-                checked: this._sortState === 'asc',
+                checked: sortState === 'asc',
                 order: 10,
             });
             items.push({
                 text: '@table.sortDesc',
-                action: 'sortDesc',
+                action: 'sort',
+                actionData: { colName, direction: 'desc' },
                 group: 'sort',
                 groupMode: 'radio',
-                checked: this._sortState === 'desc',
+                checked: sortState === 'desc',
                 order: 20,
             });
         }
@@ -69,6 +73,7 @@ class HeaderCellComponent extends Component {
             items.push({
                 text: '@table.groupBy',
                 action: 'groupBy',
+                actionData: { colName },
                 group: 'groupBy',
                 groupMode: 'checkbox',
                 checked: this.groupField === this.colName,
@@ -81,9 +86,8 @@ class HeaderCellComponent extends Component {
                 for (const col of hideable) {
                     items.push({
                         text: col.title ?? col.colName,
-                        action: col.hidden
-                            ? `showColumn:${col.colName}`
-                            : `hideColumn:${col.colName}`,
+                        action: col.hidden ? 'showColumn' : 'hideColumn',
+                        actionData: { colName: col.colName },
                         group: 'hideableColumns',
                         groupMode: 'checkbox',
                         checked: !col.hidden,
@@ -99,13 +103,13 @@ class HeaderCellComponent extends Component {
                         options: {
                             items: hideable.map((col: any) => ({
                                 text: col.title ?? col.colName,
-                                action: col.hidden
-                                    ? `showColumn:${col.colName}`
-                                    : `hideColumn:${col.colName}`,
+                                action: col.hidden ? 'showColumn' : 'hideColumn',
+                                actionData: { colName: col.colName },
                                 group: 'hideableColumns',
                                 groupMode: 'checkbox',
                                 checked: !col.hidden,
                             })),
+                            eventKey: this.eventKey,
                         },
                     },
                 });
@@ -127,7 +131,7 @@ class HeaderCellComponent extends Component {
             trigger: 'click',
             anchor: 'menuArea',
             placement: 'bottom-start',
-            options: { items: this._buildMenuItems() },
+            options: { items: this._buildMenuItems(), eventKey: this.eventKey },
         });
         this._popoverInitialized = true;
     }
@@ -217,6 +221,13 @@ class HeaderCellComponent extends Component {
         }
     }
 
+    _onSortStateOptionChange(_value: SortState): void {
+        this._applySortIcon();
+        if (this._popoverInitialized && !this.menuDisabled) {
+            this.updatePopover({ items: this._buildMenuItems() });
+        }
+    }
+
     _onResizableOptionChange(_value: boolean): void {
         this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
     }
@@ -288,18 +299,8 @@ class HeaderCellComponent extends Component {
         this.componentEmit('toggleAll', { checked: !allSelected });
     }
 
-    get sortState(): SortState {
-        return this._sortState;
-    }
-    set sortState(v: SortState) {
-        this._sortState = v;
-        this._applySortIcon();
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
-
     _applySortIcon(): void {
+        const sortState = this.getData('sortState') as SortState;
         if (this.sortable) {
             this.addCls('q-header-cell--sortable');
         } else {
@@ -312,37 +313,7 @@ class HeaderCellComponent extends Component {
             [`${SORT_CLS_PREFIX}none`, `${SORT_CLS_PREFIX}asc`, `${SORT_CLS_PREFIX}desc`],
             'sortIcon'
         );
-        this.addCls(`${SORT_CLS_PREFIX}${this._sortState}`, 'sortIcon');
-    }
-
-    showPopover(): void {
-        super.showPopover();
-        const inst = this._getPopoverInstance();
-        if (inst && !inst._menuSelectBound) {
-            inst._menuSelectBound = true;
-            inst.on('select', (data: any) => {
-                const payload = data?.data ?? data;
-                const action = payload?.action;
-                const colName = this.colName;
-                if (action === 'sortAsc') {
-                    this.componentEmit('sort', { colName, direction: 'asc' });
-                } else if (action === 'sortDesc') {
-                    this.componentEmit('sort', { colName, direction: 'desc' });
-                } else if (action === 'groupBy') {
-                    this.componentEmit('groupBy', { colName });
-                } else if (action?.startsWith('hideColumn:')) {
-                    this.componentEmit('hideColumn', {
-                        colName: action.substring('hideColumn:'.length),
-                    });
-                } else if (action?.startsWith('showColumn:')) {
-                    this.componentEmit('showColumn', {
-                        colName: action.substring('showColumn:'.length),
-                    });
-                } else {
-                    this.componentEmit('menuSelect', { action, colName });
-                }
-            });
-        }
+        this.addCls(`${SORT_CLS_PREFIX}${sortState}`, 'sortIcon');
     }
 
     onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
@@ -383,23 +354,6 @@ class HeaderCellComponent extends Component {
         this.componentEmit('reorderEnd', { colName: this.colName, clientX, clientY });
     }
 
-    update(data: any): void {
-        if (data?.colName !== undefined && data.colName !== this.colName) {
-            this.setData('colName', data.colName);
-        }
-        if (data?.action !== undefined && data.action !== this.action) {
-            this.setData('action', data.action);
-        }
-        if (data?.title !== undefined) {
-            this.setData('title', data.title);
-        }
-        if (data?.sortState !== undefined) {
-            this.sortState = data.sortState;
-        }
-        if (data?.selectionAll !== undefined) {
-            this.setData('selectionAll', data.selectionAll);
-        }
-    }
 }
 
 HeaderCellComponent.define(HeaderCellComponentDefs);

@@ -106,20 +106,22 @@
     top: 0;
     bottom: 0;
     width: 24px;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 1;
 }
 
+.q-header-cell:hover .q-header-cell__menu-area {
+    display: flex;
+}
+
 .q-header-cell__menu-icon {
     color: var(--q-color-text-secondary, #909399);
-    opacity: 0;
 }
 
 .q-header-cell__menu-area:hover .q-header-cell__menu-icon {
-    opacity: 1;
     color: var(--q-color-primary, #0078d4);
 }
 

@@ -77,6 +77,8 @@ class MenuComponent extends ItemGroupStaticComponent {
 
         const action = item.getData?.('action');
         if (action) domEvt.action = action;
+        const actionData = item.getData?.('actionData');
+        if (actionData) domEvt.actionData = actionData;
 
         if (!item.select()) return;
 

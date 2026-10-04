@@ -407,7 +407,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
 
         if (target.sortable) {
-            const currentState = target.sortState || 'none';
+            const currentState = target.getData?.('sortState') || 'none';
             const nextState =
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this.componentEmit('sort', { colName, direction: nextState });
@@ -415,18 +415,22 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _onSort(data: any): void {
-        this._applySort(data.colName, data.direction);
+        const actionData = data?.actionData ?? data;
+        this._applySort(actionData.colName, actionData.direction);
     }
 
     _onGroupBy(data: any): void {
+        const actionData = data?.actionData ?? data;
+        const colName = actionData.colName;
         const currentGroupField = this.getData('groupField') ?? '';
-        const newGroupField = currentGroupField === data.colName ? '' : data.colName;
+        const newGroupField = currentGroupField === colName ? '' : colName;
         this.setData('groupField', newGroupField);
         this._updateCellGroupField(newGroupField);
     }
 
     _onHideColumn(data: any): void {
-        const colName = data.colName;
+        const actionData = data?.actionData ?? data;
+        const colName = actionData.colName;
         const columns = this.columns;
         if (Array.isArray(columns)) {
             const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
@@ -441,7 +445,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _onShowColumn(data: any): void {
-        const colName = data.colName;
+        const actionData = data?.actionData ?? data;
+        const colName = actionData.colName;
         const columns = this.columns;
         if (Array.isArray(columns)) {
             const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
@@ -482,8 +487,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const items = this.items;
         if (Array.isArray(items)) {
             for (const item of items) {
-                if (item.sortState !== undefined) {
-                    item.sortState = item.action === colName ? direction : 'none';
+                if (typeof item.setData === 'function') {
+                    item.setData('sortState', item.action === colName ? direction : 'none');
                 }
             }
         }
