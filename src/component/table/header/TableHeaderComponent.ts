@@ -46,7 +46,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 reorderMove: { handler: '_onReorderMove' },
                 reorderEnd: { handler: '_onReorderEnd' },
                 toggleAll: { emits: ['toggleAll'] },
-                resize: { bridges: ['resize'] },
             },
         },
     ];
