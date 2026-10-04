@@ -57,12 +57,15 @@ class CheckboxCellComponent extends BaseCellComponent {
     _applyState(): void {
         this.toggleCls('q_cell__checkbox--checked', this._checked, 'box');
         this.toggleCls('q_cell__checkbox--disabled', this._disabled, 'box');
-        this.setAttr('aria-checked', String(this._checked), 'box');
+        this.setAttributes({ 'aria-checked': String(this._checked) }, 'box');
         if (this._disabled) {
-            this.setAttr('aria-disabled', 'true', 'box');
+            this.setAttributes({ 'aria-disabled': 'true' }, 'box');
         } else {
-            this.removeAttr('aria-disabled', 'box');
+            this.removeAttributes(['aria-disabled'], 'box');
         }
+    }
+
+    _onValueOptionChange(_value: any): void {
     }
 
     onRootClick(): void {

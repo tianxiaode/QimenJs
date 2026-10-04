@@ -187,6 +187,42 @@ export const TABLE_DEMO: DemoConfig = {
             },
         },
         {
+            label: '行点击选择（无选择列）',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [...],
+    selectable: 'single',
+} }
+
+// selectable: 'single' — 单选模式，无需选择列
+// 点击行即可选中，选中行高亮显示
+// 也可设为 'multiple' 支持多选`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: [
+                                { name: 'name', field: 'name', title: '姓名', width: 120 },
+                                { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+                                { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+                                { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+                            ],
+                            data: TABLE_DATA,
+                            selectable: 'single',
+                        },
+                    },
+                ],
+            },
+        },
+        {
             label: '禁选行',
             code: `{ type: 'table', options: {
     columns: [
