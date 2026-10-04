@@ -193,9 +193,9 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _onColumnResize(data: any): void {
-        const actionData = data?.actionData ?? data;
-        const colName = actionData.colName;
-        const width = actionData.width;
+        const colName = data?.colName ?? data?.actionData?.colName;
+        const width = data?.actionData?.width ?? data?.width;
+        if (!colName || width === undefined) return;
         this.el!.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
         if (this._columnMetaManager) {
             const meta = this._columnMetaManager.get(colName);

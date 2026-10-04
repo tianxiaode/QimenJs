@@ -1,5 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl, DragOptions, DomEventsMap } from '@qimenjs/component-core';
+import { ResizeAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { HEADER_CELL_TPL } from './header-cell-tpl';
 
@@ -36,10 +37,14 @@ class HeaderCellComponent extends Component {
         return HEADER_CELL_TPL;
     }
 
+    domEvents: DomEventsMap = {
+        click: [{ path: 'selectAllBox', handler: '_onSelectAllBoxClick' }],
+    };
+
     drag?: boolean | DragOptions = false;
 
     _popoverInitialized: boolean = false;
-    _resizeStartWidth: number = 0;
+    _resizeInitialized: boolean = false;
 
     get defaultEventData(): Record<string, any> {
         return {
@@ -146,11 +151,43 @@ class HeaderCellComponent extends Component {
         } else {
             this._applyPopover();
         }
+        if (this.resizable) {
+            this._initResize();
+        }
+    }
+
+    _initResize(): void {
+        if (this._resizeInitialized) return;
+        this.initResize({
+            edges: ['e'],
+            handle: 'resizeHandle',
+            emits: ['resize'],
+            bridges: ['resize'],
+            skipDomUpdate: true,
+            minWidth: this.minWidth,
+        });
+        this._resizeInitialized = true;
+    }
+
+    _onSelectAllBoxClick(): void {
+        if (!this.selectionAll) return;
+        const checked = this.getData('selectAllChecked') ?? false;
+        this.componentEmit('toggleAll', { checked: !checked });
     }
 
     _onReorderableOptionChange(_value: boolean): void {
         if (this.reorderable) {
-            this.drag = { axis: 'x', activeClass: 'q-header-cell--dragging', handle: 'content' };
+            this.drag = {
+                axis: 'x',
+                activeClass: 'q-header-cell--dragging',
+                handle: 'content',
+                bridges: ['[action]'],
+                actionMap: {
+                    start: 'reorderStart',
+                    move: 'reorderMove',
+                    end: 'reorderEnd',
+                },
+            };
         } else {
             this.drag = false;
         }
@@ -202,6 +239,11 @@ class HeaderCellComponent extends Component {
 
     _onResizableOptionChange(_value: boolean): void {
         this.setStyles({ display: this.resizable ? '' : 'none' }, 'resizeHandle');
+        if (this.resizable) {
+            this._initResize();
+        } else if (this._resizeInitialized) {
+            this.resizable = false;
+        }
     }
 
     _onMenuDisabledOptionChange(_value: boolean): void {
@@ -273,6 +315,7 @@ class HeaderCellComponent extends Component {
     }
 }
 
+HeaderCellComponent.use([ResizeAbility]);
 HeaderCellComponent.define(HeaderCellComponentDefs);
 HeaderCellComponent.register();
 

@@ -26,6 +26,6 @@ export const HEADER_CELL_TPL: TemplateDecl = {
                 { tag: 'span', name: 'menuIcon', classes: 'q-caret q-header-cell__menu-icon' },
             ],
         },
-        { tag: 'span', name: 'resizeHandle', classes: 'q-header-cell__resize' },
+        { tag: 'div', name: 'resizeHandle', classes: 'q-header-cell__resize' },
     ],
 };

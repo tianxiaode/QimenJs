@@ -19,30 +19,12 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     domEvents: DomEventsMap = {
-        click: [
-            { path: '[items].selectAllBox', handler: '_onSelectAllClick', emits: ['toggleAll'] },
-            { path: '[items]', handler: '_onHeaderCellClick' },
-        ],
-        drag: [
-            {
-                path: '[items].resizeHandle',
-                handler: '_onResizeDrag',
-                emits: ['resize'],
-                bridges: ['resize'],
-            },
-            {
-                path: '[items].content',
-                handler: '_onReorderDrag',
-                emits: ['[action]'],
-                bridges: ['[action]'],
-            },
-        ],
+        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
     };
 
     _groupField: string = '';
     _dragColName: string = '';
     _dropIndicator: HTMLElement | null = null;
-    _resizeStartWidth: number = 0;
 
     get defaultEventData(): Record<string, any> {
         return {
@@ -60,7 +42,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 groupBy: { handler: '_onGroupBy', entities: '[action]' },
                 hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
                 showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
+                reorderStart: { handler: '_onReorderStart' },
+                reorderMove: { handler: '_onReorderMove' },
+                reorderEnd: { handler: '_onReorderEnd' },
                 toggleAll: { emits: ['toggleAll'] },
+                resize: { bridges: ['resize'] },
             },
         },
     ];
@@ -348,13 +334,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return super._createItem(data);
     }
 
-    _onSelectAllClick(domEvt: any): void {
-        const target = domEvt?.targetComponent;
-        if (!target?.getData?.('selectionAll')) return;
-        const checked = target.getData?.('selectAllChecked') ?? false;
-        domEvt.actionData = { checked: !checked };
-    }
-
     _onHeaderCellClick(domEvt: any): void {
         const target = domEvt?.targetComponent;
         if (!target) return;
@@ -389,68 +368,15 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onResizeDrag(domEvt: any): void {
-        const target = domEvt?.targetComponent;
-        if (!target?.resizable) return;
-        const phase = domEvt?.data?.phase;
-        if (phase === 'start') {
-            this._resizeStartWidth = target.el!.offsetWidth;
-        } else if (phase === 'move') {
-            const dx = domEvt.data.dx ?? 0;
-            const minWidth = target.getData?.('minWidth') ?? 50;
-            const newWidth = Math.max(minWidth, this._resizeStartWidth + dx);
-            domEvt.actionData = { colName: target.colName, width: newWidth };
-        }
+    _onReorderStart(data: any): void {
+        const colName = data?.colName ?? data?.actionData?.colName;
+        if (colName) this._dragColName = colName;
     }
 
-    _onReorderDrag(domEvt: any): void {
-        const target = domEvt?.targetComponent;
-        if (!target?.reorderable) return;
-        const phase = domEvt?.data?.phase;
-        const colName = target.colName;
-
-        if (phase === 'start') {
-            this._dragColName = colName;
-            domEvt.action = 'reorderStart';
-            domEvt.actionData = { colName };
-        } else if (phase === 'move') {
-            const oe = domEvt?.data?.originalEvent as any;
-            let clientX = 0;
-            let clientY = 0;
-            if (oe?.clientX !== undefined) {
-                clientX = oe.clientX;
-                clientY = oe.clientY;
-            } else if (oe?.touches?.[0]) {
-                clientX = oe.touches[0].clientX;
-                clientY = oe.touches[0].clientY;
-            } else if (oe?.changedTouches?.[0]) {
-                clientX = oe.changedTouches[0].clientX;
-                clientY = oe.changedTouches[0].clientY;
-            }
-            domEvt.action = 'reorderMove';
-            domEvt.actionData = { colName, clientX, clientY };
-            this._handleReorderMove(clientX, clientY);
-        } else if (phase === 'end' || phase === 'cancel') {
-            const oe = domEvt?.data?.originalEvent as any;
-            let clientX = 0;
-            let clientY = 0;
-            if (oe?.clientX !== undefined) {
-                clientX = oe.clientX;
-                clientY = oe.clientY;
-            } else if (oe?.touches?.[0]) {
-                clientX = oe.touches[0].clientX;
-                clientY = oe.touches[0].clientY;
-            } else if (oe?.changedTouches?.[0]) {
-                clientX = oe.changedTouches[0].clientX;
-                clientY = oe.changedTouches[0].clientY;
-            }
-            domEvt.action = 'reorderEnd';
-            domEvt.actionData = { colName, clientX, clientY };
-            this._handleReorderEnd(clientX, clientY);
-        }
-    }
-
-    _handleReorderMove(clientX: number, clientY: number): void {
+    _onReorderMove(data: any): void {
+        const actionData = data?.actionData ?? data;
+        const clientX = actionData?.clientX ?? 0;
+        const clientY = actionData?.clientY ?? 0;
         if (!this._dragColName) return;
         const cell = this._findCellAtPosition(clientX, clientY);
         if (!cell) {
@@ -467,7 +393,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         this._showDropIndicator(cell.el, isLeft);
     }
 
-    _handleReorderEnd(clientX: number, clientY: number): void {
+    _onReorderEnd(data: any): void {
+        const actionData = data?.actionData ?? data;
+        const clientX = actionData?.clientX ?? 0;
+        const clientY = actionData?.clientY ?? 0;
         if (!this._dragColName) return;
         const cell = this._findCellAtPosition(clientX, clientY);
         this._hideDropIndicator();

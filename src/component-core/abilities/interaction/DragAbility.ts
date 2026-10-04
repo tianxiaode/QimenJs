@@ -1,7 +1,20 @@
 import type { AbilityDefinition } from '@/composable';
 import { ComponentRegistrar } from '../../ComponentRegistrar';
-import { dragStateManager } from '../../engine';
+import { dragStateManager, EventForwarder } from '../../engine';
 import type { DragOptions } from '../../types';
+
+function _extractPointer(oe: any): { clientX: number; clientY: number } {
+    if (oe?.clientX !== undefined) {
+        return { clientX: oe.clientX, clientY: oe.clientY };
+    }
+    if (oe?.touches?.[0]) {
+        return { clientX: oe.touches[0].clientX, clientY: oe.touches[0].clientY };
+    }
+    if (oe?.changedTouches?.[0]) {
+        return { clientX: oe.changedTouches[0].clientX, clientY: oe.changedTouches[0].clientY };
+    }
+    return { clientX: 0, clientY: 0 };
+}
 
 export const DragAbility: AbilityDefinition = {
     _commitDrags(): void {
@@ -93,6 +106,19 @@ export const DragAbility: AbilityDefinition = {
         this._dragEl = undefined;
     },
 
+    _forwardDragEvent(config: any, phase: string, gesture: any): void {
+        if (!config.emits && !config.bridges) return;
+        const action = config.actionMap?.[phase] ?? `drag${phase.charAt(0).toUpperCase()}${phase.slice(1)}`;
+        const pointer = _extractPointer(gesture.originalEvent);
+        EventForwarder.forward(
+            this,
+            { emits: config.emits, bridges: config.bridges },
+            { actionData: pointer },
+            undefined,
+            action
+        );
+    },
+
     _onDragStart(gesture: any): void {
         const componentId = this.id;
         const config = this._dragConfig;
@@ -123,6 +149,8 @@ export const DragAbility: AbilityDefinition = {
                 originalEvent: gesture.originalEvent,
             });
         }
+
+        this._forwardDragEvent(config, 'start', gesture);
     },
 
     _onDragMove(gesture: any): void {
@@ -141,6 +169,8 @@ export const DragAbility: AbilityDefinition = {
                 originalEvent: gesture.originalEvent,
             });
         }
+
+        this._forwardDragEvent(config, 'move', gesture);
     },
 
     _onDragEnd(gesture: any): void {
@@ -168,9 +198,11 @@ export const DragAbility: AbilityDefinition = {
                 originalEvent: gesture.originalEvent,
             });
         }
+
+        this._forwardDragEvent(config, 'end', gesture);
     },
 
-    _onDragCancel(_gesture: any): void {
+    _onDragCancel(gesture: any): void {
         const componentId = this.id;
         const config = this._dragConfig;
         const el = this._dragEl;
@@ -187,6 +219,8 @@ export const DragAbility: AbilityDefinition = {
         if (typeof cancelHandler === 'function') {
             cancelHandler.call(this, { el });
         }
+
+        this._forwardDragEvent(config, 'cancel', gesture);
     },
 
     _createGhost(): void {

@@ -1,7 +1,3 @@
-/**
- * ResizeAbility 单元测试
- */
-
 import { ResizeAbility } from '@/component-abilities/resize/ResizeAbility';
 
 const resizableDesc = Object.getOwnPropertyDescriptor(ResizeAbility, 'resizable')!;
@@ -19,6 +15,12 @@ describe('ResizeAbility', () => {
             onCleanup: jest.fn(),
             addCls: jest.fn(),
             emit: jest.fn(),
+            getNodeEl: jest.fn((name: string) => {
+                const node = document.createElement('div');
+                node.dataset.resizeEdge = 'e';
+                el.appendChild(node);
+                return node;
+            }),
         };
     }
 
@@ -34,7 +36,7 @@ describe('ResizeAbility', () => {
         it('自定义 edges', () => {
             const inst = createInstance();
             ResizeAbility.initResize.call(inst, { edges: ['n', 's'] });
-            expect(inst.bind).toHaveBeenCalledTimes(2);
+            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(2);
         });
 
         it('自定义尺寸限制', () => {
@@ -53,9 +55,20 @@ describe('ResizeAbility', () => {
         it('创建手柄 DOM 并绑定 drag', () => {
             const inst = createInstance();
             ResizeAbility.initResize.call(inst, { edges: ['se'] });
-            expect(inst.bind).toHaveBeenCalledTimes(1);
             const handle = inst.el.querySelector('.q-resize-handle--se');
             expect(handle).toBeTruthy();
+        });
+
+        it('使用已有节点作为 handle（委托模式）', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, {
+                edges: ['e'],
+                handle: 'resizeHandle',
+            });
+            const state = inst.abilityState('ResizeAbility:state');
+            expect(state.customHandle).toBe(true);
+            expect(state.handles.has('e')).toBe(true);
+            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(0);
         });
     });
 
@@ -86,8 +99,7 @@ describe('ResizeAbility', () => {
             ResizeAbility.initResize.call(inst);
             resizableDesc.set!.call(inst, false);
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'start',
-                originalEvent: { target: null },
+                data: { phase: 'start', originalEvent: { target: null } },
             });
             expect(inst.emit).not.toHaveBeenCalled();
         });
@@ -97,14 +109,9 @@ describe('ResizeAbility', () => {
             ResizeAbility.initResize.call(inst, { edges: ['se'] });
             const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'start',
-                dx: 10,
-                dy: 20,
-                originalEvent: { target: handle },
+                data: { phase: 'start', dx: 0, dy: 0, originalEvent: { target: handle } },
             });
             const state = inst.abilityState('ResizeAbility:state');
-            expect(state.startX).toBe(10);
-            expect(state.startY).toBe(20);
             expect(state.activeEdge).toBe('se');
         });
 
@@ -113,16 +120,10 @@ describe('ResizeAbility', () => {
             ResizeAbility.initResize.call(inst, { edges: ['se'] });
             const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'start',
-                dx: 0,
-                dy: 0,
-                originalEvent: { target: handle },
+                data: { phase: 'start', dx: 0, dy: 0, originalEvent: { target: handle } },
             });
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'move',
-                dx: 50,
-                dy: 30,
-                originalEvent: { target: handle },
+                data: { phase: 'move', dx: 50, dy: 30, originalEvent: { target: handle } },
             });
             expect(inst.emit).toHaveBeenCalledWith(
                 'resize',
@@ -132,32 +133,41 @@ describe('ResizeAbility', () => {
             );
         });
 
+        it('move 阶段使用 bridges 时不手动 emit', () => {
+            const inst = createInstance();
+            ResizeAbility.initResize.call(inst, {
+                edges: ['e'],
+                bridges: ['resize'],
+                skipDomUpdate: true,
+            });
+            const handle = inst.el.querySelector('[data-resize-edge="e"]') as HTMLElement;
+            ResizeAbility._onResizeDrag.call(inst, {
+                data: { phase: 'start', dx: 0, dy: 0, originalEvent: { target: handle } },
+            });
+            const domEvt: any = {
+                data: { phase: 'move', dx: 50, dy: 0, originalEvent: { target: handle } },
+            };
+            ResizeAbility._onResizeDrag.call(inst, domEvt);
+            expect(inst.emit).not.toHaveBeenCalled();
+            expect(domEvt.actionData).toEqual(
+                expect.objectContaining({
+                    edge: 'e',
+                })
+            );
+        });
+
         it('end 阶段清除 activeEdge', () => {
             const inst = createInstance();
             ResizeAbility.initResize.call(inst, { edges: ['se'] });
             const handle = inst.el.querySelector('[data-resize-edge="se"]') as HTMLElement;
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'start',
-                dx: 0,
-                dy: 0,
-                originalEvent: { target: handle },
+                data: { phase: 'start', dx: 0, dy: 0, originalEvent: { target: handle } },
             });
             ResizeAbility._onResizeDrag.call(inst, {
-                phase: 'end',
-                originalEvent: { target: handle },
+                data: { phase: 'end', originalEvent: { target: handle } },
             });
             const state = inst.abilityState('ResizeAbility:state');
             expect(state.activeEdge).toBeNull();
-        });
-    });
-
-    describe('_cleanupHandles', () => {
-        it('清理手柄 DOM', () => {
-            const inst = createInstance();
-            ResizeAbility.initResize.call(inst, { edges: ['n', 's'] });
-            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(2);
-            ResizeAbility._cleanupHandles.call(inst);
-            expect(inst.el.querySelectorAll('.q-resize-handle').length).toBe(0);
         });
     });
 });

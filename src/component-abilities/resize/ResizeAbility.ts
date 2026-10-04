@@ -10,6 +10,10 @@ export interface ResizeConfig {
     minHeight?: number;
     maxWidth?: number;
     maxHeight?: number;
+    emits?: string[];
+    bridges?: string[];
+    skipDomUpdate?: boolean;
+    handle?: string;
 }
 
 interface ResizeState {
@@ -23,6 +27,10 @@ interface ResizeState {
     startWidth: number;
     startHeight: number;
     activeEdge: ResizeEdge | null;
+    emits?: string[];
+    bridges?: string[];
+    skipDomUpdate: boolean;
+    customHandle: boolean;
 }
 
 const STATE_KEY = 'ResizeAbility:state';
@@ -57,36 +65,64 @@ export const ResizeAbility = {
             startWidth: 0,
             startHeight: 0,
             activeEdge: null,
+            emits: config?.emits,
+            bridges: config?.bridges,
+            skipDomUpdate: config?.skipDomUpdate ?? false,
+            customHandle: !!config?.handle,
         };
 
         this.setAbilityState(STATE_KEY, state);
 
-        const rules: { rule: any; handle: HTMLElement }[] = [];
-        for (const edge of state.edges) {
-            const handle = document.createElement('div');
-            handle.className = `q-resize-handle q-resize-handle--${edge}`;
-            handle.style.cursor = edgeToCursor(edge);
-            handle.dataset.resizeEdge = edge;
+        const rules: { rule: any; handle: HTMLElement; created: boolean }[] = [];
 
-            this.el.appendChild(handle);
-            state.handles.set(edge, handle);
+        if (config?.handle) {
+            const existingEl = this.getNodeEl(config.handle);
+            if (existingEl) {
+                const edge = state.edges[0];
+                existingEl.dataset.resizeEdge = edge;
+                existingEl.style.cursor = edgeToCursor(edge);
+                state.handles.set(edge, existingEl);
 
-            const rule = {
-                event: 'drag',
-                path: handle,
-                handler: '_onResizeDrag',
-                needsBinding: true,
-            } as const;
-            rules.push({ rule, handle });
-            DomEventsEngine.addEventRule(this, rule);
+                const rule = {
+                    event: 'drag',
+                    path: existingEl,
+                    handler: '_onResizeDrag',
+                    needsBinding: true,
+                    emits: state.emits,
+                    bridges: state.bridges,
+                } as const;
+                rules.push({ rule, handle: existingEl, created: false });
+                DomEventsEngine.addEventRule(this, rule);
+            }
+        } else {
+            for (const edge of state.edges) {
+                const handle = document.createElement('div');
+                handle.className = `q-resize-handle q-resize-handle--${edge}`;
+                handle.style.cursor = edgeToCursor(edge);
+                handle.dataset.resizeEdge = edge;
+
+                this.el.appendChild(handle);
+                state.handles.set(edge, handle);
+
+                const rule = {
+                    event: 'drag',
+                    path: handle,
+                    handler: '_onResizeDrag',
+                    needsBinding: true,
+                    emits: state.emits,
+                    bridges: state.bridges,
+                } as const;
+                rules.push({ rule, handle, created: true });
+                DomEventsEngine.addEventRule(this, rule);
+            }
         }
 
         this.addCls('q-resizable');
 
         this.onCleanup(() => {
-            for (const { rule, handle } of rules) {
+            for (const { rule, handle, created } of rules) {
                 DomEventsEngine.removeEventRule(this, rule);
-                handle.remove();
+                if (created) handle.remove();
             }
             state.handles.clear();
         });
@@ -126,10 +162,16 @@ export const ResizeAbility = {
             newWidth = Math.max(state.minWidth, Math.min(state.maxWidth, newWidth));
             newHeight = Math.max(state.minHeight, Math.min(state.maxHeight, newHeight));
 
-            this.el.style.width = `${newWidth}px`;
-            this.el.style.height = `${newHeight}px`;
+            if (!state.skipDomUpdate) {
+                this.el.style.width = `${newWidth}px`;
+                this.el.style.height = `${newHeight}px`;
+            }
 
-            this.emit('resize', { width: newWidth, height: newHeight, edge });
+            if (state.emits || state.bridges) {
+                domEvt.actionData = { width: newWidth, height: newHeight, edge };
+            } else {
+                this.emit('resize', { width: newWidth, height: newHeight, edge });
+            }
         } else if (phase === 'end' || phase === 'cancel') {
             if (!state.activeEdge) return;
             state.activeEdge = null;
