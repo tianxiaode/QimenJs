@@ -1,6 +1,6 @@
 import type { DemoConfig } from './types';
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { TabsComponent, type TabPaneItem } from '@/component/tabs/TabsComponent';
+import { TabsComponent } from '@/component/tabs/TabsComponent';
 import { TabBarComponent } from '@/component/tabs/TabBarComponent';
 
 const DYNAMIC_TABS_TPL: TemplateDecl = {

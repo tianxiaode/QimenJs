@@ -31,6 +31,10 @@ class TableSummaryRowComponent extends Component {
 
     onAfterInit(): void {
         this._createCells();
+        if (this._pendingData) {
+            this.update(this._pendingData);
+            this._pendingData = null;
+        }
     }
 
     _createCells(): void {
@@ -63,6 +67,10 @@ class TableSummaryRowComponent extends Component {
 
     update(data: any): void {
         if (!data) return;
+        if (this._cells.size === 0) {
+            this._pendingData = data;
+            return;
+        }
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         for (const meta of columns) {
             const cell = this._cells.get(meta.name);
@@ -113,6 +121,7 @@ const TableSummaryRowComponentDefs: Definitions = {
     },
     fields: {
         _cells: null,
+        _pendingData: null,
     },
 } as const;
 
