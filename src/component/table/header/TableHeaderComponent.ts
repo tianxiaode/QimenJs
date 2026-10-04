@@ -19,12 +19,30 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
+        click: [
+            { path: '[items].selectAllBox', handler: '_onSelectAllClick', emits: ['toggleAll'] },
+            { path: '[items]', handler: '_onHeaderCellClick' },
+        ],
+        drag: [
+            {
+                path: '[items].resizeHandle',
+                handler: '_onResizeDrag',
+                emits: ['resize'],
+                bridges: ['resize'],
+            },
+            {
+                path: '[items].content',
+                handler: '_onReorderDrag',
+                emits: ['[action]'],
+                bridges: ['[action]'],
+            },
+        ],
     };
 
     _groupField: string = '';
     _dragColName: string = '';
     _dropIndicator: HTMLElement | null = null;
+    _resizeStartWidth: number = 0;
 
     get defaultEventData(): Record<string, any> {
         return {
@@ -42,26 +60,18 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 groupBy: { handler: '_onGroupBy', entities: '[action]' },
                 hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
                 showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
-                reorderStart: { handler: '_onReorderStart' },
-                reorderMove: { handler: '_onReorderMove' },
-                reorderEnd: { handler: '_onReorderEnd' },
                 toggleAll: { emits: ['toggleAll'] },
             },
         },
     ];
 
-    /**
-     * 设置全选状态 — 由 Table 在 selectionChange 后同步
-     *
-     * @param allSelected - 全部选中
-     * @param someSelected - 部分选中（半选）
-     */
     setSelectAllState(allSelected: boolean, someSelected: boolean): void {
         const items = this.items;
         if (!Array.isArray(items)) return;
         for (const item of items) {
-            if (item.selectionAll && typeof item.setSelectAllState === 'function') {
-                item.setSelectAllState(allSelected, someSelected);
+            if (item.getData?.('selectionAll')) {
+                item.setData('selectAllChecked', allSelected);
+                item.setData('selectAllIndeterminate', !allSelected && someSelected);
             }
         }
     }
@@ -96,48 +106,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             }
         }
         return null;
-    }
-
-    _onReorderStart(data: any): void {
-        this._dragColName = data?.colName ?? '';
-    }
-
-    _onReorderMove(data: any): void {
-        if (!this._dragColName) return;
-        const clientX = data?.clientX ?? 0;
-        const clientY = data?.clientY ?? 0;
-        const cell = this._findCellAtPosition(clientX, clientY);
-        if (!cell) {
-            this._hideDropIndicator();
-            return;
-        }
-        const targetColName = cell.colName ?? cell.action ?? '';
-        if (targetColName === this._dragColName) {
-            this._hideDropIndicator();
-            return;
-        }
-        const rect = cell.el.getBoundingClientRect();
-        const isLeft = clientX < rect.left + rect.width / 2;
-        this._showDropIndicator(cell.el, isLeft);
-    }
-
-    _onReorderEnd(data: any): void {
-        if (!this._dragColName) return;
-        const clientX = data?.clientX ?? 0;
-        const clientY = data?.clientY ?? 0;
-        const cell = this._findCellAtPosition(clientX, clientY);
-        this._hideDropIndicator();
-        if (!cell) {
-            this._dragColName = '';
-            return;
-        }
-        const targetColName = cell.colName ?? cell.action ?? '';
-        if (targetColName !== this._dragColName) {
-            const rect = cell.el.getBoundingClientRect();
-            const isLeft = clientX < rect.left + rect.width / 2;
-            this._reorderColumns(this._dragColName, targetColName, isLeft);
-        }
-        this._dragColName = '';
     }
 
     _showDropIndicator(cellEl: HTMLElement, isLeft: boolean): void {
@@ -380,6 +348,13 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return super._createItem(data);
     }
 
+    _onSelectAllClick(domEvt: any): void {
+        const target = domEvt?.targetComponent;
+        if (!target?.getData?.('selectionAll')) return;
+        const checked = target.getData?.('selectAllChecked') ?? false;
+        domEvt.actionData = { checked: !checked };
+    }
+
     _onHeaderCellClick(domEvt: any): void {
         const target = domEvt?.targetComponent;
         if (!target) return;
@@ -412,6 +387,101 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 currentState === 'none' ? 'asc' : currentState === 'asc' ? 'desc' : 'none';
             this.componentEmit('sort', { colName, direction: nextState });
         }
+    }
+
+    _onResizeDrag(domEvt: any): void {
+        const target = domEvt?.targetComponent;
+        if (!target?.resizable) return;
+        const phase = domEvt?.data?.phase;
+        if (phase === 'start') {
+            this._resizeStartWidth = target.el!.offsetWidth;
+        } else if (phase === 'move') {
+            const dx = domEvt.data.dx ?? 0;
+            const minWidth = target.getData?.('minWidth') ?? 50;
+            const newWidth = Math.max(minWidth, this._resizeStartWidth + dx);
+            domEvt.actionData = { colName: target.colName, width: newWidth };
+        }
+    }
+
+    _onReorderDrag(domEvt: any): void {
+        const target = domEvt?.targetComponent;
+        if (!target?.reorderable) return;
+        const phase = domEvt?.data?.phase;
+        const colName = target.colName;
+
+        if (phase === 'start') {
+            this._dragColName = colName;
+            domEvt.action = 'reorderStart';
+            domEvt.actionData = { colName };
+        } else if (phase === 'move') {
+            const oe = domEvt?.data?.originalEvent as any;
+            let clientX = 0;
+            let clientY = 0;
+            if (oe?.clientX !== undefined) {
+                clientX = oe.clientX;
+                clientY = oe.clientY;
+            } else if (oe?.touches?.[0]) {
+                clientX = oe.touches[0].clientX;
+                clientY = oe.touches[0].clientY;
+            } else if (oe?.changedTouches?.[0]) {
+                clientX = oe.changedTouches[0].clientX;
+                clientY = oe.changedTouches[0].clientY;
+            }
+            domEvt.action = 'reorderMove';
+            domEvt.actionData = { colName, clientX, clientY };
+            this._handleReorderMove(clientX, clientY);
+        } else if (phase === 'end' || phase === 'cancel') {
+            const oe = domEvt?.data?.originalEvent as any;
+            let clientX = 0;
+            let clientY = 0;
+            if (oe?.clientX !== undefined) {
+                clientX = oe.clientX;
+                clientY = oe.clientY;
+            } else if (oe?.touches?.[0]) {
+                clientX = oe.touches[0].clientX;
+                clientY = oe.touches[0].clientY;
+            } else if (oe?.changedTouches?.[0]) {
+                clientX = oe.changedTouches[0].clientX;
+                clientY = oe.changedTouches[0].clientY;
+            }
+            domEvt.action = 'reorderEnd';
+            domEvt.actionData = { colName, clientX, clientY };
+            this._handleReorderEnd(clientX, clientY);
+        }
+    }
+
+    _handleReorderMove(clientX: number, clientY: number): void {
+        if (!this._dragColName) return;
+        const cell = this._findCellAtPosition(clientX, clientY);
+        if (!cell) {
+            this._hideDropIndicator();
+            return;
+        }
+        const targetColName = cell.colName ?? cell.action ?? '';
+        if (targetColName === this._dragColName) {
+            this._hideDropIndicator();
+            return;
+        }
+        const rect = cell.el.getBoundingClientRect();
+        const isLeft = clientX < rect.left + rect.width / 2;
+        this._showDropIndicator(cell.el, isLeft);
+    }
+
+    _handleReorderEnd(clientX: number, clientY: number): void {
+        if (!this._dragColName) return;
+        const cell = this._findCellAtPosition(clientX, clientY);
+        this._hideDropIndicator();
+        if (!cell) {
+            this._dragColName = '';
+            return;
+        }
+        const targetColName = cell.colName ?? cell.action ?? '';
+        if (targetColName !== this._dragColName) {
+            const rect = cell.el.getBoundingClientRect();
+            const isLeft = clientX < rect.left + rect.width / 2;
+            this._reorderColumns(this._dragColName, targetColName, isLeft);
+        }
+        this._dragColName = '';
     }
 
     _onSort(data: any): void {

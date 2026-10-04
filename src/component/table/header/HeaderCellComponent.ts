@@ -1,6 +1,5 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl, DragOptions, DomEventsMap } from '@qimenjs/component-core';
-import { DomEventsEngine } from '@/component-core/engine';
 import { Definitions } from '@/composable';
 import { HEADER_CELL_TPL } from './header-cell-tpl';
 
@@ -25,6 +24,8 @@ const HeaderCellComponentDefs: Definitions = {
         customMenuItems: null,
         selectionAll: false,
         sortState: 'none',
+        selectAllChecked: false,
+        selectAllIndeterminate: false,
     },
 } as const;
 
@@ -35,15 +36,17 @@ class HeaderCellComponent extends Component {
         return HEADER_CELL_TPL;
     }
 
-    domEvents: DomEventsMap = {
-        click: [{ path: 'selectAllBox', handler: '_onSelectAllBoxClick' }],
-    };
-
     drag?: boolean | DragOptions = false;
 
-    _resizeStartWidth: number = 0;
     _popoverInitialized: boolean = false;
-    _resizeRule: any = null;
+    _resizeStartWidth: number = 0;
+
+    get defaultEventData(): Record<string, any> {
+        return {
+            ...super.defaultEventData,
+            colName: this.colName,
+        };
+    }
 
     _buildMenuItems(): any[] {
         const colName = this.colName;
@@ -143,37 +146,6 @@ class HeaderCellComponent extends Component {
         } else {
             this._applyPopover();
         }
-        this._initResizeRule();
-    }
-
-    _initResizeRule(): void {
-        const resizeHandle = this.getNodeEl('resizeHandle');
-        if (!resizeHandle) return;
-        this._resizeRule = {
-            event: 'drag',
-            path: resizeHandle,
-            handler: '_onResizeDrag',
-            needsBinding: true,
-        };
-        DomEventsEngine.addEventRule(this, this._resizeRule);
-        this.onCleanup(() => {
-            DomEventsEngine.removeEventRule(this, this._resizeRule);
-        });
-    }
-
-    _onResizeDrag(domEvt: any): void {
-        if (!this.resizable) return;
-        const phase = domEvt?.data?.phase;
-        if (phase === 'start') {
-            this._resizeStartWidth = this.el!.offsetWidth;
-        } else if (phase === 'move') {
-            const dx = domEvt.data.dx ?? 0;
-            const newWidth = Math.max(this.minWidth, this._resizeStartWidth + dx);
-            this.componentEmit('resize', {
-                colName: this.colName,
-                width: newWidth,
-            });
-        }
     }
 
     _onReorderableOptionChange(_value: boolean): void {
@@ -270,33 +242,17 @@ class HeaderCellComponent extends Component {
     _onSelectionAllOptionChange(value: boolean): void {
         this.setStyles({ display: value ? '' : 'none' }, 'selectAllBox');
         if (!value) {
-            this.toggleCls('q-header-cell__select-all--checked', false, 'selectAllBox');
+            this.toggleCls('q_cell__checkbox--checked', false, 'selectAllBox');
             this.toggleCls('q-header-cell__select-all--indeterminate', false, 'selectAllBox');
         }
     }
 
-    /**
-     * 设置全选状态 — 由 Table 在 selectionChange 后同步
-     *
-     * @param allSelected - 全部选中
-     * @param someSelected - 部分选中（半选）
-     */
-    setSelectAllState(allSelected: boolean, someSelected: boolean): void {
-        if (!this.selectionAll) return;
-        this.toggleCls('q-header-cell__select-all--checked', allSelected, 'selectAllBox');
-        this.toggleCls(
-            'q-header-cell__select-all--indeterminate',
-            !allSelected && someSelected,
-            'selectAllBox'
-        );
+    _onSelectAllCheckedOptionChange(value: boolean): void {
+        this.toggleCls('q_cell__checkbox--checked', value, 'selectAllBox');
     }
 
-    onSelectAllBoxClick(): void {
-        if (!this.selectionAll) return;
-        const allSelected = this.getNodeEl('selectAllBox')?.classList.contains(
-            'q-header-cell__select-all--checked'
-        );
-        this.componentEmit('toggleAll', { checked: !allSelected });
+    _onSelectAllIndeterminateOptionChange(value: boolean): void {
+        this.toggleCls('q-header-cell__select-all--indeterminate', value, 'selectAllBox');
     }
 
     _applySortIcon(): void {
@@ -315,45 +271,6 @@ class HeaderCellComponent extends Component {
         );
         this.addCls(`${SORT_CLS_PREFIX}${sortState}`, 'sortIcon');
     }
-
-    onDragStart(_ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
-        this.componentEmit('reorderStart', { colName: this.colName });
-    }
-
-    onDragMove(ctx: { dx: number; dy: number; el: HTMLElement; originalEvent: Event }): void {
-        const oe = ctx.originalEvent as any;
-        let clientX = 0;
-        let clientY = 0;
-        if (oe?.clientX !== undefined) {
-            clientX = oe.clientX;
-            clientY = oe.clientY;
-        } else if (oe?.touches?.[0]) {
-            clientX = oe.touches[0].clientX;
-            clientY = oe.touches[0].clientY;
-        } else if (oe?.changedTouches?.[0]) {
-            clientX = oe.changedTouches[0].clientX;
-            clientY = oe.changedTouches[0].clientY;
-        }
-        this.componentEmit('reorderMove', { colName: this.colName, clientX, clientY });
-    }
-
-    onDragEnd(ctx: { el: HTMLElement; originalEvent: Event }): void {
-        const oe = ctx.originalEvent as any;
-        let clientX = 0;
-        let clientY = 0;
-        if (oe?.clientX !== undefined) {
-            clientX = oe.clientX;
-            clientY = oe.clientY;
-        } else if (oe?.touches?.[0]) {
-            clientX = oe.touches[0].clientX;
-            clientY = oe.touches[0].clientY;
-        } else if (oe?.changedTouches?.[0]) {
-            clientX = oe.changedTouches[0].clientX;
-            clientY = oe.changedTouches[0].clientY;
-        }
-        this.componentEmit('reorderEnd', { colName: this.colName, clientX, clientY });
-    }
-
 }
 
 HeaderCellComponent.define(HeaderCellComponentDefs);
