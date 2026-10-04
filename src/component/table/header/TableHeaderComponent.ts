@@ -436,6 +436,12 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         for (const item of items) {
             const el = item.getNodeEl?.('menuArea');
             if (el === menuAreaEl) return item;
+            if (Array.isArray(item._childCells) && item._childCells.length > 0) {
+                for (const childCell of item._childCells) {
+                    const childEl = childCell.component?.getNodeEl?.('menuArea');
+                    if (childEl === menuAreaEl) return childCell.component;
+                }
+            }
         }
         return null;
     }
