@@ -29,31 +29,46 @@ export function bindFloatTrigger(component: any, decl: any, spec: FloatTriggerSp
     const trigger = decl.trigger ?? spec.defaultTrigger;
     if (trigger === 'manual' || trigger === 'always') return;
 
-    const anchorEl =
-        decl.anchor && decl.anchor !== 'self'
-            ? (component.getNodeEl?.(decl.anchor) ?? null)
-            : component.el!;
-    if (!anchorEl) return;
+    const isPathAnchor =
+        typeof decl.anchor === 'string' &&
+        decl.anchor !== 'self' &&
+        (decl.anchor.includes('.') ||
+            decl.anchor.startsWith('[') ||
+            decl.anchor.startsWith('{'));
+
+    let anchorEl: HTMLElement | null = null;
+    let anchorPath: string | null = null;
+
+    if (isPathAnchor) {
+        anchorPath = decl.anchor;
+    } else {
+        anchorEl =
+            decl.anchor && decl.anchor !== 'self'
+                ? (component.getNodeEl?.(decl.anchor) ?? null)
+                : component.el!;
+        if (!anchorEl) return;
+    }
+
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     const rules: DelegatedEventRule[] = [];
     for (const t of triggers) {
         if (t === 'hover') {
             rules.push({
                 event: 'enter',
-                path: anchorEl,
+                path: anchorPath ?? anchorEl!,
                 handler: `_on${spec.handlerPrefix}Enter`,
                 needsBinding: true,
             });
             rules.push({
                 event: 'leave',
-                path: anchorEl,
+                path: anchorPath ?? anchorEl!,
                 handler: `_on${spec.handlerPrefix}Leave`,
                 needsBinding: true,
             });
         } else if (t === 'click') {
             rules.push({
                 event: 'click',
-                path: anchorEl,
+                path: anchorPath ?? anchorEl!,
                 handler: `_on${spec.handlerPrefix}Click`,
                 needsBinding: true,
             });

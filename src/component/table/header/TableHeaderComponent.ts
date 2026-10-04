@@ -25,6 +25,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     _groupField: string = '';
     _dragColName: string = '';
     _dropIndicator: HTMLElement | null = null;
+    _currentMenuCell: any = null;
 
     get defaultEventData(): Record<string, any> {
         return {
@@ -333,6 +334,112 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return super._createItem(data);
     }
 
+    _buildMenuItemsForCell(cell: any): any[] {
+        const colName = cell.colName || cell.action;
+        const sortState = cell.getData?.('sortState') ?? 'none';
+        const items: any[] = [];
+        if (cell.sortable) {
+            items.push({
+                text: '@table.sortAsc',
+                action: 'sort',
+                actionData: { colName, direction: 'asc' },
+                group: 'sort',
+                groupMode: 'radio',
+                checked: sortState === 'asc',
+                order: 10,
+            });
+            items.push({
+                text: '@table.sortDesc',
+                action: 'sort',
+                actionData: { colName, direction: 'desc' },
+                group: 'sort',
+                groupMode: 'radio',
+                checked: sortState === 'desc',
+                order: 20,
+            });
+        }
+        if (cell.groupable) {
+            items.push({
+                text: '@table.groupBy',
+                action: 'groupBy',
+                actionData: { colName },
+                group: 'groupBy',
+                groupMode: 'checkbox',
+                checked: cell.groupField === colName,
+                order: 30,
+            });
+        }
+        const hideable = cell.hideableColumns;
+        if (hideable?.length) {
+            if (items.length === 0) {
+                for (const col of hideable) {
+                    items.push({
+                        text: col.title ?? col.colName,
+                        action: col.hidden ? 'showColumn' : 'hideColumn',
+                        actionData: { colName: col.colName },
+                        group: 'hideableColumns',
+                        groupMode: 'checkbox',
+                        checked: !col.hidden,
+                        order: 40,
+                    });
+                }
+            } else {
+                items.push({
+                    text: '@table.hideColumn',
+                    action: 'hideColumn',
+                    order: 40,
+                    popover: {
+                        options: {
+                            items: hideable.map((col: any) => ({
+                                text: col.title ?? col.colName,
+                                action: col.hidden ? 'showColumn' : 'hideColumn',
+                                actionData: { colName: col.colName },
+                                group: 'hideableColumns',
+                                groupMode: 'checkbox',
+                                checked: !col.hidden,
+                            })),
+                            eventKey: this.eventKey,
+                        },
+                    },
+                });
+            }
+        }
+        const customMenuItems = cell.customMenuItems;
+        if (customMenuItems?.length) {
+            for (const item of customMenuItems) {
+                items.push({ ...item, order: item.order ?? 50 });
+            }
+        }
+        items.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
+        return items;
+    }
+
+    _onPopoverClick(domEvt?: any): void {
+        const decl = this._getPopoverDecl();
+        if (!decl) return;
+        const triggerEl = domEvt?.targetComponent?.el;
+        if (triggerEl) {
+            this._currentTriggerAnchor = triggerEl;
+        }
+        const cell = this._findCellByMenuAreaEl(triggerEl);
+        if (!cell) return;
+        this._currentMenuCell = cell;
+        const items = this._buildMenuItemsForCell(cell);
+        this.updatePopover({ items, eventKey: this.eventKey });
+        this.togglePopover();
+    }
+
+    _findCellByMenuAreaEl(menuAreaEl: HTMLElement | null | undefined): any {
+        if (!menuAreaEl) return null;
+        const items = this.items;
+        if (!Array.isArray(items)) return null;
+        for (const item of items) {
+            const el = item.getNodeEl?.('menuArea');
+            if (el === menuAreaEl) return item;
+        }
+        return null;
+    }
+
     _onHeaderCellClick(domEvt: any): void {
         const target = domEvt?.targetComponent;
         if (!target) return;
@@ -541,6 +648,13 @@ const TableHeaderComponentDefs: Definitions = {
         sortBy: '',
         sortOrder: '',
         groupField: '',
+        popover: {
+            type: 'menu',
+            trigger: 'click',
+            anchor: '[items].menuArea',
+            placement: 'bottom-start',
+            options: { items: [], eventKey: '' },
+        },
     },
 } as const;
 

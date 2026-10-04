@@ -37,6 +37,8 @@ const TRIGGER_SPEC = {
 } as const;
 
 export const PopoverAbility: AbilityDefinition = {
+    _currentTriggerAnchor: null as HTMLElement | null,
+
     _onPopoverOptionChange(value: any, old: any): void {
         if (value === old) return;
         if (value) {
@@ -71,9 +73,14 @@ export const PopoverAbility: AbilityDefinition = {
         return this.abilityState('PopoverAbility:instance');
     },
 
-    _ensurePopover(): any {
+    _ensurePopover(anchorOverride?: HTMLElement): any {
         const existing = this._getPopoverInstance();
-        if (existing) return existing;
+        if (existing) {
+            if (anchorOverride) {
+                existing.setData('anchor', anchorOverride, true);
+            }
+            return existing;
+        }
 
         const decl = this._getPopoverDecl();
         if (!decl) return null;
@@ -81,10 +88,15 @@ export const PopoverAbility: AbilityDefinition = {
             typeof decl.type === 'function' ? decl.type : this.resolveComponent(decl.type);
         if (!OverlayClass) return null;
 
-        const anchorSource =
-            decl.anchor && decl.anchor !== 'self'
-                ? (this.getNodeEl?.(decl.anchor) ?? null)
-                : this.el!;
+        let anchorSource: HTMLElement | null = null;
+        if (anchorOverride) {
+            anchorSource = anchorOverride;
+        } else if (decl.anchor && decl.anchor !== 'self') {
+            anchorSource = this.getNodeEl?.(decl.anchor) ?? null;
+            if (!anchorSource) anchorSource = this.el!;
+        } else {
+            anchorSource = this.el!;
+        }
         if (!anchorSource) return null;
         const constr: any = {
             ...(decl.options ?? {}),
@@ -103,8 +115,9 @@ export const PopoverAbility: AbilityDefinition = {
         return overlay;
     },
 
-    showPopover(): void {
-        const inst = this._ensurePopover();
+    showPopover(anchorOverride?: HTMLElement): void {
+        const anchor = anchorOverride ?? this._currentTriggerAnchor;
+        const inst = this._ensurePopover(anchor);
         if (inst) {
             inst.ready.then(() => {
                 inst.show();
@@ -143,9 +156,12 @@ export const PopoverAbility: AbilityDefinition = {
         }
     },
 
-    _onPopoverEnter(): void {
+    _onPopoverEnter(domEvt?: any): void {
         if (!floatTriggerMatches(this._getPopoverDecl(), 'hover', TRIGGER_SPEC.defaultTrigger))
             return;
+        if (domEvt?.targetComponent?.el) {
+            this._currentTriggerAnchor = domEvt.targetComponent.el;
+        }
         this.showPopover();
     },
 
@@ -155,10 +171,13 @@ export const PopoverAbility: AbilityDefinition = {
         this.hidePopover();
     },
 
-    _onPopoverClick(): void {
+    _onPopoverClick(domEvt?: any): void {
         const decl = this._getPopoverDecl();
         const matches = floatTriggerMatches(decl, 'click', TRIGGER_SPEC.defaultTrigger);
         if (!matches) return;
+        if (domEvt?.targetComponent?.el) {
+            this._currentTriggerAnchor = domEvt.targetComponent.el;
+        }
         this.togglePopover();
     },
 } satisfies AbilityDefinition;

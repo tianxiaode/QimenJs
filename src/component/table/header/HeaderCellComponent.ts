@@ -43,7 +43,6 @@ class HeaderCellComponent extends Component {
 
     drag?: boolean | DragOptions = false;
 
-    _popoverInitialized: boolean = false;
     _resizeInitialized: boolean = false;
 
     get defaultEventData(): Record<string, any> {
@@ -53,103 +52,10 @@ class HeaderCellComponent extends Component {
         };
     }
 
-    _buildMenuItems(): any[] {
-        const colName = this.colName;
-        const sortState = this.getData('sortState') as SortState;
-        const items: any[] = [];
-        if (this.sortable) {
-            items.push({
-                text: '@table.sortAsc',
-                action: 'sort',
-                actionData: { colName, direction: 'asc' },
-                group: 'sort',
-                groupMode: 'radio',
-                checked: sortState === 'asc',
-                order: 10,
-            });
-            items.push({
-                text: '@table.sortDesc',
-                action: 'sort',
-                actionData: { colName, direction: 'desc' },
-                group: 'sort',
-                groupMode: 'radio',
-                checked: sortState === 'desc',
-                order: 20,
-            });
-        }
-        if (this.groupable) {
-            items.push({
-                text: '@table.groupBy',
-                action: 'groupBy',
-                actionData: { colName },
-                group: 'groupBy',
-                groupMode: 'checkbox',
-                checked: this.groupField === this.colName,
-                order: 30,
-            });
-        }
-        const hideable = this.hideableColumns;
-        if (hideable?.length) {
-            if (items.length === 0) {
-                for (const col of hideable) {
-                    items.push({
-                        text: col.title ?? col.colName,
-                        action: col.hidden ? 'showColumn' : 'hideColumn',
-                        actionData: { colName: col.colName },
-                        group: 'hideableColumns',
-                        groupMode: 'checkbox',
-                        checked: !col.hidden,
-                        order: 40,
-                    });
-                }
-            } else {
-                items.push({
-                    text: '@table.hideColumn',
-                    action: 'hideColumn',
-                    order: 40,
-                    popover: {
-                        options: {
-                            items: hideable.map((col: any) => ({
-                                text: col.title ?? col.colName,
-                                action: col.hidden ? 'showColumn' : 'hideColumn',
-                                actionData: { colName: col.colName },
-                                group: 'hideableColumns',
-                                groupMode: 'checkbox',
-                                checked: !col.hidden,
-                            })),
-                            eventKey: this.eventKey,
-                        },
-                    },
-                });
-            }
-        }
-        if (this.customMenuItems?.length) {
-            for (const item of this.customMenuItems) {
-                items.push({ ...item, order: item.order ?? 50 });
-            }
-        }
-        items.sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
-        return items;
-    }
-
-    _applyPopover(): void {
-        if (this.menuDisabled || !this.getNodeEl('menuArea')) return;
-        this.setData('popover', {
-            type: 'menu',
-            trigger: 'click',
-            anchor: 'menuArea',
-            placement: 'bottom-start',
-            options: { items: this._buildMenuItems(), eventKey: this.eventKey },
-        });
-        this._popoverInitialized = true;
-    }
-
     onAfterInit(): void {
         super.onAfterInit();
         if (this.menuDisabled) {
             this.setStyles({ display: 'none' }, 'menuArea');
-        } else {
-            this._applyPopover();
         }
         if (this.resizable) {
             this._initResize();
@@ -225,16 +131,10 @@ class HeaderCellComponent extends Component {
 
     _onSortableOptionChange(_value: boolean): void {
         this._applySortIcon();
-        if (this._popoverInitialized) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
     }
 
     _onSortStateOptionChange(_value: SortState): void {
         this._applySortIcon();
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
     }
 
     _onResizableOptionChange(_value: boolean): void {
@@ -248,38 +148,15 @@ class HeaderCellComponent extends Component {
 
     _onMenuDisabledOptionChange(_value: boolean): void {
         this.setStyles({ display: this.menuDisabled ? 'none' : '' }, 'menuArea');
-        if (this.menuDisabled) {
-            this.hidePopover();
-            this.setData('popover', null);
-            this._popoverInitialized = false;
-        } else {
-            this._applyPopover();
-        }
     }
 
-    _onHideableColumnsOptionChange(_value: any): void {
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
+    _onHideableColumnsOptionChange(_value: any): void {}
 
-    _onGroupableOptionChange(_value: boolean): void {
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
+    _onGroupableOptionChange(_value: boolean): void {}
 
-    _onGroupFieldOptionChange(_value: string): void {
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
+    _onGroupFieldOptionChange(_value: string): void {}
 
-    _onCustomMenuItemsOptionChange(_value: any): void {
-        if (this._popoverInitialized && !this.menuDisabled) {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
+    _onCustomMenuItemsOptionChange(_value: any): void {}
 
     _onSelectionAllOptionChange(value: boolean): void {
         this.setStyles({ display: value ? '' : 'none' }, 'selectAllBox');
