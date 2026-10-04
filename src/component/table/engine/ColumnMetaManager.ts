@@ -22,6 +22,7 @@ import type {
     CellType,
     EditType,
     AggregatorType,
+    ColumnSummary,
 } from '../column-types';
 
 function resolveWidth(w?: string | number): string | undefined {
@@ -85,7 +86,7 @@ export class ColumnMetaManager {
 
     getSummarizable(): ColumnMeta[] {
         if (!this._cache.summarizable) {
-            this._cache.summarizable = this._metas.filter(m => m.tableAggregator);
+            this._cache.summarizable = this._metas.filter(m => m.summary);
         }
         return this._cache.summarizable;
     }
@@ -132,7 +133,7 @@ export class ColumnMetaManager {
             editType: def.editType ?? 'text',
             editComponent: def.editComponent,
             groupAggregator: def.groupAggregator,
-            tableAggregator: def.tableAggregator,
+            summary: def.summary,
             cellTpl: def.cellTpl,
             headerTpl: def.headerTpl,
         };

@@ -3,7 +3,8 @@ import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnOrderAbility } from '@qimenjs/component-abilities';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
-import type { ColumnDefOrGroup, ColumnMeta } from './column-types';
+import { TableSummaryRowComponent } from './table-summary/TableSummaryRowComponent';
+import type { ColumnDefOrGroup, ColumnGroupDef, ColumnMeta, AggregatorType } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
@@ -16,6 +17,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _header: TableHeaderComponent | null = null;
     _lastReflowData: any[] = [];
     _groupRowMap: Map<string, { summaryRow: any; dataRows: any[] }> = new Map();
+    _summaryRow: TableSummaryRowComponent | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -24,6 +26,7 @@ class TableComponent extends ItemGroupPooledComponent {
             children: [
                 { tag: 'div', name: 'headerArea', classes: 'q-table__header-area' },
                 { tag: 'div', name: 'itemContainer', classes: 'q-table__body' },
+                { tag: 'div', name: 'summaryArea', classes: 'q-table__summary-area' },
             ],
         };
     }
@@ -147,6 +150,7 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
         const items = this._buildItems(data, metas);
         super.setItems(items);
         this._buildGroupRowMap(items);
+        this._updateSummaryRow();
     }
 
     /**
@@ -258,6 +262,69 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
             row.hidden = data.collapsed;
         }
     }
+
+    _updateSummaryRow(): void {
+        const metas = this._columnMetaManager?.getAll() ?? [];
+        const hasSummary = metas.some(m => m.summary);
+
+        if (!hasSummary) {
+            if (this._summaryRow) {
+                this._summaryRow.dispose();
+                this._summaryRow = null;
+            }
+            return;
+        }
+
+        const summaryData = this._computeSummaryData(metas);
+
+        if (!this._summaryRow) {
+            const summaryArea = this.getNodeEl('summaryArea');
+            if (!summaryArea) return;
+            this._summaryRow = new TableSummaryRowComponent({ columnMetas: metas });
+            summaryArea.appendChild(this._summaryRow.el);
+        }
+
+        this._summaryRow.update(summaryData);
+    }
+
+    _computeSummaryData(metas: ColumnMeta[]): Record<string, any> {
+        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
+        const flatData = this._isGroupedData(data)
+            ? data.flatMap((g: any) => g.groupItems ?? [])
+            : data;
+        const summary: Record<string, any> = {};
+
+        for (const meta of metas) {
+            if (!meta.summary) continue;
+            if (meta.summary.label !== undefined) {
+                summary[meta.name] = meta.summary.label;
+            } else if (meta.summary.aggregator) {
+                summary[meta.name] = this._aggregateByType(meta, flatData, meta.summary.aggregator);
+            }
+        }
+
+        return summary;
+    }
+
+    _aggregateByType(meta: ColumnMeta, items: any[], aggregator: AggregatorType): any {
+        const values = items.map(row => this._getFieldValue(row, meta.field));
+        switch (aggregator) {
+            case 'sum':
+                return values.reduce((acc, v) => acc + (Number(v) || 0), 0);
+            case 'count':
+                return items.length;
+            case 'avg':
+                return values.length
+                    ? values.reduce((acc, v) => acc + (Number(v) || 0), 0) / values.length
+                    : '';
+            case 'min':
+                return values.length ? Math.min(...values.map(v => Number(v))) : '';
+            case 'max':
+                return values.length ? Math.max(...values.map(v => Number(v))) : '';
+            default:
+                return '';
+        }
+    }
 _applyColumnStyles(): void {
     if (!this._columnMetaManager) return;
     const metas = this._columnMetaManager.getAll();
@@ -350,6 +417,14 @@ _traverseGroupOrders(columns: ColumnDefOrGroup[], startLeafIndex: number, step: 
             this._header.moveColumn(from, to);
         }
     }
+
+    override onBeforeDispose(): void {
+        super.onBeforeDispose();
+        this._summaryRow?.dispose();
+        this._summaryRow = null;
+        this._header?.dispose?.();
+        this._header = null;
+    }
 }
 
 const TableComponentDefs: Definitions = {
@@ -362,6 +437,7 @@ const TableComponentDefs: Definitions = {
         _columnMetaManager: null,
         _header: null,
         _groupRowMap: null,
+        _summaryRow: null,
     },
 } as const;
 

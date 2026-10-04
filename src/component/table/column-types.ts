@@ -163,6 +163,33 @@ export type EditType = 'text' | 'number' | 'date' | 'select' | 'custom';
 export type AggregatorType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'label';
 
 // ══════════════════════════════════════════════════════════════
+// 列统计配置
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 列统计配置 — 设置后 TableComponent 自动生成统计行
+ *
+ * - aggregator: 聚合方式（计算），统计行中该列显示计算结果
+ * - label: 显示文字（如 "合计"），统计行中该列显示固定文字
+ *
+ * 两者可同时设置：label 作为该列在统计行中的固定显示文字，
+ * aggregator 用于其他列的计算。
+ *
+ * @example
+ * ```ts
+ * // 第一列显示 "合计"，其他列求和
+ * { name: 'product', summary: { label: '合计' } }
+ * { name: 'q1', summary: { aggregator: 'sum' } }
+ * ```
+ */
+export interface ColumnSummary {
+    /** 聚合方式：sum/avg/count/min/max — 统计行中该列显示计算结果 */
+    aggregator?: AggregatorType;
+    /** 显示文字（如 "合计"）— 统计行中该列显示固定文字 */
+    label?: string;
+}
+
+// ══════════════════════════════════════════════════════════════
 // 对齐方式
 // ══════════════════════════════════════════════════════════════
 
@@ -575,11 +602,18 @@ export interface ColumnDef {
     groupAggregator?: AggregatorType;
 
     /**
-     * 整表统计聚合函数 — 整表统计行中该列的聚合方式
+     * 整表统计配置 — 设置后 TableComponent 自动生成统计行
      *
-     * 未指定时该列在整表统计行中显示为空。
+     * 与 groupAggregator 不同，summary 支持同时指定 aggregator（计算）
+     * 和 label（显示文字），且由 TableComponent 自动管理统计行生命周期。
+     *
+     * @example
+     * ```ts
+     * { name: 'product', summary: { label: '合计' } }
+     * { name: 'salary', summary: { aggregator: 'sum' } }
+     * ```
      */
-    tableAggregator?: AggregatorType;
+    summary?: ColumnSummary;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -648,8 +682,8 @@ export interface ColumnMeta {
     /** 分组统计聚合函数 */
     groupAggregator?: AggregatorType;
 
-    /** 整表统计聚合函数 */
-    tableAggregator?: AggregatorType;
+    /** 整表统计配置 */
+    summary?: ColumnSummary;
 
     /** 自定义单元格模板 */
     cellTpl?: TplDecl;
