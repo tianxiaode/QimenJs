@@ -45,14 +45,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 reorderStart: { handler: '_onReorderStart' },
                 reorderMove: { handler: '_onReorderMove' },
                 reorderEnd: { handler: '_onReorderEnd' },
-                toggleAll: { handler: '_onToggleAll' },
+                toggleAll: { emits: ['toggleAll'] },
             },
         },
     ];
-
-    _onToggleAll(data: any): void {
-        this.emit('toggleAll', data);
-    }
 
     /**
      * 设置全选状态 — 由 Table 在 selectionChange 后同步
@@ -313,13 +309,13 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             colName: leaf.name,
             title: isSelectionCol ? null : leaf.title,
             align: 'center',
-            sortable: isSelectionCol ? false : leaf.sortable ?? false,
+            sortable: isSelectionCol ? false : (leaf.sortable ?? false),
             resizable: leaf.resizable ?? true,
             reorderable: leaf.reorderable ?? false,
             action: leaf.name,
             minWidth: leaf.minWidth ?? 50,
             hideableColumns,
-            groupable: isSelectionCol ? false : leaf.groupable ?? false,
+            groupable: isSelectionCol ? false : (leaf.groupable ?? false),
             groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
             menuDisabled: isSelectionCol,
@@ -392,8 +388,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const originalEvent = domEvt?.data?.originalEvent;
         const clickTarget = originalEvent?.target as HTMLElement;
 
-        const menuIconEl = target.getNodeEl?.('menuIcon');
-        if (menuIconEl && (menuIconEl === clickTarget || menuIconEl.contains(clickTarget))) {
+        const menuAreaEl = target.getNodeEl?.('menuArea');
+        if (menuAreaEl && (menuAreaEl === clickTarget || menuAreaEl.contains(clickTarget))) {
             return;
         }
 

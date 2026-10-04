@@ -81,7 +81,9 @@ class HeaderCellComponent extends Component {
                 for (const col of hideable) {
                     items.push({
                         text: col.title ?? col.colName,
-                        action: col.hidden ? `showColumn:${col.colName}` : `hideColumn:${col.colName}`,
+                        action: col.hidden
+                            ? `showColumn:${col.colName}`
+                            : `hideColumn:${col.colName}`,
                         group: 'hideableColumns',
                         groupMode: 'checkbox',
                         checked: !col.hidden,
@@ -97,7 +99,9 @@ class HeaderCellComponent extends Component {
                         options: {
                             items: hideable.map((col: any) => ({
                                 text: col.title ?? col.colName,
-                                action: col.hidden ? `showColumn:${col.colName}` : `hideColumn:${col.colName}`,
+                                action: col.hidden
+                                    ? `showColumn:${col.colName}`
+                                    : `hideColumn:${col.colName}`,
                                 group: 'hideableColumns',
                                 groupMode: 'checkbox',
                                 checked: !col.hidden,
@@ -117,11 +121,11 @@ class HeaderCellComponent extends Component {
     }
 
     _applyPopover(): void {
-        if (this.menuDisabled || !this.getNodeEl('menuIcon')) return;
+        if (this.menuDisabled || !this.getNodeEl('menuArea')) return;
         this.setData('popover', {
             type: 'menu',
             trigger: 'click',
-            anchor: 'menuIcon',
+            anchor: 'menuArea',
             placement: 'bottom-start',
             options: { items: this._buildMenuItems() },
         });
@@ -131,7 +135,7 @@ class HeaderCellComponent extends Component {
     onAfterInit(): void {
         super.onAfterInit();
         if (this.menuDisabled) {
-            this.setStyles({ display: 'none' }, 'menuIcon');
+            this.setStyles({ display: 'none' }, 'menuArea');
         } else {
             this._applyPopover();
         }
@@ -218,7 +222,7 @@ class HeaderCellComponent extends Component {
     }
 
     _onMenuDisabledOptionChange(_value: boolean): void {
-        this.setStyles({ display: this.menuDisabled ? 'none' : '' }, 'menuIcon');
+        this.setStyles({ display: this.menuDisabled ? 'none' : '' }, 'menuArea');
         if (this.menuDisabled) {
             this.hidePopover();
             this.setData('popover', null);
@@ -269,12 +273,18 @@ class HeaderCellComponent extends Component {
     setSelectAllState(allSelected: boolean, someSelected: boolean): void {
         if (!this.selectionAll) return;
         this.toggleCls('q-header-cell__select-all--checked', allSelected, 'selectAllBox');
-        this.toggleCls('q-header-cell__select-all--indeterminate', !allSelected && someSelected, 'selectAllBox');
+        this.toggleCls(
+            'q-header-cell__select-all--indeterminate',
+            !allSelected && someSelected,
+            'selectAllBox'
+        );
     }
 
     onSelectAllBoxClick(): void {
         if (!this.selectionAll) return;
-        const allSelected = this.getNodeEl('selectAllBox')?.classList.contains('q-header-cell__select-all--checked');
+        const allSelected = this.getNodeEl('selectAllBox')?.classList.contains(
+            'q-header-cell__select-all--checked'
+        );
         this.componentEmit('toggleAll', { checked: !allSelected });
     }
 
