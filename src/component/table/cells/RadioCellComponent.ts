@@ -1,38 +1,41 @@
 /**
- * CheckboxCellComponent 复选框单元格组件
+ * RadioCellComponent 单选框单元格组件
  *
- * 在 BaseCell 基础上替换 content 为复选框。
+ * 在 BaseCell 基础上替换 content 为单选框。
  * update({ checked, disabled? }) 驱动选中/禁用状态。
+ *
+ * 受控模式（controlled: true）下 onRootClick 不自行切换，
+ * 状态完全由外部 update() 驱动（表格选择列场景）。
  *
  * @example
  * ```ts
- * const cell = new CheckboxCellComponent({ align: 'center' });
+ * const cell = new RadioCellComponent({ align: 'center' });
  * cell.update({ checked: true, disabled: false });
  * ```
  */
 
 import { BaseCellComponent } from './BaseCellComponent';
-import type { CheckboxCellData } from '../column-types';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { RadioCellData } from '../column-types';
+import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
-import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
+import { RADIO_CELL_TPL } from './radio-cell-tpl';
 import './cellselect.css';
 
-const CheckboxCellComponentDefs: Definitions = {
+const RadioCellComponentDefs: Definitions = {
     options: {
         controlled: false,
     },
 } as const;
 
-class CheckboxCellComponent extends BaseCellComponent {
+class RadioCellComponent extends BaseCellComponent {
     get tpl(): TemplateDecl {
-        return CHECKBOX_CELL_TPL;
+        return RADIO_CELL_TPL;
     }
 
     _checked: boolean = false;
     _disabled: boolean = false;
 
-    update(data: CheckboxCellData): void {
+    update(data: RadioCellData): void {
         this._checked = data.checked ?? false;
         this._disabled = data.disabled ?? false;
         this._applyState();
@@ -55,8 +58,8 @@ class CheckboxCellComponent extends BaseCellComponent {
     }
 
     _applyState(): void {
-        this.toggleCls('q_cell__checkbox--checked', this._checked, 'box');
-        this.toggleCls('q_cell__checkbox--disabled', this._disabled, 'box');
+        this.toggleCls('q_cell__radio--checked', this._checked, 'box');
+        this.toggleCls('q_cell__radio--disabled', this._disabled, 'box');
         this.setAttr('aria-checked', String(this._checked), 'box');
         if (this._disabled) {
             this.setAttr('aria-disabled', 'true', 'box');
@@ -76,8 +79,8 @@ class CheckboxCellComponent extends BaseCellComponent {
     }
 }
 
-CheckboxCellComponent.define(CheckboxCellComponentDefs);
+RadioCellComponent.define(RadioCellComponentDefs);
 
-export { CheckboxCellComponent };
-/** 复选框单元格实例类型 */
-export type CheckboxCellComponentInstance = InstanceType<typeof CheckboxCellComponent>;
+export { RadioCellComponent };
+/** 单选框单元格实例类型 */
+export type RadioCellComponentInstance = InstanceType<typeof RadioCellComponent>;

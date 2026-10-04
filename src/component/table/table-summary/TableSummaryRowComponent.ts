@@ -48,7 +48,7 @@ class TableSummaryRowComponent extends Component {
         }
     }
 
-    _createCell(meta: ColumnMeta, index: number): any {
+    _createCell(meta: ColumnMeta, _index: number): any {
         const options: Record<string, any> = {
             align: meta.align,
             colName: meta.name,
@@ -110,8 +110,7 @@ class TableSummaryRowComponent extends Component {
         this.showColumn(data.colName);
     }
 
-    moveColumn(from: number, to: number): void {
-    }
+    moveColumn(_from: number, _to: number): void {}
 }
 
 const TableSummaryRowComponentDefs: Definitions = {

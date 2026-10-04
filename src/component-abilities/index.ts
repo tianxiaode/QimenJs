@@ -43,3 +43,13 @@ export {
     type ColumnOrderState,
     type ColumnOrderConfig,
 } from './column-order';
+
+// 选择能力
+export {
+    SelectionAbility,
+    type SelectionMode,
+    type SelectionConfig,
+    type SelectionEntry,
+    type SelectionState,
+    type SelectionChangeData,
+} from './selection';

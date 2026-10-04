@@ -4,11 +4,11 @@ import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
 
 const TABLE_DATA = [
-    { name: '张三', age: 28, salary: 15000, dept: '技术部' },
-    { name: '李四', age: 35, salary: 22000, dept: '市场部' },
-    { name: '王五', age: 42, salary: 30000, dept: '管理层' },
-    { name: '赵六', age: 24, salary: 8000, dept: '技术部' },
-    { name: '孙七', age: 31, salary: 18000, dept: '市场部' },
+    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
+    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部' },
+    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层' },
+    { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部' },
+    { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部' },
 ];
 
 const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
@@ -39,9 +39,33 @@ const SUMMARY_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right', sortable: true, summary: { aggregator: 'sum' } },
 ];
 
+const CHECKBOX_SELECT_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'check', cellType: 'checkbox', selection: true, width: 40, align: 'center' },
+    { name: 'name', field: 'name', title: '姓名', width: 120 },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+];
+
+const RADIO_SELECT_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'select', cellType: 'radio', selection: true, width: 40, align: 'center' },
+    { name: 'name', field: 'name', title: '姓名', width: 120 },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+];
+
+const DISABLED_SELECT_DATA = [
+    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
+    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', _selectDisabled: true },
+    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层' },
+    { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部', _selectDisabled: true },
+    { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部' },
+];
+
 export const TABLE_DEMO: DemoConfig = {
     title: 'Table',
-    description: '表格组件 — 综合演示：排序、分组列头、列拖拽重排序、列宽调整、列统计行',
+    description: '表格组件 — 综合演示：排序、分组列头、列拖拽重排序、列宽调整、列统计行、行选择',
     sections: [
         {
             label: '综合表格',
@@ -96,6 +120,101 @@ export const TABLE_DEMO: DemoConfig = {
                         options: {
                             columns: SUMMARY_COLUMNS,
                             data: SUMMARY_DATA,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '多选（checkbox）',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [...],
+    selectable: 'multiple',
+} }
+
+// selectable: 'multiple' — 多选模式
+// selection: true — 标记该列为选择列
+// 表头显示全选 checkbox，点击行也可选中`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: CHECKBOX_SELECT_COLUMNS,
+                            data: TABLE_DATA,
+                            selectable: 'multiple',
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '单选（radio）',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'select', cellType: 'radio', selection: true, width: 40 },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [...],
+    selectable: 'single',
+} }
+
+// selectable: 'single' — 单选模式
+// cellType: 'radio' — 单选框选择列`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: RADIO_SELECT_COLUMNS,
+                            data: TABLE_DATA,
+                            selectable: 'single',
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '禁选行',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [
+        { id: 1, name: '张三', ... },
+        { id: 2, name: '李四', ..., _selectDisabled: true },
+        { id: 3, name: '王五', ... },
+    ],
+    selectable: 'multiple',
+} }
+
+// _selectDisabled: true — 该行禁止选择
+// checkbox 显示禁用样式，点击行不触发选中`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: CHECKBOX_SELECT_COLUMNS,
+                            data: DISABLED_SELECT_DATA,
+                            selectable: 'multiple',
                         },
                     },
                 ],

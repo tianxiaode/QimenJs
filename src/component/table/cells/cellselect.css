@@ -1,0 +1,76 @@
+/* checkbox/radio 单元格样式 — 参照 selection-group.css 的 box/dot 约定 */
+
+.q_cell__checkbox {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--q-color-border);
+    background: var(--q-color-bg);
+    box-sizing: border-box;
+    cursor: var(--q-cursor-pointer);
+    transition:
+        border-color var(--q-transition-fast),
+        background var(--q-transition-fast);
+}
+
+.q_cell__checkbox--checked {
+    border-color: var(--q-color-primary);
+    background: var(--q-color-primary);
+}
+
+.q_cell__checkbox--checked::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 9px;
+    border: solid var(--q-color-on-primary, #fff);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.q_cell__checkbox--disabled {
+    background: var(--q-color-bg-tertiary);
+    border-color: var(--q-color-border);
+    cursor: var(--q-cursor-not-allowed);
+}
+
+.q_cell__checkbox--disabled.q_cell__checkbox--checked {
+    background: var(--q-color-primary-light);
+    border-color: var(--q-color-primary-light);
+}
+
+.q_cell__radio {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--q-color-border);
+    border-radius: 50%;
+    background: var(--q-color-bg);
+    box-sizing: border-box;
+    cursor: var(--q-cursor-pointer);
+    transition: border-color var(--q-transition-fast);
+}
+
+.q_cell__radio--checked {
+    border-color: var(--q-color-primary);
+}
+
+.q_cell__radio--checked::after {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--q-color-primary);
+}
+
+.q_cell__radio--disabled {
+    background: var(--q-color-bg-tertiary);
+    cursor: var(--q-cursor-not-allowed);
+}

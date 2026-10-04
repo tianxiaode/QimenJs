@@ -123,9 +123,27 @@ import type { TplDecl } from '../../component-core/types/tpl';
  * - tree:     树形缩进展示，含展开/折叠图标 + 缩进。
  *             缩进在 TreeCell.update() 内通过 indentStyle() 设置。
  * - checkbox: 复选框，选中/禁用状态。
+ * - radio:    单选框，选中/禁用状态。
  * - action:   操作按钮组，使用 ButtonGroupComponent。
  */
-export type CellType = 'text' | 'tree' | 'checkbox' | 'action';
+export type CellType = 'text' | 'tree' | 'checkbox' | 'radio' | 'action';
+
+// ══════════════════════════════════════════════════════════════
+// 行选择模式
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * 行选择模式 — TableComponent 的 selectable 配置
+ *
+ * - none:     不启用行选择（默认）
+ * - single:   单选，点击行替换选中（radio 列语义）
+ * - multiple: 多选，点击行切换选中（checkbox 列语义，表头显示全选）
+ *
+ * 选择状态由 SelectionAbility 管理（数据维度，key → data），
+ * 可通过 table.getSelectedKeys() / getSelectedData() 查询，
+ * selectionChange 事件对外通知。
+ */
+export type TableSelectMode = 'none' | 'single' | 'multiple';
 
 // ══════════════════════════════════════════════════════════════
 // 编辑类型
@@ -312,6 +330,21 @@ export interface CheckboxCellData {
 }
 
 /**
+ * RadioCell update 数据
+ *
+ * @example
+ * ```ts
+ * cell.update({ checked: true, disabled: false });
+ * ```
+ */
+export interface RadioCellData {
+    /** 是否选中 */
+    checked: boolean;
+    /** 是否禁用 */
+    disabled?: boolean;
+}
+
+/**
  * ActionCell update 数据
  *
  * @example
@@ -330,7 +363,7 @@ export interface ActionCellData {
 /**
  * 单元格 update 数据 — 按 cellType 区分
  */
-export type CellData = TextCellData | TreeCellData | CheckboxCellData | ActionCellData;
+export type CellData = TextCellData | TreeCellData | CheckboxCellData | RadioCellData | ActionCellData;
 
 // ══════════════════════════════════════════════════════════════
 // 自定义菜单项
@@ -561,6 +594,19 @@ export interface ColumnDef {
     hidden?: boolean;
 
     /**
+     * 是否选择列 — 配合 cellType: 'checkbox' / 'radio' 使用，默认 false
+     *
+     * 为 true 时该列作为表格选择列：
+     * - 点击该列单元格切换行选中状态（由 Table 的 SelectionAbility 驱动）
+     * - cell 进入受控模式（不自行切换 checked，状态由行选中状态同步）
+     * - multiple 模式下表头显示全选 checkbox
+     *
+     * 未标记 selection 的 checkbox 列保持纯数据展示行为
+     * （checked 从数据字段读取，点击自行切换）。
+     */
+    selection?: boolean;
+
+    /**
      * 固定列位置 — 列固定在表格左侧或右侧
      *
      * 固定列通过 position: sticky 实现，不参与水平滚动。
@@ -657,6 +703,9 @@ export interface ColumnMeta {
 
     /** 是否隐藏 */
     hidden: boolean;
+
+    /** 是否选择列（配合 cellType: 'checkbox' / 'radio'） */
+    selection?: boolean;
 
     /** 固定列位置 */
     fixed?: ColumnFixed;

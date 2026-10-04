@@ -44,6 +44,7 @@ export class ColumnMetaManager {
         editable?: ColumnMeta[];
         groupable?: ColumnMeta[];
         summarizable?: ColumnMeta[];
+        selection?: ColumnMeta | null;
     } = {};
 
     compile(columns: ColumnDefOrGroup[]): void {
@@ -91,6 +92,20 @@ export class ColumnMetaManager {
         return this._cache.summarizable;
     }
 
+    /**
+     * 获取选择列（selection: true 且 cellType 为 checkbox/radio 的列）
+     *
+     * 懒缓存，无选择列时返回 undefined。
+     */
+    getSelectionColumn(): ColumnMeta | undefined {
+        if (this._cache.selection === undefined) {
+            this._cache.selection =
+                this._metas.find(m => m.selection && (m.cellType === 'checkbox' || m.cellType === 'radio')) ??
+                null;
+        }
+        return this._cache.selection ?? undefined;
+    }
+
     getLeafNames(): string[] {
         return this._metas.map(m => m.name);
     }
@@ -125,6 +140,7 @@ export class ColumnMetaManager {
             minWidth: def.minWidth,
             maxWidth: def.maxWidth,
             hidden: def.hidden ?? false,
+            selection: def.selection ?? false,
             fixed: def.fixed,
             sortable: def.sortable ?? false,
             resizable: def.resizable ?? true,

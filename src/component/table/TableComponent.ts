@@ -1,10 +1,10 @@
 import type { ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { ItemGroupPooledComponent } from '@qimenjs/component';
-import { ColumnOrderAbility } from '@qimenjs/component-abilities';
+import { ColumnOrderAbility, SelectionAbility } from '@qimenjs/component-abilities';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import { TableSummaryRowComponent } from './table-summary/TableSummaryRowComponent';
-import type { ColumnDefOrGroup, ColumnGroupDef, ColumnMeta, AggregatorType } from './column-types';
+import type { ColumnDefOrGroup, ColumnGroupDef, ColumnMeta, AggregatorType, TableSelectMode } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
@@ -45,6 +45,8 @@ class TableComponent extends ItemGroupPooledComponent {
             events: {
                 resize: '_onColumnResize',
                 groupToggle: 'onGroupToggle',
+                rowSelect: '_onRowSelect',
+                selectionChange: '_onSelectionChange',
             },
         },
     ];
@@ -69,15 +71,19 @@ class TableComponent extends ItemGroupPooledComponent {
                 eventKey: this.eventKey,
                 entityKey: this.entityKey,
                 groupField: this.getData('groupField') ?? '',
+                selectable: this.getData('selectable') ?? 'none',
             });
-this._header.on('reorder', (ctx: any) => {
-    this.setData('columns', ctx.data.columns);
-    const metas = this._columnMetaManager?.getAll() ?? [];
-    if (metas.length > 0) {
-        this.rebuildColumnOrders(metas.map(m => m.name));
-        this._setGroupColumnOrderVars();
-    }
-});
+            this._header.on('reorder', (ctx: any) => {
+                this.setData('columns', ctx.data.columns);
+                const metas = this._columnMetaManager?.getAll() ?? [];
+                if (metas.length > 0) {
+                    this.rebuildColumnOrders(metas.map(m => m.name));
+                    this._setGroupColumnOrderVars();
+                }
+            });
+            this._header.on('toggleAll', () => {
+                this.toggleAllSelection();
+            });
             headerArea.appendChild(this._header.el);
         }
 
@@ -87,6 +93,86 @@ this._header.on('reorder', (ctx: any) => {
 
     _onEntityDataChange(): void {
         if (this._isAfterInit) this._reflow();
+    }
+
+    _onSelectableOptionChange(value: TableSelectMode): void {
+        if (value === 'none') {
+            this.clearSelection();
+            return;
+        }
+        this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
+    }
+
+    /**
+     * 行选择事件（RowComponent 冒泡）→ 切换选中
+     */
+    _onRowSelect(data: any): void {
+        if (!data?.key) return;
+        this.toggleSelect(data.key, data.data);
+    }
+
+    /**
+     * 选中变化 — 同步行选中状态 + 表头全选状态，并转发给外部
+     */
+    _onSelectionChange(data: any): void {
+        this._syncRowSelectedStates();
+        this._updateHeaderSelectAllState();
+        this.emit('selectionChanged', data);
+    }
+
+    /**
+     * 收集全部可选行（multiple 模式全选用）
+     */
+    _collectSelectableEntries(): Array<{ key: string; data: any }> {
+        const entries: Array<{ key: string; data: any }> = [];
+        const items = this.items;
+        if (!Array.isArray(items)) return entries;
+        for (const item of items) {
+            const data = item?.getData?.('data');
+            if (!data?._rowKey || data?._selectDisabled) continue;
+            entries.push({ key: data._rowKey, data });
+        }
+        return entries;
+    }
+
+    /**
+     * 全选/清空切换 — multiple 模式
+     */
+    toggleAllSelection(): void {
+        const entries = this._collectSelectableEntries();
+        if (entries.length === 0) return;
+        if (this.getSelectionCount() >= entries.length) {
+            this.clearSelection();
+        } else {
+            this.selectAll(entries);
+        }
+    }
+
+    _syncRowSelectedStates(): void {
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (typeof item.setRowSelected !== 'function') continue;
+            const data = item.getData?.('data');
+            if (!data?._rowKey) continue;
+            const selected = this.isSelected(data._rowKey);
+            Promise.resolve(item.ready).then(() => {
+                if (typeof item.dispose === 'function' && item.isDisposed?.()) return;
+                item.setRowSelected(selected);
+            });
+        }
+    }
+
+    _updateHeaderSelectAllState(): void {
+        if (!this._header || typeof (this._header as any).setSelectAllState !== 'function') return;
+        const selectable = this.getData('selectable');
+        if (selectable !== 'multiple') return;
+        const entries = this._collectSelectableEntries();
+        const selectedCount = entries.filter(e => this.isSelected(e.key)).length;
+        (this._header as any).setSelectAllState(
+            entries.length > 0 && selectedCount === entries.length,
+            selectedCount > 0 && selectedCount < entries.length
+        );
     }
 
     _onColumnResize(data: any): void {
@@ -99,23 +185,23 @@ this._header.on('reorder', (ctx: any) => {
         }
     }
 
-_onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
-    if (!this._columnMetaManager) {
-        this._columnMetaManager = new ColumnMetaManager();
-    }
-    const oldMetas = this._columnMetaManager.getAll();
-    this._columnMetaManager.compile(columns);
-    const isReorderOnly = this._isReorderOnly(oldMetas, this._columnMetaManager.getAll());
-    if (!isReorderOnly) {
-        this._applyColumnStyles();
-    }
-    if (this._isAfterInit) {
+    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+        if (!this._columnMetaManager) {
+            this._columnMetaManager = new ColumnMetaManager();
+        }
+        const oldMetas = this._columnMetaManager.getAll();
+        this._columnMetaManager.compile(columns);
+        const isReorderOnly = this._isReorderOnly(oldMetas, this._columnMetaManager.getAll());
         if (!isReorderOnly) {
-            this._disposeAllItems();
-            this._reflow();
+            this._applyColumnStyles();
+        }
+        if (this._isAfterInit) {
+            if (!isReorderOnly) {
+                this._disposeAllItems();
+                this._reflow();
+            }
         }
     }
-}
 
     _onDataOptionChange(_data: Record<string, any>[]): void {
         if (this._isAfterInit) this._reflow();
@@ -137,6 +223,7 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
             columnMetas: metas,
             eventKey: this.eventKey,
             entityKey: this.entityKey,
+            selectable: this.getData('selectable') ?? 'none',
         };
 
         const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
@@ -151,12 +238,19 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
         super.setItems(items);
         this._buildGroupRowMap(items);
         this._updateSummaryRow();
+        if (this.getData('selectable') !== 'none') {
+            this._syncRowSelectedStates();
+        }
     }
 
     /**
      * 构建 item 数组：分组数据展开为「组行 + 组内行」扁平数组，通过 order 排序。
+     * 每行生成 _rowKey（data.id 优先，fallback 全局计数），用于选择状态管理。
      */
     _buildItems(data: any[], metas: ColumnMeta[]): Record<string, any>[] {
+        let rowIdx = 0;
+        const nextKey = (rowData: any): string =>
+            String(rowData?.id ?? rowData?._rowKey ?? `row-${rowIdx++}`);
         if (this._isGroupedData(data)) {
             const items: Record<string, any>[] = [];
             let order = 1;
@@ -170,12 +264,22 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
                     _groupKey: groupKey,
                 });
                 for (const rowData of group.groupItems ?? []) {
-                    items.push({ data: rowData, columnMetas: metas, order: order++, _groupKey: groupKey });
+                    items.push({
+                        data: rowData,
+                        columnMetas: metas,
+                        order: order++,
+                        _rowKey: nextKey(rowData),
+                        _groupKey: groupKey,
+                    });
                 }
             }
             return items;
         }
-        return data.map((rowData: any) => ({ data: rowData, columnMetas: metas }));
+        return data.map((rowData: any) => ({
+            data: rowData,
+            columnMetas: metas,
+            _rowKey: nextKey(rowData),
+        }));
     }
 
     /** 判断是否为分组数据（[{ groupKey, groupItems }]） */
@@ -325,44 +429,48 @@ _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
                 return '';
         }
     }
-_applyColumnStyles(): void {
-    if (!this._columnMetaManager) return;
-    const metas = this._columnMetaManager.getAll();
-    if (!this.getColumnOrderCount()) {
-        this.initColumnOrder({ useCssVar: true, cssVarPrefix: '--q-table-col-' });
-    }
-    for (let i = 0; i < metas.length; i++) {
-        const meta = metas[i];
-        if (meta.width) {
-            this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
+    _applyColumnStyles(): void {
+        if (!this._columnMetaManager) return;
+        const metas = this._columnMetaManager.getAll();
+        if (!this.getColumnOrderCount()) {
+            this.initColumnOrder({ useCssVar: true, cssVarPrefix: '--q-table-col-' });
         }
-        this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
-    }
-    this._setGroupColumnOrderVars();
-}
-
-_setGroupColumnOrderVars(): void {
-    const columns = this.getData('columns') || [];
-    const step = this.step ?? 100;
-    this._traverseGroupOrders(columns, 0, step);
-}
-
-_traverseGroupOrders(columns: ColumnDefOrGroup[], startLeafIndex: number, step: number): number {
-    let leafIndex = startLeafIndex;
-    for (const col of columns) {
-        if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
-            const group = col as ColumnGroupDef;
-            const childStartLeafIndex = leafIndex;
-            leafIndex = this._traverseGroupOrders(group.children, leafIndex, step);
-            const minOrder = (childStartLeafIndex + 1) * step;
-            const groupOrder = minOrder - Math.floor(step / 2);
-            this.el!.style.setProperty(`--q-table-col-${group.name}-order`, String(groupOrder));
-        } else {
-            leafIndex++;
+        for (let i = 0; i < metas.length; i++) {
+            const meta = metas[i];
+            if (meta.width) {
+                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
+            }
+            this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
         }
+        this._setGroupColumnOrderVars();
     }
-    return leafIndex;
-}
+
+    _setGroupColumnOrderVars(): void {
+        const columns = this.getData('columns') || [];
+        const step = this.step ?? 100;
+        this._traverseGroupOrders(columns, 0, step);
+    }
+
+    _traverseGroupOrders(
+        columns: ColumnDefOrGroup[],
+        startLeafIndex: number,
+        step: number
+    ): number {
+        let leafIndex = startLeafIndex;
+        for (const col of columns) {
+            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+                const group = col as ColumnGroupDef;
+                const childStartLeafIndex = leafIndex;
+                leafIndex = this._traverseGroupOrders(group.children, leafIndex, step);
+                const minOrder = (childStartLeafIndex + 1) * step;
+                const groupOrder = minOrder - Math.floor(step / 2);
+                this.el!.style.setProperty(`--q-table-col-${group.name}-order`, String(groupOrder));
+            } else {
+                leafIndex++;
+            }
+        }
+        return leafIndex;
+    }
 
     _updateItemsColumnMetas(): void {
         const metas = this._columnMetaManager!.getAll();
@@ -431,6 +539,7 @@ const TableComponentDefs: Definitions = {
     options: {
         columns: null,
         groupField: '',
+        selectable: 'none',
     },
     fields: {
         _isAfterInit: false,
@@ -441,7 +550,7 @@ const TableComponentDefs: Definitions = {
     },
 } as const;
 
-TableComponent.use([ColumnOrderAbility]);
+TableComponent.use([ColumnOrderAbility, SelectionAbility]);
 TableComponent.define(TableComponentDefs);
 TableComponent.register();
 

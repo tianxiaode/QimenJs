@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl, DragOptions } from '@qimenjs/component-core';
+import type { TemplateDecl, DragOptions, DomEventsMap } from '@qimenjs/component-core';
 import { DomEventsEngine } from '@/component-core/engine';
 import { Definitions } from '@/composable';
 import { HEADER_CELL_TPL } from './header-cell-tpl';
@@ -23,6 +23,7 @@ const HeaderCellComponentDefs: Definitions = {
         groupable: false,
         groupField: '',
         customMenuItems: null,
+        selectionAll: false,
     },
 } as const;
 
@@ -32,6 +33,10 @@ class HeaderCellComponent extends Component {
     get tpl(): TemplateDecl {
         return HEADER_CELL_TPL;
     }
+
+    domEvents: DomEventsMap = {
+        click: [{ path: 'selectAllBox', handler: '_onSelectAllBoxClick' }],
+    };
 
     drag?: boolean | DragOptions = false;
 
@@ -247,6 +252,32 @@ class HeaderCellComponent extends Component {
         }
     }
 
+    _onSelectionAllOptionChange(value: boolean): void {
+        this.setStyles({ display: value ? '' : 'none' }, 'selectAllBox');
+        if (!value) {
+            this.toggleCls('q-header-cell__select-all--checked', false, 'selectAllBox');
+            this.toggleCls('q-header-cell__select-all--indeterminate', false, 'selectAllBox');
+        }
+    }
+
+    /**
+     * 设置全选状态 — 由 Table 在 selectionChange 后同步
+     *
+     * @param allSelected - 全部选中
+     * @param someSelected - 部分选中（半选）
+     */
+    setSelectAllState(allSelected: boolean, someSelected: boolean): void {
+        if (!this.selectionAll) return;
+        this.toggleCls('q-header-cell__select-all--checked', allSelected, 'selectAllBox');
+        this.toggleCls('q-header-cell__select-all--indeterminate', !allSelected && someSelected, 'selectAllBox');
+    }
+
+    onSelectAllBoxClick(): void {
+        if (!this.selectionAll) return;
+        const allSelected = this.getNodeEl('selectAllBox')?.classList.contains('q-header-cell__select-all--checked');
+        this.componentEmit('toggleAll', { checked: !allSelected });
+    }
+
     get sortState(): SortState {
         return this._sortState;
     }
@@ -354,6 +385,9 @@ class HeaderCellComponent extends Component {
         }
         if (data?.sortState !== undefined) {
             this.sortState = data.sortState;
+        }
+        if (data?.selectionAll !== undefined) {
+            this.setData('selectionAll', data.selectionAll);
         }
     }
 }

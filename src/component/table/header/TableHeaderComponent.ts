@@ -45,9 +45,30 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 reorderStart: { handler: '_onReorderStart' },
                 reorderMove: { handler: '_onReorderMove' },
                 reorderEnd: { handler: '_onReorderEnd' },
+                toggleAll: { handler: '_onToggleAll' },
             },
         },
     ];
+
+    _onToggleAll(data: any): void {
+        this.emit('toggleAll', data);
+    }
+
+    /**
+     * 设置全选状态 — 由 Table 在 selectionChange 后同步
+     *
+     * @param allSelected - 全部选中
+     * @param someSelected - 部分选中（半选）
+     */
+    setSelectAllState(allSelected: boolean, someSelected: boolean): void {
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (item.selectionAll && typeof item.setSelectAllState === 'function') {
+                item.setSelectAllState(allSelected, someSelected);
+            }
+        }
+    }
 
     _findCellAtPosition(clientX: number, clientY: number): any {
         const items = this.items;
@@ -217,55 +238,55 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-_onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
-    const items = columns.map(col => this._buildItemData(col));
-    this.setItems(items);
-    this._registerColumnOrders();
-}
-
-_registerColumnOrders(): void {
-    if (!this.getColumnOrderCount()) {
-        this.initColumnOrder({ useCssVar: false, step: this.step });
-    }
-    const columns = this.columns;
-    if (!Array.isArray(columns)) return;
-
-    const leafNames = this._collectLeafNames(columns);
-    const leafIndexMap = new Map<string, number>();
-    for (let i = 0; i < leafNames.length; i++) {
-        leafIndexMap.set(leafNames[i], i);
+    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+        const items = columns.map(col => this._buildItemData(col));
+        this.setItems(items);
+        this._registerColumnOrders();
     }
 
-    const items = this.items;
-    if (!Array.isArray(items)) return;
+    _registerColumnOrders(): void {
+        if (!this.getColumnOrderCount()) {
+            this.initColumnOrder({ useCssVar: false, step: this.step });
+        }
+        const columns = this.columns;
+        if (!Array.isArray(columns)) return;
 
-    for (const item of items) {
-        if (!item?.el) continue;
-        const colName = item.colName || item.action;
-        if (!colName) continue;
+        const leafNames = this._collectLeafNames(columns);
+        const leafIndexMap = new Map<string, number>();
+        for (let i = 0; i < leafNames.length; i++) {
+            leafIndexMap.set(leafNames[i], i);
+        }
 
-        if (item.type === 'group-header-cell') {
-            const childLeafNames: string[] = item.childNames || [];
-            const childIndices = childLeafNames
-                .map((n: string) => leafIndexMap.get(n))
-                .filter((i: number | undefined) => i !== undefined) as number[];
-            if (childIndices.length > 0) {
-                const minLeafIndex = Math.min(...childIndices);
-                const step = this.step ?? 100;
-                const groupOrder = (minLeafIndex + 1) * step - Math.floor(step / 2);
-                this.registerColumnEntry(colName, item, minLeafIndex, {
-                    isLeaf: false,
-                    order: groupOrder,
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+
+        for (const item of items) {
+            if (!item?.el) continue;
+            const colName = item.colName || item.action;
+            if (!colName) continue;
+
+            if (item.type === 'group-header-cell') {
+                const childLeafNames: string[] = item.childNames || [];
+                const childIndices = childLeafNames
+                    .map((n: string) => leafIndexMap.get(n))
+                    .filter((i: number | undefined) => i !== undefined) as number[];
+                if (childIndices.length > 0) {
+                    const minLeafIndex = Math.min(...childIndices);
+                    const step = this.step ?? 100;
+                    const groupOrder = (minLeafIndex + 1) * step - Math.floor(step / 2);
+                    this.registerColumnEntry(colName, item, minLeafIndex, {
+                        isLeaf: false,
+                        order: groupOrder,
+                    });
+                }
+            } else {
+                const leafIndex = leafIndexMap.get(colName) ?? 0;
+                this.registerColumnEntry(colName, item, leafIndex, {
+                    isLeaf: true,
                 });
             }
-        } else {
-            const leafIndex = leafIndexMap.get(colName) ?? 0;
-            this.registerColumnEntry(colName, item, leafIndex, {
-                isLeaf: true,
-            });
         }
     }
-}
 
     _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
         const hideableColumns = this._collectHideableColumns();
@@ -286,20 +307,22 @@ _registerColumnOrders(): void {
             };
         }
         const leaf = col as ColumnDef;
+        const isSelectionCol = !!leaf.selection && this.getData('selectable') === 'multiple';
         return {
             type: 'header-cell',
             colName: leaf.name,
-            title: leaf.title,
+            title: isSelectionCol ? null : leaf.title,
             align: 'center',
-            sortable: leaf.sortable ?? false,
+            sortable: isSelectionCol ? false : leaf.sortable ?? false,
             resizable: leaf.resizable ?? true,
             reorderable: leaf.reorderable ?? false,
             action: leaf.name,
             minWidth: leaf.minWidth ?? 50,
             hideableColumns,
-            groupable: leaf.groupable ?? false,
+            groupable: isSelectionCol ? false : leaf.groupable ?? false,
             groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
+            selectionAll: isSelectionCol,
             eventKey,
         };
     }
@@ -378,6 +401,11 @@ _registerColumnOrders(): void {
             resizeHandleEl &&
             (resizeHandleEl === clickTarget || resizeHandleEl.contains(clickTarget))
         ) {
+            return;
+        }
+
+        const selectAllEl = target.getNodeEl?.('selectAllBox');
+        if (selectAllEl && (selectAllEl === clickTarget || selectAllEl.contains(clickTarget))) {
             return;
         }
 

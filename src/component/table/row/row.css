@@ -107,3 +107,7 @@
     font-size: 12px;
     margin-top: 4px;
 }
+
+.q-table-row--selectable {
+    cursor: pointer;
+}
