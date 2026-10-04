@@ -51,7 +51,7 @@ function emitChange(self: any, state: SelectionState, lastKey: string | null): v
         data: [...state.selected.values()],
         lastKey,
     };
-    self.emit('selectionChange', change);
+    self.componentEmit('selectionChange', change);
 }
 
 export const SelectionAbility = {

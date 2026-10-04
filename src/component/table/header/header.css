@@ -105,6 +105,11 @@
     cursor: pointer;
     flex-shrink: 0;
     color: var(--q-color-text-secondary, #909399);
+    display: none;
+}
+
+.q-header-cell:hover .q-header-cell__menu-icon {
+    display: inline-flex;
 }
 
 .q-header-cell__menu-icon:hover {

@@ -219,7 +219,7 @@ _createCell(meta: ColumnMeta, index: number): any {
         if (this.selectable === 'none') return;
         const data = this.getData('data');
         if (!data || data._selectDisabled) return;
-        this.emit('rowSelect', { key: data._rowKey, data });
+        this.componentEmit('rowSelect', { key: data._rowKey, data });
     }
 
     /**

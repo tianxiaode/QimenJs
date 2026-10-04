@@ -322,6 +322,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             groupable: isSelectionCol ? false : leaf.groupable ?? false,
             groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
+            menuDisabled: isSelectionCol,
             selectionAll: isSelectionCol,
             eventKey,
         };
