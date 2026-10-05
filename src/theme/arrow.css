@@ -102,6 +102,9 @@
     height: var(--q-arrow-size, 6px);
     font-size: 0;
     box-sizing: border-box;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
 }
 
 .q-caret--top {

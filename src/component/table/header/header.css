@@ -48,7 +48,7 @@
     height: 0;
     vertical-align: middle;
     border-style: solid;
-    opacity: 0.4;
+    opacity: 0.5;
 }
 
 .q-header-cell__sort--none {
@@ -56,13 +56,13 @@
 }
 
 .q-header-cell__sort--asc {
-    border-width: 0 4px 5px 4px;
-    border-color: transparent transparent var(--q-color-primary, #0078d4) transparent;
+    border-width: 0 5px 6px 5px;
+    border-color: transparent transparent currentColor transparent;
 }
 
 .q-header-cell__sort--desc {
-    border-width: 5px 4px 0 4px;
-    border-color: var(--q-color-primary, #0078d4) transparent transparent transparent;
+    border-width: 6px 5px 0 5px;
+    border-color: currentColor transparent transparent transparent;
 }
 
 .q-header-cell--sortable .q-header-cell__content {
