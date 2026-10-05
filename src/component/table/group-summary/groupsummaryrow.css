@@ -7,21 +7,18 @@
 .q-table-row--group-summary::before {
     content: '';
     display: inline-block;
-    width: 0;
-    height: 0;
+    width: 6px;
+    height: 6px;
     margin-left: 8px;
     margin-right: 6px;
     vertical-align: middle;
-    border-style: solid;
-    border-width: 5px 4px 0 4px;
-    border-color: var(--q-table-group-summary-icon-color, #999) transparent transparent transparent;
+    border-right: 1.5px solid var(--q-table-group-summary-icon-color, #999);
+    border-bottom: 1.5px solid var(--q-table-group-summary-icon-color, #999);
+    transform: rotate(45deg);
     transition: transform 0.2s ease;
+    box-sizing: border-box;
 }
 
 .q-table-row--group-summary.q-table-row--collapsed::before {
-    transform: rotate(-90deg);
-}
-
-.q-table-row--group-summary:not(.q-table-row--collapsed)::before {
-    transform: rotate(0deg);
+    transform: rotate(-45deg);
 }

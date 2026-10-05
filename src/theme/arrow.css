@@ -82,12 +82,26 @@
 
 .q-caret {
     display: inline-block;
-    width: 0;
-    height: 0;
+    width: var(--q-arrow-size, 6px);
+    height: var(--q-arrow-size, 6px);
     vertical-align: middle;
-    border-style: solid;
-    border-width: var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) 0 var(--q-arrow-size, 6px);
-    border-color: currentColor transparent transparent transparent;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    box-sizing: border-box;
+}
+
+.q-caret--top {
+    transform: rotate(-135deg);
+}
+
+.q-button__arrow.q-caret,
+.q-icon.q-caret {
+    display: inline-block;
+    width: var(--q-arrow-size, 6px);
+    height: var(--q-arrow-size, 6px);
+    font-size: 0;
+    box-sizing: border-box;
 }
 
 .q-caret--top {
