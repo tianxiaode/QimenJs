@@ -204,27 +204,14 @@ class RowSelectDemo extends Component {
         const table = this.getComponent('table');
         super.onAfterInit();
         if (btnGroup) {
-            const container = btnGroup.getNodeEl?.('itemContainer');
-            console.log('[RowSelectDemo] itemContainer:', !!container, container?.tagName, container?.childElementCount);
-            for (let i = 0; i < btnGroup.count; i++) {
-                const btn = btnGroup.getAt?.(i);
-                console.log(`[RowSelectDemo] btn[${i}]:`, {
-                    exists: !!btn,
-                    hasEl: !!btn?.el,
-                    elTag: btn?.el?.tagName,
-                    elConnected: btn?.el?.isConnected,
-                    text: btn?.text,
-                    pressed: btn?.pressed,
-                });
-            }
+            const btn0 = btnGroup.getAt?.(0);
+            const btn1 = btnGroup.getAt?.(1);
+            console.error('[RowSelectDemo] btn0.el:', !!btn0?.el, 'connected:', btn0?.el?.isConnected, 'tag:', btn0?.el?.tagName);
+            console.error('[RowSelectDemo] btn1.el:', !!btn1?.el, 'connected:', btn1?.el?.isConnected, 'tag:', btn1?.el?.tagName);
             btnGroup.on('select', (data: any) => {
-                console.log('[RowSelectDemo] select event!', data);
-                if (table) {
-                    table.selectable = data.index === 0 ? 'single' : 'multiple';
-                }
+                console.error('[RowSelectDemo] select!', data);
+                if (table) table.selectable = data.index === 0 ? 'single' : 'multiple';
             });
-        } else {
-            console.warn('[RowSelectDemo] btnGroup not found!');
         }
     }
 
