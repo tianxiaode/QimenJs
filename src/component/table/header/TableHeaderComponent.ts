@@ -446,6 +446,21 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         return null;
     }
 
+    _getAllCells(): any[] {
+        const items = this.items;
+        if (!Array.isArray(items)) return [];
+        const cells: any[] = [];
+        for (const item of items) {
+            cells.push(item);
+            if (Array.isArray(item._childCells) && item._childCells.length > 0) {
+                for (const childCell of item._childCells) {
+                    cells.push(childCell.component);
+                }
+            }
+        }
+        return cells;
+    }
+
     _onHeaderCellClick(domEvt: any): void {
         const target = domEvt?.targetComponent;
         if (!target) return;
@@ -576,35 +591,26 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     _updateCellGroupField(groupField: string): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                if (typeof item.setData === 'function') {
-                    item.setData('groupField', groupField);
-                }
+        for (const item of this._getAllCells()) {
+            if (typeof item.setData === 'function') {
+                item.setData('groupField', groupField);
             }
         }
     }
 
     _updateCellHideableColumns(): void {
         const hideableColumns = this._collectHideableColumns();
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                if (typeof item.setData === 'function') {
-                    item.setData('hideableColumns', hideableColumns);
-                }
+        for (const item of this._getAllCells()) {
+            if (typeof item.setData === 'function') {
+                item.setData('hideableColumns', hideableColumns);
             }
         }
     }
 
     _applySort(colName: string, direction: 'asc' | 'desc' | 'none'): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                if (typeof item.setData === 'function') {
-                    item.setData('sortState', item.action === colName ? direction : 'none');
-                }
+        for (const item of this._getAllCells()) {
+            if (typeof item.setData === 'function') {
+                item.setData('sortState', item.action === colName ? direction : 'none');
             }
         }
         this.setData('sortBy', colName);
@@ -612,25 +618,19 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     hideColumn(name: string): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                if (item.action === name || item.colName === name) {
-                    item.hidden = true;
-                    break;
-                }
+        for (const item of this._getAllCells()) {
+            if (item.action === name || item.colName === name) {
+                item.hidden = true;
+                break;
             }
         }
     }
 
     showColumn(name: string): void {
-        const items = this.items;
-        if (Array.isArray(items)) {
-            for (const item of items) {
-                if (item.action === name || item.colName === name) {
-                    item.hidden = false;
-                    break;
-                }
+        for (const item of this._getAllCells()) {
+            if (item.action === name || item.colName === name) {
+                item.hidden = false;
+                break;
             }
         }
     }
