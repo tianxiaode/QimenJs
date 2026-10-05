@@ -19,7 +19,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     }
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onHeaderCellClick' }],
+        click: [{ path: '[items],[items].{header-cell}', handler: '_onHeaderCellClick' }],
     };
 
     _groupField: string = '';

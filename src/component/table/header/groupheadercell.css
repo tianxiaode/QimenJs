@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    padding-right: 0;
 }
 
 .q-header-cell__group-body {
