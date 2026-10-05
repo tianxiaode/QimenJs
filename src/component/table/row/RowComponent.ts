@@ -178,15 +178,18 @@ class RowComponent extends Component {
 
     hideColumn(name: string): void {
         const cell = this._cells.get(name);
+        console.log('[hide-col] Row.hideColumn', this.getData('_rowKey'), name, 'cellFound=', !!cell);
         if (cell) cell.hidden = true;
     }
 
     showColumn(name: string): void {
         const cell = this._cells.get(name);
+        console.log('[hide-col] Row.showColumn', this.getData('_rowKey'), name, 'cellFound=', !!cell);
         if (cell) cell.hidden = false;
     }
 
     onHideColumn(data: any): void {
+        console.log('[hide-col] Row.onHideColumn', this.getData('_rowKey'), 'data=', JSON.stringify(data));
         this.hideColumn(data.colName);
     }
 
