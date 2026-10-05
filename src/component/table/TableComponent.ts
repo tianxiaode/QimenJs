@@ -51,6 +51,8 @@ class TableComponent extends ItemGroupPooledComponent {
             events: {
                 resize: '_onColumnResize',
                 groupToggle: 'onGroupToggle',
+                hideColumn: '_onHideColumn',
+                showColumn: '_onShowColumn',
             },
         },
     ];
@@ -532,6 +534,26 @@ class TableComponent extends ItemGroupPooledComponent {
 
     showColumn(name: string): void {
         this.componentEmit('showColumn', { colName: name });
+    }
+
+    _onHideColumn(data: any): void {
+        const colName = data?.colName;
+        if (!colName) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (typeof item.hideColumn === 'function') item.hideColumn(colName);
+        }
+    }
+
+    _onShowColumn(data: any): void {
+        const colName = data?.colName;
+        if (!colName) return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (const item of items) {
+            if (typeof item.showColumn === 'function') item.showColumn(colName);
+        }
     }
 
     moveColumn(from: number, to: number): void {

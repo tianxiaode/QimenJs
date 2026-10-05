@@ -542,18 +542,16 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     _onHideColumn(data: any): void {
         const actionData = data?.actionData ?? data;
         const colName = actionData.colName;
-        console.log('[hide-col] Header._onHideColumn', colName, 'data=', JSON.stringify(data));
         const columns = this.columns;
         if (Array.isArray(columns)) {
             const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
                 | ColumnDef
                 | undefined;
             if (col) {
-                if (col.hidden) { console.log('[hide-col] Header skip (already hidden)'); return; }
+                if (col.hidden) return;
                 col.hidden = true;
                 this.hideColumn(colName);
                 this._updateCellHideableColumns();
-                console.log('[hide-col] Header emit hideColumn', colName);
                 this.componentEmit('hideColumn', { colName });
             }
         }
@@ -562,18 +560,16 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
     _onShowColumn(data: any): void {
         const actionData = data?.actionData ?? data;
         const colName = actionData.colName;
-        console.log('[hide-col] Header._onShowColumn', colName, 'data=', JSON.stringify(data));
         const columns = this.columns;
         if (Array.isArray(columns)) {
             const col = columns.find((c: any) => c.name === colName && !('children' in c)) as
                 | ColumnDef
                 | undefined;
             if (col) {
-                if (!col.hidden) { console.log('[hide-col] Header skip (already shown)'); return; }
+                if (!col.hidden) return;
                 col.hidden = false;
                 this.showColumn(colName);
                 this._updateCellHideableColumns();
-                console.log('[hide-col] Header emit showColumn', colName);
                 this.componentEmit('showColumn', { colName });
             }
         }
