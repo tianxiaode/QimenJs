@@ -80,10 +80,11 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             const childProps: any = {
                 colName: config.colName,
                 title: config.title,
-                align: config.align,
+                align: 'center',
                 minWidth: config.minWidth,
                 order: `var(--q-table-col-${config.colName}-order)`,
                 eventKey,
+                action: config.colName,
             };
 
             if (config.type === 'leaf') {
