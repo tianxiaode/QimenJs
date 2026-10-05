@@ -202,15 +202,8 @@ class RowSelectDemo extends Component {
     onAfterInit(): void {
         const btnGroup = this.getComponent('btnGroup');
         const table = this.getComponent('table');
-        console.log('[RowSelectDemo] onAfterInit', {
-            btnGroup: !!btnGroup,
-            btnGroupType: btnGroup?.constructor?.type,
-            table: !!table,
-            childNames: this.getChildComponentNames?.(),
-        });
         super.onAfterInit();
         if (btnGroup) {
-            console.log('[RowSelectDemo] binding select on btnGroup');
             btnGroup.on('select', (data: any) => {
                 console.log('[RowSelectDemo] btnGroup select event', data);
                 if (data.index === 0) {
@@ -220,7 +213,19 @@ class RowSelectDemo extends Component {
                 }
             });
             console.log('[RowSelectDemo] btnGroup count:', btnGroup.count);
-            console.log('[RowSelectDemo] btnGroup items:', btnGroup.items?.length);
+            if (btnGroup.el) {
+                btnGroup.el.addEventListener('click', (e) => {
+                    console.log('[RowSelectDemo] btnGroup DOM click', e.target);
+                });
+            }
+            for (let i = 0; i < btnGroup.count; i++) {
+                const btn = btnGroup.getAt?.(i);
+                if (btn?.el) {
+                    btn.el.addEventListener('click', (e) => {
+                        console.log(`[RowSelectDemo] btn[${i}] DOM click`, btn.pressed);
+                    });
+                }
+            }
         } else {
             console.warn('[RowSelectDemo] btnGroup not found!');
         }
