@@ -107,16 +107,4 @@
     transform: rotate(45deg);
 }
 
-.q-caret--top {
-    border-width: 0 var(--q-arrow-size, 6px) var(--q-arrow-size, 6px) var(--q-arrow-size, 6px);
-    border-color: transparent transparent currentColor transparent;
-}
 
-/* 覆盖宿主基础样式（button 的 dropIcon / icon 的 i 元素），保证三角形态稳定 */
-.q-button__arrow.q-caret,
-.q-icon.q-caret {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    font-size: 0;
-}
