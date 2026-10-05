@@ -300,10 +300,9 @@ class TableComponent extends ItemGroupPooledComponent {
                 });
                 for (const rowData of group.groupItems ?? []) {
                     items.push({
-                        data: rowData,
+                        data: { ...rowData, _rowKey: nextKey(rowData) },
                         columnMetas: metas,
                         order: order++,
-                        _rowKey: nextKey(rowData),
                         _groupKey: groupKey,
                     });
                 }
@@ -311,9 +310,8 @@ class TableComponent extends ItemGroupPooledComponent {
             return items;
         }
         return data.map((rowData: any) => ({
-            data: rowData,
+            data: { ...rowData, _rowKey: nextKey(rowData) },
             columnMetas: metas,
-            _rowKey: nextKey(rowData),
         }));
     }
 
