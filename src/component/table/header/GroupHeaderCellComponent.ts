@@ -112,6 +112,16 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         }
     }
 
+    _adoptChildCells(cells: any[]): void {
+        const container = this.getNodeEl('children');
+        if (!container) return;
+        for (const cell of cells) {
+            this._childCells.push({ component: cell, el: cell.el as HTMLElement });
+            (this.childComponentList = this.childComponentList ?? []).push(cell);
+            container.appendChild(cell.el);
+        }
+    }
+
     _onResizeDrag(domEvt: any): void {
         if (!this.resizable || this.childNames.length === 0) return;
         const phase = domEvt?.data?.phase;
