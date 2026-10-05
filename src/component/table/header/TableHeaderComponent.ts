@@ -548,9 +548,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 | ColumnDef
                 | undefined;
             if (col) {
+                if (col.hidden) return;
                 col.hidden = true;
                 this.hideColumn(colName);
                 this._updateCellHideableColumns();
+                this.componentEmit('hideColumn', { colName });
             }
         }
     }
@@ -564,9 +566,11 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 | ColumnDef
                 | undefined;
             if (col) {
+                if (!col.hidden) return;
                 col.hidden = false;
                 this.showColumn(colName);
                 this._updateCellHideableColumns();
+                this.componentEmit('showColumn', { colName });
             }
         }
     }

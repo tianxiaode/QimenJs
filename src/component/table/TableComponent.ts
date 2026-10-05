@@ -527,15 +527,11 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     hideColumn(name: string): void {
-        if (this._header && typeof this._header.hideColumn === 'function') {
-            this._header.hideColumn(name);
-        }
+        this.componentEmit('hideColumn', { colName: name });
     }
 
     showColumn(name: string): void {
-        if (this._header && typeof this._header.showColumn === 'function') {
-            this._header.showColumn(name);
-        }
+        this.componentEmit('showColumn', { colName: name });
     }
 
     moveColumn(from: number, to: number): void {
