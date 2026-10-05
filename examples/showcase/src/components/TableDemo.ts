@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl } from '@qimenjs/component-core';
+import { Component, ListenItem, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 import '@/component/table/row/row.css';
@@ -18,11 +18,39 @@ const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
         name: 'baseInfo',
         title: '基本信息',
         children: [
-            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true, reorderable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, groupAggregator: 'label', reorderable: true },
+            {
+                name: 'age',
+                field: 'age',
+                title: '年龄',
+                width: 80,
+                align: 'right',
+                sortable: true,
+                reorderable: true,
+            },
+            {
+                name: 'dept',
+                field: 'dept',
+                title: '部门',
+                width: 120,
+                align: 'center',
+                sortable: true,
+                groupable: true,
+                groupAggregator: 'label',
+                reorderable: true,
+            },
         ],
     },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, groupAggregator: 'sum', reorderable: true },
+    {
+        name: 'salary',
+        field: 'salary',
+        title: '薪资',
+        width: 120,
+        align: 'right',
+        format: 'currency',
+        sortable: true,
+        groupAggregator: 'sum',
+        reorderable: true,
+    },
 ];
 
 const SUMMARY_DATA = [
@@ -33,11 +61,50 @@ const SUMMARY_DATA = [
 ];
 
 const SUMMARY_COLUMNS: ColumnDefOrGroup[] = [
-    { name: 'product', field: 'product', title: '产品', width: 140, sortable: true, summary: { label: '合计' } },
-    { name: 'q1', field: 'q1', title: 'Q1', width: 100, align: 'right', sortable: true, summary: { aggregator: 'sum' } },
-    { name: 'q2', field: 'q2', title: 'Q2', width: 100, align: 'right', sortable: true, summary: { aggregator: 'sum' } },
-    { name: 'q3', field: 'q3', title: 'Q3', width: 100, align: 'right', sortable: true, summary: { aggregator: 'sum' } },
-    { name: 'q4', field: 'q4', title: 'Q4', width: 100, align: 'right', sortable: true, summary: { aggregator: 'sum' } },
+    {
+        name: 'product',
+        field: 'product',
+        title: '产品',
+        width: 140,
+        sortable: true,
+        summary: { label: '合计' },
+    },
+    {
+        name: 'q1',
+        field: 'q1',
+        title: 'Q1',
+        width: 100,
+        align: 'right',
+        sortable: true,
+        summary: { aggregator: 'sum' },
+    },
+    {
+        name: 'q2',
+        field: 'q2',
+        title: 'Q2',
+        width: 100,
+        align: 'right',
+        sortable: true,
+        summary: { aggregator: 'sum' },
+    },
+    {
+        name: 'q3',
+        field: 'q3',
+        title: 'Q3',
+        width: 100,
+        align: 'right',
+        sortable: true,
+        summary: { aggregator: 'sum' },
+    },
+    {
+        name: 'q4',
+        field: 'q4',
+        title: 'Q4',
+        width: 100,
+        align: 'right',
+        sortable: true,
+        summary: { aggregator: 'sum' },
+    },
 ];
 
 const CHECKBOX_SELECT_COLUMNS: ColumnDefOrGroup[] = [
@@ -45,7 +112,14 @@ const CHECKBOX_SELECT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    {
+        name: 'salary',
+        field: 'salary',
+        title: '薪资',
+        width: 120,
+        align: 'right',
+        format: 'currency',
+    },
 ];
 
 const RADIO_SELECT_COLUMNS: ColumnDefOrGroup[] = [
@@ -53,7 +127,14 @@ const RADIO_SELECT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    {
+        name: 'salary',
+        field: 'salary',
+        title: '薪资',
+        width: 120,
+        align: 'right',
+        format: 'currency',
+    },
 ];
 
 const DISABLED_SELECT_DATA = [
@@ -68,7 +149,14 @@ const ROW_CLICK_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    {
+        name: 'salary',
+        field: 'salary',
+        title: '薪资',
+        width: 120,
+        align: 'right',
+        format: 'currency',
+    },
 ];
 
 class RowSelectDemo extends Component {
@@ -102,19 +190,37 @@ class RowSelectDemo extends Component {
         };
     }
 
+    listens?: ListenItem[] | undefined = [
+        { node: 'btnGroup', events: { select: '_onToggelSelectMode' } },
+    ];
+
     onAfterInit(): void {
         super.onAfterInit();
         const btnGroup = this.getComponent('btnGroup');
+        const table = this.getComponent('table');
+        console.log('[RowSelectDemo] onAfterInit', {
+            btnGroup: !!btnGroup,
+            btnGroupType: btnGroup?.constructor?.type,
+            table: !!table,
+            tableType: table?.constructor?.type,
+            childNames: this.getChildComponentNames?.(),
+            listens: this.listens,
+        });
         if (btnGroup) {
             btnGroup.on('select', (data: any) => {
-                const table = this.getComponent('table');
-                if (!table) return;
-                if (data.index === 0) {
-                    table.selectable = 'single';
-                } else if (data.index === 1) {
-                    table.selectable = 'multiple';
-                }
+                console.log('[RowSelectDemo] btnGroup.on(select)', data);
             });
+        }
+    }
+
+    _onToggelSelectMode(data: any) {
+        console.log('[RowSelectDemo] _onToggelSelectMode', data);
+        const table = this.getComponent('table');
+        if (!table) return;
+        if (data.index === 0) {
+            table.selectable = 'single';
+        } else if (data.index === 1) {
+            table.selectable = 'multiple';
         }
     }
 }
