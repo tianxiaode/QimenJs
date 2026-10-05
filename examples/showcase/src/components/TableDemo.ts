@@ -205,9 +205,14 @@ class RowSelectDemo extends Component {
         super.onAfterInit();
         if (btnGroup) {
             const btn0 = btnGroup.getAt?.(0);
-            const btn1 = btnGroup.getAt?.(1);
-            console.error('[RowSelectDemo] btn0.el:', !!btn0?.el, 'connected:', btn0?.el?.isConnected, 'tag:', btn0?.el?.tagName);
-            console.error('[RowSelectDemo] btn1.el:', !!btn1?.el, 'connected:', btn1?.el?.isConnected, 'tag:', btn1?.el?.tagName);
+            console.error('[RowSelectDemo] btn0:', {
+                type: btn0?.constructor?.type,
+                name: btn0?.constructor?.name,
+                hasEl: !!btn0?.el,
+                hasTpl: typeof btn0?.tpl,
+                text: btn0?.text,
+                keys: Object.keys(btn0 || {}).slice(0, 10),
+            });
             btnGroup.on('select', (data: any) => {
                 console.error('[RowSelectDemo] select!', data);
                 if (table) table.selectable = data.index === 0 ? 'single' : 'multiple';
