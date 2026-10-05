@@ -160,6 +160,10 @@ const ROW_CLICK_COLUMNS: ColumnDefOrGroup[] = [
 ];
 
 class RowSelectDemo extends Component {
+    onBeforeInit(): void {
+        console.log('[RowSelectDemo] onBeforeInit');
+    }
+
     get tpl(): TemplateDecl {
         console.log('[RowSelectDemo] tpl getter called');
         return {
@@ -196,7 +200,12 @@ class RowSelectDemo extends Component {
     ];
 
     onAfterInit(): void {
-        super.onAfterInit();
+        console.log('[RowSelectDemo] onAfterInit START');
+        try {
+            super.onAfterInit();
+        } catch (e) {
+            console.error('[RowSelectDemo] super.onAfterInit error', e);
+        }
         const btnGroup = this.getComponent('btnGroup');
         const table = this.getComponent('table');
         console.log('[RowSelectDemo] onAfterInit', {
