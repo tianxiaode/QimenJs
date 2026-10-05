@@ -85,8 +85,8 @@
     width: var(--q-arrow-size, 6px);
     height: var(--q-arrow-size, 6px);
     vertical-align: middle;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
     transform: rotate(45deg);
     box-sizing: border-box;
 }

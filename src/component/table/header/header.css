@@ -111,7 +111,6 @@
     justify-content: center;
     cursor: pointer;
     z-index: 1;
-    --q-arrow-size: 4px;
 }
 
 .q-header-cell:hover > .q-header-cell__menu-area {

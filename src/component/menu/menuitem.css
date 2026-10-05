@@ -63,8 +63,7 @@
 }
 
 .q-menu:not(.q-menu--horizontal) .q-expand-arrow i {
-    border-width: var(--q-arrow-size, 6px) 0 var(--q-arrow-size, 6px) var(--q-arrow-size, 6px);
-    border-color: transparent transparent transparent currentColor;
+    transform: rotate(-45deg);
 }
 
 .q-menu-back-icon::before {
