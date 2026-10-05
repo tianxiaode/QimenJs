@@ -1,4 +1,5 @@
-import type { DemoConfig } from './types';
+import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import type { DemoConfig, DemoSection } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
@@ -62,6 +63,66 @@ const DISABLED_SELECT_DATA = [
     { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部', _selectDisabled: true },
     { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部' },
 ];
+
+const ROW_CLICK_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'name', field: 'name', title: '姓名', width: 120 },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+];
+
+class RowSelectDemo extends Component {
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-demo__row',
+                    children: [
+                        { type: 'button', name: 'singleBtn', options: { text: '单选', pressed: true, size: 'sm' } },
+                        { type: 'button', name: 'multiBtn', options: { text: '多选', size: 'sm' } },
+                    ],
+                },
+                {
+                    type: 'table',
+                    name: 'table',
+                    options: {
+                        columns: ROW_CLICK_COLUMNS,
+                        data: TABLE_DATA,
+                        selectable: 'single',
+                    },
+                },
+            ],
+        };
+    }
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'singleBtn', handler: '_onSingleClick' },
+            { path: 'multiBtn', handler: '_onMultiClick' },
+        ],
+    };
+
+    _onSingleClick(): void {
+        const table = this.getComponent('table');
+        const singleBtn = this.getComponent('singleBtn');
+        const multiBtn = this.getComponent('multiBtn');
+        if (table) table.selectable = 'single';
+        if (singleBtn) singleBtn.pressed = true;
+        if (multiBtn) multiBtn.pressed = false;
+    }
+
+    _onMultiClick(): void {
+        const table = this.getComponent('table');
+        const singleBtn = this.getComponent('singleBtn');
+        const multiBtn = this.getComponent('multiBtn');
+        if (table) table.selectable = 'multiple';
+        if (singleBtn) singleBtn.pressed = false;
+        if (multiBtn) multiBtn.pressed = true;
+    }
+}
 
 export const TABLE_DEMO: DemoConfig = {
     title: 'Table',
@@ -202,26 +263,8 @@ export const TABLE_DEMO: DemoConfig = {
 // selectable: 'single' — 单选模式，无需选择列
 // 点击行即可选中，选中行高亮显示
 // 也可设为 'multiple' 支持多选`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__column',
-                children: [
-                    {
-                        type: 'table',
-                        options: {
-                            columns: [
-                                { name: 'name', field: 'name', title: '姓名', width: 120 },
-                                { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
-                                { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-                                { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
-                            ],
-                            data: TABLE_DATA,
-                            selectable: 'single',
-                        },
-                    },
-                ],
-            },
-        },
+            component: RowSelectDemo,
+        } satisfies DemoSection,
         {
             label: '禁选行',
             code: `{ type: 'table', options: {
