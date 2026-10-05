@@ -1,4 +1,4 @@
-.q-header-cell--group {
+.q-header-cell.q-header-cell--group {
     display: flex;
     flex-direction: column;
     align-items: stretch;

@@ -110,26 +110,6 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             (this.childComponentList = this.childComponentList ?? []).push(instance);
             container.appendChild(instance.el);
         }
-        this._applyChildCellPadding();
-    }
-
-    _applyChildCellPadding(): void {
-        for (const { el } of this._childCells) {
-            if (el) {
-                el.style.paddingRight = '0';
-            }
-        }
-    }
-
-    _adoptChildCells(cells: any[]): void {
-        const container = this.getNodeEl('children');
-        if (!container) return;
-        for (const cell of cells) {
-            this._childCells.push({ component: cell, el: cell.el as HTMLElement });
-            (this.childComponentList = this.childComponentList ?? []).push(cell);
-            container.appendChild(cell.el);
-        }
-        this._applyChildCellPadding();
     }
 
     _onResizeDrag(domEvt: any): void {
