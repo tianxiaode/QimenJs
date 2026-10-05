@@ -28,6 +28,7 @@ const GroupHeaderCellComponentDefs: Definitions = {
     fields: {
         childNames: [],
         childConfigs: undefined,
+        childCells: undefined,
     },
 } as const;
 
@@ -46,7 +47,12 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         this.addCls('q-header-cell--group');
         this._applyGroupWidth();
         this._applyResizable();
-        if (this.childConfigs) this._createChildren(this.childConfigs);
+        if (this.childCells && this.childCells.length > 0) {
+            this._adoptChildCells(this.childCells);
+        } else if (this.childConfigs) {
+            this._createChildren(this.childConfigs);
+        }
+        this.onCleanup(() => this._destroyChildren());
     }
 
     _applySortIcon(): void {
@@ -106,6 +112,16 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         }
     }
 
+    _adoptChildCells(cells: any[]): void {
+        const container = this.getNodeEl('children');
+        if (!container) return;
+        for (const cell of cells) {
+            this._childCells.push({ component: cell, el: cell.el as HTMLElement });
+            (this.childComponentList = this.childComponentList ?? []).push(cell);
+            container.appendChild(cell.el);
+        }
+    }
+
     _onResizeDrag(domEvt: any): void {
         if (!this.resizable || this.childNames.length === 0) return;
         const phase = domEvt?.data?.phase;
@@ -143,7 +159,10 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         if (data?.title !== undefined) {
             this.setData('title', data.title);
         }
-        if (data?.childConfigs !== undefined) {
+        if (data?.childCells !== undefined) {
+            this._destroyChildren();
+            this._adoptChildCells(data.childCells);
+        } else if (data?.childConfigs !== undefined) {
             const oldConfigs = this.childConfigs;
             const newConfigs = data.childConfigs;
             const changed =

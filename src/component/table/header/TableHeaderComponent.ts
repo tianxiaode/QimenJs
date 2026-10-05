@@ -4,6 +4,8 @@ import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-type
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
 import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { HeaderCellComponent } from './HeaderCellComponent';
+import { GroupHeaderCellComponent } from './GroupHeaderCellComponent';
 import './header.css';
 
 class TableHeaderComponent extends ItemGroupPooledComponent {
@@ -244,14 +246,16 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
             const group = col as ColumnGroupDef;
             const childNames = this._collectLeafNames(group.children);
-            const childConfigs = group.children.map(child => this._buildChildConfig(child));
+            const childCells = group.children.map(child =>
+                this._createChildCell(child, eventKey, hideableColumns)
+            );
             return {
                 type: 'group-header-cell',
                 colName: group.name,
                 title: group.title,
                 action: group.name,
                 childNames,
-                childConfigs,
+                childCells,
                 hideableColumns,
                 eventKey,
             };
@@ -276,6 +280,48 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             selectionAll: isSelectionCol,
             eventKey,
         };
+    }
+
+    _createChildCell(
+        col: ColumnDefOrGroup,
+        eventKey: string,
+        hideableColumns: Array<{ colName: string; title?: string; hidden: boolean }>
+    ): any {
+        if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+            const group = col as ColumnGroupDef;
+            const childNames = this._collectLeafNames(group.children);
+            const childCells = group.children.map(child =>
+                this._createChildCell(child, eventKey, hideableColumns)
+            );
+            return new GroupHeaderCellComponent({
+                colName: group.name,
+                title: group.title,
+                action: group.name,
+                align: 'center',
+                minWidth: 50,
+                order: `var(--q-table-col-${group.name}-order)`,
+                eventKey,
+                childNames,
+                childCells,
+                hideableColumns,
+            });
+        }
+        const leaf = col as ColumnDef;
+        return new HeaderCellComponent({
+            colName: leaf.name,
+            title: leaf.title,
+            align: 'center',
+            minWidth: leaf.minWidth ?? 50,
+            order: `var(--q-table-col-${leaf.name}-order)`,
+            eventKey,
+            action: leaf.name,
+            sortable: leaf.sortable ?? false,
+            resizable: leaf.resizable ?? true,
+            reorderable: leaf.reorderable ?? false,
+            groupable: leaf.groupable ?? false,
+            groupField: this.getData('groupField') ?? '',
+            hideableColumns,
+        });
     }
 
     _buildChildConfig(col: ColumnDefOrGroup): GroupChildConfig {
