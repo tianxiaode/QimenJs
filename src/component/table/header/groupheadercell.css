@@ -25,7 +25,3 @@
     align-items: stretch;
     flex: 1;
 }
-
-.q-header-cell__children > .q-header-cell {
-    padding-right: 0;
-}
