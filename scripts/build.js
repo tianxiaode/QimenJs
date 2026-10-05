@@ -320,22 +320,43 @@ function buildModule(moduleName, moduleConfig) {
 }
 
 // 构建 i18n IIFE（浏览器端 <script> 标签加载）
+// 从 TS 源码（manager.ts + iife-entry.ts）编译：transpileModule 转译后拼接为 IIFE
 function buildI18nIIFE() {
     console.log('\n🌐 Building i18n IIFE...');
     const projectRoot = path.resolve(__dirname, '..');
-    const iifeSrc = path.join(projectRoot, 'src', 'i18n', 'i18n.iife.js');
+    const managerSrc = path.join(projectRoot, 'src', 'i18n', 'manager.ts');
+    const entrySrc = path.join(projectRoot, 'src', 'i18n', 'iife-entry.ts');
     const copySrc = path.join(projectRoot, 'src', 'i18n', 'copy.js');
     const localesSrc = path.join(projectRoot, 'src', 'i18n', 'locales');
     const outDir = path.join(projectRoot, 'dist', 'i18n');
 
-    if (!fs.existsSync(iifeSrc)) {
-        console.log('  ⏭️  跳过（src/i18n/i18n.iife.js 不存在）');
+    if (!fs.existsSync(managerSrc) || !fs.existsSync(entrySrc)) {
+        console.log('  ⏭️  跳过（src/i18n/manager.ts 或 iife-entry.ts 不存在）');
         return;
     }
 
-    // 读取 JS 源码，包装为 IIFE
-    const src = fs.readFileSync(iifeSrc, 'utf8');
-    const iife = `(function(qimenI18n){"use strict";\n${src}\nqimenI18n.I18nManager=I18nManager;qimenI18n.i18n=i18n;qimenI18n.registerMessages=registerMessages;\n})(this.qimenI18n=this.qimenI18n||{});`;
+    const ts = require('typescript');
+    const transpile = file =>
+        ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+            compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2018 },
+        }).outputText;
+
+    // manager：去 export 关键字（IIFE 内直接定义）；entry：去 import 语句
+    const managerCode = transpile(managerSrc)
+        .split('\n')
+        .filter(
+            line =>
+                !/^import\s/.test(line.trim()) &&
+                !/^export\s*\{[^}]*\}/.test(line.trim())
+        )
+        .map(line => line.replace(/^export\s(?=(class|function|const|let|var))/, ''))
+        .join('\n');
+    const entryCode = transpile(entrySrc)
+        .split('\n')
+        .filter(line => !/^import\s/.test(line.trim()))
+        .join('\n');
+
+    const iife = `(function(qimenI18n){"use strict";\n${managerCode}\n${entryCode}\n})(this.qimenI18n=this.qimenI18n||{});`;
     fs.writeFileSync(path.join(outDir, 'i18n.iife.js'), iife);
 
     // 复制 copy.js 脚本

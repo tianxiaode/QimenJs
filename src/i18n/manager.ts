@@ -1,11 +1,27 @@
 /**
- * I18n IIFE 入口 - 浏览器端零依赖实现
+ * I18n 运行时实现 - 浏览器端零依赖
  *
- * 由构建脚本包装为 IIFE 格式，供 <script> 标签直接加载
- * 输出: window.qimenI18n = { I18nManager, i18n, registerMessages }
+ * IIFE 产物由构建脚本从此文件编译（去除 export 后拼接挂载副作用），
+ * 供无构建器的应用通过 <script> 标签直接加载；
+ * 有构建器的应用直接 import 本文件使用。
  */
 
-class I18nManager {
+import type {
+    ILocaleChangeEvent,
+    I18nLocaleConfig,
+    II18nManager,
+    IMessagesUpdateEvent,
+    Locale,
+    Messages,
+    TranslateParams,
+} from './types';
+
+export class I18nManager implements II18nManager {
+    private _locale: Locale;
+    private _messages: Map<Locale, Messages>;
+    private _listeners: Map<string, Set<(data: any) => void>>;
+    private _loadedScripts: Set<string>;
+
     constructor() {
         this._locale = detectLocale();
         this._messages = new Map();
@@ -13,11 +29,11 @@ class I18nManager {
         this._loadedScripts = new Set();
     }
 
-    get locale() {
+    get locale(): Locale {
         return this._locale;
     }
 
-    set locale(value) {
+    set locale(value: Locale) {
         if (value === this._locale) return;
         const previous = this._locale;
         this._locale = value;
@@ -28,7 +44,7 @@ class I18nManager {
         this.loadScript('/locales/' + value + '.js');
     }
 
-    t(key, params, defaultValue) {
+    t(key: string, params?: TranslateParams, defaultValue?: string): string {
         const messages = this._messages.get(this._locale);
         if (!messages) return defaultValue ?? key;
         const value = getByPath(messages, key);
@@ -41,16 +57,16 @@ class I18nManager {
         return result;
     }
 
-    getMessage(path) {
+    getMessage(path: string): any {
         const messages = this._messages.get(this._locale);
         return messages ? getByPath(messages, path) : undefined;
     }
 
-    getMessages() {
+    getMessages(): Messages {
         return this._messages.get(this._locale) || {};
     }
 
-    inject(messages, locale) {
+    inject(messages: Messages, locale?: Locale): void {
         const target = locale ?? this._locale;
         const existing = this._messages.get(target) || {};
         mergeDeep(existing, messages);
@@ -58,7 +74,7 @@ class I18nManager {
         this.emit('messages:update', { locale: target, messages });
     }
 
-    loadScript(url) {
+    loadScript(url: string): Promise<void> {
         if (this._loadedScripts.has(url)) return Promise.resolve();
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -75,27 +91,27 @@ class I18nManager {
         });
     }
 
-    onLocaleChange(handler) {
+    onLocaleChange(handler: (event: ILocaleChangeEvent) => void): () => void {
         return this.on('locale:change', handler);
     }
 
-    onMessagesUpdate(handler) {
+    onMessagesUpdate(handler: (event: IMessagesUpdateEvent) => void): () => void {
         return this.on('messages:update', handler);
     }
 
-    dispose() {
+    dispose(): void {
         this._messages.clear();
         this._listeners.clear();
         this._loadedScripts.clear();
     }
 
-    getLocaleConfig(locale) {
+    getLocaleConfig(locale?: Locale): I18nLocaleConfig | undefined {
         const target = locale ?? this._locale;
         const messages = this._messages.get(target);
         return messages ? messages._locale : undefined;
     }
 
-    formatDate(date, style, locale) {
+    formatDate(date: Date | string | number, style: string, locale?: Locale): string {
         const d = date instanceof Date ? date : new Date(date);
         if (isNaN(d.getTime())) return String(date);
         const config = this.getLocaleConfig(locale);
@@ -103,7 +119,7 @@ class I18nManager {
         return formatPattern(d, pattern, config);
     }
 
-    formatTime(date, style, locale) {
+    formatTime(date: Date | string | number, style: string, locale?: Locale): string {
         const d = date instanceof Date ? date : new Date(date);
         if (isNaN(d.getTime())) return String(date);
         const config = this.getLocaleConfig(locale);
@@ -111,16 +127,20 @@ class I18nManager {
         return formatPattern(d, pattern, config);
     }
 
-    formatNumber(num, options, locale) {
+    formatNumber(
+        num: number,
+        options?: { decimalDigits?: number; groupSeparator?: string; decimalSeparator?: string },
+        locale?: Locale
+    ): string {
         if (typeof num !== 'number' || isNaN(num)) return String(num);
         const config = this.getLocaleConfig(locale);
-        const nc = (config && config.number) || {};
+        const nc = (config && config.number) || undefined;
         const decimalDigits = options?.decimalDigits ?? 0;
-        const groupSep = options?.groupSeparator ?? nc.groupSeparator ?? ',';
-        const decimalSep = options?.decimalSeparator ?? nc.decimalSeparator ?? '.';
-        const groupSize = nc.groupSize ?? 3;
+        const groupSep = options?.groupSeparator ?? nc?.groupSeparator ?? ',';
+        const decimalSep = options?.decimalSeparator ?? nc?.decimalSeparator ?? '.';
+        const groupSize = nc?.groupSize ?? 3;
 
-        let fixed = num.toFixed(decimalDigits);
+        const fixed = num.toFixed(decimalDigits);
         const parts = fixed.split('.');
         let intPart = parts[0];
         const decPart = parts[1];
@@ -128,7 +148,7 @@ class I18nManager {
         if (groupSep && groupSize > 0) {
             const negative = intPart.startsWith('-');
             if (negative) intPart = intPart.slice(1);
-            const groups = [];
+            const groups: string[] = [];
             while (intPart.length > groupSize) {
                 groups.unshift(intPart.slice(-groupSize));
                 intPart = intPart.slice(0, -groupSize);
@@ -141,19 +161,23 @@ class I18nManager {
         return decPart ? intPart + decimalSep + decPart : intPart;
     }
 
-    formatCurrency(num, options, locale) {
+    formatCurrency(
+        num: number,
+        options?: { symbol?: string; position?: string; decimalDigits?: number },
+        locale?: Locale
+    ): string {
         if (typeof num !== 'number' || isNaN(num)) return String(num);
         const config = this.getLocaleConfig(locale);
-        const cc = (config && config.currency) || {};
-        const symbol = options?.symbol ?? cc.symbol ?? '$';
-        const position = options?.position ?? cc.position ?? 'prefix';
-        const decimalDigits = options?.decimalDigits ?? cc.decimalDigits ?? 2;
+        const cc = (config && config.currency) || undefined;
+        const symbol = options?.symbol ?? cc?.symbol ?? '$';
+        const position = options?.position ?? cc?.position ?? 'prefix';
+        const decimalDigits = options?.decimalDigits ?? cc?.decimalDigits ?? 2;
 
         const formatted = this.formatNumber(num, { decimalDigits }, locale);
         return position === 'prefix' ? symbol + formatted : formatted + ' ' + symbol;
     }
 
-    on(event, handler) {
+    on(event: string, handler: (data: any) => void): () => void {
         let set = this._listeners.get(event);
         if (!set) {
             set = new Set();
@@ -161,21 +185,25 @@ class I18nManager {
         }
         set.add(handler);
         return () => {
-            set.delete(handler);
-            if (set.size === 0) this._listeners.delete(event);
+            set?.delete(handler);
+            if (set && set.size === 0) this._listeners.delete(event);
         };
     }
 
-    emit(event, data) {
+    emit(event: string, data: any): void {
         const handlers = this._listeners.get(event);
         if (!handlers) return;
         handlers.forEach(h => {
-            try { h(data); } catch { /* 不中断其他处理器 */ }
+            try {
+                h(data);
+            } catch {
+                /* 不中断其他处理器 */
+            }
         });
     }
 }
 
-function getByPath(obj, path) {
+export function getByPath(obj: any, path: string): any {
     const keys = path.split('.');
     let result = obj;
     for (const key of keys) {
@@ -188,11 +216,15 @@ function getByPath(obj, path) {
     return result;
 }
 
-function mergeDeep(target, source) {
+export function mergeDeep(target: any, source: Messages): void {
     for (const key of Object.keys(source)) {
         if (
-            typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key]) &&
-            typeof target[key] === 'object' && target[key] !== null && !Array.isArray(target[key])
+            typeof source[key] === 'object' &&
+            source[key] !== null &&
+            !Array.isArray(source[key]) &&
+            typeof target[key] === 'object' &&
+            target[key] !== null &&
+            !Array.isArray(target[key])
         ) {
             mergeDeep(target[key], source[key]);
         } else {
@@ -201,7 +233,7 @@ function mergeDeep(target, source) {
     }
 }
 
-function detectLocale() {
+export function detectLocale(): Locale {
     try {
         if (typeof location !== 'undefined') {
             const lang = new URLSearchParams(location.search).get('lang');
@@ -218,41 +250,47 @@ function detectLocale() {
         if (typeof navigator !== 'undefined') {
             return navigator.language || 'zh-CN';
         }
-    } catch { /* 回退 */ }
+    } catch {
+        /* 回退 */
+    }
     return 'zh-CN';
 }
 
-function formatPattern(d, pattern, config) {
-    var h = d.getHours();
-    var m = d.getMinutes();
-    var s = d.getSeconds();
-    var year = d.getFullYear();
-    var month = d.getMonth() + 1;
-    var day = d.getDate();
-    var dayOfWeek = d.getDay();
+export function formatPattern(
+    d: Date,
+    pattern: string,
+    config: I18nLocaleConfig | null | undefined
+): string {
+    const h = d.getHours();
+    const m = d.getMinutes();
+    const s = d.getSeconds();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const dayOfWeek = d.getDay();
 
-    var weekdays = (config && config.weekdays) || [];
-    var weekdaysShort = (config && config.weekdaysShort) || [];
-    var months = (config && config.months) || [];
-    var monthsShort = (config && config.monthsShort) || [];
-    var hourCycle = (config && config.hourCycle) || 'h23';
+    const weekdays = config?.weekdays ?? [];
+    const weekdaysShort = config?.weekdaysShort ?? [];
+    const months = config?.months ?? [];
+    const monthsShort = config?.monthsShort ?? [];
+    const hour12 = h % 12 || 12;
+    const isPm = h >= 12;
+    const ampm = isPm ? 'PM' : 'AM';
 
-    var hour12 = h % 12 || 12;
-    var isPm = h >= 12;
-    var ampm = isPm ? 'PM' : 'AM';
+    let result = pattern;
 
-    var result = pattern;
-
-    result = result.replace(/EEEE/g, function () {
-        return weekdays[dayOfWeek] || ('星期' + ['日', '一', '二', '三', '四', '五', '六'][dayOfWeek]);
+    result = result.replace(/EEEE/g, () => {
+        return (
+            weekdays[dayOfWeek] || '星期' + ['日', '一', '二', '三', '四', '五', '六'][dayOfWeek]
+        );
     });
-    result = result.replace(/EEE/g, function () {
+    result = result.replace(/EEE/g, () => {
         return weekdaysShort[dayOfWeek] || weekdays[dayOfWeek] || '';
     });
-    result = result.replace(/MMMM/g, function () {
-        return months[month - 1] || (month + '月');
+    result = result.replace(/MMMM/g, () => {
+        return months[month - 1] || month + '月';
     });
-    result = result.replace(/MMM/g, function () {
+    result = result.replace(/MMM/g, () => {
         return monthsShort[month - 1] || months[month - 1] || '';
     });
     result = result.replace(/yyyy/g, String(year));
@@ -270,39 +308,4 @@ function formatPattern(d, pattern, config) {
     result = result.replace(/^a\b/, ampm);
 
     return result;
-}
-
-var i18n = new I18nManager();
-
-function registerMessages(locale, messages) {
-    i18n.inject(messages, locale);
-    if (messages._locale) {
-        messages._locale._lang = locale;
-        // 将 weekdays/months 提升到顶层，供 formatPattern 直接读取
-        var lc = messages._locale;
-        if (lc.weekdays && !messages.weekdays) messages.weekdays = lc.weekdays;
-        if (lc.weekdaysShort && !messages.weekdaysShort) messages.weekdaysShort = lc.weekdaysShort;
-        if (lc.months && !messages.months) messages.months = lc.months;
-        if (lc.monthsShort && !messages.monthsShort) messages.monthsShort = lc.monthsShort;
-    }
-    if (!i18n.getMessages() || Object.keys(i18n.getMessages()).length === 0) {
-        i18n.locale = locale;
-    }
-}
-
-if (typeof window !== 'undefined') {
-    window.__qimen_i18n_register__ = registerMessages;
-    window.__qimen_i18n__ = i18n;
-    window.qimenI18n = { I18nManager: I18nManager, i18n: i18n, registerMessages: registerMessages };
-
-    // 自动检测语言并动态加载对应语言包
-    (function () {
-        var locale = i18n.locale;
-        if (locale !== 'zh-CN' && locale !== 'en-US') {
-            locale = 'zh-CN';
-            i18n.locale = locale;
-        }
-        document.documentElement.lang = locale;
-        i18n.loadScript('/locales/' + locale + '.js');
-    })();
 }

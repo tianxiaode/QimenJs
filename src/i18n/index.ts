@@ -31,3 +31,4 @@
 
 export * from './types';
 export { I18N_PREFIX, getI18nManager, resolveI18nValue, t } from './i18n-utils';
+export { I18nManager, getByPath, mergeDeep, detectLocale, formatPattern } from './manager';

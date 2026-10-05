@@ -65,6 +65,7 @@ export interface I18nLocaleConfig {
     hourCycle?: string;
     months?: string[];
     monthsShort?: string[];
+    weekdays?: string[];
     weekdaysShort?: string[];
     /** 内部标记，供格式化函数判断语言 */
     _lang?: string;
