@@ -161,6 +161,7 @@ const ROW_CLICK_COLUMNS: ColumnDefOrGroup[] = [
 
 class RowSelectDemo extends Component {
     get tpl(): TemplateDecl {
+        console.log('[RowSelectDemo] tpl getter called');
         return {
             tag: 'div',
             classes: 'q-demo__column',
