@@ -204,28 +204,29 @@ class RowSelectDemo extends Component {
         const table = this.getComponent('table');
         super.onAfterInit();
         if (btnGroup) {
-            btnGroup.on('select', (data: any) => {
-                console.log('[RowSelectDemo] btnGroup select event', data);
-                if (data.index === 0) {
-                    table && (table.selectable = 'single');
-                } else if (data.index === 1) {
-                    table && (table.selectable = 'multiple');
-                }
-            });
-            console.log('[RowSelectDemo] btnGroup count:', btnGroup.count);
-            if (btnGroup.el) {
-                btnGroup.el.addEventListener('click', (e) => {
-                    console.log('[RowSelectDemo] btnGroup DOM click', e.target);
-                });
-            }
+            console.log('[RowSelectDemo] btnGroup.el:', !!btnGroup.el, btnGroup.el?.tagName);
+            console.log('[RowSelectDemo] btnGroup.el.innerHTML:', btnGroup.el?.innerHTML?.substring(0, 200));
             for (let i = 0; i < btnGroup.count; i++) {
                 const btn = btnGroup.getAt?.(i);
+                console.log(`[RowSelectDemo] btn[${i}]:`, {
+                    exists: !!btn,
+                    el: !!btn?.el,
+                    tagName: btn?.el?.tagName,
+                    text: btn?.text,
+                    pressed: btn?.pressed,
+                });
                 if (btn?.el) {
                     btn.el.addEventListener('click', (e) => {
-                        console.log(`[RowSelectDemo] btn[${i}] DOM click`, btn.pressed);
+                        console.log(`[RowSelectDemo] btn[${i}] click! pressed=${btn.pressed}`);
                     });
                 }
             }
+            btnGroup.on('select', (data: any) => {
+                console.log('[RowSelectDemo] select event!', data);
+                if (table) {
+                    table.selectable = data.index === 0 ? 'single' : 'multiple';
+                }
+            });
         } else {
             console.warn('[RowSelectDemo] btnGroup not found!');
         }
