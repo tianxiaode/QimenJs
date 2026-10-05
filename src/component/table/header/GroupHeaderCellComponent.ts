@@ -100,6 +100,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
 
             const instance = new ChildClass(childProps);
             this._childCells.push({ component: instance, el: instance.el as HTMLElement });
+            (this.childComponentList = this.childComponentList ?? []).push(instance);
             container.appendChild(instance.el);
         }
     }
@@ -126,6 +127,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             component.dispose?.();
         }
         this._childCells = [];
+        this.childComponentList = [];
         const container = this.getNodeEl('children');
         if (container) container.innerHTML = '';
     }

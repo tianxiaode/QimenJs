@@ -448,8 +448,9 @@ export interface FloatDecl {
      * - 省略 → key 即为节点 name，自动锚定该节点
      * - 'self' → 锚定组件自身 el
      * - 节点 name → 锚定指定节点
+     * - 路径字符串 → 多锚点路径（逗号分隔多路径，或数组多路径）
      */
-    anchor?: string | 'self';
+    anchor?: string | string[] | 'self';
     /**
      * 触发方式（有值则系统自动绑定，无值则手动控制）：
      * - 'click': 点击触发

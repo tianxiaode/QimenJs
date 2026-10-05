@@ -336,14 +336,22 @@ export class DomEventsEngine {
      * - isItemContainer 组件：在 _items 数组中查找
      * - 普通组件：在 childComponentList / nodeMap 中查找
      * 匹配规则：component.constructor._type === type 或类名去掉 Component 后缀
+     * BFS 逐层展开：浅层优先命中，支持嵌套子组件（如分组列头内的子 cell）
      */
     private static _findByType(component: any, type: string, target: Element): any {
-        const children = DomEventsEngine._getChildren(component);
-        for (const childComp of children) {
-            if (!childComp?.el) continue;
-            if (!childComp.el.contains(target)) continue;
-            const childType = childComp.type;
-            if (childType === type) return childComp;
+        let queue = DomEventsEngine._getChildren(component);
+        let depth = 0;
+        while (queue.length && depth < 8) {
+            const nextQueue: any[] = [];
+            for (const childComp of queue) {
+                if (!childComp?.el) continue;
+                if (childComp.el.contains(target)) {
+                    if (childComp.type === type) return childComp;
+                    nextQueue.push(...DomEventsEngine._getChildren(childComp));
+                }
+            }
+            queue = nextQueue;
+            depth++;
         }
         return null;
     }

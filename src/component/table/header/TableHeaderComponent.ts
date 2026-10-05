@@ -657,7 +657,7 @@ const TableHeaderComponentDefs: Definitions = {
         popover: {
             type: 'menu',
             trigger: 'click',
-            anchor: '[items].menuArea',
+            anchor: ['[items].menuArea', '[items].{header-cell}.menuArea'],
             placement: 'bottom-start',
             options: { items: [], eventKey: '' },
         },

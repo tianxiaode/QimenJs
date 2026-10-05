@@ -15,17 +15,11 @@ export class Msgbox extends Component {
     private _resolved = false;
 
     domEvents = {
-        click: {
-            confirm: {
-                handler: '_onConfirmClick',
-            },
-            cancel: {
-                handler: '_onCancelClick',
-            },
-            close: {
-                handler: '_onCancelClick',
-            },
-        },
+        click: [
+            { path: 'confirm', handler: '_onConfirmClick' },
+            { path: 'cancel', handler: '_onCancelClick' },
+            { path: 'close', handler: '_onCancelClick' },
+        ],
     };
 
     get defaultEventData() {

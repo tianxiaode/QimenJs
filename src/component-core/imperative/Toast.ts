@@ -19,11 +19,7 @@ export class Toast extends Component {
     private _promise: Promise<void> | null = null;
 
     domEvents = {
-        click: {
-            closeBtn: {
-                handler: '_onCloseClick',
-            },
-        },
+        click: [{ path: 'closeBtn', handler: '_onCloseClick' }],
     };
 
     get isClosed(): boolean {
