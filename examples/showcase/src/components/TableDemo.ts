@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig, DemoSection } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 import '@/component/table/row/row.css';
@@ -78,12 +78,16 @@ class RowSelectDemo extends Component {
             classes: 'q-demo__column',
             children: [
                 {
-                    tag: 'div',
-                    classes: 'q-demo__row',
-                    children: [
-                        { type: 'button', name: 'singleBtn', options: { text: '单选', pressed: true, size: 'sm' } },
-                        { type: 'button', name: 'multiBtn', options: { text: '多选', size: 'sm' } },
-                    ],
+                    type: 'button-group',
+                    name: 'btnGroup',
+                    options: {
+                        mode: 'single',
+                        selectedIndex: 0,
+                        items: [
+                            { text: '单选', value: 'single' },
+                            { text: '多选', value: 'multiple' },
+                        ],
+                    },
                 },
                 {
                     type: 'table',
@@ -98,31 +102,20 @@ class RowSelectDemo extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        click: [
-            { path: 'singleBtn', handler: '_onSingleClick' },
-            { path: 'multiBtn', handler: '_onMultiClick' },
-        ],
-    };
-
-    _onSingleClick(): void {
-        const table = this.getComponent('table');
-        const singleBtn = this.getComponent('singleBtn');
-        const multiBtn = this.getComponent('multiBtn');
-        console.log('[RowSelectDemo] _onSingleClick', { table, singleBtn, multiBtn });
-        if (table) table.selectable = 'single';
-        if (singleBtn) singleBtn.pressed = true;
-        if (multiBtn) multiBtn.pressed = false;
-    }
-
-    _onMultiClick(): void {
-        const table = this.getComponent('table');
-        const singleBtn = this.getComponent('singleBtn');
-        const multiBtn = this.getComponent('multiBtn');
-        console.log('[RowSelectDemo] _onMultiClick', { table, singleBtn, multiBtn });
-        if (table) table.selectable = 'multiple';
-        if (singleBtn) singleBtn.pressed = false;
-        if (multiBtn) multiBtn.pressed = true;
+    onAfterInit(): void {
+        super.onAfterInit();
+        const btnGroup = this.getComponent('btnGroup');
+        if (btnGroup) {
+            btnGroup.on('select', (data: any) => {
+                const table = this.getComponent('table');
+                if (!table) return;
+                if (data.index === 0) {
+                    table.selectable = 'single';
+                } else if (data.index === 1) {
+                    table.selectable = 'multiple';
+                }
+            });
+        }
     }
 }
 
