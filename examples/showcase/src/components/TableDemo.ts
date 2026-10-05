@@ -227,17 +227,6 @@ class RowSelectDemo extends Component {
             console.warn('[RowSelectDemo] btnGroup not found!');
         }
     }
-            }
-            btnGroup.on('select', (data: any) => {
-                console.log('[RowSelectDemo] select event!', data);
-                if (table) {
-                    table.selectable = data.index === 0 ? 'single' : 'multiple';
-                }
-            });
-        } else {
-            console.warn('[RowSelectDemo] btnGroup not found!');
-        }
-    }
 
     _onToggelSelectMode(data: any) {
         console.log('[RowSelectDemo] _onToggelSelectMode', data);
