@@ -5,14 +5,15 @@
     box-sizing: border-box;
     border-bottom: 1px solid var(--q-color-border, #e0e0e0);
     transition: background 0.1s;
+    background: var(--q-table-row-bg, transparent);
 }
 
-.q-table-row:nth-child(odd) {
-    background: transparent;
+.q-table-row--odd {
+    --q-table-row-bg: transparent;
 }
 
-.q-table-row:nth-child(even) {
-    background: var(--q-color-bg-stripe, #f5f5f5);
+.q-table-row--even {
+    --q-table-row-bg: var(--q-color-bg-stripe, #f5f5f5);
 }
 
 .q-table-row .q_cell {

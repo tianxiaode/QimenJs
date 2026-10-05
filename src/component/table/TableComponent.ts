@@ -258,8 +258,23 @@ class TableComponent extends ItemGroupPooledComponent {
         super.setItems(items);
         this._buildGroupRowMap(items);
         this._updateSummaryRow();
+        this._applyZebraStripes();
         if (this.getData('selectable') !== 'none') {
             this._syncRowSelectedStates();
+        }
+    }
+
+    _applyZebraStripes(): void {
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        let stripeIndex = 0;
+        for (const item of items) {
+            const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
+            if (isGroupSummary || item?.hidden) continue;
+            item.removeCls?.('q-table-row--odd');
+            item.removeCls?.('q-table-row--even');
+            item.addCls?.(stripeIndex % 2 === 0 ? 'q-table-row--odd' : 'q-table-row--even');
+            stripeIndex++;
         }
     }
 
@@ -385,6 +400,7 @@ class TableComponent extends ItemGroupPooledComponent {
         for (const row of entry.dataRows) {
             row.hidden = data.collapsed;
         }
+        this._applyZebraStripes();
     }
 
     _updateSummaryRow(): void {
