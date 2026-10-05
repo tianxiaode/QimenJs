@@ -1,4 +1,5 @@
 import { Component } from '../../../component-core/Component';
+import type { ListenItem } from '@qimenjs/component-core';
 import type { ColumnMeta } from '../column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from '../constants';
 import { TextCellComponent } from '../cells/TextCellComponent';
@@ -11,6 +12,16 @@ class GroupSummaryRowComponent extends Component {
 
     _cells: Map<string, any> = new Map();
     _collapsed: boolean = false;
+
+    listens: ListenItem[] = [
+        {
+            source: 'self',
+            events: {
+                hideColumn: 'onHideColumn',
+                showColumn: 'onShowColumn',
+            },
+        },
+    ];
 
     get tpl(): any {
         return {
@@ -97,6 +108,14 @@ class GroupSummaryRowComponent extends Component {
     showColumn(name: string): void {
         const cell = this._cells.get(name);
         if (cell) cell.hidden = false;
+    }
+
+    onHideColumn(data: any): void {
+        this.hideColumn(data.colName);
+    }
+
+    onShowColumn(data: any): void {
+        this.showColumn(data.colName);
     }
 
     moveColumn(from: number, to: number): void {
