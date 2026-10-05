@@ -44,6 +44,7 @@
 .q-header-cell__sort {
     display: inline-flex;
     margin-left: 4px;
+    margin-top: 1px;
     width: 0;
     height: 0;
     vertical-align: middle;
