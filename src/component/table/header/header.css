@@ -102,15 +102,16 @@
 
 .q-header-cell__menu-area {
     position: absolute;
-    right: 4px;
+    right: 2px;
     top: 0;
     bottom: 0;
-    width: 24px;
+    width: 16px;
     display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 1;
+    --q-arrow-size: 4px;
 }
 
 .q-header-cell:hover > .q-header-cell__menu-area {
