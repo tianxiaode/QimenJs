@@ -1,3 +1,4 @@
+import '@/i18n/iife-entry';
 import { ShowcaseApp } from './ShowcaseApp';
 import './register';
 import '@/theme/theme.css';
