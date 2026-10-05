@@ -29,7 +29,14 @@ function getState(self: any): SelectionState | undefined {
 
 function ensureState(self: any, config: SelectionConfig): SelectionState {
     const existing = getState(self);
-    if (existing) return existing;
+    if (existing) {
+        const newMode = config.mode ?? 'single';
+        if (existing.mode !== newMode) {
+            existing.mode = newMode;
+            existing.selected.clear();
+        }
+        return existing;
+    }
 
     const state: SelectionState = {
         mode: config.mode ?? 'single',
@@ -58,8 +65,11 @@ export const SelectionAbility = {
      * @param config - 选择配置（mode: 'single' | 'multiple'）
      */
     initSelection(config: SelectionConfig = { mode: 'single' }): void {
+        const existing = getState(this);
         ensureState(this, config);
-        this.onCleanup(() => this._teardownSelection());
+        if (!existing) {
+            this.onCleanup(() => this._teardownSelection());
+        }
     },
 
     // ─── 选中操作 ───

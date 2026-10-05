@@ -160,12 +160,7 @@ const ROW_CLICK_COLUMNS: ColumnDefOrGroup[] = [
 ];
 
 class RowSelectDemo extends Component {
-    onBeforeInit(): void {
-        console.log('[RowSelectDemo] onBeforeInit');
-    }
-
     get tpl(): TemplateDecl {
-        console.log('[RowSelectDemo] tpl getter called');
         return {
             tag: 'div',
             classes: 'q-demo__column',
@@ -195,38 +190,18 @@ class RowSelectDemo extends Component {
         };
     }
 
-    listens?: ListenItem[] | undefined = [
-        { node: 'btnGroup', events: { select: '_onToggelSelectMode' } },
+    listens: ListenItem[] = [
+        { node: 'btnGroup', events: { select: '_onToggleSelectMode' } },
     ];
 
-    onAfterInit(): void {
-        const btnGroup = this.getComponent('btnGroup');
-        const table = this.getComponent('table');
-        super.onAfterInit();
-        if (btnGroup) {
-            const btn0 = btnGroup.getAt?.(0);
-            console.error('[RowSelectDemo] btn0:', {
-                type: btn0?.constructor?.type,
-                name: btn0?.constructor?.name,
-                hasEl: !!btn0?.el,
-                hasTpl: typeof btn0?.tpl,
-                text: btn0?.text,
-                keys: Object.keys(btn0 || {}).slice(0, 10),
-            });
-            btnGroup.on('select', (data: any) => {
-                console.error('[RowSelectDemo] select!', data);
-                if (table) table.selectable = data.index === 0 ? 'single' : 'multiple';
-            });
-        }
-    }
-
-    _onToggelSelectMode(data: any) {
-        console.log('[RowSelectDemo] _onToggelSelectMode', data);
+    _onToggleSelectMode(data: any) {
         const table = this.getComponent('table');
         if (!table) return;
-        if (data.index === 0) {
+        const ctx = data?.data ?? data;
+        const index = ctx?.index ?? ctx?.lastToggleIndex ?? ctx?.selectedIndex;
+        if (index === 0) {
             table.selectable = 'single';
-        } else if (data.index === 1) {
+        } else if (index === 1) {
             table.selectable = 'multiple';
         }
     }

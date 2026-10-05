@@ -120,6 +120,8 @@ class TableComponent extends ItemGroupPooledComponent {
             return;
         }
         this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
+        this._syncRowSelectedStates();
+        this._updateHeaderSelectAllState();
     }
 
     /**
