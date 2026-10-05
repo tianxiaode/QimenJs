@@ -19,8 +19,8 @@
     position: relative;
 }
 
-.q-header-cell:last-child {
-    border-right: none;
+.q-header-cell--last {
+    border-right: none !important;
 }
 
 .q-header-cell__content {

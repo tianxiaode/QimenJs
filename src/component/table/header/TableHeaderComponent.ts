@@ -194,6 +194,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const items = columns.map(col => this._buildItemData(col));
         this.setItems(items);
         this._registerColumnOrders();
+        this._updateLastCellBorder();
     }
 
     _registerColumnOrders(): void {
@@ -238,6 +239,49 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 });
             }
         }
+    }
+
+    _updateLastCellBorder(): void {
+        requestAnimationFrame(() => {
+            const items = this.items;
+            if (!Array.isArray(items)) return;
+
+            for (const item of items) {
+                item.el?.classList.remove('q-header-cell--last');
+                if (Array.isArray(item._childCells)) {
+                    for (const childCell of item._childCells) {
+                        childCell.component?.el?.classList.remove('q-header-cell--last');
+                    }
+                }
+            }
+
+            const visibleItems = items.filter(item => !item.hidden && item?.el);
+            if (visibleItems.length === 0) return;
+
+            visibleItems.sort((a, b) => {
+                const orderA = Number(getComputedStyle(a.el).order) || 0;
+                const orderB = Number(getComputedStyle(b.el).order) || 0;
+                return orderA - orderB;
+            });
+
+            const lastItem = visibleItems[visibleItems.length - 1];
+            lastItem.el.classList.add('q-header-cell--last');
+
+            if (Array.isArray(lastItem._childCells) && lastItem._childCells.length > 0) {
+                const visibleChildren = lastItem._childCells.filter(
+                    (cc: any) => !cc.component?.hidden && cc.component?.el
+                );
+                if (visibleChildren.length > 0) {
+                    visibleChildren.sort((a: any, b: any) => {
+                        const orderA = Number(getComputedStyle(a.component.el).order) || 0;
+                        const orderB = Number(getComputedStyle(b.component.el).order) || 0;
+                        return orderA - orderB;
+                    });
+                    const lastChild = visibleChildren[visibleChildren.length - 1];
+                    lastChild.component.el.classList.add('q-header-cell--last');
+                }
+            }
+        });
     }
 
     _buildItemData(col: ColumnDefOrGroup): Record<string, any> {
@@ -582,6 +626,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             const rect = cell.el.getBoundingClientRect();
             const isLeft = clientX < rect.left + rect.width / 2;
             this._reorderColumns(this._dragColName, targetColName, isLeft);
+            this._updateLastCellBorder();
         }
         this._dragColName = '';
     }
