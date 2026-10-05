@@ -200,26 +200,29 @@ class RowSelectDemo extends Component {
     ];
 
     onAfterInit(): void {
-        console.log('[RowSelectDemo] onAfterInit START');
-        try {
-            super.onAfterInit();
-        } catch (e) {
-            console.error('[RowSelectDemo] super.onAfterInit error', e);
-        }
         const btnGroup = this.getComponent('btnGroup');
         const table = this.getComponent('table');
         console.log('[RowSelectDemo] onAfterInit', {
             btnGroup: !!btnGroup,
             btnGroupType: btnGroup?.constructor?.type,
             table: !!table,
-            tableType: table?.constructor?.type,
             childNames: this.getChildComponentNames?.(),
-            listens: this.listens,
         });
+        super.onAfterInit();
         if (btnGroup) {
+            console.log('[RowSelectDemo] binding select on btnGroup');
             btnGroup.on('select', (data: any) => {
-                console.log('[RowSelectDemo] btnGroup.on(select)', data);
+                console.log('[RowSelectDemo] btnGroup select event', data);
+                if (data.index === 0) {
+                    table && (table.selectable = 'single');
+                } else if (data.index === 1) {
+                    table && (table.selectable = 'multiple');
+                }
             });
+            console.log('[RowSelectDemo] btnGroup count:', btnGroup.count);
+            console.log('[RowSelectDemo] btnGroup items:', btnGroup.items?.length);
+        } else {
+            console.warn('[RowSelectDemo] btnGroup not found!');
         }
     }
 
