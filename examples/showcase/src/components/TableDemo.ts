@@ -109,6 +109,7 @@ class RowSelectDemo extends Component {
         const table = this.getComponent('table');
         const singleBtn = this.getComponent('singleBtn');
         const multiBtn = this.getComponent('multiBtn');
+        console.log('[RowSelectDemo] _onSingleClick', { table, singleBtn, multiBtn });
         if (table) table.selectable = 'single';
         if (singleBtn) singleBtn.pressed = true;
         if (multiBtn) multiBtn.pressed = false;
@@ -118,6 +119,7 @@ class RowSelectDemo extends Component {
         const table = this.getComponent('table');
         const singleBtn = this.getComponent('singleBtn');
         const multiBtn = this.getComponent('multiBtn');
+        console.log('[RowSelectDemo] _onMultiClick', { table, singleBtn, multiBtn });
         if (table) table.selectable = 'multiple';
         if (singleBtn) singleBtn.pressed = false;
         if (multiBtn) multiBtn.pressed = true;
