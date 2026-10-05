@@ -113,7 +113,7 @@
     z-index: 1;
 }
 
-.q-header-cell:hover .q-header-cell__menu-area {
+.q-header-cell:hover > .q-header-cell__menu-area {
     display: flex;
 }
 
