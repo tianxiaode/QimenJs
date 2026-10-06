@@ -2,10 +2,10 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: var(--q-space-xs, 8px) var(--q-space-md, 16px);
+    padding: 0.5rem var(--q-space-md, 16px);
     font-size: var(--q-font-size-md, 14px);
     font-weight: var(--q-font-weight-medium, 500);
-    line-height: 1.5;
+    line-height: 1;
     white-space: nowrap;
     cursor: var(--q-cursor-pointer, pointer);
     transition: background var(--q-transition-fast), color var(--q-transition-fast);
@@ -54,8 +54,6 @@
 
 .q-menu-item__text {
     flex: 1;
-    display: flex;
-    align-items: center;
     overflow: hidden;
     text-overflow: ellipsis;
 }
