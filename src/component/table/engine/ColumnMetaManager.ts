@@ -144,7 +144,7 @@ export class ColumnMetaManager {
             fixed: def.fixed,
             sortable: def.sortable ?? false,
             resizable: def.resizable ?? true,
-            reorderable: def.reorderable ?? false,
+            draggable: def.draggable ?? false,
             editable: def.editable ?? false,
             editType: def.editType ?? 'text',
             editComponent: def.editComponent,

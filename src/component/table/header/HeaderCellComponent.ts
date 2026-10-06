@@ -17,7 +17,7 @@ const HeaderCellComponentDefs: Definitions = {
         action: null,
         sortable: false,
         resizable: true,
-        reorderable: false,
+        draggable: false,
         menuDisabled: false,
         hideableColumns: null,
         groupable: false,
@@ -81,8 +81,8 @@ class HeaderCellComponent extends Component {
         this.componentEmit('toggleAll', { checked: !checked });
     }
 
-    _onReorderableOptionChange(_value: boolean): void {
-        if (this.reorderable) {
+    _onDraggableOptionChange(_value: boolean): void {
+        if (this.draggable) {
             this.drag = {
                 axis: 'x',
                 activeClass: 'q-header-cell--dragging',

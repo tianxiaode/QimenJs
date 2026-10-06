@@ -12,7 +12,7 @@ export interface GroupChildConfig {
     align?: ColumnAlign;
     sortable?: boolean;
     resizable?: boolean;
-    reorderable?: boolean;
+    draggable?: boolean;
     minWidth?: number;
     groupable?: boolean;
     groupField?: string;
@@ -96,7 +96,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
             if (config.type === 'leaf') {
                 childProps.sortable = config.sortable;
                 childProps.resizable = config.resizable;
-                childProps.reorderable = config.reorderable;
+                childProps.draggable = config.draggable;
                 childProps.groupable = config.groupable ?? false;
                 childProps.groupField = config.groupField ?? '';
                 childProps.hideableColumns = config.hideableColumns ?? null;

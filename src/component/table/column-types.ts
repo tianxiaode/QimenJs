@@ -559,7 +559,7 @@ export interface ColumnDef {
      *
      * 为 true 时表头单元格可拖拽到其他列位置，释放后列顺序交换。
      */
-    reorderable?: boolean;
+    draggable?: boolean;
 
     /**
      * 是否可分组 — 默认 false
@@ -725,7 +725,7 @@ export interface ColumnMeta {
     resizable: boolean;
 
     /** 是否可拖拽改变列位置 */
-    reorderable: boolean;
+    draggable: boolean;
 
     /** 是否可编辑 */
     editable: boolean;

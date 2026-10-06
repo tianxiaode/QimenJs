@@ -13,7 +13,7 @@ const TABLE_DATA = [
 ];
 
 const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
-    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, reorderable: true },
+    { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, draggable: true },
     {
         name: 'baseInfo',
         title: '基本信息',
@@ -25,7 +25,7 @@ const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
                 width: 80,
                 align: 'right',
                 sortable: true,
-                reorderable: true,
+                draggable: true,
             },
             {
                 name: 'dept',
@@ -36,7 +36,7 @@ const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
                 sortable: true,
                 groupable: true,
                 groupAggregator: 'label',
-                reorderable: true,
+                draggable: true,
             },
         ],
     },
@@ -49,7 +49,7 @@ const COMPREHENSIVE_COLUMNS: ColumnDefOrGroup[] = [
         format: 'currency',
         sortable: true,
         groupAggregator: 'sum',
-        reorderable: true,
+        draggable: true,
     },
 ];
 
@@ -213,12 +213,12 @@ export const TABLE_DEMO: DemoConfig = {
             label: '综合表格',
             code: `{ type: 'table', options: {
     columns: [
-        { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, reorderable: true },
+        { name: 'name', field: 'name', title: '姓名', width: 120, sortable: true, draggable: true },
         { name: 'baseInfo', title: '基本信息', children: [
-            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true, reorderable: true },
-            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, reorderable: true },
+            { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', sortable: true, draggable: true },
+            { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', sortable: true, groupable: true, draggable: true },
         ]},
-        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, reorderable: true },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', sortable: true, draggable: true },
     ],
     data: [...],
     groupField: 'dept',
