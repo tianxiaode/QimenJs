@@ -47,10 +47,12 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         this.addCls('q-header-cell--group');
         this._applyGroupWidth();
         this._applyResizable();
-        if (this.childCells && this.childCells.length > 0) {
-            this._adoptChildCells(this.childCells);
-        } else if (this.childConfigs) {
-            this._createChildren(this.childConfigs);
+        if (this._childCells.length === 0) {
+            if (this.childCells && this.childCells.length > 0) {
+                this._adoptChildCells(this.childCells);
+            } else if (this.childConfigs) {
+                this._createChildren(this.childConfigs);
+            }
         }
         this.onCleanup(() => this._destroyChildren());
     }
@@ -162,6 +164,7 @@ class GroupHeaderCellComponent extends HeaderCellComponent {
         if (data?.childCells !== undefined) {
             this._destroyChildren();
             this._adoptChildCells(data.childCells);
+            this.childCells = data.childCells;
         } else if (data?.childConfigs !== undefined) {
             const oldConfigs = this.childConfigs;
             const newConfigs = data.childConfigs;
