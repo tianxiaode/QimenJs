@@ -12,7 +12,7 @@ export const HEADER_CELL_TPL: TemplateDecl = {
                 {
                     tag: 'div',
                     name: 'selectAllBox',
-                    classes: 'q_cell__checkbox q-header-cell__select-all',
+                    classes: 'q-checkbox q-header-cell__select-all',
                 },
                 { tag: 'span', name: 'title', classes: 'q-header-cell__title' },
                 { tag: 'span', name: 'sortIcon', classes: 'q-header-cell__sort' },

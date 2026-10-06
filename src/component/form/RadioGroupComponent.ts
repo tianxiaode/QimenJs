@@ -82,8 +82,8 @@ class RadioGroupComponent extends FormFieldComponent {
                     );
 
                     const dot = document.createElement('span');
-                    dot.className = 'q-radio-group__dot';
-                    if (checked) dot.classList.add('q-radio-group__dot--checked');
+                    dot.className = 'q-radio';
+                    if (checked) dot.classList.add('q-radio--checked');
                     el.insertBefore(dot, el.firstChild);
 
                     el.setAttribute('role', 'radio');
@@ -117,9 +117,9 @@ class RadioGroupComponent extends FormFieldComponent {
             el.classList.toggle('q-radio-group__item--checked', checked);
             el.setAttribute('aria-checked', String(checked));
 
-            const dot = el.querySelector('.q-radio-group__dot') as HTMLElement | null;
+            const dot = el.querySelector('.q-radio') as HTMLElement | null;
             if (dot) {
-                dot.classList.toggle('q-radio-group__dot--checked', checked);
+                dot.classList.toggle('q-radio--checked', checked);
             }
         }
     }

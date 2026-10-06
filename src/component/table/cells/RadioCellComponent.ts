@@ -58,8 +58,8 @@ class RadioCellComponent extends BaseCellComponent {
     }
 
     _applyState(): void {
-        this.toggleCls('q_cell__radio--checked', this._checked, 'box');
-        this.toggleCls('q_cell__radio--disabled', this._disabled, 'box');
+        this.toggleCls('q-radio--checked', this._checked, 'box');
+        this.toggleCls('q-radio--disabled', this._disabled, 'box');
         this.setAttributes({ 'aria-checked': String(this._checked) }, 'box');
         if (this._disabled) {
             this.setAttributes({ 'aria-disabled': 'true' }, 'box');

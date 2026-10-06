@@ -84,8 +84,8 @@ class CheckboxGroupComponent extends FormFieldComponent {
                     );
 
                     const box = document.createElement('span');
-                    box.className = 'q-checkbox-group__box';
-                    if (checked) box.classList.add('q-checkbox-group__box--checked');
+                    box.className = 'q-checkbox';
+                    if (checked) box.classList.add('q-checkbox--checked');
                     el.insertBefore(box, el.firstChild);
 
                     el.setAttribute('role', 'checkbox');
@@ -128,9 +128,9 @@ class CheckboxGroupComponent extends FormFieldComponent {
             el.classList.toggle('q-checkbox-group__item--checked', checked);
             el.setAttribute('aria-checked', String(checked));
 
-            const box = el.querySelector('.q-checkbox-group__box') as HTMLElement | null;
+            const box = el.querySelector('.q-checkbox') as HTMLElement | null;
             if (box) {
-                box.classList.toggle('q-checkbox-group__box--checked', checked);
+                box.classList.toggle('q-checkbox--checked', checked);
             }
         }
     }

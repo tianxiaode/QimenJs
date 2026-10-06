@@ -24,34 +24,6 @@
     user-select: none;
 }
 
-.q-checkbox-group__box {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--q-color-border);
-    background: var(--q-color-bg);
-    box-sizing: border-box;
-    transition: border-color var(--q-transition-fast), background var(--q-transition-fast);
-}
-
-.q-checkbox-group__box--checked {
-    border-color: var(--q-color-primary);
-    background: var(--q-color-primary);
-}
-
-.q-checkbox-group__box--checked::after {
-    content: '';
-    display: block;
-    width: 5px;
-    height: 9px;
-    border: solid #fff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg) translate(-1px, -1px);
-}
-
 .q-checkbox-group__item--checked {
     color: var(--q-color-primary);
 }
@@ -61,12 +33,12 @@
     cursor: var(--q-cursor-not-allowed);
 }
 
-.q-checkbox-group__item--disabled .q-checkbox-group__box {
+.q-checkbox-group__item--disabled .q-checkbox {
     background: var(--q-color-bg-tertiary);
     border-color: var(--q-color-border);
 }
 
-.q-checkbox-group__item--disabled .q-checkbox-group__box--checked {
+.q-checkbox-group__item--disabled .q-checkbox--checked {
     background: var(--q-color-primary-light);
     border-color: var(--q-color-primary-light);
 }
@@ -76,7 +48,7 @@
     cursor: var(--q-cursor-not-allowed);
 }
 
-.q-checkbox-group--error .q-checkbox-group__box {
+.q-checkbox-group--error .q-checkbox {
     border-color: var(--q-color-error);
 }
 
@@ -106,33 +78,6 @@
     user-select: none;
 }
 
-.q-radio-group__dot {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--q-color-border);
-    border-radius: 50%;
-    background: var(--q-color-bg);
-    box-sizing: border-box;
-    transition: border-color var(--q-transition-fast);
-}
-
-.q-radio-group__dot--checked {
-    border-color: var(--q-color-primary);
-}
-
-.q-radio-group__dot--checked::after {
-    content: '';
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--q-color-primary);
-}
-
 .q-radio-group__item--checked {
     color: var(--q-color-primary);
 }
@@ -142,12 +87,12 @@
     cursor: var(--q-cursor-not-allowed);
 }
 
-.q-radio-group__item--disabled .q-radio-group__dot {
+.q-radio-group__item--disabled .q-radio {
     background: var(--q-color-bg-tertiary);
     border-color: var(--q-color-border);
 }
 
-.q-radio-group__item--disabled .q-radio-group__dot--checked::after {
+.q-radio-group__item--disabled .q-radio--checked::after {
     background: var(--q-color-primary-light);
 }
 
@@ -156,8 +101,14 @@
     cursor: var(--q-cursor-not-allowed);
 }
 
-.q-radio-group--error .q-radio-group__dot {
+.q-radio-group--error .q-radio {
     border-color: var(--q-color-error);
+}
+
+/* 尺寸覆盖 — 表单场景默认 18px，sm 14px，lg 22px */
+.q-checkbox-group .q-checkbox,
+.q-radio-group .q-radio {
+    --q-icon-size: 18px;
 }
 
 .q-size--sm.q-checkbox-group .q-checkbox-group__item,
@@ -165,20 +116,9 @@
     font-size: var(--q-font-size-sm);
 }
 
-.q-size--sm.q-checkbox-group .q-checkbox-group__box,
-.q-size--sm.q-radio-group .q-radio-group__dot {
-    width: 14px;
-    height: 14px;
-}
-
-.q-size--sm.q-checkbox-group .q-checkbox-group__box--checked::after {
-    width: 4px;
-    height: 7px;
-}
-
-.q-size--sm.q-radio-group .q-radio-group__dot--checked::after {
-    width: 6px;
-    height: 6px;
+.q-size--sm.q-checkbox-group .q-checkbox,
+.q-size--sm.q-radio-group .q-radio {
+    --q-icon-size: 14px;
 }
 
 .q-size--lg.q-checkbox-group .q-checkbox-group__item,
@@ -186,18 +126,7 @@
     font-size: var(--q-font-size-lg);
 }
 
-.q-size--lg.q-checkbox-group .q-checkbox-group__box,
-.q-size--lg.q-radio-group .q-radio-group__dot {
-    width: 22px;
-    height: 22px;
-}
-
-.q-size--lg.q-checkbox-group .q-checkbox-group__box--checked::after {
-    width: 6px;
-    height: 11px;
-}
-
-.q-size--lg.q-radio-group .q-radio-group__dot--checked::after {
-    width: 10px;
-    height: 10px;
+.q-size--lg.q-checkbox-group .q-checkbox,
+.q-size--lg.q-radio-group .q-radio {
+    --q-icon-size: 22px;
 }

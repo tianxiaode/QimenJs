@@ -142,16 +142,3 @@
     transform: translate(-50%, -50%);
     flex-shrink: 0;
 }
-
-.q-header-cell__select-all--indeterminate {
-    border-color: var(--q-color-primary);
-    background: var(--q-color-primary);
-}
-
-.q-header-cell__select-all--indeterminate::after {
-    content: '';
-    display: block;
-    width: 8px;
-    height: 2px;
-    background: var(--q-color-on-primary, #fff);
-}

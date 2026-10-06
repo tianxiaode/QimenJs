@@ -5,5 +5,5 @@ import { createCellTpl } from './base-cell-tpl';
 export const RADIO_CELL_TPL: TplNode = createCellTpl({
     tag: 'span',
     name: 'box',
-    cls: 'q_cell__radio',
+    cls: 'q-radio',
 });

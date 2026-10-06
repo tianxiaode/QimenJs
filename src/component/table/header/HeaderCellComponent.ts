@@ -161,17 +161,17 @@ class HeaderCellComponent extends Component {
     _onSelectionAllOptionChange(value: boolean): void {
         this.setStyles({ display: value ? '' : 'none' }, 'selectAllBox');
         if (!value) {
-            this.toggleCls('q_cell__checkbox--checked', false, 'selectAllBox');
-            this.toggleCls('q-header-cell__select-all--indeterminate', false, 'selectAllBox');
+            this.toggleCls('q-checkbox--checked', false, 'selectAllBox');
+            this.toggleCls('q-checkbox--indeterminate', false, 'selectAllBox');
         }
     }
 
     _onSelectAllCheckedOptionChange(value: boolean): void {
-        this.toggleCls('q_cell__checkbox--checked', value, 'selectAllBox');
+        this.toggleCls('q-checkbox--checked', value, 'selectAllBox');
     }
 
     _onSelectAllIndeterminateOptionChange(value: boolean): void {
-        this.toggleCls('q-header-cell__select-all--indeterminate', value, 'selectAllBox');
+        this.toggleCls('q-checkbox--indeterminate', value, 'selectAllBox');
     }
 
     _applySortIcon(): void {
