@@ -15,7 +15,6 @@ export const MENU_ITEM_TPL: TemplateDecl = {
                     classes: 'q-menu-item__icon-wrap',
                     children: [
                         { tag: 'i', name: 'icon', classes: 'q-menu-item__icon' },
-                        { tag: 'i', name: 'iconMark' },
                     ],
                 },
                 { tag: 'span', name: 'text', classes: 'q-menu-item__text' },

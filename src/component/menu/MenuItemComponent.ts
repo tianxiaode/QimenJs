@@ -53,10 +53,10 @@ class MenuItemComponent extends Component {
             this._applyGroupIcon();
         } else {
             this.removeCls('q-menu-item--grouped');
-            this.removeCls('q-radio', 'iconMark');
-            this.removeCls('q-checkbox', 'iconMark');
-            this.removeCls('q-radio--checked', 'iconMark');
-            this.removeCls('q-checkbox--checked', 'iconMark');
+            this.removeCls('q-radio', 'icon');
+            this.removeCls('q-checkbox', 'icon');
+            this.removeCls('q-radio--checked', 'icon');
+            this.removeCls('q-checkbox--checked', 'icon');
         }
         this._applyAria();
     }
@@ -128,14 +128,14 @@ class MenuItemComponent extends Component {
         const checkedCls = isCheckbox ? 'q-checkbox--checked' : 'q-radio--checked';
         const otherCheckedCls = isCheckbox ? 'q-radio--checked' : 'q-checkbox--checked';
 
-        this.removeCls(otherCls, 'iconMark');
-        this.removeCls(otherCheckedCls, 'iconMark');
-        this.addCls(baseCls, 'iconMark');
+        this.removeCls(otherCls, 'icon');
+        this.removeCls(otherCheckedCls, 'icon');
+        this.addCls(baseCls, 'icon');
 
         if (this.checked) {
-            this.addCls(checkedCls, 'iconMark');
+            this.addCls(checkedCls, 'icon');
         } else {
-            this.removeCls(checkedCls, 'iconMark');
+            this.removeCls(checkedCls, 'icon');
         }
     }
 }
