@@ -11,7 +11,6 @@ export class ShowcaseApp extends Component {
             tag: 'div',
             classes: 'q-showcase',
             style: {
-                fontFamily: 'sans-serif',
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: '100vh',

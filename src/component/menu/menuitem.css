@@ -36,16 +36,20 @@
     min-width: 0;
 }
 
-.q-menu-item__icon {
-    display: inline-flex;
+.q-menu-item__icon-wrap {
+    display: flex;
     align-items: center;
     justify-content: center;
     align-self: stretch;
-    position: relative;
+    flex-shrink: 0;
     width: 20px;
     min-width: 20px;
     margin-right: var(--q-space-xs, 8px);
+}
+
+.q-menu-item__icon {
     font-size: var(--q-font-size-md, 16px);
+    line-height: 1;
 }
 
 .q-menu-item__text {

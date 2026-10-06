@@ -10,10 +10,13 @@ export const MENU_ITEM_TPL: TemplateDecl = {
             classes: 'q-menu-item__content',
             children: [
                 {
-                    tag: 'i',
-                    name: 'icon',
-                    classes: 'q-menu-item__icon',
-                    children: [{ tag: 'i', name: 'iconMark' }],
+                    tag: 'span',
+                    name: 'iconWrap',
+                    classes: 'q-menu-item__icon-wrap',
+                    children: [
+                        { tag: 'i', name: 'icon', classes: 'q-menu-item__icon' },
+                        { tag: 'i', name: 'iconMark' },
+                    ],
                 },
                 { tag: 'span', name: 'text', classes: 'q-menu-item__text' },
                 { tag: 'span', name: 'shortcut', classes: 'q-menu-item__shortcut' },

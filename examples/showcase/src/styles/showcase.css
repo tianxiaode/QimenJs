@@ -32,7 +32,7 @@ html.dark {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--q-font-family-base);
     background: var(--q-sc-bg);
     color: var(--q-sc-text);
     line-height: 1.6;
