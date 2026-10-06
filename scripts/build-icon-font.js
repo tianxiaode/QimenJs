@@ -114,9 +114,60 @@ function commandsToSubPaths(absCommands) {
         break;
       }
       case 'A': {
-        // 弧线近似为直线（简化）
-        current.push({ x: params[5], y: params[6], type: 'L', fromX: cx, fromY: cy });
-        cx = params[5]; cy = params[6];
+        const r = params[0];
+        const largeArc = params[3];
+        const sweep = params[4];
+        const ex = params[5];
+        const ey = params[6];
+        const x1 = cx, y1 = cy;
+
+        const x1p = (x1 - ex) / 2;
+        const y1p = (y1 - ey) / 2;
+        const r2 = r * r;
+        const denom = x1p * x1p + y1p * y1p;
+
+        if (denom === 0 || r2 < denom) {
+          current.push({ x: ex, y: ey, type: 'L', fromX: cx, fromY: cy });
+          cx = ex; cy = ey;
+          break;
+        }
+
+        const factor = Math.sqrt(Math.max(0, r2 / denom - 1));
+        const svgSign = (largeArc !== sweep) ? 1 : -1;
+        const cxp = svgSign * factor * y1p;
+        const cyp = svgSign * factor * (-x1p);
+        const centerX = (x1 + ex) / 2 + cxp;
+        const centerY = (y1 + ey) / 2 + cyp;
+
+        const startAngle = Math.atan2(y1 - centerY, x1 - centerX);
+        const endAngle = Math.atan2(ey - centerY, ex - centerX);
+
+        let angleSweep;
+        if (sweep === 1) {
+          angleSweep = endAngle - startAngle;
+          if (angleSweep < 0) angleSweep += Math.PI * 2;
+        } else {
+          angleSweep = startAngle - endAngle;
+          if (angleSweep < 0) angleSweep += Math.PI * 2;
+        }
+
+        if (largeArc === 1 && angleSweep < Math.PI) {
+          angleSweep = Math.PI * 2 - angleSweep;
+        } else if (largeArc === 0 && angleSweep > Math.PI) {
+          angleSweep = Math.PI * 2 - angleSweep;
+        }
+
+        const steps = Math.max(8, Math.ceil(angleSweep / (Math.PI / 36)));
+        const direction = (sweep === 1) ? 1 : -1;
+
+        for (let s = 1; s <= steps; s++) {
+          const t = s / steps;
+          const angle = startAngle + direction * angleSweep * t;
+          const px = centerX + r * Math.cos(angle);
+          const py = centerY + r * Math.sin(angle);
+          current.push({ x: px, y: py, type: 'L', fromX: cx, fromY: cy });
+          cx = px; cy = py;
+        }
         break;
       }
       case 'Z':
@@ -136,50 +187,86 @@ function commandsToSubPaths(absCommands) {
 function strokeOffsetToFillD(subPaths, halfWidth) {
   let d = '';
   for (const subPath of subPaths) {
-    if (subPath.length < 2) continue;
+    const pts = [];
+    let isClosed = false;
+    for (const pt of subPath) {
+      if (pt.type === 'M') continue;
+      if (pt.type === 'Z') { isClosed = true; continue; }
+      pts.push(pt);
+    }
+    if (pts.length < 2) continue;
+
+    if (isClosed) {
+      pts.push({ x: pts[0].fromX !== undefined ? pts[0].fromX : pts[0].x, y: pts[0].fromY !== undefined ? pts[0].fromY : pts[0].y });
+    }
+
     const leftPts = [];
     const rightPts = [];
 
-    for (let i = 0; i < subPath.length; i++) {
-      const pt = subPath[i];
-      if (pt.type === 'M') continue;
-      if (pt.type === 'Z') {
-        const startPt = subPath[0];
-        if (startPt && pt.fromX !== undefined) {
-          const dx = startPt.x - pt.fromX;
-          const dy = startPt.y - pt.fromY;
-          const len = Math.sqrt(dx * dx + dy * dy);
-          if (len > 0) {
-            const nx = -dy / len * halfWidth;
-            const ny = dx / len * halfWidth;
-            leftPts.push({ x: pt.fromX + nx, y: pt.fromY + ny });
-            leftPts.push({ x: startPt.x + nx, y: startPt.y + ny });
-            rightPts.push({ x: pt.fromX - nx, y: pt.fromY - ny });
-            rightPts.push({ x: startPt.x - nx, y: startPt.y - ny });
-          }
+    for (let i = 0; i < pts.length; i++) {
+      const prevIdx = i > 0 ? i - 1 : -1;
+      const nextIdx = i < pts.length - 1 ? i + 1 : -1;
+      const px = pts[i].x;
+      const py = pts[i].y;
+
+      let inNx = 0, inNy = 0, outNx = 0, outNy = 0;
+      let hasIn = false, hasOut = false;
+
+      if (prevIdx >= 0) {
+        const dx = px - pts[prevIdx].x;
+        const dy = py - pts[prevIdx].y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > 0) {
+          inNx = -dy / len;
+          inNy = dx / len;
+          hasIn = true;
         }
+      }
+
+      if (nextIdx >= 0) {
+        const dx = pts[nextIdx].x - px;
+        const dy = pts[nextIdx].y - py;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > 0) {
+          outNx = -dy / len;
+          outNy = dx / len;
+          hasOut = true;
+        }
+      }
+
+      let nx, ny;
+      if (hasIn && hasOut) {
+        nx = (inNx + outNx) / 2;
+        ny = (inNy + outNy) / 2;
+        const len = Math.sqrt(nx * nx + ny * ny);
+        if (len > 0.001) {
+          nx /= len;
+          ny /= len;
+        } else {
+          nx = inNx;
+          ny = inNy;
+        }
+      } else if (hasIn) {
+        nx = inNx;
+        ny = inNy;
+      } else if (hasOut) {
+        nx = outNx;
+        ny = outNy;
+      } else {
         continue;
       }
-      const dx = pt.x - pt.fromX;
-      const dy = pt.y - pt.fromY;
-      const len = Math.sqrt(dx * dx + dy * dy);
-      if (len > 0) {
-        const nx = -dy / len * halfWidth;
-        const ny = dx / len * halfWidth;
-        leftPts.push({ x: pt.fromX + nx, y: pt.fromY + ny });
-        leftPts.push({ x: pt.x + nx, y: pt.y + ny });
-        rightPts.push({ x: pt.fromX - nx, y: pt.fromY - ny });
-        rightPts.push({ x: pt.x - nx, y: pt.y - ny });
-      }
+
+      leftPts.push({ x: px + nx * halfWidth, y: py + ny * halfWidth });
+      rightPts.push({ x: px - nx * halfWidth, y: py - ny * halfWidth });
     }
 
     if (leftPts.length < 2) continue;
+
     d += `M${leftPts[0].x.toFixed(2)} ${leftPts[0].y.toFixed(2)}`;
     for (let i = 1; i < leftPts.length; i++) {
       d += ` L${leftPts[i].x.toFixed(2)} ${leftPts[i].y.toFixed(2)}`;
     }
-    d += ` L${rightPts[rightPts.length - 1].x.toFixed(2)} ${rightPts[rightPts.length - 1].y.toFixed(2)}`;
-    for (let i = rightPts.length - 2; i >= 0; i--) {
+    for (let i = rightPts.length - 1; i >= 0; i--) {
       d += ` L${rightPts[i].x.toFixed(2)} ${rightPts[i].y.toFixed(2)}`;
     }
     d += 'Z ';
