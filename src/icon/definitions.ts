@@ -155,8 +155,8 @@ export const icons: IconDef[] = [
     {
         name: 'edit',
         paths: [
-            { d: P.line(9, 15, 18, 6) },
-            { d: P.triangle(4, 20, 8, 18, 6, 14), fill: 'currentColor' },
+            { d: P.line(12, 3, 12, 14) },
+            { d: P.triangle(9, 14, 12, 20, 15, 14), fill: 'currentColor' },
         ],
     },
     {
@@ -207,7 +207,7 @@ export const icons: IconDef[] = [
     {
         name: 'refresh',
         paths: [
-            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M8 2 L12 5 M8 8 L12 5' },
+            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M8 2 L12 5 M6 5 L12 5' },
         ],
     },
 ];
