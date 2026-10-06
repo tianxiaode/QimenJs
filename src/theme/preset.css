@@ -209,7 +209,9 @@
     --q-border-width-chinese: 2px;
 
     /* -------- 中国风字体 -------- */
-    --q-font-family-chinese: "Noto Serif SC", "华文楷体", "KaiTi", "楷体", serif;
+    --q-font-family-chinese: Inter, system-ui, Avenir, "Helvetica Neue", Helvetica,
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial,
+        sans-serif;
 
     /* -------- 金色系 -------- */
     --q-color-gold: var(--q-color-accent-gold);

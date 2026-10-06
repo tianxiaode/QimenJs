@@ -9,21 +9,13 @@ export const MENU_ITEM_TPL: TemplateDecl = {
             name: 'content',
             classes: 'q-menu-item__content',
             children: [
-                {
-                    tag: 'span',
-                    name: 'iconWrap',
-                    classes: 'q-menu-item__icon-wrap',
-                    children: [
-                        { tag: 'i', name: 'icon', classes: 'q-menu-item__icon' },
-                    ],
-                },
+                { tag: 'i', name: 'icon', classes: 'q-menu-item__icon' },
                 { tag: 'span', name: 'text', classes: 'q-menu-item__text' },
                 { tag: 'span', name: 'shortcut', classes: 'q-menu-item__shortcut' },
                 {
-                    tag: 'div',
+                    tag: 'i',
                     name: 'expand',
-                    classes: 'q-expand-arrow q-expand-arrow--collapsed hidden',
-                    children: [{ tag: 'i', classes: 'q-caret' }],
+                    classes: 'q-expand-arrow q-caret hidden',
                 },
             ],
         },
