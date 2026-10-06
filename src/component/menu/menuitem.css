@@ -40,12 +40,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    align-self: stretch;
     flex-shrink: 0;
-    width: 20px;
-    min-width: 20px;
+    width: 1.5em;
+    height: 1.5em;
+    min-width: 1.5em;
     margin-right: var(--q-space-xs, 8px);
-    font-size: var(--q-font-size-md, 16px);
+    font-size: inherit;
     line-height: 1;
 }
 
