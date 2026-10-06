@@ -156,6 +156,7 @@ export const icons: IconDef[] = [
         name: 'edit',
         paths: [
             { d: P.polygon([1, 22], [7, 20], [19, 8], [15, 4], [3, 16]) },
+            { d: P.line(7, 20, 3, 16) },
         ],
     },
     {
@@ -206,7 +207,7 @@ export const icons: IconDef[] = [
     {
         name: 'refresh',
         paths: [
-            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M12 5 L16 2 M12 5 L16 8' },
+            { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M17 4 L20 7 M17 10 L20 7' },
         ],
     },
 ];
