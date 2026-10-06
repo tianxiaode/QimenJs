@@ -127,6 +127,10 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
+    _onSelectDisabledOptionChange(): void {
+        if (this._isAfterInit) this._reflow();
+    }
+
     /**
      * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
      * selectionChanged 事件由 domEvents emits 配置自动转发
@@ -281,11 +285,31 @@ class TableComponent extends ItemGroupPooledComponent {
         const items = this._buildItems(data, metas);
         super.setItems(items);
         this._buildGroupRowMap(items);
+        this._deselectDisabledRows();
         this._updateSummaryRow();
         this._applyZebraStripes();
         if (this.getData('selectable') !== 'none') {
             this._syncRowSelectedStates();
         }
+    }
+
+    /**
+     * 取消已被禁选的行的选中状态（selectDisabled 函数可能在 reflow 后对已选行返回 true）
+     */
+    _deselectDisabledRows(): void {
+        if (this.getData('selectable') === 'none') return;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        let changed = false;
+        for (const item of items) {
+            const data = item?.getData?.('data');
+            if (!data?._rowKey || !data?._selectDisabled) continue;
+            if (this.isSelected(data._rowKey)) {
+                this.deselect(data._rowKey);
+                changed = true;
+            }
+        }
+        if (changed) this._updateHeaderSelectAllState();
     }
 
     _applyZebraStripes(): void {
@@ -305,11 +329,20 @@ class TableComponent extends ItemGroupPooledComponent {
     /**
      * 构建 item 数组：分组数据展开为「组行 + 组内行」扁平数组，通过 order 排序。
      * 每行生成 _rowKey（data.id 优先，fallback 全局计数），用于选择状态管理。
+     * selectDisabled 函数对每行求值，结果写入 _selectDisabled 标记。
      */
     _buildItems(data: any[], metas: ColumnMeta[]): Record<string, any>[] {
         let rowIdx = 0;
         const nextKey = (rowData: any): string =>
             String(rowData?.id ?? rowData?._rowKey ?? `row-${rowIdx++}`);
+        const selectDisabledFn = this.getData('selectDisabled');
+        const computeDisabled = (rowData: any): boolean => {
+            if (rowData?._selectDisabled) return true;
+            if (typeof selectDisabledFn === 'function') {
+                try { return !!selectDisabledFn(rowData); } catch { return false; }
+            }
+            return false;
+        };
         if (this._isGroupedData(data)) {
             const items: Record<string, any>[] = [];
             let order = 1;
@@ -324,7 +357,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 });
                 for (const rowData of group.groupItems ?? []) {
                     items.push({
-                        data: { ...rowData, _rowKey: nextKey(rowData) },
+                        data: { ...rowData, _rowKey: nextKey(rowData), _selectDisabled: computeDisabled(rowData) },
                         columnMetas: metas,
                         order: order++,
                         _groupKey: groupKey,
@@ -334,7 +367,7 @@ class TableComponent extends ItemGroupPooledComponent {
             return items;
         }
         return data.map((rowData: any) => ({
-            data: { ...rowData, _rowKey: nextKey(rowData) },
+            data: { ...rowData, _rowKey: nextKey(rowData), _selectDisabled: computeDisabled(rowData) },
             columnMetas: metas,
         }));
     }
@@ -614,6 +647,7 @@ const TableComponentDefs: Definitions = {
         columns: null,
         groupField: '',
         selectable: 'none',
+        selectDisabled: null,
     },
     fields: {
         _isAfterInit: false,

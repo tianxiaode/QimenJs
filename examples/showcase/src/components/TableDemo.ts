@@ -347,7 +347,7 @@ export const TABLE_DEMO: DemoConfig = {
             component: RowSelectDemo,
         } satisfies DemoSection,
         {
-            label: '禁选行',
+            label: '禁选行（数据标记）',
             code: `{ type: 'table', options: {
     columns: [
         { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
@@ -375,6 +375,39 @@ export const TABLE_DEMO: DemoConfig = {
                             columns: CHECKBOX_SELECT_COLUMNS,
                             data: DISABLED_SELECT_DATA,
                             selectable: 'multiple',
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '禁选行（函数配置）',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [...],
+    selectable: 'multiple',
+    selectDisabled: (row) => row.dept === '管理层',
+} }
+
+// selectDisabled: (row) => boolean — 函数式禁选配置
+// 对每行数据求值，返回 true 则该行禁止选择
+// 无需在数据中添加 _selectDisabled 标记`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: CHECKBOX_SELECT_COLUMNS,
+                            data: TABLE_DATA,
+                            selectable: 'multiple',
+                            selectDisabled: (row: any) => row.dept === '管理层',
                         },
                     },
                 ],
