@@ -185,36 +185,36 @@ function commandsToSubPaths(absCommands) {
  * 对子路径做 stroke offset，生成填充路径的 d 属性
  */
 function strokeOffsetToFillD(subPaths, halfWidth) {
+  const MITER_LIMIT = 2;
   let d = '';
   for (const subPath of subPaths) {
-    const pts = [];
+    const verts = [];
     let isClosed = false;
     for (const pt of subPath) {
-      if (pt.type === 'M') continue;
       if (pt.type === 'Z') { isClosed = true; continue; }
-      pts.push(pt);
+      verts.push({ x: pt.x, y: pt.y });
     }
-    if (pts.length < 2) continue;
+    if (verts.length < 2) continue;
 
-    if (isClosed) {
-      pts.push({ x: pts[0].fromX !== undefined ? pts[0].fromX : pts[0].x, y: pts[0].fromY !== undefined ? pts[0].fromY : pts[0].y });
-    }
-
+    const n = verts.length;
     const leftPts = [];
     const rightPts = [];
 
-    for (let i = 0; i < pts.length; i++) {
-      const prevIdx = i > 0 ? i - 1 : -1;
-      const nextIdx = i < pts.length - 1 ? i + 1 : -1;
-      const px = pts[i].x;
-      const py = pts[i].y;
+    for (let i = 0; i < n; i++) {
+      const px = verts[i].x;
+      const py = verts[i].y;
+
+      const prevI = isClosed ? (i - 1 + n) % n : i - 1;
+      const nextI = isClosed ? (i + 1) % n : i + 1;
+      const hasPrev = isClosed ? true : prevI >= 0;
+      const hasNext = isClosed ? true : nextI < n;
 
       let inNx = 0, inNy = 0, outNx = 0, outNy = 0;
       let hasIn = false, hasOut = false;
 
-      if (prevIdx >= 0) {
-        const dx = px - pts[prevIdx].x;
-        const dy = py - pts[prevIdx].y;
+      if (hasPrev) {
+        const dx = px - verts[prevI].x;
+        const dy = py - verts[prevI].y;
         const len = Math.sqrt(dx * dx + dy * dy);
         if (len > 0) {
           inNx = -dy / len;
@@ -223,9 +223,9 @@ function strokeOffsetToFillD(subPaths, halfWidth) {
         }
       }
 
-      if (nextIdx >= 0) {
-        const dx = pts[nextIdx].x - px;
-        const dy = pts[nextIdx].y - py;
+      if (hasNext) {
+        const dx = verts[nextI].x - px;
+        const dy = verts[nextI].y - py;
         const len = Math.sqrt(dx * dx + dy * dy);
         if (len > 0) {
           outNx = -dy / len;
@@ -234,30 +234,44 @@ function strokeOffsetToFillD(subPaths, halfWidth) {
         }
       }
 
-      let nx, ny;
+      let ox, oy;
       if (hasIn && hasOut) {
-        nx = (inNx + outNx) / 2;
-        ny = (inNy + outNy) / 2;
-        const len = Math.sqrt(nx * nx + ny * ny);
-        if (len > 0.001) {
-          nx /= len;
-          ny /= len;
+        let ax = (inNx + outNx) / 2;
+        let ay = (inNy + outNy) / 2;
+        const aLen = Math.sqrt(ax * ax + ay * ay);
+        if (aLen > 0.001) {
+          ax /= aLen;
+          ay /= aLen;
+          const dot = ax * inNx + ay * inNy;
+          if (dot > 0.001) {
+            const miterLen = halfWidth / dot;
+            if (miterLen <= MITER_LIMIT * halfWidth) {
+              ox = ax * miterLen;
+              oy = ay * miterLen;
+            } else {
+              ox = inNx * halfWidth;
+              oy = inNy * halfWidth;
+            }
+          } else {
+            ox = inNx * halfWidth;
+            oy = inNy * halfWidth;
+          }
         } else {
-          nx = inNx;
-          ny = inNy;
+          ox = inNx * halfWidth;
+          oy = inNy * halfWidth;
         }
       } else if (hasIn) {
-        nx = inNx;
-        ny = inNy;
+        ox = inNx * halfWidth;
+        oy = inNy * halfWidth;
       } else if (hasOut) {
-        nx = outNx;
-        ny = outNy;
+        ox = outNx * halfWidth;
+        oy = outNy * halfWidth;
       } else {
         continue;
       }
 
-      leftPts.push({ x: px + nx * halfWidth, y: py + ny * halfWidth });
-      rightPts.push({ x: px - nx * halfWidth, y: py - ny * halfWidth });
+      leftPts.push({ x: px + ox, y: py + oy });
+      rightPts.push({ x: px - ox, y: py - oy });
     }
 
     if (leftPts.length < 2) continue;
