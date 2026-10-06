@@ -1,0 +1,27 @@
+numGlyphs: 26
+glyph 0: (unnamed) 0 cmds
+glyph 1: add 68 cmds
+glyph 2: arrow-down 89 cmds
+glyph 3: arrow-left 89 cmds
+glyph 4: arrow-right 77 cmds
+glyph 5: arrow-up 89 cmds
+glyph 6: caret-down 5 cmds
+glyph 7: caret-left 5 cmds
+glyph 8: caret-right 5 cmds
+glyph 9: caret-up 5 cmds
+glyph 10: check 53 cmds
+glyph 11: checkbox-check 1464 cmds
+glyph 12: checkbox 1411 cmds
+glyph 13: close 64 cmds
+glyph 14: delete 198 cmds
+glyph 15: edit 148 cmds
+glyph 16: filter 110 cmds
+glyph 17: home 195 cmds
+glyph 18: menu 84 cmds
+glyph 19: minus 32 cmds
+glyph 20: more 41 cmds
+glyph 21: radio-check 1367 cmds
+glyph 22: radio 1352 cmds
+glyph 23: refresh 1106 cmds
+glyph 24: search 1411 cmds
+glyph 25: settings 2041 cmds
