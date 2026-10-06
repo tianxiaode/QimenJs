@@ -48,6 +48,54 @@ export const icons: IconDef[] = [
         ],
     },
 
+    // ---- Checkbox/Radio（控件状态图标） ----
+    {
+        name: 'checkbox',
+        paths: [
+            { d: P.rect(2, 2, 12, 12, 1) },
+        ],
+    },
+    {
+        name: 'checkbox-check',
+        paths: [
+            { d: P.rect(2, 2, 12, 12, 1) },
+            { d: P.polyline([4, 8], [6, 10], [12, 4]) },
+        ],
+    },
+    {
+        name: 'radio',
+        paths: [
+            { d: P.circle(8, 8, 6) },
+        ],
+    },
+    {
+        name: 'radio-check',
+        paths: [
+            { d: P.circle(8, 8, 6) },
+            { d: P.circle(8, 8, 2.5), fill: 'currentColor' },
+        ],
+    },
+    {
+        name: 'close',
+        paths: [
+            { d: P.line(4, 4, 12, 12) },
+            { d: P.line(12, 4, 4, 12) },
+        ],
+    },
+    {
+        name: 'add',
+        paths: [
+            { d: P.line(8, 3, 8, 13) },
+            { d: P.line(3, 8, 13, 8) },
+        ],
+    },
+    {
+        name: 'minus',
+        paths: [
+            { d: P.line(3, 8, 13, 8) },
+        ],
+    },
+
     // ---- 搜索/筛选 ----
     {
         name: 'search',

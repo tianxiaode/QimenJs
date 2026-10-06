@@ -148,6 +148,23 @@ export const ICON_DEMO: DemoConfig = {
             },
         },
         {
+            label: 'QIcon Checkbox/Radio',
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-checkbox' } }
+{ type: 'icon', options: { iconCls: 'q-icon-checkbox-check' } }
+{ type: 'icon', options: { iconCls: 'q-icon-radio' } }
+{ type: 'icon', options: { iconCls: 'q-icon-radio-check' } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    { type: 'icon', options: { iconCls: 'q-icon-checkbox' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-checkbox-check', color: 'primary' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-radio' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-radio-check', color: 'primary' } },
+                ],
+            },
+        },
+        {
             label: 'QIcon + 颜色',
             code: `{ type: 'icon', options: { iconCls: 'q-icon-check', color: 'success' } }
 { type: 'icon', options: { iconCls: 'q-icon-close', color: 'error' } }

@@ -84,7 +84,7 @@ export const P = {
 export const DEFAULT_VIEWBOX = '0 0 16 16';
 
 /** 默认描边宽度 */
-export const DEFAULT_STROKE_WIDTH = 1.5;
+export const DEFAULT_STROKE_WIDTH = 2;
 
 /** 将 IconDef 编译为 SVG 文件内容 */
 export function iconToSvg(icon: IconDef): string {

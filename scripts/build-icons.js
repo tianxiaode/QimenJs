@@ -54,7 +54,7 @@ const P = {
 };
 
 // ---- 图标定义（与 definitions.ts 保持同步） ----
-const SW = 1.5;
+const SW = 2;
 
 const icons = [
     // 状态确认
@@ -62,6 +62,11 @@ const icons = [
     { name: 'close', paths: [{ d: P.line(4, 4, 12, 12) }, { d: P.line(12, 4, 4, 12) }] },
     { name: 'add', paths: [{ d: P.line(8, 3, 8, 13) }, { d: P.line(3, 8, 13, 8) }] },
     { name: 'minus', paths: [{ d: P.line(3, 8, 13, 8) }] },
+    // Checkbox/Radio（控件状态图标）
+    { name: 'checkbox', paths: [{ d: P.rect(2, 2, 12, 12, 1) }] },
+    { name: 'checkbox-check', paths: [{ d: P.rect(2, 2, 12, 12, 1) }, { d: P.polyline([4, 8], [6, 10], [12, 4]) }] },
+    { name: 'radio', paths: [{ d: P.circle(8, 8, 6) }] },
+    { name: 'radio-check', paths: [{ d: P.circle(8, 8, 6) }, { d: P.circle(8, 8, 2.5), fill: 'currentColor' }] },
     // 搜索/筛选
     { name: 'search', paths: [{ d: P.circle(7, 7, 4) }, { d: P.line(10, 10, 14, 14) }] },
     { name: 'filter', paths: [{ d: P.polyline([2, 3], [14, 3]) }, { d: P.polyline([4, 8], [12, 8]) }, { d: P.polyline([6, 13], [10, 13]) }] },
