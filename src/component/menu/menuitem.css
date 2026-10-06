@@ -2,10 +2,10 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: 0.375rem var(--q-space-md, 16px);
+    height: 36px;
+    padding: 0 var(--q-space-md, 16px);
     font-size: var(--q-font-size-md, 14px);
     font-weight: var(--q-font-weight-medium, 500);
-    line-height: 1;
     white-space: nowrap;
     cursor: var(--q-cursor-pointer, pointer);
     transition: background var(--q-transition-fast), color var(--q-transition-fast);
