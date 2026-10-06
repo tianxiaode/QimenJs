@@ -155,9 +155,8 @@ export const icons: IconDef[] = [
     {
         name: 'edit',
         paths: [
-            { d: P.line(4, 20, 14, 10) },
-            { d: P.polygon([12, 8], [16, 4], [20, 8], [16, 12]) },
-            { d: P.line(4, 20, 6, 18) },
+            { d: P.line(9, 15, 18, 6) },
+            { d: P.triangle(4, 20, 8, 18, 6, 14), fill: 'currentColor' },
         ],
     },
     {
@@ -190,9 +189,9 @@ export const icons: IconDef[] = [
     {
         name: 'more',
         paths: [
-            { d: P.circle(5, 12, 1.5), fill: 'currentColor' },
-            { d: P.circle(12, 12, 1.5), fill: 'currentColor' },
-            { d: P.circle(19, 12, 1.5), fill: 'currentColor' },
+            { d: P.circle(5, 12, 2.2), fill: 'currentColor' },
+            { d: P.circle(12, 12, 2.2), fill: 'currentColor' },
+            { d: P.circle(19, 12, 2.2), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
@@ -208,8 +207,7 @@ export const icons: IconDef[] = [
     {
         name: 'refresh',
         paths: [
-            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) },
-            { d: P.polyline([7, 2], [12, 5], [7, 8]) },
+            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M8 2 L12 5 M8 8 L12 5' },
         ],
     },
 ];

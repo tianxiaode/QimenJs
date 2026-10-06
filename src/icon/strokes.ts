@@ -51,7 +51,7 @@ export const P = {
         return `M${x1} ${y1} A${r} ${r} 0 ${largeArc} ${sweep} ${x2} ${y2}`;
     },
 
-    /** 圆 — 全弧线闭合 */
+    /** 圆 — 全弧线闭合（逆时针 y-down，与 tubes 方案一致） */
     circle(cx: number, cy: number, r: number): string {
         return `M${cx - r} ${cy} A${r} ${r} 0 1 0 ${cx + r} ${cy} A${r} ${r} 0 1 0 ${cx - r} ${cy} Z`;
     },

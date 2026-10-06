@@ -182,10 +182,12 @@ function commandsToSubPaths(absCommands) {
 }
 
 /**
- * 对子路径做 stroke offset，生成填充路径的 d 属性
+ * 对子路径做 stroke → fill 转换（tubes 方案）
+ * 每条线段 → 矩形（两侧偏移 halfWidth）
+ * 每个顶点 → 圆（半径 halfWidth，实现 round join/cap）
  */
 function strokeOffsetToFillD(subPaths, halfWidth) {
-  const MITER_LIMIT = 2;
+  if (halfWidth <= 0) return '';
   let d = '';
   for (const subPath of subPaths) {
     const verts = [];
@@ -197,93 +199,29 @@ function strokeOffsetToFillD(subPaths, halfWidth) {
     if (verts.length < 2) continue;
 
     const n = verts.length;
-    const leftPts = [];
-    const rightPts = [];
+    const segCount = isClosed ? n : n - 1;
+
+    for (let i = 0; i < segCount; i++) {
+      const p1 = verts[i];
+      const p2 = verts[(i + 1) % n];
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 0.001) continue;
+
+      const nx = -dy / len * halfWidth;
+      const ny = dx / len * halfWidth;
+
+      d += ` M${(p1.x + nx).toFixed(2)} ${(p1.y + ny).toFixed(2)}`;
+      d += ` L${(p2.x + nx).toFixed(2)} ${(p2.y + ny).toFixed(2)}`;
+      d += ` L${(p2.x - nx).toFixed(2)} ${(p2.y - ny).toFixed(2)}`;
+      d += ` L${(p1.x - nx).toFixed(2)} ${(p1.y - ny).toFixed(2)}`;
+      d += 'Z';
+    }
 
     for (let i = 0; i < n; i++) {
-      const px = verts[i].x;
-      const py = verts[i].y;
-
-      const prevI = isClosed ? (i - 1 + n) % n : i - 1;
-      const nextI = isClosed ? (i + 1) % n : i + 1;
-      const hasPrev = isClosed ? true : prevI >= 0;
-      const hasNext = isClosed ? true : nextI < n;
-
-      let inNx = 0, inNy = 0, outNx = 0, outNy = 0;
-      let hasIn = false, hasOut = false;
-
-      if (hasPrev) {
-        const dx = px - verts[prevI].x;
-        const dy = py - verts[prevI].y;
-        const len = Math.sqrt(dx * dx + dy * dy);
-        if (len > 0) {
-          inNx = -dy / len;
-          inNy = dx / len;
-          hasIn = true;
-        }
-      }
-
-      if (hasNext) {
-        const dx = verts[nextI].x - px;
-        const dy = verts[nextI].y - py;
-        const len = Math.sqrt(dx * dx + dy * dy);
-        if (len > 0) {
-          outNx = -dy / len;
-          outNy = dx / len;
-          hasOut = true;
-        }
-      }
-
-      let ox, oy;
-      if (hasIn && hasOut) {
-        let ax = (inNx + outNx) / 2;
-        let ay = (inNy + outNy) / 2;
-        const aLen = Math.sqrt(ax * ax + ay * ay);
-        if (aLen > 0.001) {
-          ax /= aLen;
-          ay /= aLen;
-          const dot = ax * inNx + ay * inNy;
-          if (dot > 0.001) {
-            const miterLen = halfWidth / dot;
-            if (miterLen <= MITER_LIMIT * halfWidth) {
-              ox = ax * miterLen;
-              oy = ay * miterLen;
-            } else {
-              ox = inNx * halfWidth;
-              oy = inNy * halfWidth;
-            }
-          } else {
-            ox = inNx * halfWidth;
-            oy = inNy * halfWidth;
-          }
-        } else {
-          ox = inNx * halfWidth;
-          oy = inNy * halfWidth;
-        }
-      } else if (hasIn) {
-        ox = inNx * halfWidth;
-        oy = inNy * halfWidth;
-      } else if (hasOut) {
-        ox = outNx * halfWidth;
-        oy = outNy * halfWidth;
-      } else {
-        continue;
-      }
-
-      leftPts.push({ x: px + ox, y: py + oy });
-      rightPts.push({ x: px - ox, y: py - oy });
+      d += ' ' + circleD(verts[i].x, verts[i].y, halfWidth);
     }
-
-    if (leftPts.length < 2) continue;
-
-    d += `M${leftPts[0].x.toFixed(2)} ${leftPts[0].y.toFixed(2)}`;
-    for (let i = 1; i < leftPts.length; i++) {
-      d += ` L${leftPts[i].x.toFixed(2)} ${leftPts[i].y.toFixed(2)}`;
-    }
-    for (let i = rightPts.length - 1; i >= 0; i--) {
-      d += ` L${rightPts[i].x.toFixed(2)} ${rightPts[i].y.toFixed(2)}`;
-    }
-    d += 'Z ';
   }
   return d.trim();
 }
@@ -308,8 +246,9 @@ function convertDToFont(svgD, vbW, vbH) {
   const scale = UNITS_PER_EM / vbW;
   // svgpath transform: matrix(a, b, c, d, e, f)
   // x' = a*x + c*y + e, y' = b*x + d*y + f
-  // SVG → 字体：x' = x * scale, y' = UNITS_PER_EM - y * scale
-  const matrixStr = `matrix(${scale},0,0,${-scale},0,${UNITS_PER_EM})`;
+  // SVG → 字体：x' = x * scale, y' = ASCENT - y * scale
+  // ASCENT=850 而非 UNITS_PER_EM=1000，使图标在 ascent/descent 范围内居中
+  const matrixStr = `matrix(${scale},0,0,${-scale},0,${ASCENT})`;
   const transformed = new SvgPath(svgD)
     .abs()
     .unshort()
@@ -553,3 +492,38 @@ try {
   console.log(`\n⚠ 字体格式转换失败: ${e.message}`);
   console.log(`  SVG 字体保留在: ${svgFontPath}`);
 }
+
+// ---- 自动更新 q-icon.css 的图标映射部分 ----
+function updateQIconCss() {
+  const cssPath = path.resolve(__dirname, '../src/icon/q-icon.css');
+  if (!fs.existsSync(cssPath)) {
+    console.log('⚠ q-icon.css 不存在，跳过 CSS 更新');
+    return;
+  }
+
+  let css = fs.readFileSync(cssPath, 'utf-8');
+
+  const sectionHeader = '/* ========================================\n   10. 图标定义 (Unicode 私用区 E900-E9FF)\n   自动生成 — 勿手动编辑\n   ======================================== */';
+
+  const sectionStart = css.indexOf(sectionHeader);
+  if (sectionStart === -1) {
+    console.log('⚠ q-icon.css 中找不到图标定义区域，跳过 CSS 更新');
+    return;
+  }
+
+  const sortedNames = Object.keys(iconMap).sort();
+  let iconClasses = '';
+  for (const name of sortedNames) {
+    const hex = iconMap[name].toLowerCase();
+    const selector = `.q-icon-${name}:before`;
+    iconClasses += `${selector.padEnd(30)} { content: "\\${hex}"; }\n`;
+  }
+
+  const newSection = sectionHeader + '\n\n' + iconClasses;
+  css = css.substring(0, sectionStart) + newSection;
+
+  fs.writeFileSync(cssPath, css, 'utf-8');
+  console.log(`✓ q-icon.css 图标映射已更新 (${sortedNames.length} 个图标)`);
+}
+
+updateQIconCss();

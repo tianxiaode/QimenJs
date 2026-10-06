@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>QIcon Font Test v5</title>
+<style>
+@font-face {
+  font-family: 'QIcon';
+  src: url('src/icon/fonts/q-icon.woff2') format('woff2'),
+       url('src/icon/fonts/q-icon.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+.q-icon {
+  font-family: 'QIcon';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+body { font-family: sans-serif; margin: 20px; background: #fff; color: #333; }
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.item { display: flex; flex-direction: column; align-items: center; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
+.item .icon { font-size: 32px; margin-bottom: 8px; }
+.item .name { font-size: 12px; color: #666; }
+.item .code { font-size: 10px; color: #999; }
+</style>
+</head>
+<body>
+<h1>QIcon Font Test v5 — 25 icons</h1>
+<div class="grid">
+  <div class="item"><span class="icon q-icon">&#xE900;</span><span class="name">add</span><span class="code">e900</span></div>
+  <div class="item"><span class="icon q-icon">&#xE901;</span><span class="name">arrow-down</span><span class="code">e901</span></div>
+  <div class="item"><span class="icon q-icon">&#xE902;</span><span class="name">arrow-left</span><span class="code">e902</span></div>
+  <div class="item"><span class="icon q-icon">&#xE903;</span><span class="name">arrow-right</span><span class="code">e903</span></div>
+  <div class="item"><span class="icon q-icon">&#xE904;</span><span class="name">arrow-up</span><span class="code">e904</span></div>
+  <div class="item"><span class="icon q-icon">&#xE905;</span><span class="name">caret-down</span><span class="code">e905</span></div>
+  <div class="item"><span class="icon q-icon">&#xE906;</span><span class="name">caret-left</span><span class="code">e906</span></div>
+  <div class="item"><span class="icon q-icon">&#xE907;</span><span class="name">caret-right</span><span class="code">e907</span></div>
+  <div class="item"><span class="icon q-icon">&#xE908;</span><span class="name">caret-up</span><span class="code">e908</span></div>
+  <div class="item"><span class="icon q-icon">&#xE909;</span><span class="name">check</span><span class="code">e909</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90A;</span><span class="name">checkbox</span><span class="code">e90a</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90B;</span><span class="name">checkbox-check</span><span class="code">e90b</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90C;</span><span class="name">close</span><span class="code">e90c</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90D;</span><span class="name">delete</span><span class="code">e90d</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90E;</span><span class="name">edit</span><span class="code">e90e</span></div>
+  <div class="item"><span class="icon q-icon">&#xE90F;</span><span class="name">filter</span><span class="code">e90f</span></div>
+  <div class="item"><span class="icon q-icon">&#xE910;</span><span class="name">home</span><span class="code">e910</span></div>
+  <div class="item"><span class="icon q-icon">&#xE911;</span><span class="name">menu</span><span class="code">e911</span></div>
+  <div class="item"><span class="icon q-icon">&#xE912;</span><span class="name">minus</span><span class="code">e912</span></div>
+  <div class="item"><span class="icon q-icon">&#xE913;</span><span class="name">more</span><span class="code">e913</span></div>
+  <div class="item"><span class="icon q-icon">&#xE914;</span><span class="name">radio</span><span class="code">e914</span></div>
+  <div class="item"><span class="icon q-icon">&#xE915;</span><span class="name">radio-check</span><span class="code">e915</span></div>
+  <div class="item"><span class="icon q-icon">&#xE916;</span><span class="name">refresh</span><span class="code">e916</span></div>
+  <div class="item"><span class="icon q-icon">&#xE917;</span><span class="name">search</span><span class="code">e917</span></div>
+  <div class="item"><span class="icon q-icon">&#xE918;</span><span class="name">settings</span><span class="code">e918</span></div>
+</div>
+</body>
+</html>
