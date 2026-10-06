@@ -113,7 +113,7 @@ const icons = [
     { name: 'more', paths: [{ d: P.circle(5, 12, 2.2), fill: 'currentColor' }, { d: P.circle(12, 12, 2.2), fill: 'currentColor' }, { d: P.circle(19, 12, 2.2), fill: 'currentColor' }], strokeWidth: 0 },
     // 导航
     { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
-    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M17 4 L20 7 M17 10 L20 7' }] },
+    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----

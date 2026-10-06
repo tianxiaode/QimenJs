@@ -207,7 +207,7 @@ export const icons: IconDef[] = [
     {
         name: 'refresh',
         paths: [
-            { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M17 4 L20 7 M17 10 L20 7' },
+            { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' },
         ],
     },
 ];
