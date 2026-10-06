@@ -51,10 +51,34 @@ const P = {
     qcurve: (x1, y1, cx, cy, x2, y2) => `M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}`,
     ccurve: (x1, y1, c1x, c1y, c2x, c2y, x2, y2) => `M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`,
     triangle: (x1, y1, x2, y2, x3, y3) => `M${x1} ${y1} L${x2} ${y2} L${x3} ${y3} Z`,
+    polygon: (...pts) => {
+        if (pts.length < 2) return '';
+        return `M${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(p => `L${p[0]} ${p[1]}`).join(' ') + ' Z';
+    },
+    gear: (cx, cy, innerR, outerR, teeth) => {
+        const step = (Math.PI * 2) / teeth;
+        const toothW = step * 0.35;
+        const gapW = step * 0.35;
+        const transW = (step - toothW - gapW) / 2;
+        const pts = [];
+        for (let i = 0; i < teeth; i++) {
+            const base = i * step - Math.PI / 2;
+            const a1 = base + gapW;
+            const a2 = a1 + transW;
+            const a3 = a2 + toothW;
+            const a4 = a3 + transW;
+            pts.push([+(cx + innerR * Math.cos(a1)).toFixed(2), +(cy + innerR * Math.sin(a1)).toFixed(2)]);
+            pts.push([+(cx + outerR * Math.cos(a2)).toFixed(2), +(cy + outerR * Math.sin(a2)).toFixed(2)]);
+            pts.push([+(cx + outerR * Math.cos(a3)).toFixed(2), +(cy + outerR * Math.sin(a3)).toFixed(2)]);
+            pts.push([+(cx + innerR * Math.cos(a4)).toFixed(2), +(cy + innerR * Math.sin(a4)).toFixed(2)]);
+        }
+        return 'M' + pts.map(p => `${p[0]} ${p[1]}`).join(' L') + ' Z';
+    },
 };
 
 // ---- 图标定义（与 definitions.ts 保持同步） ----
 const SW = 2;
+const VIEWBOX = '0 0 24 24';
 
 const icons = [
     // 状态确认
@@ -69,7 +93,7 @@ const icons = [
     { name: 'radio-check', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 12, 4), fill: 'currentColor' }] },
     // 搜索/筛选
     { name: 'search', paths: [{ d: P.circle(10, 10, 6) }, { d: P.line(15, 15, 21, 21) }] },
-    { name: 'filter', paths: [{ d: P.polyline([3, 5], [21, 5]) }, { d: P.polyline([6, 12], [18, 12]) }, { d: P.polyline([9, 19], [15, 19]) }] },
+    { name: 'filter', paths: [{ d: P.polygon([3, 4], [21, 4], [15, 12], [15, 20], [9, 20], [9, 12]) }] },
     // 方向箭头
     { name: 'arrow-down', paths: [{ d: P.line(12, 4, 12, 20) }, { d: P.polyline([6, 14], [12, 20], [18, 14]) }] },
     { name: 'arrow-up', paths: [{ d: P.line(12, 4, 12, 20) }, { d: P.polyline([6, 10], [12, 4], [18, 10]) }] },
@@ -81,15 +105,15 @@ const icons = [
     { name: 'caret-left', paths: [{ d: P.triangle(8, 6, 8, 18, 16, 12), fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'caret-right', paths: [{ d: P.triangle(16, 6, 16, 18, 8, 12), fill: 'currentColor' }], strokeWidth: 0 },
     // 编辑操作
-    { name: 'edit', paths: [{ d: P.polyline([3, 21], [14, 10]) }, { d: P.polyline([14, 10], [17, 7], [20, 10], [17, 13]) }, { d: P.line(3, 21, 6, 18) }] },
+    { name: 'edit', paths: [{ d: P.line(4, 20, 14, 10) }, { d: P.polygon([12, 8], [16, 4], [20, 8], [16, 12]) }, { d: P.line(4, 20, 6, 18) }] },
     { name: 'delete', paths: [{ d: P.line(4, 6, 20, 6) }, { d: P.polyline([7, 6], [7, 21], [17, 21], [17, 6]) }, { d: P.line(9, 3, 15, 3) }, { d: P.line(10, 10, 10, 17) }, { d: P.line(14, 10, 14, 17) }] },
     // 设置/菜单
-    { name: 'settings', paths: [{ d: P.circle(12, 12, 4) }, { d: P.polyline([12, 2], [12, 5]) }, { d: P.polyline([12, 19], [12, 22]) }, { d: P.polyline([2, 12], [5, 12]) }, { d: P.polyline([19, 12], [22, 12]) }, { d: P.polyline([5, 5], [7, 7]) }, { d: P.polyline([17, 17], [19, 19]) }, { d: P.polyline([19, 5], [17, 7]) }, { d: P.polyline([7, 17], [5, 19]) }] },
+    { name: 'settings', paths: [{ d: P.gear(12, 12, 6.5, 9.5, 8) }, { d: P.circle(12, 12, 3) }] },
     { name: 'menu', paths: [{ d: P.line(3, 6, 21, 6) }, { d: P.line(3, 12, 21, 12) }, { d: P.line(3, 18, 21, 18) }] },
     { name: 'more', paths: [{ d: P.circle(5, 12, 1.5), fill: 'currentColor' }, { d: P.circle(12, 12, 1.5), fill: 'currentColor' }, { d: P.circle(19, 12, 1.5), fill: 'currentColor' }], strokeWidth: 0 },
     // 导航
-    { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [19, 21], [19, 10]) }, { d: P.line(9, 21, 9, 14) }, { d: P.line(15, 21, 15, 14) }] },
-    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, 0, Math.PI * 1.5) }, { d: P.polyline([12, 5], [16, 2], [19, 6]) }] },
+    { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
+    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, 0, Math.PI * 1.5) }, { d: P.polyline([7, 2], [12, 5], [7, 8]) }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----
@@ -121,7 +145,7 @@ function generateSvgFiles() {
             const psw = p.strokeWidth || sw;
             return `  <path d="${p.d}" fill="${fill}" stroke="currentColor" stroke-width="${psw}" stroke-linecap="round" stroke-linejoin="round"/>`;
         }).join('\n');
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">\n${paths}\n</svg>`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX}">\n${paths}\n</svg>`;
         fs.writeFileSync(path.join(SVG_DIR, `${icon.name}.svg`), svg);
     }
 
@@ -189,7 +213,7 @@ async function generateFontFallback() {
     const DESCENT = -150;
 
     function convertD(svgD) {
-        const scale = UNITS_PER_EM / 16;
+        const scale = UNITS_PER_EM / 24;
         const matrixStr = `matrix(${scale},0,0,${-scale},0,${UNITS_PER_EM})`;
         return new SvgPath(svgD).abs().unshort().transform(matrixStr).toString();
     }

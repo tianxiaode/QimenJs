@@ -78,6 +78,35 @@ export const P = {
     triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): string {
         return `M${x1} ${y1} L${x2} ${y2} L${x3} ${y3} Z`;
     },
+
+    /** 多边形 — 闭合折线 */
+    polygon(...pts: [number, number][]): string {
+        if (pts.length < 2) return '';
+        return `M${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(p => `L${p[0]} ${p[1]}`).join(' ') + ' Z';
+    },
+
+    /** 齿轮 — 带齿凸起的圆轮廓 */
+    gear(cx: number, cy: number, innerR: number, outerR: number, teeth: number): string {
+        const step = (Math.PI * 2) / teeth;
+        const toothW = step * 0.35;
+        const gapW = step * 0.35;
+        const transW = (step - toothW - gapW) / 2;
+
+        const pts: [number, number][] = [];
+        for (let i = 0; i < teeth; i++) {
+            const base = i * step - Math.PI / 2;
+            const a1 = base + gapW;
+            const a2 = a1 + transW;
+            const a3 = a2 + toothW;
+            const a4 = a3 + transW;
+
+            pts.push([+(cx + innerR * Math.cos(a1)).toFixed(2), +(cy + innerR * Math.sin(a1)).toFixed(2)]);
+            pts.push([+(cx + outerR * Math.cos(a2)).toFixed(2), +(cy + outerR * Math.sin(a2)).toFixed(2)]);
+            pts.push([+(cx + outerR * Math.cos(a3)).toFixed(2), +(cy + outerR * Math.sin(a3)).toFixed(2)]);
+            pts.push([+(cx + innerR * Math.cos(a4)).toFixed(2), +(cy + innerR * Math.sin(a4)).toFixed(2)]);
+        }
+        return 'M' + pts.map(p => `${p[0]} ${p[1]}`).join(' L') + ' Z';
+    },
 };
 
 /** 默认 viewBox */

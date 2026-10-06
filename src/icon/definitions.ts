@@ -87,9 +87,7 @@ export const icons: IconDef[] = [
     {
         name: 'filter',
         paths: [
-            { d: P.polyline([3, 5], [21, 5]) },
-            { d: P.polyline([6, 12], [18, 12]) },
-            { d: P.polyline([9, 19], [15, 19]) },
+            { d: P.polygon([3, 4], [21, 4], [15, 12], [15, 20], [9, 20], [9, 12]) },
         ],
     },
 
@@ -157,9 +155,9 @@ export const icons: IconDef[] = [
     {
         name: 'edit',
         paths: [
-            { d: P.polyline([3, 21], [14, 10]) },
-            { d: P.polyline([14, 10], [17, 7], [20, 10], [17, 13]) },
-            { d: P.line(3, 21, 6, 18) },
+            { d: P.line(4, 20, 14, 10) },
+            { d: P.polygon([12, 8], [16, 4], [20, 8], [16, 12]) },
+            { d: P.line(4, 20, 6, 18) },
         ],
     },
     {
@@ -177,15 +175,8 @@ export const icons: IconDef[] = [
     {
         name: 'settings',
         paths: [
-            { d: P.circle(12, 12, 4) },
-            { d: P.polyline([12, 2], [12, 5]) },
-            { d: P.polyline([12, 19], [12, 22]) },
-            { d: P.polyline([2, 12], [5, 12]) },
-            { d: P.polyline([19, 12], [22, 12]) },
-            { d: P.polyline([5, 5], [7, 7]) },
-            { d: P.polyline([17, 17], [19, 19]) },
-            { d: P.polyline([19, 5], [17, 7]) },
-            { d: P.polyline([7, 17], [5, 19]) },
+            { d: P.gear(12, 12, 6.5, 9.5, 8) },
+            { d: P.circle(12, 12, 3) },
         ],
     },
     {
@@ -211,16 +202,14 @@ export const icons: IconDef[] = [
         name: 'home',
         paths: [
             { d: P.polyline([3, 12], [12, 3], [21, 12]) },
-            { d: P.polyline([5, 10], [5, 21], [19, 21], [19, 10]) },
-            { d: P.line(9, 21, 9, 14) },
-            { d: P.line(15, 21, 15, 14) },
+            { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) },
         ],
     },
     {
         name: 'refresh',
         paths: [
             { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) },
-            { d: P.polyline([12, 5], [16, 2], [19, 6]) },
+            { d: P.polyline([7, 2], [12, 5], [7, 8]) },
         ],
     },
 ];
