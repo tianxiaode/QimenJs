@@ -105,7 +105,7 @@ const icons = [
     { name: 'caret-left', paths: [{ d: P.triangle(8, 6, 8, 18, 16, 12), fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'caret-right', paths: [{ d: P.triangle(16, 6, 16, 18, 8, 12), fill: 'currentColor' }], strokeWidth: 0 },
     // 编辑操作
-    { name: 'edit', paths: [{ d: P.line(12, 3, 12, 14) }, { d: P.triangle(9, 14, 12, 20, 15, 14), fill: 'currentColor' }] },
+    { name: 'edit', paths: [{ d: P.polygon([2, 22], [7, 19], [17, 9], [15, 7], [5, 17]) }] },
     { name: 'delete', paths: [{ d: P.line(4, 6, 20, 6) }, { d: P.polyline([7, 6], [7, 21], [17, 21], [17, 6]) }, { d: P.line(9, 3, 15, 3) }, { d: P.line(10, 10, 10, 17) }, { d: P.line(14, 10, 14, 17) }] },
     // 设置/菜单
     { name: 'settings', paths: [{ d: P.gear(12, 12, 6.5, 9.5, 8) }, { d: P.circle(12, 12, 3) }] },
@@ -113,7 +113,7 @@ const icons = [
     { name: 'more', paths: [{ d: P.circle(5, 12, 2.2), fill: 'currentColor' }, { d: P.circle(12, 12, 2.2), fill: 'currentColor' }, { d: P.circle(19, 12, 2.2), fill: 'currentColor' }], strokeWidth: 0 },
     // 导航
     { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
-    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M8 2 L12 5 M6 5 L12 5' }] },
+    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, 0, Math.PI * 1.5) + ' M15 2 L12 5 M18 5 L12 5' }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----
