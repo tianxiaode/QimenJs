@@ -190,11 +190,21 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         }
     }
 
-    _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+    _refreshItems(): void {
+        const columns = this.columns;
+        if (!Array.isArray(columns)) return;
         const items = columns.map(col => this._buildItemData(col));
         this.setItems(items);
         this._registerColumnOrders();
         this._updateLastCellBorder();
+    }
+
+    _onColumnsOptionChange(_columns: ColumnDefOrGroup[]): void {
+        this._refreshItems();
+    }
+
+    _onSelectableOptionChange(_value: string): void {
+        this._refreshItems();
     }
 
     _registerColumnOrders(): void {
@@ -305,7 +315,9 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             };
         }
         const leaf = col as ColumnDef;
-        const isSelectionCol = !!leaf.selection && this.getData('selectable') === 'multiple';
+        const selectable = this.getData('selectable') ?? 'none';
+        const isSelectionCol = !!leaf.selection && selectable !== 'none';
+        const isMultiSelect = !!leaf.selection && selectable === 'multiple';
         return {
             type: 'header-cell',
             colName: leaf.name,
@@ -320,8 +332,8 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             groupable: isSelectionCol ? false : (leaf.groupable ?? false),
             groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
-            menuDisabled: isSelectionCol,
-            selectionAll: isSelectionCol,
+            menuDisabled: isSelectionCol || !!leaf.menuDisabled,
+            selectionAll: isMultiSelect,
             eventKey,
         };
     }
@@ -749,6 +761,7 @@ const TableHeaderComponentDefs: Definitions = {
         sortBy: '',
         sortOrder: '',
         groupField: '',
+        selectable: 'none',
         popover: {
             type: 'menu',
             trigger: 'click',

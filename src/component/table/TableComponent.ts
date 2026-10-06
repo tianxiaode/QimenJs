@@ -117,16 +117,20 @@ class TableComponent extends ItemGroupPooledComponent {
             this.clearSelection();
             this._syncRowSelectedStates();
             this._updateHeaderSelectAllState();
-            return;
+        } else {
+            this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
+            this._syncRowSelectedStates();
+            this._updateHeaderSelectAllState();
         }
-        this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
-        this._syncRowSelectedStates();
-        this._updateHeaderSelectAllState();
+        if (this._header && this._header.getData('selectable') !== value) {
+            this._header.selectable = value;
+        }
     }
 
     /**
      * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
      * selectionChanged 事件由 domEvents emits 配置自动转发
+     * 有选择列的行禁用默认行选择，只有点击选择列单元格才触发选中
      */
     _onRowClick(domEvt: any): void {
         if (this.getData('selectable') === 'none') return;
@@ -134,9 +138,27 @@ class TableComponent extends ItemGroupPooledComponent {
         if (!item) return;
         const data = item.getData?.('data');
         if (!data || data._selectDisabled || !data._rowKey) return;
+        if (this._rowHasSelectionCell(item) && !this._isSelectionCellClick(item, domEvt)) return;
         this.toggleSelect(data._rowKey, data);
         this._syncRowSelectedStates();
         this._updateHeaderSelectAllState();
+    }
+
+    _rowHasSelectionCell(row: any): boolean {
+        const metas = row?.getData?.('columnMetas') || [];
+        return metas.some((m: ColumnMeta) => m.selection);
+    }
+
+    _isSelectionCellClick(row: any, domEvt: any): boolean {
+        const clickTarget = domEvt?.data?.originalEvent?.target as HTMLElement | undefined;
+        if (!clickTarget) return false;
+        const metas = row?.getData?.('columnMetas') || [];
+        for (const meta of metas) {
+            if (!meta.selection) continue;
+            const cell = row?._cells?.get(meta.name);
+            if (cell?.el?.contains(clickTarget)) return true;
+        }
+        return false;
     }
 
     /**

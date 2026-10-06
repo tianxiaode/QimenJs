@@ -190,9 +190,7 @@ class RowSelectDemo extends Component {
         };
     }
 
-    listens: ListenItem[] = [
-        { node: 'btnGroup', events: { select: '_onToggleSelectMode' } },
-    ];
+    listens: ListenItem[] = [{ node: 'btnGroup', events: { select: '_onToggleSelectMode' } }];
 
     _onToggleSelectMode(data: any) {
         const table = this.getComponent('table');
