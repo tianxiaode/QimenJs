@@ -29,6 +29,13 @@
     padding-right: 28px;
 }
 
+.q-menu-item__content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+}
+
 .q-menu-item__icon {
     display: inline-flex;
     align-items: center;
