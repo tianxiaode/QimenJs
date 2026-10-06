@@ -18,6 +18,9 @@
 /* 图标系统 */
 @import './icons.css';
 
+/* 字体图标系统（QIcon 字体 + class 映射） */
+@import '../icon/q-icon.css';
+
 /* 布局系统 */
 @import './layout.css';
 
