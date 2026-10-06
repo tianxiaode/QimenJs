@@ -151,6 +151,32 @@ export const icons: IconDef[] = [
         strokeWidth: 0,
     },
 
+    // ---- V字箭头（chevron，线条版） ----
+    {
+        name: 'chevron-down',
+        paths: [
+            { d: P.polyline([6, 9], [12, 15], [18, 9]) },
+        ],
+    },
+    {
+        name: 'chevron-up',
+        paths: [
+            { d: P.polyline([6, 15], [12, 9], [18, 15]) },
+        ],
+    },
+    {
+        name: 'chevron-left',
+        paths: [
+            { d: P.polyline([9, 6], [15, 12], [9, 18]) },
+        ],
+    },
+    {
+        name: 'chevron-right',
+        paths: [
+            { d: P.polyline([15, 6], [9, 12], [15, 18]) },
+        ],
+    },
+
     // ---- 编辑操作 ----
     {
         name: 'edit',
@@ -208,6 +234,52 @@ export const icons: IconDef[] = [
         name: 'refresh',
         paths: [
             { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' },
+        ],
+    },
+
+   <parameter name="newString">    {
+        name: 'refresh',
+        paths: [
+            { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' },
+        ],
+    },
+
+    // ---- 用户/情感 ----
+    {
+        name: 'user',
+        paths: [
+            { d: P.circle(12, 8, 3.5) },
+            { d: 'M5 20 A7 7 0 0 1 19 20' },
+        ],
+    },
+    {
+        name: 'heart',
+        paths: [
+            { d: 'M12 20 C8 16 4 12 4 8 C4 5 7 3 12 7 C17 3 20 5 20 8 C20 12 16 16 12 20 Z' },
+        ],
+    },
+    {
+        name: 'star',
+        paths: [
+            { d: P.polygon([12, 4], [14, 9], [20, 10], [15, 13], [17, 19], [12, 15], [7, 19], [9, 13], [4, 10], [10, 9]) },
+        ],
+    },
+
+    // ---- 状态提示 ----
+    {
+        name: 'warning',
+        paths: [
+            { d: P.polygon([12, 3], [21, 20], [3, 20]) },
+            { d: P.line(12, 9, 12, 14) },
+            { d: P.circle(12, 17, 1), fill: 'currentColor' },
+        ],
+    },
+    {
+        name: 'info',
+        paths: [
+            { d: P.circle(12, 12, 9) },
+            { d: P.circle(12, 7, 1.2), fill: 'currentColor' },
+            { d: P.line(12, 10, 12, 16) },
         ],
     },
 ];

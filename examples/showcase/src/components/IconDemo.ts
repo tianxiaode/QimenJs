@@ -6,104 +6,108 @@ export const ICON_DEMO: DemoConfig = {
     sections: [
         {
             label: '基础图标',
-            code: `{ type: 'icon', options: { iconCls: 'fa-solid fa-home' } }`,
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-home' } }
+{ type: 'icon', options: { iconCls: 'q-icon-settings' } }
+{ type: 'icon', options: { iconCls: 'q-icon-delete' } }
+{ type: 'icon', options: { iconCls: 'q-icon-user' } }
+{ type: 'icon', options: { iconCls: 'q-icon-heart' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-gear' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-trash' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-user' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-heart' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-settings' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-delete' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-user' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-heart' } },
                 ],
             },
         },
         {
             label: '尺寸 (size)',
-            code: `{ type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'xs' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'sm' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'md' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'lg' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'xl' } }`,
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-home', size: 'xs' } }
+{ type: 'icon', options: { iconCls: 'q-icon-home', size: 'sm' } }
+{ type: 'icon', options: { iconCls: 'q-icon-home', size: 'md' } }
+{ type: 'icon', options: { iconCls: 'q-icon-home', size: 'lg' } }
+{ type: 'icon', options: { iconCls: 'q-icon-home', size: 'xl' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'xs' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'sm' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'md' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'lg' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', size: 'xl' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', size: 'xs' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', size: 'sm' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', size: 'md' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', size: 'lg' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', size: 'xl' } },
                 ],
             },
         },
         {
             label: '颜色 (color)',
-            code: `{ type: 'icon', options: { iconCls: 'fa-solid fa-home', color: 'primary' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-check', color: 'success' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-triangle-exclamation', color: 'warning' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-xmark', color: 'error' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-circle-info', color: 'info' } }`,
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-home', color: 'primary' } }
+{ type: 'icon', options: { iconCls: 'q-icon-check', color: 'success' } }
+{ type: 'icon', options: { iconCls: 'q-icon-warning', color: 'warning' } }
+{ type: 'icon', options: { iconCls: 'q-icon-close', color: 'error' } }
+{ type: 'icon', options: { iconCls: 'q-icon-info', color: 'info' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-home', color: 'primary' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-check', color: 'success' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-home', color: 'primary' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-check', color: 'success' } },
                     {
                         type: 'icon',
-                        options: { iconCls: 'fa-solid fa-triangle-exclamation', color: 'warning' },
+                        options: { iconCls: 'q-icon-warning', color: 'warning' },
                     },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-xmark', color: 'error' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-close', color: 'error' } },
                     {
                         type: 'icon',
-                        options: { iconCls: 'fa-solid fa-circle-info', color: 'info' },
+                        options: { iconCls: 'q-icon-info', color: 'info' },
                     },
                 ],
             },
         },
         {
             label: '不同图标类型',
-            code: `{ type: 'icon', options: { iconCls: 'fa-solid fa-check' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-xmark' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-circle-info' } }
-{ type: 'icon', options: { iconCls: 'fa-solid fa-triangle-exclamation' } }`,
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-check' } }
+{ type: 'icon', options: { iconCls: 'q-icon-close' } }
+{ type: 'icon', options: { iconCls: 'q-icon-info' } }
+{ type: 'icon', options: { iconCls: 'q-icon-warning' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-check' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-xmark' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-circle-info' } },
-                    { type: 'icon', options: { iconCls: 'fa-solid fa-triangle-exclamation' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-check' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-close' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-info' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-warning' } },
                 ],
             },
         },
         {
             label: '颜色 + 尺寸组合',
-            code: `{ type: 'icon', options: { iconCls: 'fa-solid fa-heart', color: 'error', size: 'xl' } }`,
+            code: `{ type: 'icon', options: { iconCls: 'q-icon-heart', color: 'error', size: 'xl' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
                     {
                         type: 'icon',
-                        options: { iconCls: 'fa-solid fa-heart', color: 'error', size: 'xl' },
+                        options: { iconCls: 'q-icon-heart', color: 'error', size: 'xl' },
                     },
                     {
                         type: 'icon',
-                        options: { iconCls: 'fa-solid fa-star', color: 'warning', size: 'lg' },
+                        options: { iconCls: 'q-icon-star', color: 'warning', size: 'lg' },
                     },
                     {
                         type: 'icon',
-                        options: { iconCls: 'fa-solid fa-check', color: 'success', size: 'sm' },
+                        options: { iconCls: 'q-icon-check', color: 'success', size: 'sm' },
                     },
                 ],
             },
         },
         {
-            label: 'QIcon 字体图标',
+            label: 'QIcon 全部图标',
             code: `{ type: 'icon', options: { iconCls: 'q-icon-check' } }
 { type: 'icon', options: { iconCls: 'q-icon-close' } }
 { type: 'icon', options: { iconCls: 'q-icon-search' } }
@@ -116,8 +120,17 @@ export const ICON_DEMO: DemoConfig = {
 { type: 'icon', options: { iconCls: 'q-icon-add' } }
 { type: 'icon', options: { iconCls: 'q-icon-filter' } }
 { type: 'icon', options: { iconCls: 'q-icon-refresh' } }
+{ type: 'icon', options: { iconCls: 'q-icon-user' } }
+{ type: 'icon', options: { iconCls: 'q-icon-heart' } }
+{ type: 'icon', options: { iconCls: 'q-icon-star' } }
+{ type: 'icon', options: { iconCls: 'q-icon-warning' } }
+{ type: 'icon', options: { iconCls: 'q-icon-info' } }
 { type: 'icon', options: { iconCls: 'q-icon-caret-down' } }
 { type: 'icon', options: { iconCls: 'q-icon-caret-up' } }
+{ type: 'icon', options: { iconCls: 'q-icon-chevron-down' } }
+{ type: 'icon', options: { iconCls: 'q-icon-chevron-up' } }
+{ type: 'icon', options: { iconCls: 'q-icon-chevron-left' } }
+{ type: 'icon', options: { iconCls: 'q-icon-chevron-right' } }
 { type: 'icon', options: { iconCls: 'q-icon-arrow-down' } }
 { type: 'icon', options: { iconCls: 'q-icon-arrow-up' } }
 { type: 'icon', options: { iconCls: 'q-icon-arrow-left' } }
@@ -138,8 +151,17 @@ export const ICON_DEMO: DemoConfig = {
                     { type: 'icon', options: { iconCls: 'q-icon-add' } },
                     { type: 'icon', options: { iconCls: 'q-icon-filter' } },
                     { type: 'icon', options: { iconCls: 'q-icon-refresh' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-user' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-heart' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-star' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-warning' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-info' } },
                     { type: 'icon', options: { iconCls: 'q-icon-caret-down' } },
                     { type: 'icon', options: { iconCls: 'q-icon-caret-up' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-chevron-down' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-chevron-up' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-chevron-left' } },
+                    { type: 'icon', options: { iconCls: 'q-icon-chevron-right' } },
                     { type: 'icon', options: { iconCls: 'q-icon-arrow-down' } },
                     { type: 'icon', options: { iconCls: 'q-icon-arrow-up' } },
                     { type: 'icon', options: { iconCls: 'q-icon-arrow-left' } },

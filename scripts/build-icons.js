@@ -104,6 +104,11 @@ const icons = [
     { name: 'caret-up', paths: [{ d: P.triangle(6, 16, 18, 16, 12, 8), fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'caret-left', paths: [{ d: P.triangle(8, 6, 8, 18, 16, 12), fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'caret-right', paths: [{ d: P.triangle(16, 6, 16, 18, 8, 12), fill: 'currentColor' }], strokeWidth: 0 },
+    // V字箭头（chevron，线条版）
+    { name: 'chevron-down', paths: [{ d: P.polyline([6, 9], [12, 15], [18, 9]) }] },
+    { name: 'chevron-up', paths: [{ d: P.polyline([6, 15], [12, 9], [18, 15]) }] },
+    { name: 'chevron-left', paths: [{ d: P.polyline([9, 6], [15, 12], [9, 18]) }] },
+    { name: 'chevron-right', paths: [{ d: P.polyline([15, 6], [9, 12], [15, 18]) }] },
     // 编辑操作
     { name: 'edit', paths: [{ d: P.polygon([1, 22], [7, 20], [19, 8], [15, 4], [3, 16]) }, { d: P.line(7, 20, 3, 16) }] },
     { name: 'delete', paths: [{ d: P.line(4, 6, 20, 6) }, { d: P.polyline([7, 6], [7, 21], [17, 21], [17, 6]) }, { d: P.line(9, 3, 15, 3) }, { d: P.line(10, 10, 10, 17) }, { d: P.line(14, 10, 14, 17) }] },
@@ -114,6 +119,13 @@ const icons = [
     // 导航
     { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
     { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' }] },
+    // 用户/情感
+    { name: 'user', paths: [{ d: P.circle(12, 8, 3.5) }, { d: 'M5 20 A7 7 0 0 1 19 20' }] },
+    { name: 'heart', paths: [{ d: 'M12 20 C8 16 4 12 4 8 C4 5 7 3 12 7 C17 3 20 5 20 8 C20 12 16 16 12 20 Z' }] },
+    { name: 'star', paths: [{ d: P.polygon([12, 4], [14, 9], [20, 10], [15, 13], [17, 19], [12, 15], [7, 19], [9, 13], [4, 10], [10, 9]) }] },
+    // 状态提示
+    { name: 'warning', paths: [{ d: P.polygon([12, 3], [21, 20], [3, 20]) }, { d: P.line(12, 9, 12, 14) }, { d: P.circle(12, 17, 1), fill: 'currentColor' }] },
+    { name: 'info', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.line(12, 10, 12, 16) }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----
