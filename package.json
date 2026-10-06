@@ -19,6 +19,7 @@
     "build:utils": "node scripts/build.js utils",
     "build:validation": "node scripts/build.js validation",
     "build:core-clean": "node scripts/build.js core --clean",
+    "build:icons": "node scripts/build-icons.js && node scripts/build-icon-font.js",
     "publish:all": "node scripts/publish.js",
     "test": "jest",
     "test:watch": "jest --watch",

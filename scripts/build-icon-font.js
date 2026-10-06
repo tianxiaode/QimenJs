@@ -23,36 +23,13 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
-const iconUnicodeMap = {
-  save: 0xE900, refresh: 0xE901, edit: 0xE902, delete: 0xE903,
-  add: 0xE904, copy: 0xE905, paste: 0xE906, cut: 0xE907,
-  undo: 0xE908, redo: 0xE909, close: 0xE90A, check: 0xE90B,
-  print: 0xE90C, lock: 0xE90D, unlock: 0xE90E, export: 0xE90F,
-  back: 0xE910, forward: 0xE911, up: 0xE912, down: 0xE913,
-  left: 0xE914, right: 0xE915, upload: 0xE916, download: 0xE917,
-  search: 0xE918, filter: 0xE919, settings: 0xE91A, menu: 0xE91B,
-  more: 0xE91C, home: 0xE91D, dashboard: 0xE91E, notification: 0xE91F,
-  success: 0xE920, warning: 0xE921, error: 0xE922, info: 0xE923,
-  question: 0xE924, star: 0xE925, 'star-empty': 0xE926, heart: 0xE927,
-  'heart-empty': 0xE928, flag: 0xE929, tag: 0xE92A, bell: 0xE92B,
-  file: 0xE930, folder: 0xE931, 'folder-open': 0xE932, 'file-open': 0xE933,
-  'file-pdf': 0xE934, 'file-word': 0xE935, 'file-excel': 0xE936, 'file-image': 0xE937,
-  'file-archive': 0xE938, 'file-code': 0xE939,
-  user: 0xE940, users: 0xE941, 'user-add': 0xE942, 'user-remove': 0xE943,
-  'user-check': 0xE944, 'user-clock': 0xE945, role: 0xE946, permission: 0xE947,
-  profile: 0xE948,
-  calendar: 0xE950, clock: 0xE951, time: 0xE952, hourglass: 0xE953,
-  mail: 0xE960, 'mail-open': 0xE961, chat: 0xE962, comment: 0xE963,
-  send: 0xE964, inbox: 0xE965,
-  'chart-bar': 0xE970, 'chart-line': 0xE971, 'chart-pie': 0xE972, 'chart-area': 0xE973,
-  table: 0xE974, list: 0xE975,
-  shopping: 0xE980, cart: 0xE981, wallet: 0xE982, coin: 0xE983,
-  credit: 0xE984, order: 0xE985, invoice: 0xE986,
-  dragon: 0xE990, phoenix: 0xE991, lantern: 0xE992, teapot: 0xE993,
-  bamboo: 0xE994, plum: 0xE995, seal: 0xE996, scroll: 0xE997,
-  abacus: 0xE998, brush: 0xE999, ink: 0xE99A, fan: 0xE99B,
-  temple: 0xE99C, greatwall: 0xE99D, china: 0xE99E, 'yin-yang': 0xE99F,
-};
+// 动态生成 Unicode 映射：从 SVG 文件列表按顺序分配 E900+
+const svgFilesForMap = fs.readdirSync(svgDir).filter(f => f.endsWith('.svg')).map(f => f.replace('.svg', '')).sort();
+const iconUnicodeMap = {};
+const BASE_UNICODE = 0xE900;
+for (let i = 0; i < svgFilesForMap.length; i++) {
+  iconUnicodeMap[svgFilesForMap[i]] = BASE_UNICODE + i;
+}
 
 const UNITS_PER_EM = 1000;
 const ASCENT = 850;

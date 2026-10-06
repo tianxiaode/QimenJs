@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <!-- 题跋/评论 -->
-  <path d="M 3 5 Q 3 3 5 3 L 19 3 Q 21 3 21 5 L 21 15 Q 21 17 19 17 L 8 17 L 4 21 L 4 17 L 3 17 Q 3 17 3 15 Z"/>
-  <line x1="7" y1="8" x2="17" y2="8" stroke-width="1"/>
-  <line x1="7" y1="12" x2="13" y2="12" stroke-width="1"/>
-</svg>
