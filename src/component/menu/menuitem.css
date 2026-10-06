@@ -54,6 +54,8 @@
 
 .q-menu-item__text {
     flex: 1;
+    display: flex;
+    align-items: center;
     overflow: hidden;
     text-overflow: ellipsis;
 }
