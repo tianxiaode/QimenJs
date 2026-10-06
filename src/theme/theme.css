@@ -6,11 +6,6 @@
 @import './light.css';
 @import './dark.css';
 
-/* 全局字体 — 统一字体度量，避免不同字体 ascender/descender 差异导致垂直对齐偏差 */
-:root {
-    font-family: var(--q-font-family-base);
-}
-
 /* 预设主题 */
 @import './preset.css';
 
@@ -31,6 +26,11 @@
 
 /* 骨架屏 */
 @import './skeleton.css';
+
+/* 全局字体 — 统一字体度量，避免不同字体 ascender/descender 差异导致垂直对齐偏差 */
+:root {
+    font-family: var(--q-font-family-base);
+}
 
 /* ========================================
    💡 系统偏好检测
