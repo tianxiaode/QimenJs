@@ -72,8 +72,8 @@ export const MENU_DEMO: DemoConfig = {
     options: {
         items: [
             { text: '新建', icon: 'q-icon-add' },
-            { text: '打开', icon: 'fa-solid fa-folder-open' },
-            { text: '保存', icon: 'fa-solid fa-floppy-disk' },
+            { text: '打开', icon: 'q-icon-folder-open' },
+            { text: '保存', icon: 'q-icon-save' },
         ],
     }
 }`,
@@ -82,8 +82,8 @@ export const MENU_DEMO: DemoConfig = {
                 options: {
                     items: [
                         { text: '新建', icon: 'q-icon-add' },
-                        { text: '打开', icon: 'fa-solid fa-folder-open' },
-                        { text: '保存', icon: 'fa-solid fa-floppy-disk' },
+                        { text: '打开', icon: 'q-icon-folder-open' },
+                        { text: '保存', icon: 'q-icon-save' },
                     ],
                 },
             },

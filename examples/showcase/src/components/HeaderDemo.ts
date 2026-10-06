@@ -91,7 +91,7 @@ export const HEADER_DEMO: DemoConfig = {
         },
         {
             label: '完整结构 (iconCls + title + subtitle + action)',
-            code: `{ type: 'header', options: { title: '项目设置', subtitle: '配置管理', iconCls: 'q-icon-settings', items: [{ iconCls: 'fa fa-floppy-o', order: 20000, clickable: true }] } }`,
+            code: `{ type: 'header', options: { title: '项目设置', subtitle: '配置管理', iconCls: 'q-icon-settings', items: [{ iconCls: 'q-icon-save', order: 20000, clickable: true }] } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
@@ -104,7 +104,7 @@ export const HEADER_DEMO: DemoConfig = {
                             iconCls: 'q-icon-settings',
                             items: [
                                 {
-                                    iconCls: 'fa fa-floppy-o',
+                                    iconCls: 'q-icon-save',
                                     order: 20000,
                                     clickable: true,
                                 },

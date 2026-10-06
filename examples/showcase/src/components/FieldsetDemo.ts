@@ -66,14 +66,14 @@ export const FIELDSET_DEMO: DemoConfig = {
         },
         {
             label: '自定义箭头 (toggleIconCls)',
-            code: `{ type: 'fieldset', options: { legend: '自定义箭头', collapsible: true, toggleIconCls: 'fa fa-chevron-down', content: '...' } }`,
+            code: `{ type: 'fieldset', options: { legend: '自定义箭头', collapsible: true, toggleIconCls: 'q-icon-chevron-down', content: '...' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
                     {
                         type: 'fieldset',
-                        options: { legend: '自定义箭头', collapsible: true, toggleIconCls: 'fa fa-chevron-down', content: '使用 FontAwesome 图标替代默认 CSS 箭头' },
+                        options: { legend: '自定义箭头', collapsible: true, toggleIconCls: 'q-icon-chevron-down', content: '使用 FontAwesome 图标替代默认 CSS 箭头' },
                         style: { width: '300px' },
                     },
                 ],

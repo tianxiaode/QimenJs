@@ -38,23 +38,23 @@ class ButtonIconAlignDemo extends Component {
                     tag: 'div',
                     classes: 'q-demo__row',
                     children: [
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Left', iconAlign: 'left' } },
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Right', iconAlign: 'right' } },
+                        { type: 'button', options: { iconCls: 'q-icon-home', text: 'Left', iconAlign: 'left' } },
+                        { type: 'button', options: { iconCls: 'q-icon-home', text: 'Right', iconAlign: 'right' } },
                     ],
                 },
                 {
                     tag: 'div',
                     classes: 'q-demo__row',
                     children: [
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Top', iconAlign: 'top' } },
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Bottom', iconAlign: 'bottom' } },
+                        { type: 'button', options: { iconCls: 'q-icon-home', text: 'Top', iconAlign: 'top' } },
+                        { type: 'button', options: { iconCls: 'q-icon-home', text: 'Bottom', iconAlign: 'bottom' } },
                     ],
                 },
                 {
                     tag: 'div',
                     classes: 'q-demo__row',
                     children: [
-                        { type: 'button', options: { iconCls: 'fa-solid fa-home' } },
+                        { type: 'button', options: { iconCls: 'q-icon-home' } },
                         { type: 'button', options: { text: 'No Icon' } },
                     ],
                 },
@@ -131,25 +131,25 @@ btn.pressed = !btn.pressed;
         } satisfies DemoSection,
         {
             label: 'Icon (iconCls)',
-            code: `{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Home' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-gear' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-trash', color: 'error' } }`,
+            code: `{ type: 'button', options: { iconCls: 'q-icon-home', text: 'Home' } }
+{ type: 'button', options: { iconCls: 'q-icon-settings' } }
+{ type: 'button', options: { iconCls: 'q-icon-delete', color: 'error' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Home' } },
-                    { type: 'button', options: { iconCls: 'fa-solid fa-gear' } },
-                    { type: 'button', options: { iconCls: 'fa-solid fa-trash', color: 'error' } },
+                    { type: 'button', options: { iconCls: 'q-icon-home', text: 'Home' } },
+                    { type: 'button', options: { iconCls: 'q-icon-settings' } },
+                    { type: 'button', options: { iconCls: 'q-icon-delete', color: 'error' } },
                 ],
             },
         },
         {
             label: 'Icon Align (图标位置)',
-            code: `{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Left', iconAlign: 'left' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Right', iconAlign: 'right' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Top', iconAlign: 'top' } }
-{ type: 'button', options: { iconCls: 'fa-solid fa-home', text: 'Bottom', iconAlign: 'bottom' } }`,
+            code: `{ type: 'button', options: { iconCls: 'q-icon-home', text: 'Left', iconAlign: 'left' } }
+{ type: 'button', options: { iconCls: 'q-icon-home', text: 'Right', iconAlign: 'right' } }
+{ type: 'button', options: { iconCls: 'q-icon-home', text: 'Top', iconAlign: 'top' } }
+{ type: 'button', options: { iconCls: 'q-icon-home', text: 'Bottom', iconAlign: 'bottom' } }`,
             component: ButtonIconAlignDemo,
         } satisfies DemoSection,
         {
@@ -167,13 +167,13 @@ btn.pressed = !btn.pressed;
         },
         {
             label: 'Arrow (arrowCls)',
-            code: `{ type: 'button', options: { text: 'FA Icon', arrowCls: 'fa-solid fa-chevron-down' } }
+            code: `{ type: 'button', options: { text: 'FA Icon', arrowCls: 'q-icon-chevron-down' } }
 { type: 'dropdown', options: { text: 'Default Arrow' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'button', options: { text: 'FA Icon', arrowCls: 'fa-solid fa-chevron-down' } },
+                    { type: 'button', options: { text: 'FA Icon', arrowCls: 'q-icon-chevron-down' } },
                     { type: 'dropdown', options: { text: 'Default Arrow' } },
                 ],
             },

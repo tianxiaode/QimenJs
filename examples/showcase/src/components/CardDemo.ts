@@ -31,7 +31,7 @@ export const CARD_DEMO: DemoConfig = {
                 children: [
                     {
                         type: 'card',
-                        options: { title: '通知', iconCls: 'fa fa-bell', actionCls: 'fa fa-xmark' },
+                        options: { title: '通知', iconCls: 'q-icon-info', actionCls: 'q-icon-close' },
                         style: { width: '320px' },
                         children: [
                             { tag: 'p', name: 'body', options: { text: '有3条新消息待处理' } },
@@ -99,8 +99,8 @@ export const CARD_DEMO: DemoConfig = {
                         type: 'card',
                         options: {
                             title: '完整卡片',
-                            iconCls: 'fa fa-clipboard',
-                            actionCls: 'fa fa-gear',
+                            iconCls: 'q-icon-edit',
+                            actionCls: 'q-icon-settings',
                             footer: '更新时间: 2026-01',
                         },
                         children: [

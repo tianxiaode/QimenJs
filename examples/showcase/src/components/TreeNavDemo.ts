@@ -16,7 +16,7 @@ class TreeNavSelectDemo extends Component {
                         items: [
                             {
                                 text: '组件',
-                                iconCls: 'fa-solid fa-cube',
+                                iconCls: 'q-icon-home',
                                 children: [
                                     { text: 'Button', href: '/components/Button' },
                                     { text: 'Card', href: '/components/Card' },
@@ -24,7 +24,7 @@ class TreeNavSelectDemo extends Component {
                             },
                             {
                                 text: '布局',
-                                iconCls: 'fa-solid fa-table-cells',
+                                iconCls: 'q-icon-menu',
                                 children: [
                                     { text: 'Panel', href: '/components/Panel' },
                                     { text: 'Tabs', href: '/components/Tabs' },
@@ -111,7 +111,7 @@ export const TREENAV_DEMO: DemoConfig = {
     options: {
         activeIndex: 0,
         items: [
-            { text: '组件', iconCls: 'fa-solid fa-cube', children: [
+            { text: '组件', iconCls: 'q-icon-home', children: [
                 { text: 'Button' },
                 { text: 'Card' },
             ]},
@@ -126,12 +126,12 @@ export const TREENAV_DEMO: DemoConfig = {
                     items: [
                         {
                             text: '组件',
-                            iconCls: 'fa-solid fa-cube',
+                            iconCls: 'q-icon-home',
                             children: [{ text: 'Button' }, { text: 'Card' }],
                         },
                         {
                             text: '布局',
-                            iconCls: 'fa-solid fa-table-cells',
+                            iconCls: 'q-icon-menu',
                             children: [{ text: 'Panel' }, { text: 'Tabs' }],
                         },
                         { text: '设置', iconCls: 'q-icon-settings' },
@@ -160,7 +160,7 @@ export const TREENAV_DEMO: DemoConfig = {
                     items: [
                         {
                             text: '组件',
-                            iconCls: 'fa-solid fa-cube',
+                            iconCls: 'q-icon-home',
                             children: [
                                 { text: 'Button', href: '/components/Button' },
                                 { text: 'Card', href: '/components/Card' },
@@ -168,7 +168,7 @@ export const TREENAV_DEMO: DemoConfig = {
                         },
                         {
                             text: '布局',
-                            iconCls: 'fa-solid fa-table-cells',
+                            iconCls: 'q-icon-menu',
                             children: [
                                 { text: 'Panel', href: '/components/Panel' },
                                 { text: 'Tabs', href: '/components/Tabs' },

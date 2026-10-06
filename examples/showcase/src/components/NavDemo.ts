@@ -219,14 +219,14 @@ nav.update({ mode: 'collapsed' });`,
     options: {
         activeIndex: 0,
         items: [
-            { text: '组件', iconCls: 'fa-solid fa-cube', popover: {
+            { text: '组件', iconCls: 'q-icon-home', popover: {
                 type: 'nav', trigger: 'hover', placement: 'right-start',
                 options: { items: [
                     { text: 'Button', href: '/components/Button' },
                     { text: 'Card', href: '/components/Card' },
                 ]}
             }},
-            { text: '布局', iconCls: 'fa-solid fa-table-cells', popover: {
+            { text: '布局', iconCls: 'q-icon-menu', popover: {
                 type: 'nav', trigger: 'hover', placement: 'right-start',
                 options: { items: [
                     { text: 'Panel', href: '/components/Panel' },
@@ -244,7 +244,7 @@ nav.update({ mode: 'collapsed' });`,
                     items: [
                         {
                             text: '组件',
-                            iconCls: 'fa-solid fa-cube',
+                            iconCls: 'q-icon-home',
                             popover: {
                                 type: 'nav',
                                 trigger: 'hover',
@@ -259,7 +259,7 @@ nav.update({ mode: 'collapsed' });`,
                         },
                         {
                             text: '布局',
-                            iconCls: 'fa-solid fa-table-cells',
+                            iconCls: 'q-icon-menu',
                             popover: {
                                 type: 'nav',
                                 trigger: 'hover',

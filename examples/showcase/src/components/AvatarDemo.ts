@@ -74,16 +74,16 @@ export const AVATAR_DEMO: DemoConfig = {
         },
         {
             label: 'Icon (iconCls)',
-            code: `{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } }
-{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } }
-{ type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } }`,
+            code: `{ type: 'avatar', options: { iconCls: 'q-icon-user', size: 'sm' } }
+{ type: 'avatar', options: { iconCls: 'q-icon-user', size: 'md' } }
+{ type: 'avatar', options: { iconCls: 'q-icon-user', size: 'lg' } }`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__row',
                 children: [
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'sm' } },
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'md' } },
-                    { type: 'avatar', options: { iconCls: 'fa-solid fa-user', size: 'lg' } },
+                    { type: 'avatar', options: { iconCls: 'q-icon-user', size: 'sm' } },
+                    { type: 'avatar', options: { iconCls: 'q-icon-user', size: 'md' } },
+                    { type: 'avatar', options: { iconCls: 'q-icon-user', size: 'lg' } },
                 ],
             },
         },

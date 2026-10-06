@@ -104,8 +104,8 @@ class ShowcaseNavbar extends NavbarComponent {
                 {
                     type: 'toggle',
                     href: '#action/toggle-dark',
-                    offIcon: 'fa fa-sun',
-                    onIcon: 'fa fa-moon',
+                    offIcon: 'q-icon-sun',
+                    onIcon: 'q-icon-moon',
                     eventKey: 'dark',
                     ghost: true,
                     dock: 'right',
@@ -120,13 +120,13 @@ class ShowcaseNavbar extends NavbarComponent {
                 },
                 {
                     type: 'dropdown',
-                    iconCls: 'fa fa-globe',
+                    iconCls: 'q-icon-globe',
                     hint: '@nav.lang',
                     dock: 'right',
                     ghost: true,
                     mobileMenu: {
                         text: '@nav.lang',
-                        icon: 'fa fa-globe',
+                        icon: 'q-icon-globe',
                         items: langItems,
                     },
                     popover: {

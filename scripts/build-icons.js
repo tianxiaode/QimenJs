@@ -126,6 +126,13 @@ const icons = [
     // 状态提示
     { name: 'warning', paths: [{ d: P.polygon([12, 3], [21, 20], [3, 20]) }, { d: P.line(12, 9, 12, 14) }, { d: P.circle(12, 17, 1), fill: 'currentColor' }] },
     { name: 'info', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.line(12, 10, 12, 16) }] },
+    // 文件操作
+    { name: 'save', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.line(3, 9, 21, 9) }, { d: P.rect(7, 3, 10, 6) }, { d: P.rect(7, 13, 10, 8) }] },
+    { name: 'folder-open', paths: [{ d: P.polyline([3, 6], [3, 20], [21, 20]) }, { d: P.polyline([3, 6], [9, 6], [11, 8], [21, 8]) }, { d: P.line(7, 12, 17, 12) }] },
+    // 天体/世界
+    { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
+    { name: 'moon', paths: [{ d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z' }] },
+    { name: 'globe', paths: [{ d: P.circle(12, 12, 9) }, { d: P.line(3, 12, 21, 12) }, { d: P.polyline([12, 3], [8, 12], [12, 21]) }, { d: P.polyline([12, 3], [16, 12], [12, 21]) }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----
