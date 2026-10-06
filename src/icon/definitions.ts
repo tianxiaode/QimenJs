@@ -1,11 +1,11 @@
 /**
  * 图标定义 — 简洁笔画风（直线+弧线）
  *
- * 基于 16x16 viewBox，用笔画原语（P）组合生成。
+ * 基于 24x24 viewBox，用笔画原语（P）组合生成。
  * 设计原则：
  *   - 去掉圆圈外框，只保留图标核心形状
  *   - 直线对应横/竖/撇/捺，弧线对应弯/钩/折
- *   - stroke-width 1.5，stroke-linecap round
+ *   - stroke-width 2，stroke-linecap round
  *   - 实心图标用 fill: 'currentColor'
  *
  * AI 补充新图标时，遵循此格式：
@@ -24,27 +24,27 @@ export const icons: IconDef[] = [
     {
         name: 'check',
         paths: [
-            { d: P.polyline([3, 8], [6, 11], [13, 4]) },
+            { d: P.polyline([4, 12], [9, 17], [20, 6]) },
         ],
     },
     {
         name: 'close',
         paths: [
-            { d: P.line(4, 4, 12, 12) },
-            { d: P.line(12, 4, 4, 12) },
+            { d: P.line(6, 6, 18, 18) },
+            { d: P.line(18, 6, 6, 18) },
         ],
     },
     {
         name: 'add',
         paths: [
-            { d: P.line(8, 3, 8, 13) },
-            { d: P.line(3, 8, 13, 8) },
+            { d: P.line(12, 4, 12, 20) },
+            { d: P.line(4, 12, 20, 12) },
         ],
     },
     {
         name: 'minus',
         paths: [
-            { d: P.line(3, 8, 13, 8) },
+            { d: P.line(4, 12, 20, 12) },
         ],
     },
 
@@ -52,47 +52,27 @@ export const icons: IconDef[] = [
     {
         name: 'checkbox',
         paths: [
-            { d: P.rect(2, 2, 12, 12, 1) },
+            { d: P.rect(3, 3, 18, 18, 2) },
         ],
     },
     {
         name: 'checkbox-check',
         paths: [
-            { d: P.rect(2, 2, 12, 12, 1) },
-            { d: P.polyline([4, 8], [6, 10], [12, 4]) },
+            { d: P.rect(3, 3, 18, 18, 2) },
+            { d: P.polyline([7, 12], [10, 15], [17, 8]) },
         ],
     },
     {
         name: 'radio',
         paths: [
-            { d: P.circle(8, 8, 6) },
+            { d: P.circle(12, 12, 9) },
         ],
     },
     {
         name: 'radio-check',
         paths: [
-            { d: P.circle(8, 8, 6) },
-            { d: P.circle(8, 8, 2.5), fill: 'currentColor' },
-        ],
-    },
-    {
-        name: 'close',
-        paths: [
-            { d: P.line(4, 4, 12, 12) },
-            { d: P.line(12, 4, 4, 12) },
-        ],
-    },
-    {
-        name: 'add',
-        paths: [
-            { d: P.line(8, 3, 8, 13) },
-            { d: P.line(3, 8, 13, 8) },
-        ],
-    },
-    {
-        name: 'minus',
-        paths: [
-            { d: P.line(3, 8, 13, 8) },
+            { d: P.circle(12, 12, 9) },
+            { d: P.circle(12, 12, 4), fill: 'currentColor' },
         ],
     },
 
@@ -100,16 +80,16 @@ export const icons: IconDef[] = [
     {
         name: 'search',
         paths: [
-            { d: P.circle(7, 7, 4) },
-            { d: P.line(10, 10, 14, 14) },
+            { d: P.circle(10, 10, 6) },
+            { d: P.line(15, 15, 21, 21) },
         ],
     },
     {
         name: 'filter',
         paths: [
-            { d: P.polyline([2, 3], [14, 3]) },
-            { d: P.polyline([4, 8], [12, 8]) },
-            { d: P.polyline([6, 13], [10, 13]) },
+            { d: P.polyline([3, 5], [21, 5]) },
+            { d: P.polyline([6, 12], [18, 12]) },
+            { d: P.polyline([9, 19], [15, 19]) },
         ],
     },
 
@@ -117,29 +97,29 @@ export const icons: IconDef[] = [
     {
         name: 'arrow-down',
         paths: [
-            { d: P.line(8, 3, 8, 13) },
-            { d: P.polyline([4, 9], [8, 13], [12, 9]) },
+            { d: P.line(12, 4, 12, 20) },
+            { d: P.polyline([6, 14], [12, 20], [18, 14]) },
         ],
     },
     {
         name: 'arrow-up',
         paths: [
-            { d: P.line(8, 3, 8, 13) },
-            { d: P.polyline([4, 7], [8, 3], [12, 7]) },
+            { d: P.line(12, 4, 12, 20) },
+            { d: P.polyline([6, 10], [12, 4], [18, 10]) },
         ],
     },
     {
         name: 'arrow-left',
         paths: [
-            { d: P.line(3, 8, 13, 8) },
-            { d: P.polyline([7, 4], [3, 8], [7, 12]) },
+            { d: P.line(4, 12, 20, 12) },
+            { d: P.polyline([10, 6], [4, 12], [10, 18]) },
         ],
     },
     {
         name: 'arrow-right',
         paths: [
-            { d: P.line(3, 8, 13, 8) },
-            { d: P.polyline([9, 4], [13, 8], [9, 12]) },
+            { d: P.line(4, 12, 20, 12) },
+            { d: P.polyline([14, 6], [20, 12], [14, 18]) },
         ],
     },
 
@@ -147,28 +127,28 @@ export const icons: IconDef[] = [
     {
         name: 'caret-down',
         paths: [
-            { d: P.triangle(4, 5, 12, 5, 8, 11), fill: 'currentColor' },
+            { d: P.triangle(6, 8, 18, 8, 12, 16), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-up',
         paths: [
-            { d: P.triangle(4, 11, 12, 11, 8, 5), fill: 'currentColor' },
+            { d: P.triangle(6, 16, 18, 16, 12, 8), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-left',
         paths: [
-            { d: P.triangle(5, 4, 5, 12, 11, 8), fill: 'currentColor' },
+            { d: P.triangle(8, 6, 8, 18, 16, 12), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-right',
         paths: [
-            { d: P.triangle(11, 4, 11, 12, 5, 8), fill: 'currentColor' },
+            { d: P.triangle(16, 6, 16, 18, 8, 12), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
@@ -177,19 +157,19 @@ export const icons: IconDef[] = [
     {
         name: 'edit',
         paths: [
-            { d: P.polyline([2, 14], [10, 6]) },
-            { d: P.polyline([10, 6], [12, 4], [14, 6], [12, 8]) },
-            { d: P.line(2, 14, 4, 12) },
+            { d: P.polyline([3, 21], [14, 10]) },
+            { d: P.polyline([14, 10], [17, 7], [20, 10], [17, 13]) },
+            { d: P.line(3, 21, 6, 18) },
         ],
     },
     {
         name: 'delete',
         paths: [
-            { d: P.line(3, 4, 13, 4) },
-            { d: P.polyline([5, 4], [5, 14], [11, 14], [11, 4]) },
-            { d: P.line(7, 2, 9, 2) },
-            { d: P.line(7, 7, 7, 11) },
-            { d: P.line(9, 7, 9, 11) },
+            { d: P.line(4, 6, 20, 6) },
+            { d: P.polyline([7, 6], [7, 21], [17, 21], [17, 6]) },
+            { d: P.line(9, 3, 15, 3) },
+            { d: P.line(10, 10, 10, 17) },
+            { d: P.line(14, 10, 14, 17) },
         ],
     },
 
@@ -197,31 +177,31 @@ export const icons: IconDef[] = [
     {
         name: 'settings',
         paths: [
-            { d: P.circle(8, 8, 3) },
-            { d: P.line(8, 1, 8, 3) },
-            { d: P.line(8, 13, 8, 15) },
-            { d: P.line(1, 8, 3, 8) },
-            { d: P.line(13, 8, 15, 8) },
-            { d: P.line(3, 3, 4.5, 4.5) },
-            { d: P.line(11.5, 11.5, 13, 13) },
-            { d: P.line(13, 3, 11.5, 4.5) },
-            { d: P.line(4.5, 11.5, 3, 13) },
+            { d: P.circle(12, 12, 4) },
+            { d: P.polyline([12, 2], [12, 5]) },
+            { d: P.polyline([12, 19], [12, 22]) },
+            { d: P.polyline([2, 12], [5, 12]) },
+            { d: P.polyline([19, 12], [22, 12]) },
+            { d: P.polyline([5, 5], [7, 7]) },
+            { d: P.polyline([17, 17], [19, 19]) },
+            { d: P.polyline([19, 5], [17, 7]) },
+            { d: P.polyline([7, 17], [5, 19]) },
         ],
     },
     {
         name: 'menu',
         paths: [
-            { d: P.line(2, 4, 14, 4) },
-            { d: P.line(2, 8, 14, 8) },
-            { d: P.line(2, 12, 14, 12) },
+            { d: P.line(3, 6, 21, 6) },
+            { d: P.line(3, 12, 21, 12) },
+            { d: P.line(3, 18, 21, 18) },
         ],
     },
     {
         name: 'more',
         paths: [
-            { d: P.circle(3, 8, 1), fill: 'currentColor' },
-            { d: P.circle(8, 8, 1), fill: 'currentColor' },
-            { d: P.circle(13, 8, 1), fill: 'currentColor' },
+            { d: P.circle(5, 12, 1.5), fill: 'currentColor' },
+            { d: P.circle(12, 12, 1.5), fill: 'currentColor' },
+            { d: P.circle(19, 12, 1.5), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
@@ -230,17 +210,17 @@ export const icons: IconDef[] = [
     {
         name: 'home',
         paths: [
-            { d: P.polyline([2, 8], [8, 2], [14, 8]) },
-            { d: P.polyline([4, 7], [4, 14], [12, 14], [12, 7]) },
-            { d: P.line(6, 14, 6, 10), strokeWidth: SW },
-            { d: P.line(10, 14, 10, 10), strokeWidth: SW },
+            { d: P.polyline([3, 12], [12, 3], [21, 12]) },
+            { d: P.polyline([5, 10], [5, 21], [19, 21], [19, 10]) },
+            { d: P.line(9, 21, 9, 14) },
+            { d: P.line(15, 21, 15, 14) },
         ],
     },
     {
         name: 'refresh',
         paths: [
-            { d: P.arc(8, 8, 5, 0, Math.PI * 1.5) },
-            { d: P.polyline([8, 3], [11, 1], [13, 4]) },
+            { d: P.arc(12, 12, 7, 0, Math.PI * 1.5) },
+            { d: P.polyline([12, 5], [16, 2], [19, 6]) },
         ],
     },
 ];

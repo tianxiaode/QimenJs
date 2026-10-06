@@ -81,7 +81,7 @@ export const P = {
 };
 
 /** 默认 viewBox */
-export const DEFAULT_VIEWBOX = '0 0 16 16';
+export const DEFAULT_VIEWBOX = '0 0 24 24';
 
 /** 默认描边宽度 */
 export const DEFAULT_STROKE_WIDTH = 2;
