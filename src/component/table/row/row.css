@@ -26,6 +26,14 @@
     height: 100%;
 }
 
+.q-table-row .q_cell.q-cell--center {
+    justify-content: center;
+}
+
+.q-table-row .q_cell.q-cell--right {
+    justify-content: flex-end;
+}
+
 .q-table-row:hover {
     background: var(--q-color-bg-hover, #f0f0f0);
 }
