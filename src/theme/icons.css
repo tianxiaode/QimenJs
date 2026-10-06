@@ -5,7 +5,7 @@
    ======================================== */
 
 :root {
-    --q-icon-size: 14px;
+    --q-icon-size: 1rem;
     --q-icon-color: var(--q-color-text, #303133);
     --q-icon-border-width: calc(var(--q-icon-size) * 0.14);
 }

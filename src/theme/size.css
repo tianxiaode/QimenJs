@@ -52,6 +52,7 @@
     font-size: var(--q-font-size-xs);
     border-radius: var(--q-radius-sm);
     gap: var(--q-space-xs);
+    --q-icon-size: var(--q-icon-size-xs);
 }
 
 .q-size--sm {
@@ -61,6 +62,7 @@
     font-size: var(--q-font-size-sm);
     border-radius: var(--q-radius-sm);
     gap: var(--q-space-xs);
+    --q-icon-size: var(--q-icon-size-sm);
 }
 
 .q-size--md {
@@ -70,6 +72,7 @@
     font-size: var(--q-font-size-md);
     border-radius: var(--q-radius-md);
     gap: var(--q-space-sm);
+    --q-icon-size: var(--q-icon-size-md);
 }
 
 .q-size--lg {
@@ -79,6 +82,7 @@
     font-size: var(--q-font-size-lg);
     border-radius: var(--q-radius-lg);
     gap: var(--q-space-sm);
+    --q-icon-size: var(--q-icon-size-lg);
 }
 
 .q-size--xl {
@@ -88,6 +92,7 @@
     font-size: var(--q-font-size-xl);
     border-radius: var(--q-radius-xl);
     gap: var(--q-space-md);
+    --q-icon-size: var(--q-icon-size-xl);
 }
 
 .q-size--2xl {
@@ -97,6 +102,7 @@
     font-size: var(--q-font-size-2xl);
     border-radius: var(--q-radius-xl);
     gap: var(--q-space-md);
+    --q-icon-size: calc(var(--q-icon-size-xl) * 1.2);
 }
 
 /* -------- 图标跟随尺寸 -------- */
