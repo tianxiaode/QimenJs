@@ -189,7 +189,7 @@ export const TABS_DEMO: DemoConfig = {
         {
             label: '带图标 (iconCls)',
             code: `{ type: 'tab-bar', options: {
-    items: [{ label: '首页', iconCls: 'fa fa-home' }, { label: '设置', iconCls: 'fa fa-cog' }, { label: '搜索', iconCls: 'fa fa-search' }],
+    items: [{ label: '首页', iconCls: 'q-icon-home' }, { label: '设置', iconCls: 'q-icon-settings' }, { label: '搜索', iconCls: 'q-icon-search' }],
 } }`,
             template: {
                 tag: 'div',
@@ -200,9 +200,9 @@ export const TABS_DEMO: DemoConfig = {
                         options: {
                             selectedIndex: 0,
                             items: [
-                                { label: '首页', iconCls: 'fa fa-home' },
-                                { label: '设置', iconCls: 'fa fa-cog' },
-                                { label: '搜索', iconCls: 'fa fa-search' },
+                                { label: '首页', iconCls: 'q-icon-home' },
+                                { label: '设置', iconCls: 'q-icon-settings' },
+                                { label: '搜索', iconCls: 'q-icon-search' },
                             ],
                         },
                     },

@@ -140,13 +140,13 @@ class ShowcaseNavbar extends NavbarComponent {
                 },
                 {
                     type: 'dropdown',
-                    iconCls: 'fa fa-paint-brush',
+                    iconCls: 'q-icon-edit',
                     hint: '@nav.theme',
                     dock: 'right',
                     ghost: true,
                     mobileMenu: {
                         text: '@nav.theme',
-                        icon: 'fa fa-paint-brush',
+                        icon: 'q-icon-edit',
                         items: themeItems,
                     },
                     popover: {

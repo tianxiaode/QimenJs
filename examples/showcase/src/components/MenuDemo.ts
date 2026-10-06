@@ -71,7 +71,7 @@ export const MENU_DEMO: DemoConfig = {
     type: 'menu',
     options: {
         items: [
-            { text: '新建', icon: 'fa-solid fa-file-circle-plus' },
+            { text: '新建', icon: 'q-icon-add' },
             { text: '打开', icon: 'fa-solid fa-folder-open' },
             { text: '保存', icon: 'fa-solid fa-floppy-disk' },
         ],
@@ -81,7 +81,7 @@ export const MENU_DEMO: DemoConfig = {
                 type: 'menu',
                 options: {
                     items: [
-                        { text: '新建', icon: 'fa-solid fa-file-circle-plus' },
+                        { text: '新建', icon: 'q-icon-add' },
                         { text: '打开', icon: 'fa-solid fa-folder-open' },
                         { text: '保存', icon: 'fa-solid fa-floppy-disk' },
                     ],
