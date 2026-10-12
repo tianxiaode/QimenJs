@@ -111,10 +111,10 @@ export const P = {
 };
 
 /** 默认 viewBox */
-export const DEFAULT_VIEWBOX = '0 0 24 24';
+export const DEFAULT_VIEWBOX = '0 0 512 512';
 
 /** 默认描边宽度 */
-export const DEFAULT_STROKE_WIDTH = 2;
+export const DEFAULT_STROKE_WIDTH = 42;
 
 /** 将 IconDef 编译为 SVG 文件内容 */
 export function iconToSvg(icon: IconDef): string {

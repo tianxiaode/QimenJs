@@ -77,65 +77,65 @@ const P = {
 };
 
 // ---- 图标定义（与 definitions.ts 保持同步） ----
-const SW = 2;
-const VIEWBOX = '0 0 24 24';
+const SW = 42;
+const VIEWBOX = '0 0 512 512';
 
 const icons = [
     // 状态确认
-    { name: 'check', paths: [{ d: P.polyline([4, 12], [9, 17], [20, 6]) }] },
-    { name: 'close', paths: [{ d: P.line(6, 6, 18, 18) }, { d: P.line(18, 6, 6, 18) }] },
-    { name: 'add', paths: [{ d: P.line(12, 4, 12, 20) }, { d: P.line(4, 12, 20, 12) }] },
-    { name: 'minus', paths: [{ d: P.line(4, 12, 20, 12) }] },
+    { name: 'check', paths: [{ d: P.polyline([85, 256], [192, 363], [427, 128]) }] },
+    { name: 'close', paths: [{ d: P.line(128, 128, 384, 384) }, { d: P.line(384, 128, 128, 384) }] },
+    { name: 'add', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.line(85, 256, 427, 256) }] },
+    { name: 'minus', paths: [{ d: P.line(85, 256, 427, 256) }] },
     // Checkbox/Radio
-    { name: 'checkbox', paths: [{ d: P.rect(3, 3, 18, 18, 2) }] },
-    { name: 'checkbox-check', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.polyline([7, 12], [10, 15], [17, 8]) }] },
-    { name: 'radio', paths: [{ d: P.circle(12, 12, 9) }] },
-    { name: 'radio-check', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 12, 4), fill: 'currentColor' }] },
+    { name: 'checkbox', paths: [{ d: P.rect(64, 64, 384, 384, 43) }] },
+    { name: 'checkbox-check', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.polyline([149, 256], [213, 320], [363, 171]) }] },
+    { name: 'radio', paths: [{ d: P.circle(256, 256, 192) }] },
+    { name: 'radio-check', paths: [{ d: P.circle(256, 256, 192) }, { d: P.circle(256, 256, 85), fill: 'currentColor' }] },
     // 搜索/筛选
-    { name: 'search', paths: [{ d: P.circle(10, 10, 6) }, { d: P.line(15, 15, 21, 21) }] },
-    { name: 'filter', paths: [{ d: P.polygon([3, 4], [21, 4], [15, 12], [15, 20], [9, 20], [9, 12]) }] },
+    { name: 'search', paths: [{ d: P.circle(213, 213, 128) }, { d: P.line(320, 320, 448, 448) }] },
+    { name: 'filter', paths: [{ d: P.polygon([64, 85], [448, 85], [320, 256], [320, 427], [192, 427], [192, 256]) }] },
     // 方向箭头
-    { name: 'arrow-down', paths: [{ d: P.line(12, 4, 12, 20) }, { d: P.polyline([6, 14], [12, 20], [18, 14]) }] },
-    { name: 'arrow-up', paths: [{ d: P.line(12, 4, 12, 20) }, { d: P.polyline([6, 10], [12, 4], [18, 10]) }] },
-    { name: 'arrow-left', paths: [{ d: P.line(4, 12, 20, 12) }, { d: P.polyline([10, 6], [4, 12], [10, 18]) }] },
-    { name: 'arrow-right', paths: [{ d: P.line(4, 12, 20, 12) }, { d: P.polyline([14, 6], [20, 12], [14, 18]) }] },
+    { name: 'arrow-down', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.polyline([128, 299], [256, 427], [384, 299]) }] },
+    { name: 'arrow-up', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.polyline([128, 213], [256, 85], [384, 213]) }] },
+    { name: 'arrow-left', paths: [{ d: P.line(85, 256, 427, 256) }, { d: P.polyline([213, 128], [85, 256], [213, 384]) }] },
+    { name: 'arrow-right', paths: [{ d: P.line(85, 256, 427, 256) }, { d: P.polyline([299, 128], [427, 256], [299, 384]) }] },
     // 小箭头/展开标记
-    { name: 'caret-down', paths: [{ d: P.triangle(6, 8, 18, 8, 12, 16), fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'caret-up', paths: [{ d: P.triangle(6, 16, 18, 16, 12, 8), fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'caret-left', paths: [{ d: P.triangle(8, 6, 8, 18, 16, 12), fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'caret-right', paths: [{ d: P.triangle(16, 6, 16, 18, 8, 12), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'caret-down', paths: [{ d: P.triangle(128, 171, 384, 171, 256, 341), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'caret-up', paths: [{ d: P.triangle(128, 341, 384, 341, 256, 171), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'caret-left', paths: [{ d: P.triangle(171, 128, 171, 384, 341, 256), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'caret-right', paths: [{ d: P.triangle(341, 128, 341, 384, 171, 256), fill: 'currentColor' }], strokeWidth: 0 },
     // V字箭头（chevron，线条版）
-    { name: 'chevron-down', paths: [{ d: P.polyline([6, 9], [12, 15], [18, 9]) }] },
-    { name: 'chevron-up', paths: [{ d: P.polyline([6, 15], [12, 9], [18, 15]) }] },
-    { name: 'chevron-left', paths: [{ d: P.polyline([9, 6], [15, 12], [9, 18]) }] },
-    { name: 'chevron-right', paths: [{ d: P.polyline([15, 6], [9, 12], [15, 18]) }] },
+    { name: 'chevron-down', paths: [{ d: P.polyline([128, 192], [256, 320], [384, 192]) }] },
+    { name: 'chevron-up', paths: [{ d: P.polyline([128, 320], [256, 192], [384, 320]) }] },
+    { name: 'chevron-left', paths: [{ d: P.polyline([192, 128], [320, 256], [192, 384]) }] },
+    { name: 'chevron-right', paths: [{ d: P.polyline([320, 128], [192, 256], [320, 384]) }] },
     // 编辑操作
-    { name: 'edit', paths: [{ d: P.polygon([1, 22], [7, 20], [19, 8], [15, 4], [3, 16]) }, { d: P.line(7, 20, 3, 16) }] },
-    { name: 'delete', paths: [{ d: P.line(4, 6, 20, 6) }, { d: P.polyline([7, 6], [7, 21], [17, 21], [17, 6]) }, { d: P.line(9, 3, 15, 3) }, { d: P.line(10, 10, 10, 17) }, { d: P.line(14, 10, 14, 17) }] },
+    { name: 'edit', paths: [{ d: P.polygon([21, 469], [149, 427], [405, 171], [320, 85], [64, 341]) }, { d: P.line(149, 427, 64, 341) }] },
+    { name: 'delete', paths: [{ d: P.line(85, 128, 427, 128) }, { d: P.polyline([149, 128], [149, 448], [363, 448], [363, 128]) }, { d: P.line(192, 64, 320, 64) }, { d: P.line(213, 213, 213, 363) }, { d: P.line(299, 213, 299, 363) }] },
     // 设置/菜单
-    { name: 'settings', paths: [{ d: P.gear(12, 12, 6.5, 9.5, 8) }, { d: P.circle(12, 12, 3) }] },
-    { name: 'menu', paths: [{ d: P.line(3, 6, 21, 6) }, { d: P.line(3, 12, 21, 12) }, { d: P.line(3, 18, 21, 18) }] },
-    { name: 'more', paths: [{ d: P.circle(5, 12, 2.2), fill: 'currentColor' }, { d: P.circle(12, 12, 2.2), fill: 'currentColor' }, { d: P.circle(19, 12, 2.2), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'settings', paths: [{ d: P.gear(256, 256, 139, 203, 8) }, { d: P.circle(256, 256, 64) }] },
+    { name: 'menu', paths: [{ d: P.line(64, 128, 448, 128) }, { d: P.line(64, 256, 448, 256) }, { d: P.line(64, 384, 448, 384) }] },
+    { name: 'more', paths: [{ d: P.circle(107, 256, 47), fill: 'currentColor' }, { d: P.circle(256, 256, 47), fill: 'currentColor' }, { d: P.circle(405, 256, 47), fill: 'currentColor' }], strokeWidth: 0 },
     // 导航
-    { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
-    { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' }] },
+    { name: 'home', paths: [{ d: P.polyline([64, 256], [256, 64], [448, 256]) }, { d: P.polyline([107, 213], [107, 448], [192, 448], [192, 299], [320, 299], [320, 448], [405, 448], [405, 213]) }] },
+    { name: 'refresh', paths: [{ d: P.arc(256, 256, 149, Math.PI * 0.25, Math.PI * 1.75) + ' M320 192 L405 192 M405 107 L405 192' }] },
     // 用户/情感
-    { name: 'user', paths: [{ d: P.circle(12, 8, 3.5) }, { d: 'M5 20 A7 7 0 0 1 19 20' }, { d: P.line(4, 21, 20, 21) }] },
-    { name: 'heart', paths: [{ d: 'M12 20 C8 16 4 12 4 8 C4 5 7 3 12 7 C17 3 20 5 20 8 C20 12 16 16 12 20 Z' }] },
-    { name: 'star', paths: [{ d: P.polygon([12, 4], [14, 9], [20, 10], [15, 13], [17, 19], [12, 15], [7, 19], [9, 13], [4, 10], [10, 9]) }] },
+    { name: 'user', paths: [{ d: P.circle(256, 171, 75) }, { d: 'M107 427 A149 149 0 0 1 405 427' }, { d: P.line(85, 448, 427, 448) }] },
+    { name: 'heart', paths: [{ d: 'M256 427 C171 341 85 256 85 171 C85 107 149 64 256 149 C363 64 427 107 427 171 C427 256 341 341 256 427 Z' }] },
+    { name: 'star', paths: [{ d: P.polygon([256, 85], [299, 192], [427, 213], [320, 277], [363, 405], [256, 320], [149, 405], [192, 277], [85, 213], [213, 192]) }] },
     // 状态提示
-    { name: 'warning', paths: [{ d: P.polygon([12, 3], [21, 20], [3, 20]) }, { d: P.line(12, 9, 12, 14) }, { d: P.circle(12, 17, 1), fill: 'currentColor' }] },
-    { name: 'info', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.line(12, 10, 12, 16) }] },
+    { name: 'warning', paths: [{ d: P.polygon([256, 64], [448, 427], [64, 427]) }, { d: P.line(256, 192, 256, 299) }, { d: P.circle(256, 363, 21), fill: 'currentColor' }] },
+    { name: 'info', paths: [{ d: P.circle(256, 256, 192) }, { d: P.circle(256, 149, 26), fill: 'currentColor' }, { d: P.line(256, 213, 256, 341) }] },
     // 文件操作
-    { name: 'save', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.line(3, 9, 21, 9) }, { d: P.rect(7, 3, 10, 6) }, { d: P.rect(7, 13, 10, 8) }] },
-    { name: 'folder', paths: [{ d: P.polygon([3, 7], [3, 20], [21, 20], [21, 7], [13, 7], [11, 5], [3, 5]) }] },
-    { name: 'folder-open', viewBox: '0 0 48 48', strokeWidth: 4, paths: [{ d: P.polyline([6, 24], [6, 12], [18, 12], [22, 16], [34, 16], [34, 24]) }, { d: P.polygon([6, 40], [14, 24], [42, 24], [34, 40]) }] },
+    { name: 'save', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(64, 192, 448, 192) }, { d: P.rect(149, 64, 213, 128) }, { d: P.rect(149, 277, 213, 171) }] },
+    { name: 'folder', paths: [{ d: P.polygon([64, 149], [64, 427], [448, 427], [448, 149], [277, 149], [235, 107], [64, 107]) }] },
+    { name: 'folder-open', paths: [{ d: P.polyline([64, 256], [64, 128], [192, 128], [235, 171], [363, 171], [363, 256]) }, { d: P.polygon([64, 427], [149, 256], [448, 256], [363, 427]) }] },
     // 天体/世界
-    { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
-    { name: 'moon', paths: [{ d: 'M6 5 A8 8 0 1 0 14 15 A7 7 0 0 1 6 5 Z' }] },
-    { name: 'dark', paths: [{ d: 'M6 5 A8 8 0 1 0 14 15 A7 7 0 0 1 6 5 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M19 7 A10 10 0 1 0 18 17 A6 6 0 0 1 19 7 Z' }, { d: P.circle(7, 9, 1.5), fill: 'currentColor' }, { d: P.circle(12, 6, 1.5), fill: 'currentColor' }, { d: P.circle(8, 15, 1.5), fill: 'currentColor' }] },
-    { name: 'globe', paths: [{ d: P.circle(12, 12, 9) }, { d: P.line(3, 12, 21, 12) }, { d: P.polyline([12, 3], [8, 12], [12, 21]) }, { d: P.polyline([12, 3], [16, 12], [12, 21]) }] },
+    { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
+    { name: 'moon', paths: [{ d: 'M128 107 A171 171 0 1 0 299 320 A149 149 0 0 1 128 107 Z' }] },
+    { name: 'dark', paths: [{ d: 'M128 107 A171 171 0 1 0 299 320 A149 149 0 0 1 128 107 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: 'M405 149 A213 213 0 1 0 384 363 A128 128 0 0 1 405 149 Z' }, { d: P.circle(149, 192, 32), fill: 'currentColor' }, { d: P.circle(256, 128, 32), fill: 'currentColor' }, { d: P.circle(171, 320, 32), fill: 'currentColor' }] },
+    { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----
