@@ -100,11 +100,11 @@ class MenuItemComponent extends Component {
 
     setExpandArrow(state: 'expanded' | 'collapsed'): void {
         if (state === 'expanded') {
-            this.addCls('q-expand-arrow--expanded', 'expand');
-            this.removeCls('q-expand-arrow--collapsed', 'expand');
+            this.removeCls('q-icon-chevron-down', 'expand');
+            this.addCls('q-icon-chevron-up', 'expand');
         } else {
-            this.removeCls('q-expand-arrow--expanded', 'expand');
-            this.addCls('q-expand-arrow--collapsed', 'expand');
+            this.removeCls('q-icon-chevron-up', 'expand');
+            this.addCls('q-icon-chevron-down', 'expand');
         }
     }
 

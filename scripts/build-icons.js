@@ -105,10 +105,10 @@ const icons = [
     { name: 'caret-left', paths: [{ d: P.triangle(149, 64, 149, 448, 363, 256), fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'caret-right', paths: [{ d: P.triangle(363, 64, 363, 448, 149, 256), fill: 'currentColor' }], strokeWidth: 0 },
     // V字箭头（chevron，线条版）
-    { name: 'chevron-down', paths: [{ d: P.polyline([128, 149], [256, 363], [384, 149]) }] },
-    { name: 'chevron-up', paths: [{ d: P.polyline([128, 363], [256, 149], [384, 363]) }] },
-    { name: 'chevron-left', paths: [{ d: P.polyline([149, 128], [363, 256], [149, 384]) }] },
-    { name: 'chevron-right', paths: [{ d: P.polyline([363, 128], [149, 256], [363, 384]) }] },
+    { name: 'chevron-down', paths: [{ d: P.polyline([128, 160], [256, 352], [384, 160]) }] },
+    { name: 'chevron-up', paths: [{ d: P.polyline([128, 352], [256, 160], [384, 352]) }] },
+    { name: 'chevron-left', paths: [{ d: P.polyline([160, 128], [352, 256], [160, 384]) }] },
+    { name: 'chevron-right', paths: [{ d: P.polyline([352, 128], [160, 256], [352, 384]) }] },
     // 编辑操作
     { name: 'edit', paths: [{ d: P.polygon([363, 85], [427, 149], [149, 427], [85, 363]) }, { d: P.line(85, 363, 149, 427) }] },
     { name: 'delete', paths: [{ d: 'M192 80 A52 52 0 0 0 320 80' }, { d: P.line(80, 128, 432, 128) }, { d: P.polyline([128, 170], [128, 416], [384, 416], [384, 170]) }, { d: P.line(192, 210, 192, 376) }, { d: P.line(256, 210, 256, 376) }, { d: P.line(320, 210, 320, 376) }] },

@@ -156,25 +156,25 @@ export const icons: IconDef[] = [
     {
         name: 'chevron-down',
         paths: [
-            { d: P.polyline([128, 149], [256, 363], [384, 149]) },
+            { d: P.polyline([128, 160], [256, 352], [384, 160]) },
         ],
     },
     {
         name: 'chevron-up',
         paths: [
-            { d: P.polyline([128, 363], [256, 149], [384, 363]) },
+            { d: P.polyline([128, 352], [256, 160], [384, 352]) },
         ],
     },
     {
         name: 'chevron-left',
         paths: [
-            { d: P.polyline([149, 128], [363, 256], [149, 384]) },
+            { d: P.polyline([160, 128], [352, 256], [160, 384]) },
         ],
     },
     {
         name: 'chevron-right',
         paths: [
-            { d: P.polyline([363, 128], [149, 256], [363, 384]) },
+            { d: P.polyline([352, 128], [160, 256], [352, 384]) },
         ],
     },
 
