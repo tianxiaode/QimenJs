@@ -189,11 +189,12 @@ export const icons: IconDef[] = [
     {
         name: 'delete',
         paths: [
-            { d: P.line(149, 144, 363, 144) },
-            { d: P.line(213, 112, 299, 112) },
-            { d: P.polyline([171, 144], [192, 400], [320, 400], [341, 144]) },
-            { d: P.line(224, 176, 213, 376) },
-            { d: P.line(288, 176, 299, 376) },
+            { d: 'M192 112 A64 64 0 0 0 320 112' },
+            { d: P.line(96, 112, 416, 112) },
+            { d: P.polyline([128, 112], [128, 416], [384, 416], [384, 112]) },
+            { d: P.line(192, 160, 192, 368) },
+            { d: P.line(256, 160, 256, 368) },
+            { d: P.line(320, 160, 320, 368) },
         ],
     },
 
@@ -216,9 +217,9 @@ export const icons: IconDef[] = [
     {
         name: 'more',
         paths: [
-            { d: P.circle(107, 256, 64), fill: 'currentColor' },
-            { d: P.circle(256, 256, 64), fill: 'currentColor' },
-            { d: P.circle(405, 256, 64), fill: 'currentColor' },
+            { d: P.circle(107, 256, 32), fill: 'currentColor' },
+            { d: P.circle(256, 256, 32), fill: 'currentColor' },
+            { d: P.circle(405, 256, 32), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
