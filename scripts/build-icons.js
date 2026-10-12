@@ -129,12 +129,12 @@ const icons = [
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(64, 192, 448, 192) }, { d: P.rect(149, 64, 213, 128) }, { d: P.rect(149, 277, 213, 171) }] },
     { name: 'folder', paths: [{ d: P.polygon([64, 138], [64, 416], [448, 416], [448, 138], [277, 138], [235, 96], [64, 96]) }] },
-    { name: 'folder-open', paths: [{ d: P.polyline([64, 405], [64, 96], [192, 96], [235, 139], [448, 139], [448, 234]) }, { d: P.polygon([64, 405], [128, 234], [384, 234], [448, 405]) }] },
+    { name: 'folder-open', paths: [{ d: P.polyline([64, 405], [64, 96], [192, 96], [235, 139], [448, 139], [448, 234]) }, { d: P.polygon([64, 405], [128, 234], [469, 234], [448, 405]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
-    { name: 'moon', paths: [{ d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z' }] },
-    { name: 'dark', paths: [{ d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M427 363 A192 192 0 1 0 213 448 A96 96 0 0 1 427 363 Z' }, { d: P.circle(171, 171, 36), fill: 'currentColor' }, { d: P.circle(320, 149, 36), fill: 'currentColor' }, { d: P.circle(149, 320, 36), fill: 'currentColor' }] },
+    { name: 'moon', paths: [{ d: 'M171 150 A179 179 0 1 0 342 363 A149 149 0 0 1 171 150 Z' }] },
+    { name: 'dark', paths: [{ d: 'M171 150 A179 179 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: 'M380 140 A220 220 0 1 0 350 400 A140 140 0 0 1 380 140 Z' }, { d: P.circle(192, 192, 32), fill: 'currentColor' }, { d: P.circle(320, 192, 32), fill: 'currentColor' }, { d: P.circle(192, 320, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
 

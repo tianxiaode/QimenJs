@@ -299,7 +299,7 @@ export const icons: IconDef[] = [
         name: 'folder-open',
         paths: [
             { d: P.polyline([64, 405], [64, 96], [192, 96], [235, 139], [448, 139], [448, 234]) },
-            { d: P.polygon([64, 405], [128, 234], [384, 234], [448, 405]) },
+            { d: P.polygon([64, 405], [128, 234], [469, 234], [448, 405]) },
         ],
     },
 
@@ -321,23 +321,23 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z' },
+            { d: 'M171 150 A179 179 0 1 0 342 363 A149 149 0 0 1 171 150 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z', fill: 'currentColor' },
+            { d: 'M171 150 A179 179 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'palette',
         paths: [
-            { d: 'M427 363 A192 192 0 1 0 213 448 A96 96 0 0 1 427 363 Z' },
-            { d: P.circle(171, 171, 36), fill: 'currentColor' },
-            { d: P.circle(320, 149, 36), fill: 'currentColor' },
-            { d: P.circle(149, 320, 36), fill: 'currentColor' },
+            { d: 'M380 140 A220 220 0 1 0 350 400 A140 140 0 0 1 380 140 Z' },
+            { d: P.circle(192, 192, 32), fill: 'currentColor' },
+            { d: P.circle(320, 192, 32), fill: 'currentColor' },
+            { d: P.circle(192, 320, 32), fill: 'currentColor' },
         ],
     },
     {
