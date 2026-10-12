@@ -298,7 +298,7 @@ export const icons: IconDef[] = [
         name: 'folder-open',
         paths: [
             { d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) },
-            { d: P.polygon([3, 20], [7, 11], [21, 11], [17, 20]) },
+            { d: P.polygon([3, 20], [7, 11], [17, 11], [21, 20]) },
         ],
     },
 
@@ -320,13 +320,13 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M6 5 A8 8 0 1 0 14 15 A6 6 0 0 1 6 5 Z' },
+            { d: 'M8 5 A9 9 0 1 0 12 15 A6 6 0 0 1 8 5 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M6 5 A8 8 0 1 0 14 15 A6 6 0 0 1 6 5 Z', fill: 'currentColor' },
+            { d: 'M8 5 A9 9 0 1 0 12 15 A6 6 0 0 1 8 5 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
