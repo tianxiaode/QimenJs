@@ -101,9 +101,9 @@ class MenuItemComponent extends Component {
     setExpandArrow(state: 'expanded' | 'collapsed'): void {
         if (state === 'expanded') {
             this.removeCls('q-icon-chevron-down', 'expand');
-            this.addCls('q-icon-chevron-up', 'expand');
+            this.addCls('q-icon-chevron-right', 'expand');
         } else {
-            this.removeCls('q-icon-chevron-up', 'expand');
+            this.removeCls('q-icon-chevron-right', 'expand');
             this.addCls('q-icon-chevron-down', 'expand');
         }
     }
