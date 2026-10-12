@@ -244,6 +244,7 @@ export const icons: IconDef[] = [
         paths: [
             { d: P.circle(12, 8, 3.5) },
             { d: 'M5 20 A7 7 0 0 1 19 20' },
+            { d: P.line(4, 21, 20, 21) },
         ],
     },
     {
@@ -319,23 +320,23 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z' },
+            { d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z', fill: 'currentColor' },
+            { d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'palette',
         paths: [
-            { d: P.arc(12, 12, 9, 0.5, Math.PI * 2 - 0.5) },
-            { d: P.circle(8, 10, 1.2), fill: 'currentColor' },
-            { d: P.circle(12, 7, 1.2), fill: 'currentColor' },
-            { d: P.circle(16, 10, 1.2), fill: 'currentColor' },
+            { d: P.circle(12, 12, 9) },
+            { d: P.circle(8, 10, 1.5), fill: 'currentColor' },
+            { d: P.circle(12, 7, 1.5), fill: 'currentColor' },
+            { d: P.circle(16, 10, 1.5), fill: 'currentColor' },
         ],
     },
     {

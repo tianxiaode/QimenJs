@@ -120,7 +120,7 @@ const icons = [
     { name: 'home', paths: [{ d: P.polyline([3, 12], [12, 3], [21, 12]) }, { d: P.polyline([5, 10], [5, 21], [9, 21], [9, 14], [15, 14], [15, 21], [19, 21], [19, 10]) }] },
     { name: 'refresh', paths: [{ d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' }] },
     // 用户/情感
-    { name: 'user', paths: [{ d: P.circle(12, 8, 3.5) }, { d: 'M5 20 A7 7 0 0 1 19 20' }] },
+    { name: 'user', paths: [{ d: P.circle(12, 8, 3.5) }, { d: 'M5 20 A7 7 0 0 1 19 20' }, { d: P.line(4, 21, 20, 21) }] },
     { name: 'heart', paths: [{ d: 'M12 20 C8 16 4 12 4 8 C4 5 7 3 12 7 C17 3 20 5 20 8 C20 12 16 16 12 20 Z' }] },
     { name: 'star', paths: [{ d: P.polygon([12, 4], [14, 9], [20, 10], [15, 13], [17, 19], [12, 15], [7, 19], [9, 13], [4, 10], [10, 9]) }] },
     // 状态提示
@@ -132,9 +132,9 @@ const icons = [
     { name: 'folder-open', paths: [{ d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) }, { d: P.polyline([5, 15], [8, 11], [21, 11], [19, 20]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
-    { name: 'moon', paths: [{ d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z' }] },
-    { name: 'dark', paths: [{ d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: P.arc(12, 12, 9, 0.5, Math.PI * 2 - 0.5) }, { d: P.circle(8, 10, 1.2), fill: 'currentColor' }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.circle(16, 10, 1.2), fill: 'currentColor' }] },
+    { name: 'moon', paths: [{ d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z' }] },
+    { name: 'dark', paths: [{ d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(8, 10, 1.5), fill: 'currentColor' }, { d: P.circle(12, 7, 1.5), fill: 'currentColor' }, { d: P.circle(16, 10, 1.5), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(12, 12, 9) }, { d: P.line(3, 12, 21, 12) }, { d: P.polyline([12, 3], [8, 12], [12, 21]) }, { d: P.polyline([12, 3], [16, 12], [12, 21]) }] },
 ];
 

@@ -53,10 +53,10 @@ class MenuItemComponent extends Component {
             this._applyGroupIcon();
         } else {
             this.removeCls('q-menu-item--grouped');
-            this.removeCls('q-radio', 'icon');
-            this.removeCls('q-checkbox', 'icon');
-            this.removeCls('q-radio--checked', 'icon');
-            this.removeCls('q-checkbox--checked', 'icon');
+            this.removeCls('q-icon-checkbox', 'icon');
+            this.removeCls('q-icon-checkbox-check', 'icon');
+            this.removeCls('q-icon-radio', 'icon');
+            this.removeCls('q-icon-radio-check', 'icon');
         }
         this._applyAria();
     }
@@ -123,20 +123,15 @@ class MenuItemComponent extends Component {
         if (!this.group) return;
 
         const isCheckbox = this.groupMode === 'checkbox';
-        const baseCls = isCheckbox ? 'q-checkbox' : 'q-radio';
-        const otherCls = isCheckbox ? 'q-radio' : 'q-checkbox';
-        const checkedCls = isCheckbox ? 'q-checkbox--checked' : 'q-radio--checked';
-        const otherCheckedCls = isCheckbox ? 'q-radio--checked' : 'q-checkbox--checked';
+        const uncheckedIcon = isCheckbox ? 'q-icon-checkbox' : 'q-icon-radio';
+        const checkedIcon = isCheckbox ? 'q-icon-checkbox-check' : 'q-icon-radio-check';
 
-        this.removeCls(otherCls, 'icon');
-        this.removeCls(otherCheckedCls, 'icon');
-        this.addCls(baseCls, 'icon');
+        this.removeCls('q-icon-checkbox', 'icon');
+        this.removeCls('q-icon-checkbox-check', 'icon');
+        this.removeCls('q-icon-radio', 'icon');
+        this.removeCls('q-icon-radio-check', 'icon');
 
-        if (this.checked) {
-            this.addCls(checkedCls, 'icon');
-        } else {
-            this.removeCls(checkedCls, 'icon');
-        }
+        this.addCls(this.checked ? checkedIcon : uncheckedIcon, 'icon');
     }
 }
 
