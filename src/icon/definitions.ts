@@ -298,7 +298,7 @@ export const icons: IconDef[] = [
         name: 'folder-open',
         paths: [
             { d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) },
-            { d: P.polygon([3, 20], [7, 11], [21, 11], [21, 20]) },
+            { d: P.polygon([3, 20], [7, 11], [22, 11], [21, 20]) },
         ],
     },
 
