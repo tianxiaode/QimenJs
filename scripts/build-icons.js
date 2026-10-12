@@ -129,11 +129,11 @@ const icons = [
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(64, 192, 448, 192) }, { d: P.rect(149, 64, 213, 128) }, { d: P.rect(149, 277, 213, 171) }] },
     { name: 'folder', paths: [{ d: P.polygon([64, 138], [64, 416], [448, 416], [448, 138], [277, 138], [235, 96], [64, 96]) }] },
-    { name: 'folder-open', paths: [{ d: P.polyline([85, 405], [85, 96], [192, 96], [235, 139], [363, 139], [363, 234]) }, { d: P.polygon([85, 405], [149, 234], [427, 234], [363, 405]) }] },
+    { name: 'folder-open', paths: [{ d: P.polyline([64, 416], [64, 96], [192, 96], [235, 139], [448, 139], [448, 234]) }, { d: P.polygon([64, 416], [96, 234], [480, 234], [448, 416]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
-    { name: 'moon', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z' }] },
-    { name: 'dark', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'moon', paths: [{ d: 'M227 212 A150 150 0 1 0 300 285 A130 130 0 0 1 227 212 Z' }] },
+    { name: 'dark', paths: [{ d: 'M227 212 A150 150 0 1 0 300 285 A130 130 0 0 1 227 212 Z', fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'palette', paths: [{ d: 'M314 416 A170 170 0 1 1 198 416 A140 140 0 0 1 314 416 Z' }, { d: P.circle(192, 192, 32), fill: 'currentColor' }, { d: P.circle(320, 192, 32), fill: 'currentColor' }, { d: P.circle(192, 320, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
