@@ -296,9 +296,11 @@ export const icons: IconDef[] = [
     },
     {
         name: 'folder-open',
+        viewBox: '0 0 48 48',
+        strokeWidth: 4,
         paths: [
-            { d: P.polyline([3, 12], [3, 6], [9, 6], [11, 8], [17, 8], [17, 12]) },
-            { d: P.polygon([3, 20], [7, 12], [21, 12], [17, 20]) },
+            { d: P.polyline([6, 24], [6, 12], [18, 12], [22, 16], [34, 16], [34, 24]) },
+            { d: P.polygon([6, 40], [14, 24], [42, 24], [34, 40]) },
         ],
     },
 

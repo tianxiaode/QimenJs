@@ -129,7 +129,7 @@ const icons = [
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.line(3, 9, 21, 9) }, { d: P.rect(7, 3, 10, 6) }, { d: P.rect(7, 13, 10, 8) }] },
     { name: 'folder', paths: [{ d: P.polygon([3, 7], [3, 20], [21, 20], [21, 7], [13, 7], [11, 5], [3, 5]) }] },
-    { name: 'folder-open', paths: [{ d: P.polyline([3, 12], [3, 6], [9, 6], [11, 8], [17, 8], [17, 12]) }, { d: P.polygon([3, 20], [7, 12], [21, 12], [17, 20]) }] },
+    { name: 'folder-open', viewBox: '0 0 48 48', strokeWidth: 4, paths: [{ d: P.polyline([6, 24], [6, 12], [18, 12], [22, 16], [34, 16], [34, 24]) }, { d: P.polygon([6, 40], [14, 24], [42, 24], [34, 40]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
     { name: 'moon', paths: [{ d: 'M6 5 A8 8 0 1 0 14 15 A7 7 0 0 1 6 5 Z' }] },
@@ -162,12 +162,13 @@ function generateSvgFiles() {
 
     for (const icon of icons) {
         const sw = icon.strokeWidth !== undefined ? icon.strokeWidth : SW;
+        const vb = icon.viewBox || VIEWBOX;
         const paths = icon.paths.map(p => {
             const fill = p.fill || 'none';
             const psw = p.strokeWidth || sw;
             return `  <path d="${p.d}" fill="${fill}" stroke="currentColor" stroke-width="${psw}" stroke-linecap="round" stroke-linejoin="round"/>`;
         }).join('\n');
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${VIEWBOX}">\n${paths}\n</svg>`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">\n${paths}\n</svg>`;
         fs.writeFileSync(path.join(SVG_DIR, `${icon.name}.svg`), svg);
     }
 
@@ -234,8 +235,8 @@ async function generateFontFallback() {
     const ASCENT = 850;
     const DESCENT = -150;
 
-    function convertD(svgD) {
-        const scale = UNITS_PER_EM / 24;
+    function convertD(svgD, vbW) {
+        const scale = UNITS_PER_EM / vbW;
         const matrixStr = `matrix(${scale},0,0,${-scale},0,${ASCENT})`;
         return new SvgPath(svgD).abs().unshort().transform(matrixStr).toString();
     }
@@ -251,7 +252,9 @@ async function generateFontFallback() {
     for (let i = 0; i < icons.length; i++) {
         const icon = icons[i];
         const unicode = getUnicode(i);
-        const allD = icon.paths.map(p => convertD(p.d)).join(' ');
+        const vb = icon.viewBox || VIEWBOX;
+        const vbW = parseFloat(vb.split(' ')[2]) || 24;
+        const allD = icon.paths.map(p => convertD(p.d, vbW)).join(' ');
         svgFont += `    <glyph glyph-name="${icon.name}" unicode="&#x${unicode.toString(16).toUpperCase()};" horiz-adv-x="${UNITS_PER_EM}" d="${allD}"/>\n`;
     }
 

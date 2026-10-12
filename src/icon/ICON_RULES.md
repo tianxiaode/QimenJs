@@ -26,10 +26,12 @@ AI 扩展新图标时，必须遵循此规则。核心思路：**不用算法计
 
 ## 基本约定
 
-- 基于 **24x24 viewBox**，坐标范围 0-24，中心点 (12,12)
-- 默认 stroke-width **2**，stroke-linecap round，stroke-linejoin round（构建自动添加）
+- 默认 viewBox **24x24**（坐标范围 0-24），但每个图标可自定义 viewBox（如 48x48、512x512）
+- 设计约束在于**笔画风格**（楷体），而非 viewBox 尺寸——viewBox 大小不影响最终字体渲染
+- 默认 stroke-width **2**（24x24 viewBox 下），更大 viewBox 时按比例增大（如 48x48 用 4）
+- stroke-linecap round，stroke-linejoin round（构建自动添加）
 - 去掉圆圈外框，只保留图标核心形状
-- 笔画风格参考楷体（见上节），实心图标用 `fill: 'currentColor'` + 图标级 `strokeWidth: 0`
+- 实心图标用 `fill: 'currentColor'` + 图标级 `strokeWidth: 0`
 - y 轴向下为正（SVG 坐标系）：顶部 y 小，底部 y 大
 
 ## 笔画原语（P）参考
@@ -85,9 +87,17 @@ AI 扩展新图标时，必须遵循此规则。核心思路：**不用算法计
         { d: P.line(3, 6, 21, 6) },                          // 线条笔画
         { d: P.circle(12, 12, 4), fill: 'currentColor' },     // 实心笔画
     ],
+    // viewBox: '0 0 48 48',  // 可选：自定义 viewBox（默认 0 0 24 24）
     // strokeWidth: 0,        // 仅纯实心图标需要
 }
 ```
+
+### viewBox 选择指南
+
+- **24x24**：简单图标（箭头、对勾、菜单等），坐标范围够用
+- **48x48**：中等复杂度图标（folder-open、palette 等），需要更精细的坐标
+- **更大尺寸**：极复杂图标，按需设定
+- stroke-width 按 viewBox 比例调整：24x24→2, 48x48→4, 512x512→约20
 
 ## 设计模式（参考现有图标）
 
