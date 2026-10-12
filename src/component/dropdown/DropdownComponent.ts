@@ -4,7 +4,7 @@ import './dropdown.css';
 
 const DropdownComponentDefs: Definitions = {
     options: {
-        arrowCls: 'q-caret',
+        arrowCls: 'q-icon-chevron-down',
         items: null,
     },
     fields: {
