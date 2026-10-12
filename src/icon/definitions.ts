@@ -8,11 +8,12 @@
  *   - stroke-width 2，stroke-linecap round
  *   - 实心图标用 fill: 'currentColor'
  *
- * AI 补充新图标时，遵循此格式：
+ * AI 补充新图标时，先读 ICON_RULES.md（同目录）遵循绘制规则：
  *   1. 分析图标语义，分解为基本笔画
  *   2. 用 P 原语生成 path d 字符串
  *   3. 添加到 icons 数组
- *   4. 运行 npm run build:icons 重新生成 SVG + 字体
+ *   4. 同步更新 scripts/build-icons.js 硬编码副本
+ *   5. 运行 npm run build:icons 重新生成 SVG + 字体
  */
 
 import { IconDef, P, DEFAULT_STROKE_WIDTH } from './strokes';
@@ -231,13 +232,6 @@ export const icons: IconDef[] = [
         ],
     },
     {
-        name: 'refresh',
-        paths: [
-            { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' },
-        ],
-    },
-
-   <parameter name="newString">    {
         name: 'refresh',
         paths: [
             { d: P.arc(12, 12, 7, Math.PI * 0.25, Math.PI * 1.75) + ' M15 9 L19 9 M19 5 L19 9' },
