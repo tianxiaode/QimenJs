@@ -320,13 +320,13 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z' },
+            { d: 'M20 14 A8 8 0 1 1 10 4 L20 14 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M12 3 A9 9 0 1 0 21 12 A7 7 0 0 0 12 3 Z', fill: 'currentColor' },
+            { d: 'M20 14 A8 8 0 1 1 10 4 L20 14 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },

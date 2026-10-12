@@ -85,3 +85,8 @@
     border-bottom: 2px solid currentColor;
     transform: rotate(45deg);
 }
+
+.q-menu-item .q-icon-checkbox-check,
+.q-menu-item .q-icon-radio-check {
+    color: var(--q-color-primary, #0078d4);
+}
