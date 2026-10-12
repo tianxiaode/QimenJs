@@ -13,6 +13,7 @@ import { BUTTON_GROUP_DEMO } from '../components/ButtonGroupDemo';
 import { DIVIDER_DEMO } from '../components/DividerDemo';
 import { HTML_DEMO } from '../components/HtmlDemo';
 import { ICON_DEMO } from '../components/IconDemo';
+import { ICONS_DEMO } from '../components/IconsDemo';
 import { LABEL_DEMO } from '../components/LabelDemo';
 import { SPACER_DEMO } from '../components/SpacerDemo';
 import { TEXT_DEMO } from '../components/TextDemo';
@@ -48,6 +49,7 @@ const COMPONENT_CATEGORIES = [
             'Divider',
             'Html',
             'Icon',
+            'Icons',
             'Label',
             'Spacer',
             'Text',
@@ -87,6 +89,7 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Divider: DIVIDER_DEMO,
     Html: HTML_DEMO,
     Icon: ICON_DEMO,
+    Icons: ICONS_DEMO,
     Label: LABEL_DEMO,
     Spacer: SPACER_DEMO,
     Text: TEXT_DEMO,
@@ -371,7 +374,7 @@ export class ComponentsPage extends Component {
                         },
                         section.component
                             ? { tag: 'div', name: `section-${i}`, classes: 'q-demo__interactive' }
-                            : section.template,
+                            : section.template ?? { tag: 'div' },
                         ...(section.code
                             ? [
                                   {

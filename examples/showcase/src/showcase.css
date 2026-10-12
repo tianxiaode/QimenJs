@@ -356,3 +356,32 @@ body {
     color: var(--q-color-text-secondary, #666);
     margin: 0;
 }
+
+/* ---- 图标库 ---- */
+.q-icons-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px;
+}
+
+.q-icons-gallery__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    border: 1px solid var(--q-color-border, #e5e5e5);
+    border-radius: 8px;
+    gap: 8px;
+}
+
+.q-icons-gallery__item .q-icon {
+    font-size: 28px;
+    color: var(--q-color-text, #1a1a1a);
+}
+
+.q-icons-gallery__name {
+    font-size: 11px;
+    color: var(--q-color-text-secondary, #666);
+    word-break: break-all;
+    text-align: center;
+}
