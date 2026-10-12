@@ -107,4 +107,10 @@
     transform: rotate(45deg);
 }
 
+/* 图标字体版 chevron 在按钮/菜单中缩小显示 */
+.q-button__arrow.q-icon-chevron-down,
+.q-expand-arrow.q-icon-chevron-down {
+    font-size: 0.6em;
+}
+
 

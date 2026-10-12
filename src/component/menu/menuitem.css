@@ -69,11 +69,12 @@
     top: 50%;
     right: var(--q-space-sm, 12px);
     color: var(--q-color-text-secondary, #666);
-    transform: translateY(-50%) rotate(45deg);
+    transform: translateY(-50%);
+    font-size: 0.6em;
 }
 
-.q-menu:not(.q-menu--horizontal) .q-expand-arrow {
-    transform: translateY(-50%) rotate(-45deg);
+.q-menu--horizontal .q-expand-arrow {
+    transform: translateY(-50%) rotate(-90deg);
 }
 
 .q-menu-back-icon::before {

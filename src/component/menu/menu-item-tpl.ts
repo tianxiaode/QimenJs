@@ -15,7 +15,7 @@ export const MENU_ITEM_TPL: TemplateDecl = {
                 {
                     tag: 'i',
                     name: 'expand',
-                    classes: 'q-expand-arrow q-caret hidden',
+                    classes: 'q-expand-arrow q-icon-chevron-down hidden',
                 },
             ],
         },
