@@ -82,7 +82,7 @@ const VIEWBOX = '0 0 512 512';
 
 const icons = [
     // 状态确认
-    { name: 'check', paths: [{ d: P.polyline([85, 256], [192, 363], [427, 128]) }] },
+    { name: 'check', paths: [{ d: P.polyline([85, 267], [192, 374], [427, 139]) }] },
     { name: 'close', paths: [{ d: P.line(128, 128, 384, 384) }, { d: P.line(384, 128, 128, 384) }] },
     { name: 'add', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.line(85, 256, 427, 256) }] },
     { name: 'minus', paths: [{ d: P.line(85, 256, 427, 256) }] },
@@ -92,7 +92,7 @@ const icons = [
     { name: 'radio', paths: [{ d: P.circle(256, 256, 192) }] },
     { name: 'radio-check', paths: [{ d: P.circle(256, 256, 192) }, { d: P.circle(256, 256, 85), fill: 'currentColor' }] },
     // 搜索/筛选
-    { name: 'search', paths: [{ d: P.circle(213, 213, 128) }, { d: P.line(320, 320, 448, 448) }] },
+    { name: 'search', paths: [{ d: P.circle(256, 256, 128) }, { d: P.line(384, 384, 448, 448) }] },
     { name: 'filter', paths: [{ d: P.polygon([64, 85], [448, 85], [320, 256], [320, 427], [192, 427], [192, 256]) }] },
     // 方向箭头
     { name: 'arrow-down', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.polyline([128, 299], [256, 427], [384, 299]) }] },
@@ -110,7 +110,7 @@ const icons = [
     { name: 'chevron-left', paths: [{ d: P.polyline([192, 128], [320, 256], [192, 384]) }] },
     { name: 'chevron-right', paths: [{ d: P.polyline([320, 128], [192, 256], [320, 384]) }] },
     // 编辑操作
-    { name: 'edit', paths: [{ d: P.polygon([21, 469], [149, 427], [405, 171], [320, 85], [64, 341]) }, { d: P.line(149, 427, 64, 341) }] },
+    { name: 'edit', paths: [{ d: P.polygon([64, 448], [192, 406], [448, 150], [363, 64], [107, 320]) }, { d: P.line(192, 406, 107, 320) }] },
     { name: 'delete', paths: [{ d: P.line(85, 128, 427, 128) }, { d: P.polyline([149, 128], [149, 448], [363, 448], [363, 128]) }, { d: P.line(192, 64, 320, 64) }, { d: P.line(213, 213, 213, 363) }, { d: P.line(299, 213, 299, 363) }] },
     // 设置/菜单
     { name: 'settings', paths: [{ d: P.gear(256, 256, 139, 203, 8) }, { d: P.circle(256, 256, 64) }] },
@@ -120,21 +120,21 @@ const icons = [
     { name: 'home', paths: [{ d: P.polyline([64, 256], [256, 64], [448, 256]) }, { d: P.polyline([107, 213], [107, 448], [192, 448], [192, 299], [320, 299], [320, 448], [405, 448], [405, 213]) }] },
     { name: 'refresh', paths: [{ d: P.arc(256, 256, 149, Math.PI * 0.25, Math.PI * 1.75) + ' M320 192 L405 192 M405 107 L405 192' }] },
     // 用户/情感
-    { name: 'user', paths: [{ d: P.circle(256, 171, 75) }, { d: 'M107 427 A149 149 0 0 1 405 427' }, { d: P.line(85, 448, 427, 448) }] },
-    { name: 'heart', paths: [{ d: 'M256 427 C171 341 85 256 85 171 C85 107 149 64 256 149 C363 64 427 107 427 171 C427 256 341 341 256 427 Z' }] },
-    { name: 'star', paths: [{ d: P.polygon([256, 85], [299, 192], [427, 213], [320, 277], [363, 405], [256, 320], [149, 405], [192, 277], [85, 213], [213, 192]) }] },
+    { name: 'user', paths: [{ d: P.circle(256, 155, 75) }, { d: 'M107 411 A149 149 0 0 1 405 411' }, { d: P.line(85, 432, 427, 432) }] },
+    { name: 'heart', paths: [{ d: 'M256 438 C171 352 85 267 85 182 C85 118 149 75 256 160 C363 75 427 118 427 182 C427 267 341 352 256 438 Z' }] },
+    { name: 'star', paths: [{ d: P.polygon([256, 96], [299, 203], [427, 224], [320, 288], [363, 416], [256, 331], [149, 416], [192, 288], [85, 224], [213, 203]) }] },
     // 状态提示
-    { name: 'warning', paths: [{ d: P.polygon([256, 64], [448, 427], [64, 427]) }, { d: P.line(256, 192, 256, 299) }, { d: P.circle(256, 363, 21), fill: 'currentColor' }] },
+    { name: 'warning', paths: [{ d: P.polygon([256, 75], [448, 438], [64, 438]) }, { d: P.line(256, 203, 256, 310) }, { d: P.circle(256, 374, 21), fill: 'currentColor' }] },
     { name: 'info', paths: [{ d: P.circle(256, 256, 192) }, { d: P.circle(256, 149, 26), fill: 'currentColor' }, { d: P.line(256, 213, 256, 341) }] },
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(64, 192, 448, 192) }, { d: P.rect(149, 64, 213, 128) }, { d: P.rect(149, 277, 213, 171) }] },
-    { name: 'folder', paths: [{ d: P.polygon([64, 149], [64, 427], [448, 427], [448, 149], [277, 149], [235, 107], [64, 107]) }] },
-    { name: 'folder-open', paths: [{ d: P.polyline([64, 256], [64, 128], [192, 128], [235, 171], [363, 171], [363, 256]) }, { d: P.polygon([64, 427], [149, 256], [448, 256], [363, 427]) }] },
+    { name: 'folder', paths: [{ d: P.polygon([64, 138], [64, 416], [448, 416], [448, 138], [277, 138], [235, 96], [64, 96]) }] },
+    { name: 'folder-open', paths: [{ d: P.polyline([64, 234], [64, 106], [192, 106], [235, 149], [363, 149], [363, 234]) }, { d: P.polygon([64, 405], [149, 234], [448, 234], [363, 405]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
-    { name: 'moon', paths: [{ d: 'M128 107 A171 171 0 1 0 299 320 A149 149 0 0 1 128 107 Z' }] },
-    { name: 'dark', paths: [{ d: 'M128 107 A171 171 0 1 0 299 320 A149 149 0 0 1 128 107 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M405 149 A213 213 0 1 0 384 363 A128 128 0 0 1 405 149 Z' }, { d: P.circle(149, 192, 32), fill: 'currentColor' }, { d: P.circle(256, 128, 32), fill: 'currentColor' }, { d: P.circle(171, 320, 32), fill: 'currentColor' }] },
+    { name: 'moon', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z' }] },
+    { name: 'dark', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: 'M362 160 A213 213 0 1 0 341 374 A128 128 0 0 1 362 160 Z' }, { d: P.circle(106, 203, 32), fill: 'currentColor' }, { d: P.circle(213, 139, 32), fill: 'currentColor' }, { d: P.circle(128, 331, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
 
