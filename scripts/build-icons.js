@@ -129,12 +129,12 @@ const icons = [
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.line(3, 9, 21, 9) }, { d: P.rect(7, 3, 10, 6) }, { d: P.rect(7, 13, 10, 8) }] },
     { name: 'folder', paths: [{ d: P.polygon([3, 7], [3, 20], [21, 20], [21, 7], [13, 7], [11, 5], [3, 5]) }] },
-    { name: 'folder-open', paths: [{ d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) }, { d: P.polyline([3, 20], [7, 11], [21, 11], [21, 20]) }] },
+    { name: 'folder-open', paths: [{ d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) }, { d: P.polygon([3, 20], [7, 11], [21, 11], [17, 20]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
-    { name: 'moon', paths: [{ d: 'M14 3 A10 10 0 1 0 14 22 A10 10 0 0 1 14 3 Z' }] },
-    { name: 'dark', paths: [{ d: 'M14 3 A10 10 0 1 0 14 22 A10 10 0 0 1 14 3 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M20 8 A9 9 0 1 0 20 16 A5 5 0 0 1 20 8 Z' }, { d: P.circle(7, 9, 1.5), fill: 'currentColor' }, { d: P.circle(12, 6, 1.5), fill: 'currentColor' }, { d: P.circle(8, 15, 1.5), fill: 'currentColor' }] },
+    { name: 'moon', paths: [{ d: 'M6 5 A8 8 0 1 0 14 15 A6 6 0 0 1 6 5 Z' }] },
+    { name: 'dark', paths: [{ d: 'M6 5 A8 8 0 1 0 14 15 A6 6 0 0 1 6 5 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: 'M19 7 A10 10 0 1 0 18 17 A6 6 0 0 1 19 7 Z' }, { d: P.circle(7, 9, 1.5), fill: 'currentColor' }, { d: P.circle(12, 6, 1.5), fill: 'currentColor' }, { d: P.circle(8, 15, 1.5), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(12, 12, 9) }, { d: P.line(3, 12, 21, 12) }, { d: P.polyline([12, 3], [8, 12], [12, 21]) }, { d: P.polyline([12, 3], [16, 12], [12, 21]) }] },
 ];
 
