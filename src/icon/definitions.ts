@@ -31,8 +31,8 @@ export const icons: IconDef[] = [
     {
         name: 'close',
         paths: [
-            { d: P.line(128, 128, 384, 384) },
-            { d: P.line(384, 128, 128, 384) },
+            { d: P.line(64, 64, 448, 448) },
+            { d: P.line(448, 64, 64, 448) },
         ],
     },
     {
@@ -81,7 +81,7 @@ export const icons: IconDef[] = [
     {
         name: 'search',
         paths: [
-            { d: P.circle(256, 256, 128) },
+            { d: P.circle(256, 256, 170) },
             { d: P.line(384, 384, 448, 448) },
         ],
     },
@@ -96,29 +96,29 @@ export const icons: IconDef[] = [
     {
         name: 'arrow-down',
         paths: [
-            { d: P.line(256, 85, 256, 427) },
-            { d: P.polyline([128, 299], [256, 427], [384, 299]) },
+            { d: P.line(256, 64, 256, 448) },
+            { d: P.polyline([64, 320], [256, 448], [448, 320]) },
         ],
     },
     {
         name: 'arrow-up',
         paths: [
-            { d: P.line(256, 85, 256, 427) },
-            { d: P.polyline([128, 213], [256, 85], [384, 213]) },
+            { d: P.line(256, 64, 256, 448) },
+            { d: P.polyline([64, 192], [256, 64], [448, 192]) },
         ],
     },
     {
         name: 'arrow-left',
         paths: [
-            { d: P.line(85, 256, 427, 256) },
-            { d: P.polyline([213, 128], [85, 256], [213, 384]) },
+            { d: P.line(64, 256, 448, 256) },
+            { d: P.polyline([192, 64], [64, 256], [192, 448]) },
         ],
     },
     {
         name: 'arrow-right',
         paths: [
-            { d: P.line(85, 256, 427, 256) },
-            { d: P.polyline([299, 128], [427, 256], [299, 384]) },
+            { d: P.line(64, 256, 448, 256) },
+            { d: P.polyline([320, 64], [448, 256], [320, 448]) },
         ],
     },
 
@@ -126,28 +126,28 @@ export const icons: IconDef[] = [
     {
         name: 'caret-down',
         paths: [
-            { d: P.triangle(128, 171, 384, 171, 256, 341), fill: 'currentColor' },
+            { d: P.triangle(64, 149, 448, 149, 256, 363), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-up',
         paths: [
-            { d: P.triangle(128, 341, 384, 341, 256, 171), fill: 'currentColor' },
+            { d: P.triangle(64, 363, 448, 363, 256, 149), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-left',
         paths: [
-            { d: P.triangle(171, 128, 171, 384, 341, 256), fill: 'currentColor' },
+            { d: P.triangle(149, 64, 149, 448, 363, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-right',
         paths: [
-            { d: P.triangle(341, 128, 341, 384, 171, 256), fill: 'currentColor' },
+            { d: P.triangle(363, 64, 363, 448, 149, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
@@ -156,25 +156,25 @@ export const icons: IconDef[] = [
     {
         name: 'chevron-down',
         paths: [
-            { d: P.polyline([128, 192], [256, 320], [384, 192]) },
+            { d: P.polyline([64, 171], [256, 341], [448, 171]) },
         ],
     },
     {
         name: 'chevron-up',
         paths: [
-            { d: P.polyline([128, 320], [256, 192], [384, 320]) },
+            { d: P.polyline([64, 341], [256, 171], [448, 341]) },
         ],
     },
     {
         name: 'chevron-left',
         paths: [
-            { d: P.polyline([192, 128], [320, 256], [192, 384]) },
+            { d: P.polyline([171, 64], [341, 256], [171, 448]) },
         ],
     },
     {
         name: 'chevron-right',
         paths: [
-            { d: P.polyline([320, 128], [192, 256], [320, 384]) },
+            { d: P.polyline([341, 64], [171, 256], [341, 448]) },
         ],
     },
 
@@ -182,19 +182,19 @@ export const icons: IconDef[] = [
     {
         name: 'edit',
         paths: [
-            { d: P.polygon([325, 139], [368, 182], [229, 352], [144, 374], [186, 310]) },
-            { d: P.line(186, 310, 229, 352) },
+            { d: P.polygon([363, 85], [427, 149], [149, 427], [85, 363]) },
+            { d: P.line(85, 363, 149, 427) },
         ],
     },
     {
         name: 'delete',
         paths: [
-            { d: 'M192 112 A64 64 0 0 0 320 112' },
-            { d: P.line(96, 112, 416, 112) },
-            { d: P.polyline([128, 112], [128, 416], [384, 416], [384, 112]) },
-            { d: P.line(192, 160, 192, 368) },
-            { d: P.line(256, 160, 256, 368) },
-            { d: P.line(320, 160, 320, 368) },
+            { d: 'M192 80 A52 52 0 0 0 320 80' },
+            { d: P.line(80, 128, 432, 128) },
+            { d: P.polyline([128, 170], [128, 416], [384, 416], [384, 170]) },
+            { d: P.line(192, 210, 192, 376) },
+            { d: P.line(256, 210, 256, 376) },
+            { d: P.line(320, 210, 320, 376) },
         ],
     },
 
@@ -209,9 +209,9 @@ export const icons: IconDef[] = [
     {
         name: 'menu',
         paths: [
-            { d: P.line(107, 128, 405, 128) },
-            { d: P.line(107, 256, 405, 256) },
-            { d: P.line(107, 384, 405, 384) },
+            { d: P.line(64, 128, 448, 128) },
+            { d: P.line(64, 256, 448, 256) },
+            { d: P.line(64, 384, 448, 384) },
         ],
     },
     {
@@ -298,7 +298,7 @@ export const icons: IconDef[] = [
     {
         name: 'folder-open',
         paths: [
-            { d: P.polyline([64, 405], [64, 106], [192, 106], [235, 149], [363, 149], [363, 234]) },
+            { d: P.polyline([64, 405], [64, 96], [192, 96], [235, 139], [448, 139], [448, 234]) },
             { d: P.polygon([64, 405], [149, 234], [448, 234], [363, 405]) },
         ],
     },
@@ -321,23 +321,23 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M171 150 A170 170 0 1 0 342 363 A140 140 0 0 1 171 150 Z' },
+            { d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M171 150 A170 170 0 1 0 342 363 A140 140 0 0 1 171 150 Z', fill: 'currentColor' },
+            { d: 'M149 128 A180 180 0 1 0 363 384 A140 140 0 0 1 149 128 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'palette',
         paths: [
-            { d: 'M380 320 A170 170 0 1 0 280 420 A80 80 0 0 1 380 320 Z' },
-            { d: P.circle(192, 192, 32), fill: 'currentColor' },
-            { d: P.circle(320, 192, 32), fill: 'currentColor' },
-            { d: P.circle(192, 320, 32), fill: 'currentColor' },
+            { d: 'M427 363 A192 192 0 1 0 213 448 A96 96 0 0 1 427 363 Z' },
+            { d: P.circle(171, 171, 36), fill: 'currentColor' },
+            { d: P.circle(320, 149, 36), fill: 'currentColor' },
+            { d: P.circle(149, 320, 36), fill: 'currentColor' },
         ],
     },
     {
