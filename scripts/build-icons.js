@@ -115,7 +115,7 @@ const icons = [
     // 设置/菜单
     { name: 'settings', paths: [{ d: P.gear(256, 256, 139, 203, 8) }, { d: P.circle(256, 256, 64) }] },
     { name: 'menu', paths: [{ d: P.line(64, 128, 448, 128) }, { d: P.line(64, 256, 448, 256) }, { d: P.line(64, 384, 448, 384) }] },
-    { name: 'more', paths: [{ d: P.circle(107, 256, 47), fill: 'currentColor' }, { d: P.circle(256, 256, 47), fill: 'currentColor' }, { d: P.circle(405, 256, 47), fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'more', paths: [{ d: P.circle(107, 256, 64), fill: 'currentColor' }, { d: P.circle(256, 256, 64), fill: 'currentColor' }, { d: P.circle(405, 256, 64), fill: 'currentColor' }], strokeWidth: 0 },
     // 导航
     { name: 'home', paths: [{ d: P.polyline([64, 256], [256, 64], [448, 256]) }, { d: P.polyline([107, 213], [107, 448], [192, 448], [192, 299], [320, 299], [320, 448], [405, 448], [405, 213]) }] },
     { name: 'refresh', paths: [{ d: P.arc(256, 256, 149, Math.PI * 0.25, Math.PI * 1.75) + ' M320 192 L405 192 M405 107 L405 192' }] },
@@ -132,9 +132,9 @@ const icons = [
     { name: 'folder-open', paths: [{ d: P.polyline([64, 234], [64, 106], [192, 106], [235, 149], [363, 149], [363, 234]) }, { d: P.polygon([64, 405], [149, 234], [448, 234], [363, 405]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
-    { name: 'moon', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z' }] },
-    { name: 'dark', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M362 160 A213 213 0 1 0 341 374 A128 128 0 0 1 362 160 Z' }, { d: P.circle(106, 203, 32), fill: 'currentColor' }, { d: P.circle(213, 139, 32), fill: 'currentColor' }, { d: P.circle(128, 331, 32), fill: 'currentColor' }] },
+    { name: 'moon', paths: [{ d: 'M171 150 A170 170 0 1 0 342 363 A140 140 0 0 1 171 150 Z' }] },
+    { name: 'dark', paths: [{ d: 'M171 150 A170 170 0 1 0 342 363 A140 140 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: 'M380 320 A170 170 0 1 0 280 420 A80 80 0 0 1 380 320 Z' }, { d: P.circle(192, 192, 32), fill: 'currentColor' }, { d: P.circle(320, 192, 32), fill: 'currentColor' }, { d: P.circle(192, 320, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
 
