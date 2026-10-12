@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body { background: #1a1a2e; color: #eee; font-family: monospace; display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
+.icon-box { text-align: center; }
+.icon-box svg { width: 48px; height: 48px; }
+.label { margin-top: 4px; font-size: 11px; }
+.section { width: 100%; font-size: 14px; color: #0ff; margin: 10px 0 5px; }
+</style>
+</head>
+<body>
+
+<div class="section">moon stroke 方案对比</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 1 0 14 22 A10 10 0 0 1 14 3 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">A: 1,0 / 0,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 1 1 14 22 A10 10 0 0 0 14 3 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">B: 1,1 / 0,0</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 0 0 14 22 A10 10 0 1 1 14 3 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">C: 0,0 / 1,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 0 1 14 22 A10 10 0 1 0 14 3 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">D: 0,1 / 1,0</div>
+</div>
+
+<div class="section">dark fill 方案对比</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 1 0 14 22 A10 10 0 0 1 14 3 Z" fill="#0f0"/></svg>
+  <div class="label">A: 1,0 / 0,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 1 1 14 22 A10 10 0 0 0 14 3 Z" fill="#0f0"/></svg>
+  <div class="label">B: 1,1 / 0,0</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 0 0 14 22 A10 10 0 1 1 14 3 Z" fill="#0f0"/></svg>
+  <div class="label">C: 0,0 / 1,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M14 3 A10 10 0 0 1 14 22 A10 10 0 1 0 14 3 Z" fill="#0f0"/></svg>
+  <div class="label">D: 0,1 / 1,0</div>
+</div>
+
+<div class="section">palette 方案对比</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M20 8 A9 9 0 1 0 20 16 A5 5 0 0 0 20 8 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">A: 1,0 / 0,0</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M20 8 A9 9 0 1 1 20 16 A5 5 0 0 1 20 8 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">B: 1,1 / 0,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M20 8 A9 9 0 1 0 20 16 A5 5 0 0 1 20 8 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">C: 1,0 / 0,1</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24"><path d="M20 8 A9 9 0 1 1 20 16 A5 5 0 0 0 20 8 Z" fill="none" stroke="#0f0" stroke-width="2"/></svg>
+  <div class="label">D: 1,1 / 0,0</div>
+</div>
+
+<div class="section">folder-open 前壁方案对比</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24">
+    <path d="M3 5 L9 5 L11 7 L21 7 L21 20 L3 20 Z" fill="none" stroke="#0f0" stroke-width="2"/>
+    <path d="M3 20 L7 11 L21 11 L21 20" fill="none" stroke="#0f0" stroke-width="2"/>
+  </svg>
+  <div class="label">A: 3,20-7,11-21,11-21,20</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24">
+    <path d="M3 5 L9 5 L11 7 L21 7 L21 20 L3 20 Z" fill="none" stroke="#0f0" stroke-width="2"/>
+    <path d="M3 20 L7 11 L17 11 L21 20" fill="none" stroke="#0f0" stroke-width="2"/>
+  </svg>
+  <div class="label">B: 3,20-7,11-17,11-21,20</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24">
+    <path d="M3 5 L9 5 L11 7 L21 7 L21 20 L3 20 Z" fill="none" stroke="#0f0" stroke-width="2"/>
+    <path d="M3 20 L8 11 L21 11 L21 20" fill="none" stroke="#0f0" stroke-width="2"/>
+  </svg>
+  <div class="label">C: 3,20-8,11-21,11-21,20</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 24 24">
+    <path d="M3 5 L9 5 L11 7 L21 7 L21 20 L3 20 Z" fill="none" stroke="#0f0" stroke-width="2"/>
+    <path d="M3 20 L7 11 L21 11" fill="none" stroke="#0f0" stroke-width="2"/>
+  </svg>
+  <div class="label">D: 3,20-7,11-21,11 (open)</div>
+</div>
+
+<div class="section">FA 参考</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z" fill="#0f0"/></svg>
+  <div class="label">FA solid moon</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 576 512"><path d="M88.7 223.8L0 375.8 0 96C0 60.7 28.7 32 64 32l117.5 0c17 0 33.3 6.7 45.3 18.7l26.5 26.5c12 12 28.3 18.7 45.3 18.7L416 96c35.3 0 64 28.7 64 64l0 32-336 0c-22.8 0-43.8 12.1-55.3 31.8zm27.6 16.1C122.1 230 132.6 224 144 224l400 0c11.5 0 22 6.1 27.7 16.1s5.7 22.2-.1 32.1l-112 192C453.9 474 443.4 480 432 480L32 480c-11.5 0-22-6.1-27.7-16.1s-5.7-22.2 .1-32.1l112-192z" fill="#0f0"/></svg>
+  <div class="label">FA solid folder-open</div>
+</div>
+
+<div class="icon-box">
+  <svg viewBox="0 0 512 512"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3L344 320c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z" fill="#0f0"/></svg>
+  <div class="label">FA solid palette</div>
+</div>
+
+</body>
+</html>
