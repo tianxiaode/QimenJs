@@ -298,7 +298,7 @@ export const icons: IconDef[] = [
         name: 'folder-open',
         paths: [
             { d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) },
-            { d: P.polyline([5, 15], [8, 11], [21, 11], [19, 20]) },
+            { d: P.polyline([3, 20], [7, 11], [17, 11], [21, 20]) },
         ],
     },
 
@@ -320,23 +320,24 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M20 14 A8 8 0 1 1 10 4 L20 14 Z' },
+            { d: 'M16 3 A12 12 0 1 1 16 21 A12 12 0 0 0 16 3 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M20 14 A8 8 0 1 1 10 4 L20 14 Z', fill: 'currentColor' },
+            { d: 'M16 3 A12 12 0 1 1 16 21 A12 12 0 0 0 16 3 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'palette',
         paths: [
-            { d: P.circle(12, 12, 9) },
-            { d: P.circle(8, 10, 1.5), fill: 'currentColor' },
-            { d: P.circle(12, 7, 1.5), fill: 'currentColor' },
-            { d: P.circle(16, 10, 1.5), fill: 'currentColor' },
+            { d: 'M21 9 A9 9 0 1 0 21 15 A3 3 0 0 0 21 9 Z' },
+            { d: P.circle(8, 9, 1.5), fill: 'currentColor' },
+            { d: P.circle(13, 7, 1.5), fill: 'currentColor' },
+            { d: P.circle(17, 10, 1.5), fill: 'currentColor' },
+            { d: P.circle(10, 14, 1.5), fill: 'currentColor' },
         ],
     },
     {
