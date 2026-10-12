@@ -47,11 +47,11 @@ export const ICONS_DEMO: DemoConfig = {
         },
         {
             label: '编辑操作',
-            template: gallery(['edit', 'delete', 'save', 'folder-open']),
+            template: gallery(['edit', 'delete', 'save', 'folder', 'folder-open']),
         },
         {
             label: '设置/菜单',
-            template: gallery(['settings', 'menu', 'more']),
+            template: gallery(['settings', 'menu', 'more', 'palette']),
         },
         {
             label: '导航',
@@ -66,8 +66,8 @@ export const ICONS_DEMO: DemoConfig = {
             template: gallery(['warning', 'info']),
         },
         {
-            label: '天体/世界',
-            template: gallery(['sun', 'moon', 'globe']),
+            label: '天体/外观',
+            template: gallery(['sun', 'moon', 'dark', 'globe']),
         },
     ],
 };

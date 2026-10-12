@@ -288,14 +288,20 @@ export const icons: IconDef[] = [
         ],
     },
     {
+        name: 'folder',
+        paths: [
+            { d: P.polygon([3, 7], [3, 20], [21, 20], [21, 7], [13, 7], [11, 5], [3, 5]) },
+        ],
+    },
+    {
         name: 'folder-open',
         paths: [
             { d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) },
-            { d: P.polyline([3, 14], [7, 11], [21, 11], [19, 20]) },
+            { d: P.polyline([5, 15], [8, 11], [21, 11], [19, 20]) },
         ],
     },
 
-    // ---- 天体/世界 ----
+    // ---- 天体/外观 ----
     {
         name: 'sun',
         paths: [
@@ -314,6 +320,22 @@ export const icons: IconDef[] = [
         name: 'moon',
         paths: [
             { d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z' },
+        ],
+    },
+    {
+        name: 'dark',
+        paths: [
+            { d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z', fill: 'currentColor' },
+        ],
+        strokeWidth: 0,
+    },
+    {
+        name: 'palette',
+        paths: [
+            { d: P.arc(12, 12, 9, 0.5, Math.PI * 2 - 0.5) },
+            { d: P.circle(8, 10, 1.2), fill: 'currentColor' },
+            { d: P.circle(12, 7, 1.2), fill: 'currentColor' },
+            { d: P.circle(16, 10, 1.2), fill: 'currentColor' },
         ],
     },
     {

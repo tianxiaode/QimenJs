@@ -128,10 +128,13 @@ const icons = [
     { name: 'info', paths: [{ d: P.circle(12, 12, 9) }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.line(12, 10, 12, 16) }] },
     // 文件操作
     { name: 'save', paths: [{ d: P.rect(3, 3, 18, 18, 2) }, { d: P.line(3, 9, 21, 9) }, { d: P.rect(7, 3, 10, 6) }, { d: P.rect(7, 13, 10, 8) }] },
-    { name: 'folder-open', paths: [{ d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) }, { d: P.polyline([3, 14], [7, 11], [21, 11], [19, 20]) }] },
+    { name: 'folder', paths: [{ d: P.polygon([3, 7], [3, 20], [21, 20], [21, 7], [13, 7], [11, 5], [3, 5]) }] },
+    { name: 'folder-open', paths: [{ d: P.polygon([3, 5], [9, 5], [11, 7], [21, 7], [21, 20], [3, 20]) }, { d: P.polyline([5, 15], [8, 11], [21, 11], [19, 20]) }] },
     // 天体/世界
     { name: 'sun', paths: [{ d: P.circle(12, 12, 4) }, { d: P.line(12, 2, 12, 5) }, { d: P.line(12, 19, 12, 22) }, { d: P.line(2, 12, 5, 12) }, { d: P.line(19, 12, 22, 12) }, { d: P.line(5, 5, 7, 7) }, { d: P.line(17, 17, 19, 19) }, { d: P.line(5, 19, 7, 17) }, { d: P.line(17, 7, 19, 5) }] },
     { name: 'moon', paths: [{ d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z' }] },
+    { name: 'dark', paths: [{ d: 'M20 14 A8 8 0 1 1 10 4 A6 6 0 0 0 20 14 Z', fill: 'currentColor' }], strokeWidth: 0 },
+    { name: 'palette', paths: [{ d: P.arc(12, 12, 9, 0.5, Math.PI * 2 - 0.5) }, { d: P.circle(8, 10, 1.2), fill: 'currentColor' }, { d: P.circle(12, 7, 1.2), fill: 'currentColor' }, { d: P.circle(16, 10, 1.2), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(12, 12, 9) }, { d: P.line(3, 12, 21, 12) }, { d: P.polyline([12, 3], [8, 12], [12, 21]) }, { d: P.polyline([12, 3], [16, 12], [12, 21]) }] },
 ];
 
@@ -257,25 +260,6 @@ async function generateFontFallback() {
     const ttf = svg2ttf(svgFont, {});
     fs.writeFileSync(path.join(FONTS_DIR, 'q-icon.ttf'), Buffer.from(ttf.buffer));
     console.log(`  ✓ TTF 生成完成 (svg2ttf 回退方案)`);
-}
-
-// ---- 生成 q-icon.css 图标映射部分 ----
-function generateCssMapping() {
-    console.log('\n🎨 生成 CSS 映射...');
-
-    const iconMap = JSON.parse(fs.readFileSync(path.join(FONTS_DIR, 'icon-map.json'), 'utf-8'));
-    let css = '';
-
-    for (const icon of icons) {
-        const hex = iconMap[icon.name];
-        if (hex) {
-            css += `.q-icon-${icon.name}:before { content: "\\${hex.toLowerCase()}"; }\n`;
-        }
-    }
-
-    // 写入单独文件，供 q-icon.css 导入或手动合并
-    fs.writeFileSync(path.join(ICON_DIR, 'icon-classes.css'), css);
-    console.log(`  ✓ 生成 icon-classes.css (${icons.length} 个 class)`);
 }
 
 // ---- 主流程 ----

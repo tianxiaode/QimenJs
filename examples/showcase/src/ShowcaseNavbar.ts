@@ -105,7 +105,7 @@ class ShowcaseNavbar extends NavbarComponent {
                     type: 'toggle',
                     href: '#action/toggle-dark',
                     offIcon: 'q-icon-sun',
-                    onIcon: 'q-icon-moon',
+                    onIcon: 'q-icon-dark',
                     eventKey: 'dark',
                     ghost: true,
                     dock: 'right',
@@ -140,13 +140,13 @@ class ShowcaseNavbar extends NavbarComponent {
                 },
                 {
                     type: 'dropdown',
-                    iconCls: 'q-icon-edit',
+                    iconCls: 'q-icon-palette',
                     hint: '@nav.theme',
                     dock: 'right',
                     ghost: true,
                     mobileMenu: {
                         text: '@nav.theme',
-                        icon: 'q-icon-edit',
+                        icon: 'q-icon-palette',
                         items: themeItems,
                     },
                     popover: {

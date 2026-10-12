@@ -1,7 +1,9 @@
 /* ========================================
-   图标系统 - 纯 CSS 绘制的通用图标
-   通过 --q-icon-size / --q-icon-color 定制
-   所有图标尺寸基于 --q-icon-size 按比例推导
+   图标系统 - 通用图标类
+   .q-check / .q-close / .q-star / .q-chevron-right / .q-chevron-down
+   使用 QIcon 字体渲染，通过 --q-icon-size / --q-icon-color 定制
+   .q-diamond 保留 CSS 绘制（无字体对应）
+   Checkbox/Radio 保留 CSS 绘制（内部控件样式）
    ======================================== */
 
 :root {
@@ -10,80 +12,102 @@
     --q-icon-border-width: calc(var(--q-icon-size) * 0.14);
 }
 
-/* -------- 勾 (check) -------- */
+/* -------- 勾 (check) → 字体图标 -------- */
 .q-check {
-    display: inline-block;
-    width: calc(var(--q-icon-size) * 0.3);
-    height: calc(var(--q-icon-size) * 0.57);
-    border: solid var(--q-icon-color);
-    border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
-    transform: rotate(45deg);
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-check::before {
+    content: "\e909";
 }
 
-/* -------- 关闭叉 (close) -------- */
+/* -------- 关闭叉 (close) → 字体图标 -------- */
 .q-close {
-    position: relative;
-    display: inline-block;
-    width: calc(var(--q-icon-size) * 0.85);
-    height: calc(var(--q-icon-size) * 0.85);
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
 }
-
-.q-close::before,
-.q-close::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: var(--q-icon-border-width);
-    background: var(--q-icon-color);
-    transform-origin: center;
-}
-
 .q-close::before {
-    transform: rotate(45deg);
+    content: "\e910";
 }
 
-.q-close::after {
-    transform: rotate(-45deg);
-}
-
-/* -------- 星星 (star) -------- */
+/* -------- 星星 (star) → 字体图标 -------- */
 .q-star {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    background: currentColor;
-    clip-path: polygon(
-        50% 0%, 61% 35%, 98% 35%, 68% 57%,
-        79% 91%, 50% 70%, 21% 91%, 32% 57%,
-        2% 35%, 39% 35%
-    );
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+    color: currentColor;
+}
+.q-star::before {
+    content: "\e926";
 }
 
-/* -------- 右箭头 (chevron-right) -------- */
+/* -------- 右箭头 (chevron-right) → 字体图标 -------- */
 .q-chevron-right {
-    display: inline-block;
-    width: calc(var(--q-icon-size) * 0.43);
-    height: calc(var(--q-icon-size) * 0.43);
-    border: solid var(--q-icon-color);
-    border-width: 0 var(--q-icon-border-width) var(--q-icon-border-width) 0;
-    transform: rotate(-45deg);
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-chevron-right::before {
+    content: "\e90e";
 }
 
-/* -------- 下箭头 (chevron-down) -------- */
-.q-icon.q-chevron-down {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: calc(var(--q-icon-size) * 0.6) calc(var(--q-icon-size) * 0.35) 0 calc(var(--q-icon-size) * 0.35);
-    border-color: var(--q-icon-color) transparent transparent transparent;
-    font-size: inherit;
-    vertical-align: middle;
+/* -------- 下箭头 (chevron-down) → 字体图标 -------- */
+.q-chevron-down {
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-chevron-down::before {
+    content: "\e90c";
 }
 
-/* -------- 菱形 (diamond) -------- */
+/* -------- 菱形 (diamond) — CSS 绘制（无字体对应） -------- */
 .q-diamond {
     display: inline-block;
     width: calc(var(--q-icon-size) * 0.57);
