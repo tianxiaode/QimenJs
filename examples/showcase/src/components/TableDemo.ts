@@ -3,6 +3,7 @@ import type { DemoConfig, DemoSection } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 import '@/component/table/row/row.css';
 import '@/component/table/header/header.css';
+import '@/component/table/table.css';
 
 const TABLE_DATA = [
     { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
@@ -192,6 +193,86 @@ const FIXED_DATA = [
     { id: 7, name: '吴九', empNo: 'E007', age: 38, salary: 25000, dept: '管理层', hireDate: '2020-04', email: 'wujiu@co.com', phone: '133-0007', address: '武汉市洪山区', status: '在职' },
     { id: 8, name: '郑十', empNo: 'E008', age: 29, salary: 16000, dept: '市场部', hireDate: '2022-12', email: 'zhengshi@co.com', phone: '132-0008', address: '南京市鼓楼区', status: '在职' },
 ];
+
+const BG_MODES = [
+    { label: '默认条纹', action: 'default' },
+    { label: '无条纹', action: 'no-stripe' },
+    { label: '绿色背景', action: 'green' },
+    { label: '自定义条纹', action: 'custom-stripe' },
+];
+
+class FixedColumnBgDemo extends Component {
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-demo__row',
+                    children: BG_MODES.map(m => ({
+                        type: 'button',
+                        options: {
+                            text: m.label,
+                            size: 'sm',
+                            action: m.action,
+                            eventKey: 'bg-mode',
+                        },
+                    })),
+                },
+                {
+                    tag: 'div',
+                    name: 'tableContainer',
+                    classes: 'q-demo__column',
+                },
+            ],
+        };
+    }
+
+    listens: ListenItem[] = [{ source: 'bg-mode', events: { click: '_onBgModeClick' } }];
+
+    private _table: any = null;
+
+    onAfterInit(): void {
+        const container = this.getNodeEl('tableContainer');
+        if (!container) return;
+        import('@qimenjs/component').then(({ TableComponent }) => {
+            this._table = new TableComponent({
+                columns: FIXED_COLUMNS,
+                data: FIXED_DATA,
+                selectable: 'multiple',
+                container,
+            });
+        });
+    }
+
+    _onBgModeClick(domEvt: any): void {
+        if (!this._table) return;
+        const action = domEvt?.actionData?.action ?? domEvt?.action;
+        switch (action) {
+            case 'default':
+                this._table.setData('stripe', true);
+                this._table.setData('rowBg', null);
+                this._table.setData('stripeBg', null);
+                break;
+            case 'no-stripe':
+                this._table.setData('stripe', false);
+                this._table.setData('rowBg', null);
+                this._table.setData('stripeBg', null);
+                break;
+            case 'green':
+                this._table.setData('stripe', false);
+                this._table.setData('rowBg', '#e8f5e9');
+                this._table.setData('stripeBg', null);
+                break;
+            case 'custom-stripe':
+                this._table.setData('stripe', true);
+                this._table.setData('rowBg', '#fff3e0');
+                this._table.setData('stripeBg', '#ffe0b2');
+                break;
+        }
+    }
+}
 
 const DISABLED_SELECT_DATA = [
     { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
@@ -506,73 +587,28 @@ export const TABLE_DEMO: DemoConfig = {
             },
         },
         {
-            label: '固定列（左右）',
+            label: '固定列 + 自定义行背景',
             code: `{ type: 'table', options: {
     columns: [
         { name: 'check', cellType: 'checkbox', selection: true, width: 40, fixed: 'left' },
         { name: 'name', field: 'name', title: '姓名', width: 120, fixed: 'left' },
-        { name: 'empNo', field: 'empNo', title: '工号', width: 100 },
-        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
-        { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
-        { name: 'hireDate', field: 'hireDate', title: '入职日期', width: 120 },
-        { name: 'email', field: 'email', title: '邮箱', width: 180 },
-        { name: 'phone', field: 'phone', title: '电话', width: 130 },
-        { name: 'address', field: 'address', title: '地址', width: 200 },
+        // ... 中间列 ...
         { name: 'status', field: 'status', title: '状态', width: 100, fixed: 'right' },
     ],
     data: [...],
     selectable: 'multiple',
+    stripe: true,       // 默认条纹
+    rowBg: null,        // 自定义奇数行背景色
+    stripeBg: null,     // 自定义偶数行背景色
 } }
 
-// fixed: 'left' — 列固定在左侧，水平滚动时不移动
-// fixed: 'right' — 列固定在右侧
-// 多列固定时偏移量自动叠加（第二列左固定偏移 = 第一列宽度）
-// 固定列边界有 shadow 视觉分隔`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__column',
-                children: [
-                    {
-                        type: 'table',
-                        options: {
-                            columns: FIXED_COLUMNS,
-                            data: FIXED_DATA,
-                            selectable: 'multiple',
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            label: '自定义行背景',
-            code: `{ type: 'table', options: {
-    columns: [...],
-    data: [...],
-    stripe: false,
-    rowBg: '#e8f5e9',
-} }
-
+// fixed: 'left'/'right' — 固定列，水平滚动时不移动
 // stripe: false — 禁用条纹，所有行统一背景色
-// rowBg: '#e8f5e9' — 自定义行背景色（奇数行/无条纹时）
-// stripeBg: '#c8e6c9' — 自定义条纹背景色（偶数行，stripe:true 时生效）
-// 固定列自动跟随行背景色变化`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__column',
-                children: [
-                    {
-                        type: 'table',
-                        options: {
-                            columns: FIXED_COLUMNS,
-                            data: FIXED_DATA,
-                            selectable: 'multiple',
-                            stripe: false,
-                            rowBg: '#e8f5e9',
-                        },
-                    },
-                ],
-            },
+// rowBg: '#e8f5e9' — 自定义行背景色
+// stripeBg: '#ffe0b2' — 自定义条纹背景色
+// 固定列自动跟随行背景色变化
+// 点击上方按钮切换不同的行背景模式`,
+            component: FixedColumnBgDemo,
         },
     ],
 };
