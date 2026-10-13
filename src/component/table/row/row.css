@@ -9,11 +9,11 @@
 }
 
 .q-table-row--odd {
-    --q-table-row-bg: var(--q-color-bg, #fff);
+    --q-table-row-bg: var(--q-table-odd-bg, var(--q-color-bg, #fff));
 }
 
 .q-table-row--even {
-    --q-table-row-bg: var(--q-color-bg-stripe, #f5f5f5);
+    --q-table-row-bg: var(--q-table-even-bg, var(--q-color-bg-stripe, #f5f5f5));
 }
 
 .q-table-row .q_cell {
