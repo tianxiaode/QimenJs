@@ -171,21 +171,26 @@ const ROWNUMBER_DATA = [
 const FIXED_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'check', cellType: 'checkbox', selection: true, width: 40, align: 'center', fixed: 'left' },
     { name: 'name', field: 'name', title: '姓名', width: 120, fixed: 'left' },
+    { name: 'empNo', field: 'empNo', title: '工号', width: 100, align: 'center' },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    { name: 'hireDate', field: 'hireDate', title: '入职日期', width: 120, align: 'center' },
+    { name: 'email', field: 'email', title: '邮箱', width: 180 },
+    { name: 'phone', field: 'phone', title: '电话', width: 130 },
+    { name: 'address', field: 'address', title: '地址', width: 200 },
     { name: 'status', field: 'status', title: '状态', width: 100, align: 'center', fixed: 'right' },
 ];
 
 const FIXED_DATA = [
-    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部', status: '在职' },
-    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', status: '在职' },
-    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层', status: '离职' },
-    { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部', status: '在职' },
-    { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部', status: '在职' },
-    { id: 6, name: '周八', age: 26, salary: 12000, dept: '技术部', status: '离职' },
-    { id: 7, name: '吴九', age: 38, salary: 25000, dept: '管理层', status: '在职' },
-    { id: 8, name: '郑十', age: 29, salary: 16000, dept: '市场部', status: '在职' },
+    { id: 1, name: '张三', empNo: 'E001', age: 28, salary: 15000, dept: '技术部', hireDate: '2023-03', email: 'zhangsan@co.com', phone: '138-0001', address: '北京市海淀区', status: '在职' },
+    { id: 2, name: '李四', empNo: 'E002', age: 35, salary: 22000, dept: '市场部', hireDate: '2021-06', email: 'lisi@co.com', phone: '139-0002', address: '上海市浦东区', status: '在职' },
+    { id: 3, name: '王五', empNo: 'E003', age: 42, salary: 30000, dept: '管理层', hireDate: '2019-01', email: 'wangwu@co.com', phone: '137-0003', address: '深圳市南山区', status: '离职' },
+    { id: 4, name: '赵六', empNo: 'E004', age: 24, salary: 8000, dept: '技术部', hireDate: '2024-07', email: 'zhaoliu@co.com', phone: '136-0004', address: '杭州市西湖区', status: '在职' },
+    { id: 5, name: '孙七', empNo: 'E005', age: 31, salary: 18000, dept: '市场部', hireDate: '2022-09', email: 'sunqi@co.com', phone: '135-0005', address: '广州市天河区', status: '在职' },
+    { id: 6, name: '周八', empNo: 'E006', age: 26, salary: 12000, dept: '技术部', hireDate: '2023-11', email: 'zhouba@co.com', phone: '134-0006', address: '成都市武侯区', status: '离职' },
+    { id: 7, name: '吴九', empNo: 'E007', age: 38, salary: 25000, dept: '管理层', hireDate: '2020-04', email: 'wujiu@co.com', phone: '133-0007', address: '武汉市洪山区', status: '在职' },
+    { id: 8, name: '郑十', empNo: 'E008', age: 29, salary: 16000, dept: '市场部', hireDate: '2022-12', email: 'zhengshi@co.com', phone: '132-0008', address: '南京市鼓楼区', status: '在职' },
 ];
 
 const DISABLED_SELECT_DATA = [
@@ -506,10 +511,15 @@ export const TABLE_DEMO: DemoConfig = {
     columns: [
         { name: 'check', cellType: 'checkbox', selection: true, width: 40, fixed: 'left' },
         { name: 'name', field: 'name', title: '姓名', width: 120, fixed: 'left' },
+        { name: 'empNo', field: 'empNo', title: '工号', width: 100 },
         { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
         { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
         { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
-        { name: 'status', field: 'status', title: '状态', width: 100, align: 'center', fixed: 'right' },
+        { name: 'hireDate', field: 'hireDate', title: '入职日期', width: 120 },
+        { name: 'email', field: 'email', title: '邮箱', width: 180 },
+        { name: 'phone', field: 'phone', title: '电话', width: 130 },
+        { name: 'address', field: 'address', title: '地址', width: 200 },
+        { name: 'status', field: 'status', title: '状态', width: 100, fixed: 'right' },
     ],
     data: [...],
     selectable: 'multiple',
