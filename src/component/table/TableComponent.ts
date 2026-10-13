@@ -133,6 +133,37 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._isAfterInit) this._reflow();
     }
 
+    _onStripeOptionChange(_value: boolean): void {
+        this._applyRowBgVars();
+    }
+
+    _onRowBgOptionChange(_value: any): void {
+        this._applyRowBgVars();
+    }
+
+    _onStripeBgOptionChange(_value: any): void {
+        this._applyRowBgVars();
+    }
+
+    _applyRowBgVars(): void {
+        if (!this.el) return;
+        const rowBg = this.getData('rowBg');
+        const stripeBg = this.getData('stripeBg');
+        const stripe = this.getData('stripe') ?? true;
+        if (rowBg) {
+            this.el.style.setProperty('--q-table-odd-bg', rowBg);
+        } else {
+            this.el.style.removeProperty('--q-table-odd-bg');
+        }
+        if (!stripe) {
+            this.el.style.setProperty('--q-table-even-bg', rowBg || 'var(--q-color-bg, #fff)');
+        } else if (stripeBg) {
+            this.el.style.setProperty('--q-table-even-bg', stripeBg);
+        } else {
+            this.el.style.removeProperty('--q-table-even-bg');
+        }
+    }
+
     /**
      * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
      * selectionChanged 事件由 domEvents emits 配置自动转发
@@ -565,6 +596,7 @@ class TableComponent extends ItemGroupPooledComponent {
         }
         this._applyFixedColumnOffsets(metas);
         this._setGroupColumnOrderVars();
+        this._applyRowBgVars();
     }
 
     _applyFixedColumnOffsets(metas: ColumnMeta[]): void {
@@ -722,6 +754,9 @@ const TableComponentDefs: Definitions = {
         groupField: '',
         selectable: 'none',
         selectDisabled: null,
+        stripe: true,
+        rowBg: null,
+        stripeBg: null,
     },
     fields: {
         _isAfterInit: false,

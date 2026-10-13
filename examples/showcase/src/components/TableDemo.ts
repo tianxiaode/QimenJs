@@ -544,5 +544,35 @@ export const TABLE_DEMO: DemoConfig = {
                 ],
             },
         },
+        {
+            label: '自定义行背景',
+            code: `{ type: 'table', options: {
+    columns: [...],
+    data: [...],
+    stripe: false,
+    rowBg: '#e8f5e9',
+} }
+
+// stripe: false — 禁用条纹，所有行统一背景色
+// rowBg: '#e8f5e9' — 自定义行背景色（奇数行/无条纹时）
+// stripeBg: '#c8e6c9' — 自定义条纹背景色（偶数行，stripe:true 时生效）
+// 固定列自动跟随行背景色变化`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: FIXED_COLUMNS,
+                            data: FIXED_DATA,
+                            selectable: 'multiple',
+                            stripe: false,
+                            rowBg: '#e8f5e9',
+                        },
+                    },
+                ],
+            },
+        },
     ],
 };
