@@ -26,3 +26,9 @@
     width: max-content;
     min-width: 100%;
 }
+
+.q-virtual-spacer {
+    width: max-content;
+    min-width: 100%;
+    flex-shrink: 0;
+}

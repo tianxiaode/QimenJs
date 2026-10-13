@@ -28,10 +28,22 @@ const ItemGroupPooledComponentDefs: Definitions = {
         expandItems: null,
         groupSummaryItems: null,
         tableSummaryItems: null,
+        virtualScroll: false,
+        itemHeight: 0,
+        virtualBuffer: 5,
     },
     fields: {
         _hiddenItems: [],
         _auxPools: undefined,
+        _virtualData: [],
+        _visibleRange: { start: 0, end: 0 },
+        _virtualItemMap: undefined,
+        _scrollUnbind: null,
+        _scrollOff: null,
+        _rafId: 0,
+        _resizeObserver: null,
+        _topSpacerEl: null,
+        _bottomSpacerEl: null,
     },
 } as const;
 
@@ -45,6 +57,231 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         this._hiddenItems = [];
         this._auxPools = new Map();
         this._initAuxPools();
+        if (this.getData('virtualScroll') && !this._scrollUnbind) {
+            this._setupVirtualScroll();
+        }
+    }
+
+    get count(): number {
+        if (this.getData('virtualScroll')) {
+            return this._virtualData.length;
+        }
+        return (this.items || []).length;
+    }
+
+    _onVirtualScrollOptionChange(value: boolean): void {
+        if (value) {
+            if (this.el && this.getNodeEl('itemContainer')) {
+                this._setupVirtualScroll();
+            }
+        } else {
+            this._teardownVirtualScroll();
+        }
+    }
+
+    _onItemHeightOptionChange(_value: number): void {
+        if (this.getData('virtualScroll') && this._scrollUnbind) {
+            this._renderVirtualItems();
+        }
+    }
+
+    _getScrollContainer(): HTMLElement | undefined {
+        return this.el;
+    }
+
+    _getVirtualItemHeight(): number {
+        const itemHeight = this.getData('itemHeight');
+        if (itemHeight && itemHeight > 0) return itemHeight;
+        const items = this.items;
+        if (Array.isArray(items) && items.length > 0) {
+            const el = items[0]?.el;
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                if (rect.height > 0) return rect.height;
+            }
+        }
+        return 36;
+    }
+
+    _setupVirtualScroll(): void {
+        const scrollContainer = this._getScrollContainer();
+        if (!scrollContainer) return;
+
+        this._virtualItemMap = new Map();
+
+        const itemContainer = this.getNodeEl('itemContainer');
+        if (itemContainer && itemContainer.parentNode) {
+            this._topSpacerEl = document.createElement('div');
+            this._topSpacerEl.className = 'q-virtual-spacer q-virtual-spacer--top';
+            this._topSpacerEl.style.height = '0px';
+
+            this._bottomSpacerEl = document.createElement('div');
+            this._bottomSpacerEl.className = 'q-virtual-spacer q-virtual-spacer--bottom';
+            this._bottomSpacerEl.style.height = '0px';
+
+            itemContainer.parentNode.insertBefore(this._topSpacerEl, itemContainer);
+            if (itemContainer.nextSibling) {
+                itemContainer.parentNode.insertBefore(this._bottomSpacerEl, itemContainer.nextSibling);
+            } else {
+                itemContainer.parentNode.appendChild(this._bottomSpacerEl);
+            }
+        }
+
+        this._scrollUnbind = this.bind(scrollContainer, 'scroll');
+        this._scrollOff = this.on('dom:scroll', () => this._onVirtualScroll());
+
+        this._resizeObserver = new ResizeObserver(() => this._onVirtualScroll());
+        this._resizeObserver.observe(scrollContainer);
+
+        this.onCleanup(() => this._teardownVirtualScroll());
+
+        if (this._virtualData.length > 0) {
+            this._renderVirtualItems();
+        }
+    }
+
+    _teardownVirtualScroll(): void {
+        if (this._scrollUnbind) {
+            this._scrollUnbind();
+            this._scrollUnbind = null;
+        }
+        if (this._scrollOff) {
+            this._scrollOff();
+            this._scrollOff = null;
+        }
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId);
+            this._rafId = 0;
+        }
+        this._topSpacerEl?.remove();
+        this._bottomSpacerEl?.remove();
+        this._topSpacerEl = null;
+        this._bottomSpacerEl = null;
+
+        if (this._virtualData.length > 0) {
+            const fullData = this._virtualData;
+            this._virtualData = [];
+            this._virtualItemMap?.clear();
+            this._visibleRange = { start: 0, end: 0 };
+            super.setItems(fullData);
+        }
+    }
+
+    _onVirtualScroll(): void {
+        if (this._rafId) cancelAnimationFrame(this._rafId);
+        this._rafId = requestAnimationFrame(() => {
+            this._rafId = 0;
+            this._renderVirtualItems();
+        });
+    }
+
+    _computeVisibleRange(): { start: number; end: number } {
+        const scrollContainer = this._getScrollContainer();
+        if (!scrollContainer) return { start: 0, end: 0 };
+
+        const itemHeight = this._getVirtualItemHeight();
+        const scrollTop = scrollContainer.scrollTop;
+        const clientHeight = scrollContainer.clientHeight;
+        const buffer = this.getData('virtualBuffer') ?? 5;
+        const total = this._virtualData.length;
+
+        const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+        const end = Math.min(total, Math.ceil((scrollTop + clientHeight) / itemHeight) + buffer);
+
+        return { start, end };
+    }
+
+    _renderVirtualItems(): void {
+        const data = this._virtualData;
+        if (data.length === 0) {
+            const items = this.items;
+            if (Array.isArray(items)) {
+                for (const item of items) {
+                    item.hidden = true;
+                    this._hiddenItems.push(item);
+                }
+                items.length = 0;
+            }
+            this._virtualItemMap?.clear();
+            this._updateSpacers(0, 0, 0);
+            return;
+        }
+
+        const { start, end } = this._computeVisibleRange();
+        this._visibleRange = { start, end };
+
+        this._updateSpacers(start, end, data.length);
+
+        const oldMap = this._virtualItemMap ?? new Map();
+        const newMap = new Map<number, any>();
+        const newItems: any[] = [];
+
+        for (let i = start; i < end; i++) {
+            const existing = oldMap.get(i);
+            if (existing) {
+                if (typeof existing.update === 'function') {
+                    existing.update(data[i]);
+                }
+                existing.hidden = false;
+                existing._virtualIndex = i;
+                newMap.set(i, existing);
+                newItems.push(existing);
+            } else {
+                const reused = this._reuseFromPool(data[i]);
+                if (reused) {
+                    reused._virtualIndex = i;
+                    newMap.set(i, reused);
+                    newItems.push(reused);
+                } else {
+                    const component = this._createItem(data[i]);
+                    if (component) {
+                        component._virtualIndex = i;
+                        newMap.set(i, component);
+                        newItems.push(component);
+                    }
+                }
+            }
+        }
+
+        for (const [vi, item] of oldMap) {
+            if (vi < start || vi >= end) {
+                item.hidden = true;
+                this._hiddenItems.push(item);
+            }
+        }
+
+        this.items = newItems;
+        this._virtualItemMap = newMap;
+
+        this._applyVirtualOrders();
+
+        this._emitItemsChange('set', { count: data.length });
+    }
+
+    _updateSpacers(start: number, end: number, total: number): void {
+        const itemHeight = this._getVirtualItemHeight();
+        if (this._topSpacerEl) {
+            this._topSpacerEl.style.height = `${start * itemHeight}px`;
+        }
+        if (this._bottomSpacerEl) {
+            this._bottomSpacerEl.style.height = `${Math.max(0, total - end) * itemHeight}px`;
+        }
+    }
+
+    _applyVirtualOrders(): void {
+        const step = this.step;
+        const items = this.items;
+        if (!Array.isArray(items)) return;
+        for (let i = 0; i < items.length; i++) {
+            const component = items[i];
+            if (!component?.el) continue;
+            const vi = component._virtualIndex ?? i;
+            component.order = (vi + 1) * step;
+        }
     }
 
     _initAuxPools(): void {
@@ -84,6 +321,14 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     setItems(datas: Record<string, any>[]): void {
+        if (this.getData('virtualScroll')) {
+            this._virtualData = datas;
+            if (this._scrollUnbind) {
+                this._renderVirtualItems();
+            }
+            return;
+        }
+
         const items = this.items;
         const newLength = datas.length;
         const currentLength = Array.isArray(items) ? items.length : 0;
@@ -144,6 +389,12 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     add(data: Record<string, any>): any {
+        if (this.getData('virtualScroll')) {
+            this._virtualData.push(data);
+            if (this._scrollUnbind) this._renderVirtualItems();
+            return this._virtualItemMap?.get(this._virtualData.length - 1) ?? null;
+        }
+
         const items = this.items;
         const reused = this._reuseFromPool(data);
         if (reused) {
@@ -164,6 +415,13 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     insert(index: number, data: Record<string, any>): any {
+        if (this.getData('virtualScroll')) {
+            const clampedIndex = Math.min(Math.max(0, index), this._virtualData.length);
+            this._virtualData.splice(clampedIndex, 0, data);
+            if (this._scrollUnbind) this._renderVirtualItems();
+            return this._virtualItemMap?.get(clampedIndex) ?? null;
+        }
+
         const items = this.items;
         const clampedIndex = Math.min(Math.max(0, index), items.length);
 
@@ -186,6 +444,18 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     removeAt(index: number): any {
+        if (this.getData('virtualScroll')) {
+            if (index < 0 || index >= this._virtualData.length) return undefined;
+            const [removed] = this._virtualData.splice(index, 1);
+            const component = this._virtualItemMap?.get(index);
+            if (component) {
+                component.hidden = true;
+                this._hiddenItems.push(component);
+            }
+            if (this._scrollUnbind) this._renderVirtualItems();
+            return removed;
+        }
+
         const items = this.items;
         if (index < 0 || index >= items.length) return undefined;
         const [component] = items.splice(index, 1);
@@ -197,6 +467,23 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
     }
 
     clear(): void {
+        if (this.getData('virtualScroll')) {
+            this._virtualData = [];
+            this._virtualItemMap?.clear();
+            this._visibleRange = { start: 0, end: 0 };
+            const items = this.items;
+            if (Array.isArray(items)) {
+                for (const item of items) {
+                    item.hidden = true;
+                    this._hiddenItems.push(item);
+                }
+                items.length = 0;
+            }
+            this._updateSpacers(0, 0, 0);
+            this._emitItemsChange('clear');
+            return;
+        }
+
         const items = this.items;
         if (Array.isArray(items)) {
             for (let i = 0; i < items.length; i++) {

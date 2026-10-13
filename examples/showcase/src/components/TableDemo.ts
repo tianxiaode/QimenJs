@@ -194,6 +194,38 @@ const FIXED_DATA = [
     { id: 8, name: '郑十', empNo: 'E008', age: 29, salary: 16000, dept: '市场部', hireDate: '2022-12', email: 'zhengshi@co.com', phone: '132-0008', address: '南京市鼓楼区', status: '在职' },
 ];
 
+const VIRTUAL_SCROLL_COLUMNS: ColumnDefOrGroup[] = [
+    { name: '#', cellType: 'rownumber' },
+    { name: 'id', field: 'id', title: 'ID', width: 80, align: 'right' },
+    { name: 'name', field: 'name', title: '姓名', width: 120 },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    { name: 'email', field: 'email', title: '邮箱', width: 200 },
+    { name: 'phone', field: 'phone', title: '电话', width: 130 },
+];
+
+function generateVirtualData(count: number): any[] {
+    const depts = ['技术部', '市场部', '管理层', '财务部', '运营部'];
+    const names = ['张', '李', '王', '赵', '孙', '周', '吴', '郑', '钱', '冯',
+        '陈', '褚', '卫', '蒋', '沈', '韩', '杨', '朱', '秦', '尤'];
+    const data: any[] = [];
+    for (let i = 1; i <= count; i++) {
+        data.push({
+            id: i,
+            name: `${names[i % names.length]}${i}`,
+            age: 20 + (i % 30),
+            dept: depts[i % depts.length],
+            salary: 8000 + (i % 10) * 2000,
+            email: `user${i}@co.com`,
+            phone: `1${String(30000000 + i).slice(0, 8)}`,
+        });
+    }
+    return data;
+}
+
+const VIRTUAL_SCROLL_DATA = generateVirtualData(10000);
+
 class FixedColumnBgDemo extends Component {
     get tpl(): TemplateDecl {
         return {
@@ -604,6 +636,36 @@ export const TABLE_DEMO: DemoConfig = {
 // 固定列自动跟随行背景色变化
 // 点击上方按钮切换不同的行背景模式`,
             component: FixedColumnBgDemo,
+        },
+        {
+            label: '虚拟滚动（10000行）',
+            code: `{ type: 'table', options: {
+    columns: [...],
+    data: [...], // 10000 行数据
+    virtualScroll: true,
+    itemHeight: 36,
+    virtualBuffer: 5,
+} }
+
+// virtualScroll: true — 开启虚拟滚动，只渲染可见区域行
+// itemHeight: 36 — 每行固定高度（px），用于计算可视范围
+// virtualBuffer: 5 — 可视区域上下额外渲染的缓冲行数
+// 适合大数据量场景（1000+行），DOM 节点数恒定，滚动流畅`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: VIRTUAL_SCROLL_COLUMNS,
+                            data: VIRTUAL_SCROLL_DATA,
+                            virtualScroll: true,
+                            itemHeight: 36,
+                        },
+                    },
+                ],
+            },
         },
     ],
 };
