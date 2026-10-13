@@ -761,6 +761,7 @@ const TableComponentDefs: Definitions = {
         stripeBg: null,
         virtualScroll: false,
         itemHeight: 36,
+        height: null,
     },
     fields: {
         _isAfterInit: false,

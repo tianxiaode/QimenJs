@@ -649,6 +649,7 @@ export const TABLE_DEMO: DemoConfig = {
 
 // virtualScroll: true — 开启虚拟滚动，只渲染可见区域行
 // itemHeight: 36 — 每行固定高度（px），用于计算可视范围
+// height: '400px' — 表格容器高度，虚拟滚动必须有固定高度才能产生内部滚动
 // virtualBuffer: 5 — 可视区域上下额外渲染的缓冲行数
 // 适合大数据量场景（1000+行），DOM 节点数恒定，滚动流畅`,
             template: {
@@ -662,6 +663,7 @@ export const TABLE_DEMO: DemoConfig = {
                             data: VIRTUAL_SCROLL_DATA,
                             virtualScroll: true,
                             itemHeight: 36,
+                            height: '400px',
                         },
                     },
                 ],

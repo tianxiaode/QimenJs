@@ -31,6 +31,7 @@ const ItemGroupPooledComponentDefs: Definitions = {
         virtualScroll: false,
         itemHeight: 0,
         virtualBuffer: 5,
+        height: null,
     },
     fields: {
         _hiddenItems: [],
@@ -109,6 +110,13 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
 
         this._virtualItemMap = new Map();
 
+        const height = this.getData('height');
+        if (height) {
+            scrollContainer.style.height = height;
+        } else {
+            scrollContainer.style.height = '400px';
+        }
+
         const itemContainer = this.getNodeEl('itemContainer');
         if (itemContainer && itemContainer.parentNode) {
             this._topSpacerEl = document.createElement('div');
@@ -161,6 +169,11 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         this._bottomSpacerEl?.remove();
         this._topSpacerEl = null;
         this._bottomSpacerEl = null;
+
+        const scrollContainer = this._getScrollContainer();
+        if (scrollContainer) {
+            scrollContainer.style.height = '';
+        }
 
         if (this._virtualData.length > 0) {
             const fullData = this._virtualData;
