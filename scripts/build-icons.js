@@ -134,7 +134,7 @@ const icons = [
     { name: 'sun', paths: [{ d: P.circle(256, 256, 85) }, { d: P.line(256, 43, 256, 107) }, { d: P.line(256, 405, 256, 469) }, { d: P.line(43, 256, 107, 256) }, { d: P.line(405, 256, 469, 256) }, { d: P.line(107, 107, 149, 149) }, { d: P.line(363, 363, 405, 405) }, { d: P.line(107, 405, 149, 363) }, { d: P.line(363, 149, 405, 107) }] },
     { name: 'moon', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z' }] },
     { name: 'dark', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
-    { name: 'palette', paths: [{ d: 'M445 289 A192 192 0 1 0 256 448 Q286 292 445 289 Z' }, { d: P.circle(376, 256, 32), fill: 'currentColor' }, { d: P.circle(196, 360, 32), fill: 'currentColor' }, { d: P.circle(196, 152, 32), fill: 'currentColor' }] },
+    { name: 'palette', paths: [{ d: 'M300 443 A192 192 0 1 1 443 300 C440 325 428 345 405 355 Q378 368 355 348 Q333 330 322 365 C315 390 305 415 300 443 Z' }, { d: P.circle(348, 179, 32), fill: 'currentColor' }, { d: P.circle(256, 136, 32), fill: 'currentColor' }, { d: P.circle(164, 179, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
 ];
 

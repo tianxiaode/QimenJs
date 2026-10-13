@@ -334,10 +334,10 @@ export const icons: IconDef[] = [
     {
         name: 'palette',
         paths: [
-            { d: 'M445 289 A192 192 0 1 0 256 448 Q286 292 445 289 Z' },
-            { d: P.circle(376, 256, 32), fill: 'currentColor' },
-            { d: P.circle(196, 360, 32), fill: 'currentColor' },
-            { d: P.circle(196, 152, 32), fill: 'currentColor' },
+            { d: 'M300 443 A192 192 0 1 1 443 300 C440 325 428 345 405 355 Q378 368 355 348 Q333 330 322 365 C315 390 305 415 300 443 Z' },
+            { d: P.circle(348, 179, 32), fill: 'currentColor' },
+            { d: P.circle(256, 136, 32), fill: 'currentColor' },
+            { d: P.circle(164, 179, 32), fill: 'currentColor' },
         ],
     },
     {
