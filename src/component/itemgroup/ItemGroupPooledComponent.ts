@@ -254,7 +254,7 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             }
         }
 
-        this.items = newItems;
+        this.setData('items', newItems, true);
         this._virtualItemMap = newMap;
 
         this._applyVirtualOrders();

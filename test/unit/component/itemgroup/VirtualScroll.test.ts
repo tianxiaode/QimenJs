@@ -36,6 +36,7 @@ import { ItemGroupPooledComponent } from '@/component/itemgroup/ItemGroupPooledC
 
 describe('VirtualScroll', () => {
     let instance: any;
+    let mockData: Record<string, any>;
     let scrollContainer: HTMLElement;
     let itemContainer: HTMLElement;
     let topSpacer: HTMLElement;
@@ -53,6 +54,13 @@ describe('VirtualScroll', () => {
 
         document.body.appendChild(scrollContainer);
 
+        mockData = {
+            virtualScroll: true,
+            itemHeight: 36,
+            virtualBuffer: 5,
+            items: [],
+        };
+
         instance = {
             _virtualData: [],
             _visibleRange: { start: 0, end: 0 },
@@ -64,16 +72,11 @@ describe('VirtualScroll', () => {
             _resizeObserver: null,
             _topSpacerEl: topSpacer,
             _bottomSpacerEl: bottomSpacer,
-            items: [],
             step: 100,
             el: scrollContainer,
-            getData: jest.fn((key: string) => {
-                const data: Record<string, any> = {
-                    virtualScroll: true,
-                    itemHeight: 36,
-                    virtualBuffer: 5,
-                };
-                return data[key];
+            getData: jest.fn((key: string) => mockData[key]),
+            setData: jest.fn((key: string, value: any, raw?: boolean) => {
+                mockData[key] = value;
             }),
             getNodeEl: jest.fn((name: string) => {
                 if (name === 'itemContainer') return itemContainer;
@@ -156,14 +159,7 @@ describe('VirtualScroll', () => {
         });
 
         it('should respect virtualBuffer option', () => {
-            instance.getData = jest.fn((key: string) => {
-                const data: Record<string, any> = {
-                    virtualScroll: true,
-                    itemHeight: 36,
-                    virtualBuffer: 10,
-                };
-                return data[key];
-            });
+            mockData.virtualBuffer = 10;
 
             Object.defineProperty(scrollContainer, 'scrollTop', { value: 360, configurable: true });
             Object.defineProperty(scrollContainer, 'clientHeight', { value: 200, configurable: true });
@@ -192,29 +188,14 @@ describe('VirtualScroll', () => {
         });
 
         it('should fall back to 36 when itemHeight is 0', () => {
-            instance.getData = jest.fn((key: string) => {
-                const data: Record<string, any> = {
-                    virtualScroll: true,
-                    itemHeight: 0,
-                    virtualBuffer: 5,
-                };
-                return data[key];
-            });
-
-            instance.items = [];
+            mockData.itemHeight = 0;
+            mockData.items = [];
 
             expect(instance._getVirtualItemHeight()).toBe(36);
         });
 
         it('should measure from existing items when itemHeight is 0', () => {
-            instance.getData = jest.fn((key: string) => {
-                const data: Record<string, any> = {
-                    virtualScroll: true,
-                    itemHeight: 0,
-                    virtualBuffer: 5,
-                };
-                return data[key];
-            });
+            mockData.itemHeight = 0;
 
             const mockEl = document.createElement('div');
             Object.defineProperty(mockEl, 'getBoundingClientRect', {
@@ -222,7 +203,7 @@ describe('VirtualScroll', () => {
                 configurable: true,
             });
 
-            instance.items = [{ el: mockEl }];
+            mockData.items = [{ el: mockEl }];
 
             expect(instance._getVirtualItemHeight()).toBe(42);
         });
@@ -230,7 +211,7 @@ describe('VirtualScroll', () => {
 
     describe('_updateSpacers', () => {
         it('should set top spacer height based on start index', () => {
-            instance.getData = jest.fn(() => 36);
+            mockData.itemHeight = 36;
 
             instance._updateSpacers(10, 20, 100);
 
@@ -238,7 +219,7 @@ describe('VirtualScroll', () => {
         });
 
         it('should set bottom spacer height based on remaining items', () => {
-            instance.getData = jest.fn(() => 36);
+            mockData.itemHeight = 36;
 
             instance._updateSpacers(10, 20, 100);
 
@@ -246,7 +227,7 @@ describe('VirtualScroll', () => {
         });
 
         it('should handle zero remaining items', () => {
-            instance.getData = jest.fn(() => 36);
+            mockData.itemHeight = 36;
 
             instance._updateSpacers(0, 100, 100);
 
@@ -347,8 +328,8 @@ describe('VirtualScroll', () => {
         });
 
         it('should return items length when virtualScroll is off', () => {
-            instance.getData = jest.fn(() => false);
-            instance.items = new Array(5);
+            mockData.virtualScroll = false;
+            mockData.items = new Array(5);
             expect(instance.count).toBe(5);
         });
     });
