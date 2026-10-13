@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <path d="M302 92 A170 170 0 1 0 420 210 A110 110 0 0 1 302 92 Z" fill="none" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M148 180 A32 32 0 1 0 212 180 A32 32 0 1 0 148 180 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M128 300 A32 32 0 1 0 192 300 A32 32 0 1 0 128 300 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M268 320 A32 32 0 1 0 332 320 A32 32 0 1 0 268 320 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M256 448 A192 192 0 1 1 448 256 C448 285 423 304 395 304 L322 304 C294 304 286 320 286 340 C288 350 296 376 304 401 C304 425 288 447 256 448 Z" fill="none" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 280 A32 32 0 1 0 168 280 A32 32 0 1 0 104 280 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 184 A32 32 0 1 0 168 184 A32 32 0 1 0 104 184 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M320 184 A32 32 0 1 0 384 184 A32 32 0 1 0 320 184 Z" fill="currentColor" stroke="currentColor" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
