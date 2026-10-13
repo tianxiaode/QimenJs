@@ -17,7 +17,8 @@ export const RangeLoadAbility = {
         return this._rangeCache;
     },
 
-    async loadRange(start: number, end: number): Promise<void> {
+    async loadRange(payload: { start: number; end: number }): Promise<void> {
+        const { start, end } = payload;
         const cache = this._ensureRangeCache();
         const missing: number[] = [];
         for (let i = start; i < end; i++) {

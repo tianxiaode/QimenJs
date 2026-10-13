@@ -773,7 +773,10 @@ class TableComponent extends ItemGroupPooledComponent {
 
     _onVirtualDataMissing(start: number, end: number): void {
         if (this._virtualEntityMode) {
-            this.entityLoadRange(start, end);
+            const clampedEnd = Math.min(end, this._entityTotal);
+            if (start < clampedEnd) {
+                this.entityLoadRange(start, clampedEnd);
+            }
         }
     }
 
