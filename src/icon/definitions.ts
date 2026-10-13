@@ -64,6 +64,13 @@ export const icons: IconDef[] = [
         ],
     },
     {
+        name: 'checkbox-indeterminate',
+        paths: [
+            { d: P.rect(64, 64, 384, 384, 43) },
+            { d: P.line(160, 256, 352, 256) },
+        ],
+    },
+    {
         name: 'radio',
         paths: [
             { d: P.circle(256, 256, 192) },

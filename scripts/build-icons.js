@@ -89,6 +89,7 @@ const icons = [
     // Checkbox/Radio
     { name: 'checkbox', paths: [{ d: P.rect(64, 64, 384, 384, 43) }] },
     { name: 'checkbox-check', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.polyline([149, 256], [213, 320], [363, 171]) }] },
+    { name: 'checkbox-indeterminate', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(160, 256, 352, 256) }] },
     { name: 'radio', paths: [{ d: P.circle(256, 256, 192) }] },
     { name: 'radio-check', paths: [{ d: P.circle(256, 256, 192) }, { d: P.circle(256, 256, 85), fill: 'currentColor' }] },
     // 搜索/筛选
