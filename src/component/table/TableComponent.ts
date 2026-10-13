@@ -552,7 +552,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _computeRowNumberWidth(totalRows: number, userWidth?: string): string {
         if (userWidth && userWidth !== 'auto') return userWidth;
         const digits = Math.max(1, String(totalRows).length);
-        return `${28 + digits * 8}px`;
+        return `${32 + digits * 8}px`;
     }
 
     _setGroupColumnOrderVars(): void {

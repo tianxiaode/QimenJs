@@ -138,7 +138,7 @@ const RADIO_SELECT_COLUMNS: ColumnDefOrGroup[] = [
 ];
 
 const ROWNUMBER_COLUMNS: ColumnDefOrGroup[] = [
-    { name: '#', cellType: 'rownumber', width: 40 },
+    { name: '#', cellType: 'rownumber' },
     { name: 'check', cellType: 'checkbox', selection: true, width: 40, align: 'center' },
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
@@ -365,7 +365,7 @@ export const TABLE_DEMO: DemoConfig = {
             label: '行号列',
             code: `{ type: 'table', options: {
     columns: [
-        { name: '#', cellType: 'rownumber', width: 40 },
+        { name: '#', cellType: 'rownumber' },
         { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
         { name: 'name', field: 'name', title: '姓名', width: 120 },
         { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
@@ -377,8 +377,8 @@ export const TABLE_DEMO: DemoConfig = {
 } }
 
 // cellType: 'rownumber' — 行号列，自动显示行序号（从1开始）
-// 行号列默认禁止调整列宽（resizable: false）
-// 列宽自动适配：根据总行数位数动态计算（1位数36px，2位数44px...）
+// 行号列默认禁止调整列宽（resizable: false）和菜单（menuDisabled: true）
+// 列宽自动适配：根据总行数位数动态计算（1位数40px，2位数48px...）
 // checkbox/radio/rownumber 列均默认禁止 resize`,
             template: {
                 tag: 'div',
