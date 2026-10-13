@@ -32,7 +32,7 @@ function resolveWidth(w?: string | number): string | undefined {
 
 function resolveAlign(cellType: CellType, align?: ColumnAlign): ColumnAlign {
     if (align) return align;
-    if (cellType === 'checkbox' || cellType === 'action') return 'center';
+    if (cellType === 'checkbox' || cellType === 'action' || cellType === 'rownumber') return 'center';
     return 'left';
 }
 
@@ -143,7 +143,7 @@ export class ColumnMetaManager {
             selection: def.selection ?? false,
             fixed: def.fixed,
             sortable: def.sortable ?? false,
-            resizable: def.resizable ?? true,
+            resizable: def.resizable ?? (cellType !== 'checkbox' && cellType !== 'radio' && cellType !== 'rownumber'),
             draggable: def.draggable ?? false,
             editable: def.editable ?? false,
             editType: def.editType ?? 'text',

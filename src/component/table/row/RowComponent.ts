@@ -6,6 +6,7 @@ import { TreeCellComponent } from '../cells/TreeCellComponent';
 import { CheckboxCellComponent } from '../cells/CheckboxCellComponent';
 import { RadioCellComponent } from '../cells/RadioCellComponent';
 import { ActionCellComponent } from '../cells/ActionCellComponent';
+import { RowNumberCellComponent } from '../cells/RowNumberCellComponent';
 import { Definitions } from '@/composable';
 import './row.css';
 
@@ -15,6 +16,7 @@ const CELL_CLASS_MAP: Record<CellType, any> = {
     checkbox: CheckboxCellComponent,
     radio: RadioCellComponent,
     action: ActionCellComponent,
+    rownumber: RowNumberCellComponent,
 };
 
 class RowComponent extends Component {
@@ -160,6 +162,8 @@ class RowComponent extends Component {
                 return { checked: !!value };
             case 'action':
                 return { actions: value };
+            case 'rownumber':
+                return { value: data._rowNumber ?? 0 };
             default:
                 return { value, format: meta.format };
         }

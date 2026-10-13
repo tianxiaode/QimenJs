@@ -333,6 +333,7 @@ class TableComponent extends ItemGroupPooledComponent {
      */
     _buildItems(data: any[], metas: ColumnMeta[]): Record<string, any>[] {
         let rowIdx = 0;
+        let rowNumber = 0;
         const nextKey = (rowData: any): string =>
             String(rowData?.id ?? rowData?._rowKey ?? `row-${rowIdx++}`);
         const selectDisabledFn = this.getData('selectDisabled');
@@ -356,8 +357,9 @@ class TableComponent extends ItemGroupPooledComponent {
                     _groupKey: groupKey,
                 });
                 for (const rowData of group.groupItems ?? []) {
+                    rowNumber++;
                     items.push({
-                        data: { ...rowData, _rowKey: nextKey(rowData), _selectDisabled: computeDisabled(rowData) },
+                        data: { ...rowData, _rowKey: nextKey(rowData), _rowNumber: rowNumber, _selectDisabled: computeDisabled(rowData) },
                         columnMetas: metas,
                         order: order++,
                         _groupKey: groupKey,
@@ -366,10 +368,13 @@ class TableComponent extends ItemGroupPooledComponent {
             }
             return items;
         }
-        return data.map((rowData: any) => ({
-            data: { ...rowData, _rowKey: nextKey(rowData), _selectDisabled: computeDisabled(rowData) },
-            columnMetas: metas,
-        }));
+        return data.map((rowData: any) => {
+            rowNumber++;
+            return {
+                data: { ...rowData, _rowKey: nextKey(rowData), _rowNumber: rowNumber, _selectDisabled: computeDisabled(rowData) },
+                columnMetas: metas,
+            };
+        });
     }
 
     /** 判断是否为分组数据（[{ groupKey, groupItems }]） */
@@ -526,14 +531,28 @@ class TableComponent extends ItemGroupPooledComponent {
         if (!this.getColumnOrderCount()) {
             this.initColumnOrder({ useCssVar: true, cssVarPrefix: '--q-table-col-' });
         }
+        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
+        const totalRows = this._isGroupedData(data)
+            ? data.reduce((sum: number, g: any) => sum + (g.groupItems?.length ?? 0), 0)
+            : data.length;
         for (let i = 0; i < metas.length; i++) {
             const meta = metas[i];
-            if (meta.width) {
-                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, meta.width);
+            let width = meta.width;
+            if (meta.cellType === 'rownumber') {
+                width = this._computeRowNumberWidth(totalRows, meta.width);
+            }
+            if (width) {
+                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, width);
             }
             this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
         }
         this._setGroupColumnOrderVars();
+    }
+
+    _computeRowNumberWidth(totalRows: number, userWidth?: string): string {
+        if (userWidth && userWidth !== 'auto') return userWidth;
+        const digits = Math.max(1, String(totalRows).length);
+        return `${28 + digits * 8}px`;
     }
 
     _setGroupColumnOrderVars(): void {
