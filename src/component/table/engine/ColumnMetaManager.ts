@@ -130,10 +130,11 @@ export class ColumnMetaManager {
     private _compileLeafMeta(def: ColumnDef): ColumnMeta {
         const cellType: CellType = def.cellType || 'text';
         const width = cellType === 'rownumber' && def.width === undefined ? 'auto' : resolveWidth(def.width);
+        const isRowNumber = cellType === 'rownumber';
         return {
-            name: def.name,
-            field: def.field || def.name,
-            title: def.title,
+            name: isRowNumber ? '_rownum' : def.name,
+            field: def.field || (isRowNumber ? '_rownum' : def.name),
+            title: isRowNumber ? (def.title ?? '#') : def.title,
             cellType,
             format: def.format,
             align: resolveAlign(cellType, def.align),

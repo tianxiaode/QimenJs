@@ -32,7 +32,7 @@ import { CheckboxCellComponent } from '@/component/table/cells/CheckboxCellCompo
 import type { ColumnMeta } from '@/component/table/column-types';
 
 const ROWNUMBER_METAS: ColumnMeta[] = [
-    { name: '#', field: '#', title: '', cellType: 'rownumber', align: 'center', width: 'auto' },
+    { name: '_rownum', field: '_rownum', title: '#', cellType: 'rownumber', align: 'center', width: 'auto' },
     { name: 'name', field: 'name', title: '姓名', cellType: 'text', align: 'left', width: '100px' },
 ];
 
@@ -59,9 +59,9 @@ describe('RowNumberCellComponent', () => {
         it('应正确应用 order inline style', async () => {
             const cell = new RowNumberCellComponent({
                 align: 'center',
-                colName: '#',
-                order: 'var(--q-table-col-#-order)',
-                width: 'var(--q-table-col-#-width)',
+                colName: '_rownum',
+                order: 'var(--q-table-col-_rownum-order)',
+                width: 'var(--q-table-col-_rownum-width)',
                 minWidth: '0',
             });
             container.appendChild(cell.el);
@@ -69,15 +69,15 @@ describe('RowNumberCellComponent', () => {
             await cell.ready;
             await new Promise(r => setTimeout(r, 50));
 
-            expect(cell.el.style.order).toBe('var(--q-table-col-#-order)');
+            expect(cell.el.style.order).toBe('var(--q-table-col-_rownum-order)');
         });
 
         it('应正确应用 width inline style', async () => {
             const cell = new RowNumberCellComponent({
                 align: 'center',
-                colName: '#',
-                order: 'var(--q-table-col-#-order)',
-                width: 'var(--q-table-col-#-width)',
+                colName: '_rownum',
+                order: 'var(--q-table-col-_rownum-order)',
+                width: 'var(--q-table-col-_rownum-width)',
                 minWidth: '0',
             });
             container.appendChild(cell.el);
@@ -85,15 +85,15 @@ describe('RowNumberCellComponent', () => {
             await cell.ready;
             await new Promise(r => setTimeout(r, 50));
 
-            expect(cell.el.style.width).toBe('var(--q-table-col-#-width)');
+            expect(cell.el.style.width).toBe('var(--q-table-col-_rownum-width)');
         });
 
         it('应正确应用 minWidth inline style', async () => {
             const cell = new RowNumberCellComponent({
                 align: 'center',
-                colName: '#',
-                order: 'var(--q-table-col-#-order)',
-                width: 'var(--q-table-col-#-width)',
+                colName: '_rownum',
+                order: 'var(--q-table-col-_rownum-order)',
+                width: 'var(--q-table-col-_rownum-width)',
                 minWidth: '0',
             });
             container.appendChild(cell.el);
@@ -107,9 +107,9 @@ describe('RowNumberCellComponent', () => {
         it('应正确应用 minWidth inline style', async () => {
             const cell = new RowNumberCellComponent({
                 align: 'center',
-                colName: '#',
-                order: 'var(--q-table-col-#-order)',
-                width: 'var(--q-table-col-#-width)',
+                colName: '_rownum',
+                order: 'var(--q-table-col-_rownum-order)',
+                width: 'var(--q-table-col-_rownum-width)',
                 minWidth: '0',
             });
             container.appendChild(cell.el);
@@ -129,9 +129,9 @@ describe('RowNumberCellComponent', () => {
             await row.ready;
             await new Promise(r => setTimeout(r, 50));
 
-            const cell = row._cells.get('#');
+            const cell = row._cells.get('_rownum');
             expect(cell).toBeDefined();
-            expect(cell.el.style.order).toBe('var(--q-table-col-#-order)');
+            expect(cell.el.style.order).toBe('var(--q-table-col-_rownum-order)');
         });
 
         it('rownumber cell 应有 width inline style', async () => {
@@ -141,9 +141,9 @@ describe('RowNumberCellComponent', () => {
             await row.ready;
             await new Promise(r => setTimeout(r, 50));
 
-            const cell = row._cells.get('#');
+            const cell = row._cells.get('_rownum');
             expect(cell).toBeDefined();
-            expect(cell.el.style.width).toBe('var(--q-table-col-#-width)');
+            expect(cell.el.style.width).toBe('var(--q-table-col-_rownum-width)');
         });
 
         it('rownumber cell 应有 minWidth inline style', async () => {
@@ -153,7 +153,7 @@ describe('RowNumberCellComponent', () => {
             await row.ready;
             await new Promise(r => setTimeout(r, 50));
 
-            const cell = row._cells.get('#');
+            const cell = row._cells.get('_rownum');
             expect(cell).toBeDefined();
             expect(cell.el.style.minWidth).toBe('0');
         });

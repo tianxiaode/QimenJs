@@ -5,6 +5,7 @@ import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
 import { TableSummaryRowComponent } from './table-summary/TableSummaryRowComponent';
 import type {
+    ColumnDef,
     ColumnDefOrGroup,
     ColumnGroupDef,
     ColumnMeta,
@@ -82,7 +83,7 @@ class TableComponent extends ItemGroupPooledComponent {
 
         const headerArea = this.getNodeEl('headerArea');
         if (headerArea) {
-            const columns = this.getData('columns') || [];
+            const columns = this._prepareColumnsForHeader(this.getData('columns') || []);
             this._header = new TableHeaderComponent({
                 columns,
                 eventKey: this.eventKey,
@@ -525,6 +526,20 @@ class TableComponent extends ItemGroupPooledComponent {
                 return '';
         }
     }
+    _prepareColumnsForHeader(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[] {
+        return columns.map(col => {
+            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
+                const group = col as ColumnGroupDef;
+                return { ...group, children: this._prepareColumnsForHeader(group.children) };
+            }
+            const leaf = col as ColumnDef;
+            if (leaf.cellType === 'rownumber') {
+                return { ...leaf, name: '_rownum', title: leaf.title ?? '#' };
+            }
+            return leaf;
+        });
+    }
+
     _applyColumnStyles(): void {
         if (!this._columnMetaManager) return;
         const metas = this._columnMetaManager.getAll();

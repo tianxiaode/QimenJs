@@ -42,13 +42,13 @@ describe('行号列 HeaderCellComponent', () => {
 
     it('行号列 header cell 应正确设置 width inline style', async () => {
         const cell = new HeaderCellComponent({
-            colName: '#',
-            title: null,
+            colName: '_rownum',
+            title: '#',
             align: 'center',
             sortable: false,
             resizable: false,
             draggable: false,
-            action: '#',
+            action: '_rownum',
             minWidth: 0,
             menuDisabled: true,
             hideableColumns: [],
@@ -62,7 +62,7 @@ describe('行号列 HeaderCellComponent', () => {
         await cell.ready;
         await new Promise(r => setTimeout(r, 50));
 
-        expect(cell.el.style.width).toBe('var(--q-table-col-#-width)');
+        expect(cell.el.style.width).toBe('var(--q-table-col-_rownum-width)');
     });
 
     it('普通列 header cell 应正确设置 width inline style', async () => {
@@ -92,13 +92,13 @@ describe('行号列 HeaderCellComponent', () => {
 
     it('行号列 header cell 的 resizeHandle 应隐藏', async () => {
         const cell = new HeaderCellComponent({
-            colName: '#',
-            title: null,
+            colName: '_rownum',
+            title: '#',
             align: 'center',
             sortable: false,
             resizable: false,
             draggable: false,
-            action: '#',
+            action: '_rownum',
             minWidth: 0,
             menuDisabled: true,
             hideableColumns: [],
@@ -118,13 +118,13 @@ describe('行号列 HeaderCellComponent', () => {
 
     it('行号列 header cell 的 menuArea 应隐藏', async () => {
         const cell = new HeaderCellComponent({
-            colName: '#',
-            title: null,
+            colName: '_rownum',
+            title: '#',
             align: 'center',
             sortable: false,
             resizable: false,
             draggable: false,
-            action: '#',
+            action: '_rownum',
             minWidth: 0,
             menuDisabled: true,
             hideableColumns: [],
