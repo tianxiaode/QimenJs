@@ -1,6 +1,7 @@
 import type { AbilityDefinition } from '@/composable';
 import { ENTITY_COMMAND_EVENTS, ENTITY_LIFECYCLE_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
 import { DICTIONARY_MANAGER_ENTITY_TYPE } from '@/entity/types';
+import type { RangeLoadedData } from '@/entity/abilities/remote/RangeLoadAbility';
 import type { EntityDataHost } from './types';
 
 export const EntityDataAbility = {
@@ -17,6 +18,17 @@ export const EntityDataAbility = {
             this.onEntityListed(items);
         });
         this.onCleanup(offListed);
+
+        const offRangeLoaded = this.entityOn(
+            entityKey,
+            ENTITY_LIST_EVENTS.RANGE_LOADED,
+            (data: RangeLoadedData) => {
+                if (typeof this.onEntityRangeLoaded === 'function') {
+                    this.onEntityRangeLoaded(data);
+                }
+            }
+        );
+        this.onCleanup(offRangeLoaded);
 
         const data = this.getData('data');
         if (Array.isArray(data) && data.length > 0) {
@@ -40,6 +52,16 @@ export const EntityDataAbility = {
         if (typeof this._onEntityDataChange === 'function') {
             this._onEntityDataChange();
         }
+    },
+
+    entityLoadRange(this: EntityDataHost, start: number, end: number): void {
+        const entityKey = this.getData('entityKey');
+        if (!entityKey) return;
+        this.entityEmit(
+            ENTITY_COMMAND_EVENTS.LOAD_RANGE,
+            { start, end },
+            { source: entityKey }
+        );
     },
 
     hasEntity(this: EntityDataHost): boolean {

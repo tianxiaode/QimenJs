@@ -4,6 +4,7 @@ import { LocalCrudEntityManager } from './LocalCrudEntityManager';
 import { RemoteReadonlyEntityManager } from './RemoteReadonlyEntityManager';
 import { RemoteCrudEntityManager } from './RemoteCrudEntityManager';
 import { RemoteTreeEntityManager } from './RemoteTreeEntityManager';
+import { VirtualScrollEntityManager } from './VirtualScrollEntityManager';
 import type { BaseEntityManager } from './BaseEntityManager';
 
 export type EntityManagerType =
@@ -12,7 +13,8 @@ export type EntityManagerType =
     | 'local-crud'
     | 'remote-readonly'
     | 'remote-crud'
-    | 'remote-tree';
+    | 'remote-tree'
+    | 'virtual-scroll';
 
 export interface EntityManagerConfig {
     type: EntityManagerType;
@@ -26,6 +28,7 @@ const ENTITY_MANAGER_REGISTRY: Partial<Record<EntityManagerType, any>> = {
     'remote-readonly': RemoteReadonlyEntityManager,
     'remote-crud': RemoteCrudEntityManager,
     'remote-tree': RemoteTreeEntityManager,
+    'virtual-scroll': VirtualScrollEntityManager,
 };
 
 export function createEntityManager(config: EntityManagerConfig): BaseEntityManager {

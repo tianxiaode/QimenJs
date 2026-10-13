@@ -43,6 +43,8 @@ export const ENTITY_LIST_EVENTS = {
     LISTED: 'listed',
     /** 单条获取完成 */
     GOT: 'got',
+    /** 范围加载完成（虚拟滚动） */
+    RANGE_LOADED: 'rangeLoaded',
 } as const;
 
 // ============================================
@@ -147,6 +149,9 @@ export const ENTITY_COMMAND_EVENTS = {
 
     // 词典命令
     LOAD_DICTIONARY: 'loadDictionary',
+
+    // 虚拟滚动命令
+    LOAD_RANGE: 'loadRange',
 } as const;
 
 // ============================================

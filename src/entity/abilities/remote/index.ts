@@ -10,3 +10,5 @@ export { RemoteDeleteAbility } from './RemoteDeleteAbility';
 export { RemoteToggleAbility } from './RemoteToggleAbility';
 export { TreeManagerAbility } from './TreeManagerAbility';
 export { TreeRemoteStateAbility } from './TreeRemoteStateAbility';
+export { RangeLoadAbility } from './RangeLoadAbility';
+export type { RangeLoadedData } from './RangeLoadAbility';

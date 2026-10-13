@@ -10,6 +10,7 @@ export enum ENTITY_ACTION {
     TOGGLE = 'toggle',
     SAVE = 'save',
     BATCH_DELETE = 'batchDelete',
+    RANGE_LOAD = 'rangeLoad',
 }
 
 export const DICTIONARY_MANAGER_ENTITY_TYPE = 'dictionary_manager';

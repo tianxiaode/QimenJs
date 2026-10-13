@@ -13,7 +13,8 @@ import type {
     TableSelectMode,
 } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
-import { ENTITY_COMMAND_EVENTS } from '@/events';
+import { ENTITY_COMMAND_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
+import type { RangeLoadedData } from '@/entity/abilities/remote/RangeLoadAbility';
 import { Definitions } from '@/composable';
 import './table.css';
 
@@ -308,6 +309,18 @@ class TableComponent extends ItemGroupPooledComponent {
             selectable: this.getData('selectable') ?? 'none',
         };
 
+        if (this.getData('virtualScroll') && this.hasEntity()) {
+            this._virtualEntityMode = true;
+            const entityItems = this.getEntityItems();
+            if (entityItems.length > 0) {
+                this._entityTotal = entityItems.length;
+                const sparseData: any[] = new Array(this._entityTotal);
+                super.setItems(sparseData);
+            }
+            return;
+        }
+
+        this._virtualEntityMode = false;
         const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
         const isGrouped = this._isGroupedData(data);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
@@ -758,6 +771,42 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
+    _onVirtualDataMissing(start: number, end: number): void {
+        if (this._virtualEntityMode) {
+            this.entityLoadRange(start, end);
+        }
+    }
+
+    onEntityRangeLoaded(data: RangeLoadedData): void {
+        if (!this._virtualEntityMode) return;
+        this._entityTotal = data.total;
+        const metas = this._columnMetaManager?.getAll() ?? [];
+        const selectDisabledFn = this.getData('selectDisabled');
+        const computeDisabled = (rowData: any): boolean => {
+            if (rowData?._selectDisabled) return true;
+            if (typeof selectDisabledFn === 'function') {
+                try { return !!selectDisabledFn(rowData); } catch { return false; }
+            }
+            return false;
+        };
+
+        for (let i = 0; i < data.items.length; i++) {
+            const rowData = data.items[i];
+            if (rowData == null) continue;
+            const idx = data.start + i;
+            if (idx >= this._virtualData.length) continue;
+            this._virtualData[idx] = {
+                data: { ...rowData, _rowKey: String(rowData?.id ?? `row-${idx}`), _rowNumber: idx + 1, _selectDisabled: computeDisabled(rowData) },
+                columnMetas: metas,
+            };
+        }
+
+        if (this._scrollUnbind) {
+            this._renderVirtualItems();
+            this._applyZebraStripes();
+        }
+    }
+
     override onBeforeDispose(): void {
         super.onBeforeDispose();
         this._summaryRow?.dispose();
@@ -786,6 +835,8 @@ const TableComponentDefs: Definitions = {
         _header: null,
         _groupRowMap: null,
         _summaryRow: null,
+        _entityTotal: 0,
+        _virtualEntityMode: false,
     },
 } as const;
 

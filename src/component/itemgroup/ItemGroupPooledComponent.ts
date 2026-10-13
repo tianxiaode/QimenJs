@@ -232,8 +232,24 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         const oldMap = this._virtualItemMap ?? new Map();
         const newMap = new Map<number, any>();
         const newItems: any[] = [];
+        let missingStart: number | null = null;
 
         for (let i = start; i < end; i++) {
+            if (data[i] == null) {
+                if (missingStart === null) missingStart = i;
+                const existing = oldMap.get(i);
+                if (existing) {
+                    existing.hidden = true;
+                    this._hiddenItems.push(existing);
+                }
+                continue;
+            }
+
+            if (missingStart !== null) {
+                this._onVirtualDataMissing(missingStart, i);
+                missingStart = null;
+            }
+
             const existing = oldMap.get(i);
             if (existing) {
                 if (typeof existing.update === 'function') {
@@ -260,6 +276,10 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
             }
         }
 
+        if (missingStart !== null) {
+            this._onVirtualDataMissing(missingStart, end);
+        }
+
         for (const [vi, item] of oldMap) {
             if (vi < start || vi >= end) {
                 item.hidden = true;
@@ -273,6 +293,9 @@ class ItemGroupPooledComponent extends ItemGroupBaseComponent {
         this._applyVirtualOrders();
 
         this._emitItemsChange('set', { count: data.length });
+    }
+
+    _onVirtualDataMissing(_start: number, _end: number): void {
     }
 
     _updateSpacers(start: number, end: number, total: number): void {
