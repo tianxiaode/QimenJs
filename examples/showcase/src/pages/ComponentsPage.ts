@@ -34,7 +34,10 @@ import { ALERT_DEMO } from '../components/AlertDemo';
 import { LIST_DEMO } from '../components/ListDemo';
 import { PROGRESS_DEMO } from '../components/ProgressDemo';
 import { STATISTIC_DEMO } from '../components/StatisticDemo';
-import { TABLE_DEMO } from '../components/TableDemo';
+import { TABLE_BASIC_DEMO } from '../components/TableBasicDemo';
+import { TABLE_SELECTION_DEMO } from '../components/TableSelectionDemo';
+import { TABLE_FIXED_COLUMN_DEMO } from '../components/TableFixedColumnDemo';
+import { TABLE_VIRTUAL_SCROLL_DEMO } from '../components/TableVirtualScrollDemo';
 import { TAG_DEMO } from '../components/TagDemo';
 import { ENTITY_SOURCE_DEMO } from '../components/EntitySourceDemo';
 
@@ -65,7 +68,11 @@ const COMPONENT_CATEGORIES = [
     },
     {
         label: '数据展示',
-        components: ['Accordion', 'Alert', 'List', 'Progress', 'Statistic', 'Table', 'Tag'],
+        components: ['Accordion', 'Alert', 'List', 'Progress', 'Statistic', 'Tag'],
+    },
+    {
+        label: 'Table',
+        components: ['TableBasic', 'TableSelection', 'TableFixedColumn', 'TableVirtualScroll'],
     },
     {
         label: '表单',
@@ -110,7 +117,10 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     List: LIST_DEMO,
     Progress: PROGRESS_DEMO,
     Statistic: STATISTIC_DEMO,
-    Table: TABLE_DEMO,
+    TableBasic: TABLE_BASIC_DEMO,
+    TableSelection: TABLE_SELECTION_DEMO,
+    TableFixedColumn: TABLE_FIXED_COLUMN_DEMO,
+    TableVirtualScroll: TABLE_VIRTUAL_SCROLL_DEMO,
     Tag: TAG_DEMO,
     EntitySource: ENTITY_SOURCE_DEMO,
 };
