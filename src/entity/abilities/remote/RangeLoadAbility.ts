@@ -36,7 +36,6 @@ export const RangeLoadAbility = {
         const loadEnd = missing[missing.length - 1] + 1;
 
         const mockData = this.getData('mockData');
-        console.log('[RangeLoad] loadRange called, mockData type:', typeof mockData, 'isArray:', Array.isArray(mockData));
         if (Array.isArray(mockData)) {
             this._rangeTotal = mockData.length;
             for (let i = loadStart; i < loadEnd; i++) {

@@ -121,6 +121,15 @@ export class DataDispatchCenter extends RegistrarBase<Map<string, EntityTypeEntr
         return this.instances.get(entityKey)?.mgr;
     }
 
+    registerInstance(entityKey: string, mgr: any): void {
+        const existing = this.instances.get(entityKey);
+        if (existing) {
+            existing.mgr = mgr;
+        } else {
+            this.instances.set(entityKey, { mgr, refCount: 0 });
+        }
+    }
+
     has(entityType: string): boolean {
         return this.storage.has(entityType);
     }
