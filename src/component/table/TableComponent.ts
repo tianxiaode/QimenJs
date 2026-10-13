@@ -74,7 +74,7 @@ class TableComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
 
         const groupField = this.getData('groupField');
-        if (groupField && this.hasEntity()) {
+        if (groupField && this.hasEntity() && !this.getData('virtualScroll')) {
             this.entityEmit(
                 ENTITY_COMMAND_EVENTS.GROUP_BY,
                 { groupField },
@@ -318,7 +318,9 @@ class TableComponent extends ItemGroupPooledComponent {
 
         const items = this._buildItems(data, metas);
         super.setItems(items);
-        this._buildGroupRowMap(items);
+        if (!this.getData('virtualScroll')) {
+            this._buildGroupRowMap(items);
+        }
         this._deselectDisabledRows();
         this._updateSummaryRow();
         this._applyZebraStripes();
@@ -352,8 +354,10 @@ class TableComponent extends ItemGroupPooledComponent {
         const isVirtual = this.getData('virtualScroll');
         let stripeIndex = 0;
         for (const item of items) {
-            const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
-            if (isGroupSummary || item?.hidden) continue;
+            if (!isVirtual) {
+                const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
+                if (isGroupSummary || item?.hidden) continue;
+            }
             item.removeCls?.('q-table-row--odd');
             item.removeCls?.('q-table-row--even');
             const idx = isVirtual ? (item._virtualIndex ?? 0) : stripeIndex;
@@ -380,7 +384,7 @@ class TableComponent extends ItemGroupPooledComponent {
             }
             return false;
         };
-        if (this._isGroupedData(data)) {
+        if (this._isGroupedData(data) && !this.getData('virtualScroll')) {
             const items: Record<string, any>[] = [];
             let order = 1;
             for (const group of data) {
@@ -399,6 +403,19 @@ class TableComponent extends ItemGroupPooledComponent {
                         columnMetas: metas,
                         order: order++,
                         _groupKey: groupKey,
+                    });
+                }
+            }
+            return items;
+        }
+        if (this._isGroupedData(data)) {
+            const items: Record<string, any>[] = [];
+            for (const group of data) {
+                for (const rowData of group.groupItems ?? []) {
+                    rowNumber++;
+                    items.push({
+                        data: { ...rowData, _rowKey: nextKey(rowData), _rowNumber: rowNumber, _selectDisabled: computeDisabled(rowData) },
+                        columnMetas: metas,
                     });
                 }
             }
