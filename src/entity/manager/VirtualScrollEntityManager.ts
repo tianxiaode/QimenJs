@@ -38,7 +38,7 @@ export class VirtualScrollEntityManager extends BaseEntityManager {
     _rangeTotal: number = 0;
 
     schema: RegistrSchema = {
-        name: '',
+        name: 'virtual-scroll',
         idField: 'id',
         idType: 'number',
         nameField: 'name',

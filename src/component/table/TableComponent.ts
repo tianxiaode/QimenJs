@@ -774,15 +774,21 @@ class TableComponent extends ItemGroupPooledComponent {
     _onVirtualDataMissing(start: number, end: number): void {
         if (this._virtualEntityMode) {
             const clampedEnd = Math.min(end, this._entityTotal);
-            if (start < clampedEnd) {
-                this.entityLoadRange(start, clampedEnd);
-            }
+            if (start >= clampedEnd) return;
+            if (!this._pendingRanges) this._pendingRanges = new Set();
+            const key = `${start}-${clampedEnd}`;
+            if (this._pendingRanges.has(key)) return;
+            this._pendingRanges.add(key);
+            this.entityLoadRange(start, clampedEnd);
         }
     }
 
     onEntityRangeLoaded(data: RangeLoadedData): void {
         if (!this._virtualEntityMode) return;
         this._entityTotal = data.total;
+        if (this._pendingRanges) {
+            this._pendingRanges.delete(`${data.start}-${data.end}`);
+        }
         const metas = this._columnMetaManager?.getAll() ?? [];
         const selectDisabledFn = this.getData('selectDisabled');
         const computeDisabled = (rowData: any): boolean => {
@@ -805,8 +811,10 @@ class TableComponent extends ItemGroupPooledComponent {
         }
 
         if (this._scrollUnbind) {
-            this._renderVirtualItems();
-            this._applyZebraStripes();
+            requestAnimationFrame(() => {
+                this._renderVirtualItems();
+                this._applyZebraStripes();
+            });
         }
     }
 
@@ -840,6 +848,7 @@ const TableComponentDefs: Definitions = {
         _summaryRow: null,
         _entityTotal: 0,
         _virtualEntityMode: false,
+        _pendingRanges: null,
     },
 } as const;
 
