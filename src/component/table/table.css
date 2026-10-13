@@ -1,0 +1,33 @@
+.q-table {
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+}
+
+.q-table__header-area {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.q-table__body {
+    overflow-y: auto;
+}
+
+.q-table__summary-area {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+.q-table-header {
+    width: max-content;
+    min-width: 100%;
+}
+
+.q-table-row {
+    width: max-content;
+    min-width: 100%;
+}

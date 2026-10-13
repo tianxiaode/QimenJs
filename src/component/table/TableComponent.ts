@@ -15,6 +15,7 @@ import type {
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
 import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
+import './table.css';
 
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
