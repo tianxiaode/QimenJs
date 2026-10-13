@@ -231,6 +231,7 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._columnMetaManager) {
             const meta = this._columnMetaManager.get(colName);
             if (meta) meta.width = `${width}px`;
+            this._applyFixedColumnOffsets(this._columnMetaManager.getAll());
         }
     }
 
@@ -561,7 +562,45 @@ class TableComponent extends ItemGroupPooledComponent {
             }
             this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
         }
+        this._applyFixedColumnOffsets(metas);
         this._setGroupColumnOrderVars();
+    }
+
+    _applyFixedColumnOffsets(metas: ColumnMeta[]): void {
+        let leftOffset = 0;
+        let rightOffset = 0;
+        const leftFixed: ColumnMeta[] = [];
+        const rightFixed: ColumnMeta[] = [];
+        for (const meta of metas) {
+            if (meta.fixed === 'left') leftFixed.push(meta);
+            else if (meta.fixed === 'right') rightFixed.push(meta);
+        }
+        for (const meta of leftFixed) {
+            this.el!.style.setProperty(`--q-table-col-${meta.name}-fixed-offset`, `${leftOffset}px`);
+            const w = this._resolveFixedWidth(meta);
+            if (w) leftOffset += w;
+        }
+        for (let i = rightFixed.length - 1; i >= 0; i--) {
+            const meta = rightFixed[i];
+            this.el!.style.setProperty(`--q-table-col-${meta.name}-fixed-offset`, `${rightOffset}px`);
+            const w = this._resolveFixedWidth(meta);
+            if (w) rightOffset += w;
+        }
+    }
+
+    _resolveFixedWidth(meta: ColumnMeta): number {
+        if (meta.cellType === 'rownumber') {
+            const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
+            const totalRows = this._isGroupedData(data)
+                ? data.reduce((sum: number, g: any) => sum + (g.groupItems?.length ?? 0), 0)
+                : data.length;
+            const w = this._computeRowNumberWidth(totalRows, meta.width);
+            return parseInt(w, 10) || 0;
+        }
+        if (meta.width && meta.width !== 'auto') {
+            return parseInt(meta.width, 10) || 0;
+        }
+        return 0;
     }
 
     _computeRowNumberWidth(totalRows: number, userWidth?: string): string {

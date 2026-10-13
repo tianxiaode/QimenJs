@@ -51,11 +51,24 @@ class BaseCellComponent extends Component {
 
     _onFixedOptionChange(_value: string): void {
         if (this.fixed === 'left') {
-            this.setStyles({ position: 'sticky', left: '0', zIndex: '1' });
+            this.setStyles({
+                position: 'sticky',
+                left: `var(--q-table-col-${this.colName}-fixed-offset, 0px)`,
+                zIndex: '2',
+            });
+            this.addCls('q-cell--fixed-left');
+            this.removeCls('q-cell--fixed-right');
         } else if (this.fixed === 'right') {
-            this.setStyles({ position: 'sticky', right: '0', zIndex: '1' });
+            this.setStyles({
+                position: 'sticky',
+                right: `var(--q-table-col-${this.colName}-fixed-offset, 0px)`,
+                zIndex: '2',
+            });
+            this.addCls('q-cell--fixed-right');
+            this.removeCls('q-cell--fixed-left');
         } else {
             this.setStyles({ position: '', left: '', right: '', zIndex: '' });
+            this.removeCls(['q-cell--fixed-left', 'q-cell--fixed-right']);
         }
     }
 

@@ -168,6 +168,26 @@ const ROWNUMBER_DATA = [
     { id: 12, name: '褚十四', age: 22, salary: 9000, dept: '技术部' },
 ];
 
+const FIXED_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'check', cellType: 'checkbox', selection: true, width: 40, align: 'center', fixed: 'left' },
+    { name: 'name', field: 'name', title: '姓名', width: 120, fixed: 'left' },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    { name: 'status', field: 'status', title: '状态', width: 100, align: 'center', fixed: 'right' },
+];
+
+const FIXED_DATA = [
+    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部', status: '在职' },
+    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', status: '在职' },
+    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层', status: '离职' },
+    { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部', status: '在职' },
+    { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部', status: '在职' },
+    { id: 6, name: '周八', age: 26, salary: 12000, dept: '技术部', status: '离职' },
+    { id: 7, name: '吴九', age: 38, salary: 25000, dept: '管理层', status: '在职' },
+    { id: 8, name: '郑十', age: 29, salary: 16000, dept: '市场部', status: '在职' },
+];
+
 const DISABLED_SELECT_DATA = [
     { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
     { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', _selectDisabled: true },
@@ -475,6 +495,40 @@ export const TABLE_DEMO: DemoConfig = {
                             data: TABLE_DATA,
                             selectable: 'multiple',
                             selectDisabled: (row: any) => row.dept === '管理层',
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '固定列（左右）',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: 'check', cellType: 'checkbox', selection: true, width: 40, fixed: 'left' },
+        { name: 'name', field: 'name', title: '姓名', width: 120, fixed: 'left' },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+        { name: 'status', field: 'status', title: '状态', width: 100, align: 'center', fixed: 'right' },
+    ],
+    data: [...],
+    selectable: 'multiple',
+} }
+
+// fixed: 'left' — 列固定在左侧，水平滚动时不移动
+// fixed: 'right' — 列固定在右侧
+// 多列固定时偏移量自动叠加（第二列左固定偏移 = 第一列宽度）
+// 固定列边界有 shadow 视觉分隔`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: FIXED_COLUMNS,
+                            data: FIXED_DATA,
+                            selectable: 'multiple',
                         },
                     },
                 ],

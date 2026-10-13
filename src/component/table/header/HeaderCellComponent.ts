@@ -15,6 +15,7 @@ const HeaderCellComponentDefs: Definitions = {
         minWidth: 50,
         title: null,
         action: null,
+        fixed: null,
         sortable: false,
         resizable: true,
         draggable: false,
@@ -104,6 +105,29 @@ class HeaderCellComponent extends Component {
         const justifyContent =
             this.align === 'center' ? 'center' : this.align === 'right' ? 'flex-end' : 'flex-start';
         this.setStyles({ justifyContent }, 'content');
+    }
+
+    _onFixedOptionChange(_value: string): void {
+        if (this.fixed === 'left') {
+            this.setStyles({
+                position: 'sticky',
+                left: `var(--q-table-col-${this.colName}-fixed-offset, 0px)`,
+                zIndex: '3',
+            });
+            this.addCls('q-header-cell--fixed-left');
+            this.removeCls('q-header-cell--fixed-right');
+        } else if (this.fixed === 'right') {
+            this.setStyles({
+                position: 'sticky',
+                right: `var(--q-table-col-${this.colName}-fixed-offset, 0px)`,
+                zIndex: '3',
+            });
+            this.addCls('q-header-cell--fixed-right');
+            this.removeCls('q-header-cell--fixed-left');
+        } else {
+            this.setStyles({ position: '', left: '', right: '', zIndex: '' });
+            this.removeCls(['q-header-cell--fixed-left', 'q-header-cell--fixed-right']);
+        }
     }
 
     _onMinWidthOptionChange(_value: number): void {

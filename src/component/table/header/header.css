@@ -142,3 +142,11 @@
     transform: translate(-50%, -50%);
     flex-shrink: 0;
 }
+
+.q-header-cell--fixed-left {
+    box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.15);
+}
+
+.q-header-cell--fixed-right {
+    box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.15);
+}

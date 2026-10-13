@@ -65,6 +65,7 @@ class GroupSummaryRowComponent extends Component {
             const cell = new TextCellComponent({
                 align: meta.align,
                 format: meta.format,
+                fixed: meta.fixed ?? null,
                 order: `var(--q-table-col-${meta.name}-order)`,
             });
             this.el.appendChild(cell.el);
