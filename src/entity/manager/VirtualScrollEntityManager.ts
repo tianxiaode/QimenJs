@@ -58,6 +58,7 @@ export class VirtualScrollEntityManager extends BaseEntityManager {
 
     async list(): Promise<any[]> {
         const mockData = this.getData('mockData');
+        console.log('[VSEM] list() called, mockData type:', typeof mockData, 'isArray:', Array.isArray(mockData), 'length:', Array.isArray(mockData) ? mockData.length : 'N/A');
         if (Array.isArray(mockData)) {
             this._rangeTotal = mockData.length;
             this.items = mockData;
@@ -66,6 +67,7 @@ export class VirtualScrollEntityManager extends BaseEntityManager {
             return this.items;
         }
 
+        console.log('[VSEM] list() falling through to HTTP path, mockData value:', mockData);
         const params = this.toParams();
         const options = await this.buildOptions(ENTITY_ACTION.LIST, params, null, {});
         const context = await this.fetch(ENTITY_ACTION.LIST, options);
