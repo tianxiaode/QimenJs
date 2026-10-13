@@ -27,7 +27,10 @@ class VirtualScrollEntityDemo extends Component {
         const container = this.getNodeEl('tableContainer');
         if (!container) return;
 
-        import('@qimenjs/component').then(({ TableComponent }) => {
+        Promise.all([
+            import('@qimenjs/component'),
+            import('@qimenjs/entity'),
+        ]).then(([{ TableComponent }]) => {
             this._table = new TableComponent({
                 columns: VIRTUAL_SCROLL_COLUMNS,
                 entityKey: ENTITY_KEY,
