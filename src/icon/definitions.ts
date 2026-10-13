@@ -31,8 +31,8 @@ export const icons: IconDef[] = [
     {
         name: 'close',
         paths: [
-            { d: P.line(64, 64, 448, 448) },
-            { d: P.line(448, 64, 64, 448) },
+            { d: P.line(85, 85, 427, 427) },
+            { d: P.line(427, 85, 85, 427) },
         ],
     },
     {
@@ -92,89 +92,89 @@ export const icons: IconDef[] = [
         ],
     },
 
-    // ---- 方向箭头（线条箭头） ----
+    // ---- 方向箭头（线条箭头，全角90°） ----
     {
         name: 'arrow-down',
         paths: [
             { d: P.line(256, 64, 256, 448) },
-            { d: P.polyline([64, 320], [256, 448], [448, 320]) },
+            { d: P.polyline([64, 256], [256, 448], [448, 256]) },
         ],
     },
     {
         name: 'arrow-up',
         paths: [
             { d: P.line(256, 64, 256, 448) },
-            { d: P.polyline([64, 192], [256, 64], [448, 192]) },
+            { d: P.polyline([64, 256], [256, 64], [448, 256]) },
         ],
     },
     {
         name: 'arrow-left',
         paths: [
             { d: P.line(64, 256, 448, 256) },
-            { d: P.polyline([192, 64], [64, 256], [192, 448]) },
+            { d: P.polyline([256, 64], [64, 256], [256, 448]) },
         ],
     },
     {
         name: 'arrow-right',
         paths: [
             { d: P.line(64, 256, 448, 256) },
-            { d: P.polyline([320, 64], [448, 256], [320, 448]) },
+            { d: P.polyline([256, 64], [448, 256], [256, 448]) },
         ],
     },
 
-    // ---- 小箭头/展开标记（实心三角形） ----
+    // ---- 小箭头/展开标记（实心三角形，全角90°） ----
     {
         name: 'caret-down',
         paths: [
-            { d: P.triangle(64, 149, 448, 149, 256, 363), fill: 'currentColor' },
+            { d: P.triangle(64, 160, 448, 160, 256, 352), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-up',
         paths: [
-            { d: P.triangle(64, 363, 448, 363, 256, 149), fill: 'currentColor' },
+            { d: P.triangle(64, 352, 448, 352, 256, 160), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-left',
         paths: [
-            { d: P.triangle(149, 64, 149, 448, 363, 256), fill: 'currentColor' },
+            { d: P.triangle(160, 64, 160, 448, 352, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-right',
         paths: [
-            { d: P.triangle(363, 64, 363, 448, 149, 256), fill: 'currentColor' },
+            { d: P.triangle(352, 64, 352, 448, 160, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
 
-    // ---- V字箭头（chevron，线条版） ----
+    // ---- V字箭头（chevron，线条版，全角90°） ----
     {
         name: 'chevron-down',
         paths: [
-            { d: P.polyline([128, 160], [256, 352], [384, 160]) },
+            { d: P.polyline([128, 192], [256, 320], [384, 192]) },
         ],
     },
     {
         name: 'chevron-up',
         paths: [
-            { d: P.polyline([128, 352], [256, 160], [384, 352]) },
+            { d: P.polyline([128, 320], [256, 192], [384, 320]) },
         ],
     },
     {
         name: 'chevron-left',
         paths: [
-            { d: P.polyline([160, 128], [352, 256], [160, 384]) },
+            { d: P.polyline([192, 128], [320, 256], [192, 384]) },
         ],
     },
     {
         name: 'chevron-right',
         paths: [
-            { d: P.polyline([352, 128], [160, 256], [352, 384]) },
+            { d: P.polyline([320, 128], [192, 256], [320, 384]) },
         ],
     },
 
@@ -321,13 +321,13 @@ export const icons: IconDef[] = [
     {
         name: 'moon',
         paths: [
-            { d: 'M227 212 A150 150 0 1 0 300 285 A130 130 0 0 1 227 212 Z' },
+            { d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z' },
         ],
     },
     {
         name: 'dark',
         paths: [
-            { d: 'M227 212 A150 150 0 1 0 300 285 A130 130 0 0 1 227 212 Z', fill: 'currentColor' },
+            { d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
