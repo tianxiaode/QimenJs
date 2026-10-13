@@ -194,13 +194,6 @@ const FIXED_DATA = [
     { id: 8, name: '郑十', empNo: 'E008', age: 29, salary: 16000, dept: '市场部', hireDate: '2022-12', email: 'zhengshi@co.com', phone: '132-0008', address: '南京市鼓楼区', status: '在职' },
 ];
 
-const BG_MODES = [
-    { label: '默认条纹', action: 'default' },
-    { label: '无条纹', action: 'no-stripe' },
-    { label: '绿色背景', action: 'green' },
-    { label: '自定义条纹', action: 'custom-stripe' },
-];
-
 class FixedColumnBgDemo extends Component {
     get tpl(): TemplateDecl {
         return {
@@ -208,17 +201,18 @@ class FixedColumnBgDemo extends Component {
             classes: 'q-demo__column',
             children: [
                 {
-                    tag: 'div',
-                    classes: 'q-demo__row',
-                    children: BG_MODES.map(m => ({
-                        type: 'button',
-                        options: {
-                            text: m.label,
-                            size: 'sm',
-                            action: m.action,
-                            eventKey: 'bg-mode',
-                        },
-                    })),
+                    type: 'button-group',
+                    name: 'btnGroup',
+                    options: {
+                        mode: 'single',
+                        selectedIndex: 0,
+                        items: [
+                            { text: '默认条纹', value: 'default' },
+                            { text: '无条纹', value: 'no-stripe' },
+                            { text: '绿色背景', value: 'green' },
+                            { text: '自定义条纹', value: 'custom-stripe' },
+                        ],
+                    },
                 },
                 {
                     tag: 'div',
@@ -229,7 +223,7 @@ class FixedColumnBgDemo extends Component {
         };
     }
 
-    listens: ListenItem[] = [{ source: 'bg-mode', events: { click: '_onBgModeClick' } }];
+    listens: ListenItem[] = [{ node: 'btnGroup', events: { select: '_onBgModeSelect' } }];
 
     private _table: any = null;
 
@@ -246,26 +240,27 @@ class FixedColumnBgDemo extends Component {
         });
     }
 
-    _onBgModeClick(domEvt: any): void {
+    _onBgModeSelect(data: any): void {
         if (!this._table) return;
-        const action = domEvt?.actionData?.action ?? domEvt?.action;
-        switch (action) {
-            case 'default':
+        const ctx = data?.data ?? data;
+        const index = ctx?.index ?? ctx?.lastToggleIndex ?? ctx?.selectedIndex;
+        switch (index) {
+            case 0:
                 this._table.setData('stripe', true);
                 this._table.setData('rowBg', null);
                 this._table.setData('stripeBg', null);
                 break;
-            case 'no-stripe':
+            case 1:
                 this._table.setData('stripe', false);
                 this._table.setData('rowBg', null);
                 this._table.setData('stripeBg', null);
                 break;
-            case 'green':
+            case 2:
                 this._table.setData('stripe', false);
                 this._table.setData('rowBg', '#e8f5e9');
                 this._table.setData('stripeBg', null);
                 break;
-            case 'custom-stripe':
+            case 3:
                 this._table.setData('stripe', true);
                 this._table.setData('rowBg', '#fff3e0');
                 this._table.setData('stripeBg', '#ffe0b2');
