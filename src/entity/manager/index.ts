@@ -6,5 +6,6 @@ export * from './RemoteReadonlyEntityManager';
 export * from './RemoteCrudEntityManager';
 export * from './RemoteTreeEntityManager';
 export * from './VirtualScrollEntityManager';
+export * from './MockVirtualScrollEntityManager';
 export * from './DictionaryManager';
 export * from './createEntityManager';

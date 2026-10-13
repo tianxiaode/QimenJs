@@ -28,26 +28,16 @@ class VirtualScrollEntityDemo extends Component {
         if (!container) return;
 
         import('@qimenjs/component').then(({ TableComponent }) => {
-            import('@qimenjs/entity').then(({ createEntityManager }) => {
-                const mockData = generateVirtualData(10000);
-
-                createEntityManager({
-                    type: 'virtual-scroll',
-                    entityKey: ENTITY_KEY,
-                    mockData,
-                });
-
-                this._table = new TableComponent({
-                    columns: VIRTUAL_SCROLL_COLUMNS,
-                    entityKey: ENTITY_KEY,
-                    entityType: 'virtual-scroll',
-                    virtualScroll: true,
-                    itemHeight: 36,
-                    height: '400px',
-                });
-
-                container.appendChild(this._table.el);
+            this._table = new TableComponent({
+                columns: VIRTUAL_SCROLL_COLUMNS,
+                entityKey: ENTITY_KEY,
+                entityType: 'mock-virtual-scroll',
+                virtualScroll: true,
+                itemHeight: 36,
+                height: '400px',
             });
+
+            container.appendChild(this._table.el);
         });
     }
 }
@@ -90,18 +80,13 @@ export const TABLE_VIRTUAL_SCROLL_DEMO: DemoConfig = {
         },
         {
             label: '虚拟滚动 + EntityManager（10000行，按需加载）',
-            code: `// 创建 VirtualScrollEntityManager，设置 mockData
-createEntityManager({
-    type: 'virtual-scroll',
-    entityKey: 'demo-virtual-scroll',
-    mockData: generateVirtualData(10000),
-});
-
-// Table 通过 entityKey 连接 EM，虚拟滚动按需加载
+            code: `// Table 通过 entityType='mock-virtual-scroll' 连接 EM
+// DataDispatchCenter 自动创建 MockVirtualScrollEntityManager 实例
+// EM 内部生成 mock 数据，按需加载可见范围
 new TableComponent({
     columns: [...],
     entityKey: 'demo-virtual-scroll',
-    entityType: 'virtual-scroll',
+    entityType: 'mock-virtual-scroll',
     virtualScroll: true,
     itemHeight: 36,
     height: '400px',

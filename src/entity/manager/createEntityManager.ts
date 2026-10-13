@@ -6,7 +6,6 @@ import { RemoteCrudEntityManager } from './RemoteCrudEntityManager';
 import { RemoteTreeEntityManager } from './RemoteTreeEntityManager';
 import { VirtualScrollEntityManager } from './VirtualScrollEntityManager';
 import type { BaseEntityManager } from './BaseEntityManager';
-import { dataDispatchCenter } from '../dispatch/DataDispatchCenter';
 
 export type EntityManagerType =
     | 'dictionary'
@@ -38,11 +37,7 @@ export function createEntityManager(config: EntityManagerConfig): BaseEntityMana
         throw new Error(`Unknown entity manager type: ${config.type}`);
     }
     const { type, ...options } = config;
-    const mgr = new ManagerClass(options);
-    if (options.entityKey) {
-        dataDispatchCenter.registerInstance(options.entityKey, mgr);
-    }
-    return mgr;
+    return new ManagerClass(options);
 }
 
 export function registerEntityManager(type: EntityManagerType, managerClass: any): void {
