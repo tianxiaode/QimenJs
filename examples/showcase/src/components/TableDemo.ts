@@ -137,6 +137,37 @@ const RADIO_SELECT_COLUMNS: ColumnDefOrGroup[] = [
     },
 ];
 
+const ROWNUMBER_COLUMNS: ColumnDefOrGroup[] = [
+    { name: '#', cellType: 'rownumber', width: 40 },
+    { name: 'check', cellType: 'checkbox', selection: true, width: 40, align: 'center' },
+    { name: 'name', field: 'name', title: '姓名', width: 120 },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+    {
+        name: 'salary',
+        field: 'salary',
+        title: '薪资',
+        width: 120,
+        align: 'right',
+        format: 'currency',
+    },
+];
+
+const ROWNUMBER_DATA = [
+    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
+    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部' },
+    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层' },
+    { id: 4, name: '赵六', age: 24, salary: 8000, dept: '技术部' },
+    { id: 5, name: '孙七', age: 31, salary: 18000, dept: '市场部' },
+    { id: 6, name: '周八', age: 26, salary: 12000, dept: '技术部' },
+    { id: 7, name: '吴九', age: 38, salary: 25000, dept: '管理层' },
+    { id: 8, name: '郑十', age: 29, salary: 16000, dept: '市场部' },
+    { id: 9, name: '钱十一', age: 33, salary: 20000, dept: '技术部' },
+    { id: 10, name: '冯十二', age: 27, salary: 14000, dept: '市场部' },
+    { id: 11, name: '陈十三', age: 45, salary: 35000, dept: '管理层' },
+    { id: 12, name: '褚十四', age: 22, salary: 9000, dept: '技术部' },
+];
+
 const DISABLED_SELECT_DATA = [
     { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
     { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', _selectDisabled: true },
@@ -282,7 +313,8 @@ export const TABLE_DEMO: DemoConfig = {
 
 // selectable: 'multiple' — 多选模式
 // selection: true — 标记该列为选择列
-// 表头显示全选 checkbox，点击行也可选中`,
+// 表头显示全选 checkbox，点击行也可选中
+// checkbox 列默认禁止调整列宽（resizable: false）`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__column',
@@ -312,7 +344,8 @@ export const TABLE_DEMO: DemoConfig = {
 } }
 
 // selectable: 'single' — 单选模式
-// cellType: 'radio' — 单选框选择列`,
+// cellType: 'radio' — 单选框选择列
+// radio 列默认禁止调整列宽（resizable: false）`,
             template: {
                 tag: 'div',
                 classes: 'q-demo__column',
@@ -323,6 +356,40 @@ export const TABLE_DEMO: DemoConfig = {
                             columns: RADIO_SELECT_COLUMNS,
                             data: TABLE_DATA,
                             selectable: 'single',
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '行号列',
+            code: `{ type: 'table', options: {
+    columns: [
+        { name: '#', cellType: 'rownumber', width: 40 },
+        { name: 'check', cellType: 'checkbox', selection: true, width: 40 },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
+        { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    ],
+    data: [...],
+    selectable: 'multiple',
+} }
+
+// cellType: 'rownumber' — 行号列，自动显示行序号（从1开始）
+// 行号列默认禁止调整列宽（resizable: false）
+// 列宽自动适配：根据总行数位数动态计算（1位数36px，2位数44px...）
+// checkbox/radio/rownumber 列均默认禁止 resize`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: ROWNUMBER_COLUMNS,
+                            data: ROWNUMBER_DATA,
+                            selectable: 'multiple',
                         },
                     },
                 ],
