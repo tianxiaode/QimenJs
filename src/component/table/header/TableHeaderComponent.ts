@@ -426,9 +426,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
                 continue;
             }
-            const leaf = col as ColumnDef;
-            if (leaf.selection) continue;
-            result.push({ colName: leaf.name, title: leaf.title, hidden: leaf.hidden ?? false });
+        const leaf = col as ColumnDef;
+        if (leaf.selection) continue;
+        if (leaf.cellType === 'rownumber') continue;
+        result.push({ colName: leaf.name, title: leaf.title, hidden: leaf.hidden ?? false });
         }
         return result;
     }

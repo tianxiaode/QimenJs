@@ -129,6 +129,7 @@ export class ColumnMetaManager {
 
     private _compileLeafMeta(def: ColumnDef): ColumnMeta {
         const cellType: CellType = def.cellType || 'text';
+        const width = cellType === 'rownumber' && def.width === undefined ? 'auto' : resolveWidth(def.width);
         return {
             name: def.name,
             field: def.field || def.name,
@@ -136,7 +137,7 @@ export class ColumnMetaManager {
             cellType,
             format: def.format,
             align: resolveAlign(cellType, def.align),
-            width: resolveWidth(def.width),
+            width,
             minWidth: def.minWidth,
             maxWidth: def.maxWidth,
             hidden: def.hidden ?? false,

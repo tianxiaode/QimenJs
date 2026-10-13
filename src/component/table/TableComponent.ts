@@ -540,7 +540,6 @@ class TableComponent extends ItemGroupPooledComponent {
             let width = meta.width;
             if (meta.cellType === 'rownumber') {
                 width = this._computeRowNumberWidth(totalRows, meta.width);
-                meta.width = width;
             }
             if (width) {
                 this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, width);
