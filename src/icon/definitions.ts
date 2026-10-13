@@ -140,14 +140,14 @@ export const icons: IconDef[] = [
     {
         name: 'caret-left',
         paths: [
-            { d: P.triangle(160, 64, 160, 448, 352, 256), fill: 'currentColor' },
+            { d: P.triangle(352, 64, 352, 448, 160, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
     {
         name: 'caret-right',
         paths: [
-            { d: P.triangle(352, 64, 352, 448, 160, 256), fill: 'currentColor' },
+            { d: P.triangle(160, 64, 160, 448, 352, 256), fill: 'currentColor' },
         ],
         strokeWidth: 0,
     },
@@ -168,13 +168,13 @@ export const icons: IconDef[] = [
     {
         name: 'chevron-left',
         paths: [
-            { d: P.polyline([192, 128], [320, 256], [192, 384]) },
+            { d: P.polyline([320, 128], [192, 256], [320, 384]) },
         ],
     },
     {
         name: 'chevron-right',
         paths: [
-            { d: P.polyline([320, 128], [192, 256], [320, 384]) },
+            { d: P.polyline([192, 128], [320, 256], [192, 384]) },
         ],
     },
 
@@ -334,10 +334,10 @@ export const icons: IconDef[] = [
     {
         name: 'palette',
         paths: [
-            { d: 'M314 416 A170 170 0 1 1 198 416 A140 140 0 0 1 314 416 Z' },
-            { d: P.circle(192, 192, 32), fill: 'currentColor' },
-            { d: P.circle(320, 192, 32), fill: 'currentColor' },
-            { d: P.circle(192, 320, 32), fill: 'currentColor' },
+            { d: 'M302 92 A170 170 0 1 0 420 210 A110 110 0 0 1 302 92 Z' },
+            { d: P.circle(180, 180, 32), fill: 'currentColor' },
+            { d: P.circle(160, 300, 32), fill: 'currentColor' },
+            { d: P.circle(300, 320, 32), fill: 'currentColor' },
         ],
     },
     {
