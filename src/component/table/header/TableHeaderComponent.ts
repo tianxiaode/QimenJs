@@ -659,6 +659,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const newGroupField = currentGroupField === colName ? '' : colName;
         this.setData('groupField', newGroupField);
         this._updateCellGroupField(newGroupField);
+        this.emit('groupBy', { groupField: newGroupField });
     }
 
     _onHideColumn(data: any): void {

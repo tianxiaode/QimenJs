@@ -86,6 +86,9 @@ const icons = [
     { name: 'close', paths: [{ d: P.line(85, 85, 427, 427) }, { d: P.line(427, 85, 85, 427) }] },
     { name: 'add', paths: [{ d: P.line(256, 85, 256, 427) }, { d: P.line(85, 256, 427, 256) }] },
     { name: 'minus', paths: [{ d: P.line(85, 256, 427, 256) }] },
+    // Row Body 展开/折叠（方框+/方框-）
+    { name: 'expand', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(256, 149, 256, 363) }, { d: P.line(149, 256, 363, 256) }] },
+    { name: 'collapse', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.line(149, 256, 363, 256) }] },
     // Checkbox/Radio
     { name: 'checkbox', paths: [{ d: P.rect(64, 64, 384, 384, 43) }] },
     { name: 'checkbox-check', paths: [{ d: P.rect(64, 64, 384, 384, 43) }, { d: P.polyline([149, 256], [213, 320], [363, 171]) }] },

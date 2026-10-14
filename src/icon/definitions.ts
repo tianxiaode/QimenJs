@@ -49,6 +49,23 @@ export const icons: IconDef[] = [
         ],
     },
 
+    // ---- Row Body 展开/折叠（方框+/方框-） ----
+    {
+        name: 'expand',
+        paths: [
+            { d: P.rect(64, 64, 384, 384, 43) },
+            { d: P.line(256, 149, 256, 363) },
+            { d: P.line(149, 256, 363, 256) },
+        ],
+    },
+    {
+        name: 'collapse',
+        paths: [
+            { d: P.rect(64, 64, 384, 384, 43) },
+            { d: P.line(149, 256, 363, 256) },
+        ],
+    },
+
     // ---- Checkbox/Radio（控件状态图标） ----
     {
         name: 'checkbox',

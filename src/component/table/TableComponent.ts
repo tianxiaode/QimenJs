@@ -110,6 +110,9 @@ class TableComponent extends ItemGroupPooledComponent {
             this._header.on('toggleAll', () => {
                 this.toggleAllSelection();
             });
+            this._header.on('groupBy', (data: any) => {
+                this._onGroupBy(data);
+            });
             headerArea.appendChild(this._header.el);
         }
 
@@ -194,14 +197,16 @@ class TableComponent extends ItemGroupPooledComponent {
 
         this._virtualEntityMode = false;
         const data = explicitEntity && !Array.isArray(localData) ? this.getEntityItems() : (localData ?? []);
-        const isGrouped = this._isGroupedData(data);
+        const groupField = this.getData('groupField');
+        const effectiveData = (!this.hasEntity() && groupField) ? this._groupLocalData(data, groupField) : data;
+        const isGrouped = this._isGroupedData(effectiveData);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
         if (wasGrouped !== isGrouped) {
             this._disposeAllItems();
         }
-        this._lastReflowData = data;
+        this._lastReflowData = effectiveData;
 
-        const sortedData = this._sortState ? this._applySort(data) : data;
+        const sortedData = this._sortState ? this._applySort(effectiveData) : effectiveData;
         const items = this._buildItems(sortedData, metas);
         super.setItems(items);
         if (!this.getData('virtualScroll')) {
@@ -289,6 +294,36 @@ class TableComponent extends ItemGroupPooledComponent {
             this._sortState = { colName, direction };
         }
         if (this._isAfterInit) this._reflow();
+    }
+
+    _onGroupBy(data: any): void {
+        const groupField = data?.groupField ?? '';
+        this.setData('groupField', groupField);
+        if (this.hasEntity() && !this.getData('virtualScroll')) {
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.GROUP_BY,
+                { groupField },
+                { source: this.getData('entityKey') }
+            );
+        } else {
+            if (this._isAfterInit) this._reflow();
+        }
+    }
+
+    _groupLocalData(data: any[], groupField: string): any[] {
+        if (!groupField || !Array.isArray(data) || data.length === 0) return data;
+        if (this._isGroupedData(data)) return data;
+        const groups = new Map<string, any[]>();
+        const order: string[] = [];
+        for (const item of data) {
+            const key = String(item?.[groupField] ?? '');
+            if (!groups.has(key)) {
+                groups.set(key, []);
+                order.push(key);
+            }
+            groups.get(key)!.push(item);
+        }
+        return order.map(key => ({ groupKey: key, groupItems: groups.get(key)! }));
     }
 
     _applySort(data: any[]): any[] {

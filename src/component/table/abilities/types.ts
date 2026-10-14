@@ -79,9 +79,11 @@ export interface TableAbilityHost {
     _isReorderOnly(oldMetas: ColumnMeta[], newMetas: ColumnMeta[]): boolean;
 
     _isGroupedData(data: any[]): boolean;
+    _groupLocalData(data: any[], groupField: string): any[];
     _buildGroupSummary(group: any, metas: ColumnMeta[]): Record<string, any>;
     _buildGroupRowMap(itemsData: Record<string, any>[]): void;
     onGroupToggle(data: { groupKey: string; collapsed: boolean }): void;
+    _onGroupBy(data: any): void;
 
     _updateSummaryRow(): void;
     _computeSummaryData(metas: ColumnMeta[]): Record<string, any>;

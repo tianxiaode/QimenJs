@@ -2,6 +2,7 @@ import { BaseCellComponent } from './BaseCellComponent';
 import type { ExpandCellData } from '../column-types';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { QIcon } from '@/icon/QIcon';
 import { EXPAND_CELL_TPL } from './expand-cell-tpl';
 
 const ExpandCellComponentDefs: Definitions = {
@@ -29,7 +30,8 @@ class ExpandCellComponent extends BaseCellComponent {
     }
 
     _applyState(): void {
-        this.toggleCls('q-expand-icon--expanded', this._expanded, 'icon');
+        const iconName = this._expanded ? 'collapse' : 'expand';
+        this.setNodeHtml(QIcon.svg(iconName, 14), 'icon');
     }
 
     _onValueOptionChange(_value: any): void {
