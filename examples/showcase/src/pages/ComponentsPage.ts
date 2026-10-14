@@ -5,7 +5,7 @@
  * 点击左侧组件名 → hash 变化 → 路由事件 → 右侧动态切换演示内容。
  */
 
-import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from '../components/types';
 import { BUTTON_DEMO } from '../components/ButtonDemo';
 import { AVATAR_DEMO } from '../components/AvatarDemo';
@@ -125,6 +125,16 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     EntitySource: ENTITY_SOURCE_DEMO,
 };
 
+/** TreeNav items：分类为可展开父节点，组件为叶子节点带 href */
+const TREE_NAV_ITEMS = COMPONENT_CATEGORIES.map(cat => ({
+    text: cat.label,
+    expanded: true,
+    children: cat.components.map(name => ({
+        text: name,
+        href: `/components/${name}`,
+    })),
+}));
+
 /** 首页模板 */
 const COMPONENTS_TPL: TemplateDecl = {
     tag: 'div',
@@ -135,24 +145,13 @@ const COMPONENTS_TPL: TemplateDecl = {
             tag: 'aside',
             name: 'sidebar',
             classes: 'q-components-page__sidebar',
-            children: COMPONENT_CATEGORIES.map(cat => ({
-                tag: 'div',
-                classes: 'q-components-page__nav-group',
-                children: [
-                    {
-                        tag: 'div',
-                        classes: 'q-components-page__nav-category',
-                        options: { text: cat.label },
-                    },
-                    ...cat.components.map(name => ({
-                        tag: 'div',
-                        classes: 'q-components-page__nav-item',
-                        name: `nav-${name.toLowerCase()}`,
-                        attributes: { 'data-component': name },
-                        options: { text: name },
-                    })),
-                ],
-            })),
+            children: [
+                {
+                    type: 'tree-nav',
+                    name: 'treeNav',
+                    options: { items: TREE_NAV_ITEMS },
+                },
+            ],
         },
         {
             tag: 'main',
@@ -294,10 +293,6 @@ export class ComponentsPage extends Component {
 
     listens = [{ route: true, events: { change: 'onRouteChange' } }];
 
-    domEvents: DomEventsMap = {
-        click: { path: 'sidebar', handler: '_onNavClick' },
-    };
-
     onAfterInit(): void {
         const hash = window.location.hash;
         const path = hash ? hash.slice(1) : '';
@@ -317,13 +312,6 @@ export class ComponentsPage extends Component {
                 this._showDemo(componentName);
             }
         }
-    }
-
-    _onNavClick(domEvt: any): void {
-        const target = domEvt?.data?.originalEvent?.target ?? domEvt?.target;
-        const componentName = target?.dataset?.component;
-        if (!componentName) return;
-        window.location.hash = `/components/${componentName}`;
     }
 
     _showDemo(componentName: string): void {
