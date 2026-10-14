@@ -61,8 +61,8 @@ function applyAbilitie(proto: any, ability: AbilityDefinition): void {
             continue;
         }
 
-        if (proto[key]) {
-            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.name}, skipping`);
+        if (Object.getOwnPropertyDescriptor(proto, key)) {
+            Logger.for('forge').warn(`Ability ${key} already exists on ${proto.constructor.name}, skipping`);
             continue;
         }
 

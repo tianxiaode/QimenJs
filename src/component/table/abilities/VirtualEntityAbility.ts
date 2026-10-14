@@ -51,7 +51,6 @@ export const VirtualEntityAbility = {
         if (this._scrollUnbind) {
             requestAnimationFrame(() => {
                 this._renderVirtualItems();
-                this._applyZebraStripes();
             });
         }
     },

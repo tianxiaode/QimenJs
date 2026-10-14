@@ -41,20 +41,17 @@ export const ZebraAbility = {
     },
 
     _applyZebraStripes(this: TableAbilityHost): void {
+        if (this.getData('virtualScroll')) return;
         const items = this.items;
         if (!Array.isArray(items)) return;
-        const isVirtual = this.getData('virtualScroll');
         let stripeIndex = 0;
         for (const item of items) {
-            if (!isVirtual) {
-                const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
-                if (isGroupSummary || item?.hidden) continue;
-            }
+            const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
+            if (isGroupSummary || item?.hidden) continue;
             item.removeCls?.('q-table-row--odd');
             item.removeCls?.('q-table-row--even');
-            const idx = isVirtual ? (item._virtualIndex ?? 0) : stripeIndex;
-            item.addCls?.(idx % 2 === 0 ? 'q-table-row--odd' : 'q-table-row--even');
-            if (!isVirtual) stripeIndex++;
+            item.addCls?.(stripeIndex % 2 === 0 ? 'q-table-row--odd' : 'q-table-row--even');
+            stripeIndex++;
         }
     },
 } satisfies AbilityDefinition;
