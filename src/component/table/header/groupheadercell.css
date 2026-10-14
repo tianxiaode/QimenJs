@@ -6,6 +6,10 @@
     border-right: none;
 }
 
+.q-header-cell--last.q-header-cell--group .q-header-cell__group-body > .q-header-cell__title {
+    border-right: none !important;
+}
+
 .q-header-cell__group-body {
     display: flex;
     flex-direction: column;
