@@ -309,7 +309,10 @@ class TableComponent extends ItemGroupPooledComponent {
             selectable: this.getData('selectable') ?? 'none',
         };
 
-        if (this.getData('virtualScroll') && this.hasEntity()) {
+        const explicitEntity = !!(this.rawOptions?.entityKey || this.rawOptions?.entityType);
+        const localData = this.getData('data');
+
+        if (this.getData('virtualScroll') && explicitEntity && !Array.isArray(localData)) {
             this._virtualEntityMode = true;
             const entityItems = this.getEntityItems();
             if (entityItems.length > 0) {
@@ -321,7 +324,7 @@ class TableComponent extends ItemGroupPooledComponent {
         }
 
         this._virtualEntityMode = false;
-        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
+        const data = explicitEntity && !Array.isArray(localData) ? this.getEntityItems() : (localData ?? []);
         const isGrouped = this._isGroupedData(data);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
         if (wasGrouped !== isGrouped) {
