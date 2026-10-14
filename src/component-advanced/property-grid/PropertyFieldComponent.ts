@@ -1,32 +1,13 @@
-/**
- * PropertyFieldComponent 属性字段组件
- *
- * PropertyGrid 的单行：label + value。
- * 由 PropertyGrid 创建和管理，不独立使用。
- *
- * 根据 type 渲染不同内容：
- * - text: 直接文本
- * - number: formatNumber 格式化
- * - date: formatDate 格式化
- * - boolean: 只读 checkbox
- * - json: JSON.stringify 或嵌套 PropertyGrid
- * - array: chip 列表
- *
- * i18n + enums 驱动 label/value 的本地化。
- * onLocaleChange 钩子自动重渲染 i18n 内容。
- */
-
 import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { PROPERTY_FIELD_TPL } from './property-field-tpl';
 import { formatNumber } from '@/utils/number';
 import { formatDate } from '@/utils/date';
 import { resolveI18nValue } from '@qimenjs/i18n';
 
-/** 属性字段类型 */
 export type PropertyFieldType = 'text' | 'number' | 'date' | 'boolean' | 'json' | 'array';
 
-/** 属性字段定义 */
 export interface PropertyField {
     key: string;
     labelKey?: string;
@@ -49,35 +30,41 @@ const PropertyFieldComponentDefs: Definitions = {
 } as const;
 
 class PropertyFieldComponent extends Component {
-    _fieldDef: PropertyField = { key: '' };
-    _data: Record<string, any> = {};
+    static type = 'property-field';
+
+    get tpl(): TemplateDecl {
+        return PROPERTY_FIELD_TPL;
+    }
+
     _nestedGrid: any = null;
 
+    _onFieldOptionChange(value: PropertyField): void {
+        if (value) this._applyField();
+    }
+
+    _onDataOptionChange(value: Record<string, any>): void {
+        if (value) this._applyValue();
+    }
+
     onAfterInit(): void {
-        if (this.getData('field')) this._fieldDef = this.getData('field');
-        if (this.getData('data')) this._data = this.getData('data');
         this._applyField();
     }
 
     onLocaleChange(): void {
         this._applyLabel();
+        const def = this.field as PropertyField;
         if (
-            this._fieldDef.i18n ||
-            this._fieldDef.type === 'date' ||
-            this._fieldDef.type === 'number'
+            def?.i18n ||
+            def?.type === 'date' ||
+            def?.type === 'number'
         ) {
             this._applyValue();
         }
     }
 
-    update(props?: Record<string, any>): void {
-        if (props?.field) this._fieldDef = props.field;
-        if (props?.data) this._data = props.data;
-        this._applyField();
-    }
-
     private _applyField(): void {
-        const def = this._fieldDef;
+        const def = this.field as PropertyField;
+        if (!def) return;
 
         if (def.span && def.span > 1) {
             this.gridColumn = `span ${def.span}`;
@@ -97,15 +84,17 @@ class PropertyFieldComponent extends Component {
     }
 
     private _applyLabel(): void {
-        const def = this._fieldDef;
+        const def = this.field as PropertyField;
+        if (!def) return;
         const labelKey = def.labelKey ?? def.key;
         const labelText = def.i18n !== false ? resolveI18nValue(`@${labelKey}`) : labelKey;
         this.setNodeProp('text', labelText, 'label');
     }
 
     private _applyValue(): void {
-        const def = this._fieldDef;
-        const raw = this._data[def.key];
+        const def = this.field as PropertyField;
+        if (!def) return;
+        const raw = (this.data as Record<string, any>)?.[def.key];
         const valueEl = this._resolveNodeEl('value');
         if (!valueEl) return;
 
@@ -158,7 +147,7 @@ class PropertyFieldComponent extends Component {
         }
 
         if (def.transform) {
-            result = def.transform(result, this._data);
+            result = def.transform(result, this.data as Record<string, any>);
         }
 
         valueEl.textContent = result;
@@ -167,12 +156,12 @@ class PropertyFieldComponent extends Component {
     private _formatNumber(raw: any): string {
         const num = Number(raw);
         if (!isFinite(num)) return String(raw);
-        const fmt = this._fieldDef.format ?? '#,##0.##';
+        const fmt = (this.field as PropertyField)?.format ?? '#,##0.##';
         return formatNumber(num, fmt);
     }
 
     private _formatDate(raw: any): string {
-        const fmt = this._fieldDef.format ?? 'YYYY-MM-DD';
+        const fmt = (this.field as PropertyField)?.format ?? 'YYYY-MM-DD';
         return formatDate(raw, fmt);
     }
 
@@ -186,7 +175,7 @@ class PropertyFieldComponent extends Component {
     }
 
     private _renderArray(container: HTMLElement, value: any[]): void {
-        const def = this._fieldDef;
+        const def = this.field as PropertyField;
         const arr = Array.isArray(value) ? value : [value];
 
         for (const item of arr) {
@@ -217,16 +206,19 @@ class PropertyFieldComponent extends Component {
             return;
         }
         this._nestedGrid = new PropertyGridComponent({
-            fields: this._fieldDef.fields,
+            fields: (this.field as PropertyField)?.fields,
             data,
             cols: 2,
         });
         container.appendChild(this._nestedGrid.el);
     }
+
+    onBeforeDispose(): void {
+        if (this._nestedGrid?.dispose) this._nestedGrid.dispose();
+    }
 }
 
-PropertyFieldComponent.useTemplate(PROPERTY_FIELD_TPL);
 PropertyFieldComponent.define(PropertyFieldComponentDefs);
+
 export { PropertyFieldComponent };
-/** 属性字段实例类型 */
 export type PropertyFieldComponentInstance = InstanceType<typeof PropertyFieldComponent>;

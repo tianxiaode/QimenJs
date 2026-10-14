@@ -15,7 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { DomEventsMap } from '@qimenjs/component-core';
+import type { DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { ONE_TIME_PASSWORD_TPL } from './one-time-password-tpl';
 import './one-time-password.css';
@@ -33,6 +33,12 @@ const OneTimePasswordComponentDefs: Definitions = {
 } as const;
 
 class OneTimePasswordComponent extends Component {
+    static type = 'one-time-password';
+
+    get tpl(): TemplateDecl {
+        return ONE_TIME_PASSWORD_TPL;
+    }
+
     domEvents?: DomEventsMap = {
         input: { path: '', handler: '_onInput' },
         keydown: { path: '', handler: '_onKeydown' },
@@ -209,24 +215,8 @@ class OneTimePasswordComponent extends Component {
     formReset(defaultValue?: any): void {
         this.value = defaultValue ?? '';
     }
-
-    update(props?: Record<string, any>): void {
-        super.update(props);
-
-        if (props?.length !== undefined) this.length = props.length;
-        if (props?.type !== undefined) this.type = props.type;
-        if (props?.disabled !== undefined) this.disabled = props.disabled;
-        if (props?.readonly !== undefined) this.readonly = props.readonly;
-
-        this._applyOTPState();
-
-        if (props?.value !== undefined) {
-            this.value = props.value;
-        }
-    }
 }
 
-OneTimePasswordComponent.useTemplate(ONE_TIME_PASSWORD_TPL);
 OneTimePasswordComponent.define(OneTimePasswordComponentDefs);
 
 export { OneTimePasswordComponent };

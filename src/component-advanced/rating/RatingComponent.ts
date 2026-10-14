@@ -17,6 +17,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { RATING_TPL } from './rating-tpl';
 import './rating.css';
@@ -32,6 +33,12 @@ const RatingComponentDefs: Definitions = {
 } as const;
 
 class RatingComponent extends Component {
+    static type = 'rating';
+
+    get tpl(): TemplateDecl {
+        return RATING_TPL;
+    }
+
     _hoverValue = -1;
 
     _onValueOptionChange(value: number): void {
@@ -177,18 +184,8 @@ class RatingComponent extends Component {
     get defaultEventData(): Record<string, any> {
         return { ...super.defaultEventData, value: this.value };
     }
-
-    update(props?: Record<string, any>): void {
-        if (props?.value !== undefined) this.value = props.value;
-        if (props?.max !== undefined) this.max = props.max;
-        if (props?.allowHalf !== undefined) this.allowHalf = props.allowHalf;
-        if (props?.readonly !== undefined) this.readonly = props.readonly;
-        if (props?.disabled !== undefined) this.disabled = props.disabled;
-        if (props?.cls !== undefined) this.addCls(props.cls);
-    }
 }
 
-RatingComponent.useTemplate(RATING_TPL);
 RatingComponent.define(RatingComponentDefs);
 
 export { RatingComponent };

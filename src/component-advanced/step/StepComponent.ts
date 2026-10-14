@@ -37,6 +37,8 @@ const StepComponentDefs: Definitions = {
 } as const;
 
 class StepComponent extends ItemGroupPooledComponent {
+    static type = 'step';
+
     defaultItemType = 'StepItem';
 
     domEvents?: DomEventsMap | undefined = {
@@ -58,6 +60,10 @@ class StepComponent extends ItemGroupPooledComponent {
                 this.emit('select', { index: value, prevIndex: old });
             }
         }
+    }
+
+    _onItemsOptionChange(): void {
+        this._syncStepStatus();
     }
 
     onAfterInit(): void {
@@ -92,17 +98,6 @@ class StepComponent extends ItemGroupPooledComponent {
             activeIndex: this.activeIndex,
             stepCount: this.count,
         };
-    }
-
-    update(props?: Record<string, any>): void {
-        if (props?.items !== undefined) {
-            super.update({ items: props.items });
-            this._syncStepStatus();
-        }
-        if (props?.activeIndex !== undefined) this.activeIndex = props.activeIndex;
-        if (props?.direction !== undefined) {
-            super.update({ direction: props.direction });
-        }
     }
 }
 

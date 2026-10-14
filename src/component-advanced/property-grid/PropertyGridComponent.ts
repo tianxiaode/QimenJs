@@ -26,6 +26,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { PROPERTY_GRID_TPL } from './property-grid-tpl';
 import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';
@@ -43,6 +44,12 @@ const PropertyGridComponentDefs: Definitions = {
 } as const;
 
 class PropertyGridComponent extends Component {
+    static type = 'property-grid';
+
+    get tpl(): TemplateDecl {
+        return PROPERTY_GRID_TPL;
+    }
+
     _fieldComponents: any[] = [];
 
     _onColsOptionChange(): void {
@@ -75,13 +82,6 @@ class PropertyGridComponent extends Component {
                 fc.onLocaleChange();
             }
         }
-    }
-
-    update(props?: Record<string, any>): void {
-        if (props?.fields !== undefined) this.fields = props.fields;
-        if (props?.data !== undefined) this.data = props.data;
-        if (props?.cols !== undefined) this.cols = props.cols;
-        if (props?.gap !== undefined) this.gap = props.gap;
     }
 
     private _applyGrid(): void {
@@ -139,7 +139,6 @@ class PropertyGridComponent extends Component {
     }
 }
 
-PropertyGridComponent.useTemplate(PROPERTY_GRID_TPL);
 PropertyGridComponent.define(PropertyGridComponentDefs);
 export { PropertyGridComponent };
 /** 属性网格实例类型 */

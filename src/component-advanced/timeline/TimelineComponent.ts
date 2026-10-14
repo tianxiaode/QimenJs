@@ -36,6 +36,8 @@ const TimelineComponentDefs: Definitions = {
 } as const;
 
 class TimelineComponent extends ItemGroupPooledComponent {
+    static type = 'timeline';
+
     defaultItemType = 'TimelineItem';
 
     get defaultOptions(): Record<string, any> {
@@ -66,12 +68,6 @@ class TimelineComponent extends ItemGroupPooledComponent {
             pending: this.pending,
             itemCount: this.count,
         };
-    }
-
-    update(props?: Record<string, any>): void {
-        if (props?.items !== undefined) this.setItems(props.items);
-        if (props?.pending !== undefined) this.pending = props.pending;
-        super.update(props);
     }
 }
 
