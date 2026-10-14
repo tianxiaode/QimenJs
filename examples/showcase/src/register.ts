@@ -59,6 +59,10 @@ import {
     GroupHeaderCellComponent,
     ExpandCellComponent,
 } from '@qimenjs/component';
+import {
+    PropertyGridComponent,
+    PropertyFieldComponent,
+} from '@qimenjs/component-advanced';
 ButtonComponent.register();
 ButtonGroupComponent.register();
 CardComponent.register();
@@ -102,3 +106,5 @@ TableHeaderComponent.register();
 HeaderCellComponent.register();
 GroupHeaderCellComponent.register();
 ExpandCellComponent.register();
+PropertyGridComponent.register();
+PropertyFieldComponent.register();

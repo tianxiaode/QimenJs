@@ -123,13 +123,12 @@ Table option: `rowBody: RowBodyConfig | null`
 
 ### P5: Showcase Demo
 
-- [ ] **TableRowBodyDemo** — 新建 `examples/showcase/src/components/TableRowBodyDemo.ts`
+- [x] **TableRowBodyDemo** — 新建 `examples/showcase/src/components/TableRowBodyDemo.ts`
   - property-grid 演示（行已有数据）
   - property-grid + loader 演示（异步加载详细数据）
-  - 嵌套表格演示（主从）
-  - template 演示（自定义内容）
-- [ ] **ComponentsPage** — 添加 TableRowBody 到导航和 DEMO_MAP
-- [ ] **register.ts** — 添加 PropertyGridComponent 注册（如尚未注册）
+  - html 演示（自定义内容）
+- [x] **ComponentsPage** — 添加 TableRowBody 到导航和 DEMO_MAP
+- [x] **register.ts** — 添加 PropertyGridComponent + PropertyFieldComponent 注册
 
 ## 关键约束
 

@@ -160,3 +160,17 @@
     padding: 8px 12px;
     overflow: hidden;
 }
+
+.q-table-row__body-loading {
+    padding: 12px;
+    text-align: center;
+    color: var(--q-color-text-secondary, #666);
+    font-size: 13px;
+}
+
+.q-table-row__body-error {
+    padding: 12px;
+    text-align: center;
+    color: var(--q-color-danger, #d13438);
+    font-size: 13px;
+}

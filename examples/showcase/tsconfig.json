@@ -107,6 +107,9 @@
             "@qimenjs/component": [
                 "../../src/component"
             ],
+            "@qimenjs/component-advanced": [
+                "../../src/component-advanced"
+            ],
             "@qimenjs/markdown": [
                 "../../src/markdown"
             ],
