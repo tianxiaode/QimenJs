@@ -1,6 +1,11 @@
 import type { AbilityDefinition } from '@/composable';
 import type { TableAbilityHost } from './types';
-import type { ColumnDefOrGroup } from '../column-types';
+import type { ColumnDefOrGroup, TemplateDecl } from '../column-types';
+import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+
+function isTemplateDecl(value: any): value is TemplateDecl {
+    return !!value && typeof value === 'object' && ('tag' in value || 'children' in value);
+}
 
 export const RowBodyAbility = {
     _onRowBodyOptionChange(this: TableAbilityHost, _value: any): void {
@@ -52,7 +57,34 @@ export const RowBodyAbility = {
         this.emit('rowCollapse', data);
     },
 
-    _renderRowBody(this: TableAbilityHost, _row: any, _rowData: any): any {
-        return null;
+    _renderRowBody(this: TableAbilityHost, row: any, rowData: any): any {
+        const rowBody = this.getData('rowBody');
+        if (!rowBody || !row?.bodyEl) return null;
+
+        const bodyEl = row.bodyEl;
+
+        switch (rowBody.type) {
+            case 'html': {
+                const htmlContent = typeof rowBody.html === 'function'
+                    ? rowBody.html(rowData)
+                    : rowBody.html;
+                if (typeof htmlContent === 'string') {
+                    bodyEl.innerHTML = htmlContent;
+                }
+                return { el: bodyEl, dispose: () => { bodyEl.innerHTML = ''; } };
+            }
+
+            case 'template': {
+                const tpl = rowBody.template;
+                if (!isTemplateDecl(tpl)) return null;
+                const BaseCtor = ComponentRegistrar.getInstance().get('component') as any;
+                const SlotCls = BaseCtor.extend({ type: 'row-body-slot', tpl });
+                const inst = new SlotCls({ container: bodyEl });
+                return inst;
+            }
+
+            default:
+                return null;
+        }
     },
 } satisfies AbilityDefinition;

@@ -88,10 +88,10 @@ Table option: `rowBody: RowBodyConfig | null`
 
 ### P2: html/template 内容渲染
 
-- [ ] `_renderRowBody` 实现 `type: 'html'`
+- [x] `_renderRowBody` 实现 `type: 'html'`
   - string：直接 innerHTML
   - function：调用获取 HTML 字符串
-- [ ] `_renderRowBody` 实现 `type: 'template'`
+- [x] `_renderRowBody` 实现 `type: 'template'`
   - 复用 `renderSlot`（OptionAbility 的三路模式）
   - TemplateDecl 通过 `_createSlotComponent` 承载
 - [ ] **测试** — html/template 内容渲染验证
