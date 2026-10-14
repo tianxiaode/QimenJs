@@ -47,7 +47,11 @@ export const ZebraAbility = {
         let stripeIndex = 0;
         for (const item of items) {
             const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
-            if (isGroupSummary || item?.hidden) continue;
+            if (isGroupSummary) {
+                stripeIndex = 0;
+                continue;
+            }
+            if (item?.hidden) continue;
             item.removeCls?.('q-table-row--odd');
             item.removeCls?.('q-table-row--even');
             item.addCls?.(stripeIndex % 2 === 0 ? 'q-table-row--odd' : 'q-table-row--even');
