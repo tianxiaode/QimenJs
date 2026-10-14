@@ -28,6 +28,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
     _lastReflowData: any[] = [];
+    _sortState: { colName: string; direction: 'asc' | 'desc' } | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -54,6 +55,7 @@ class TableComponent extends ItemGroupPooledComponent {
             source: 'self',
             events: {
                 resize: '_onColumnResize',
+                sort: '_onSort',
                 groupToggle: 'onGroupToggle',
                 hideColumn: '_onHideColumn',
                 showColumn: '_onShowColumn',
@@ -128,6 +130,7 @@ class TableComponent extends ItemGroupPooledComponent {
         this._columnMetaManager.compile(columns);
         const isReorderOnly = this._isReorderOnly(oldMetas, this._columnMetaManager.getAll());
         if (!isReorderOnly) {
+            this._sortState = null;
             this._applyColumnStyles();
         }
         if (this._isAfterInit) {
@@ -184,7 +187,8 @@ class TableComponent extends ItemGroupPooledComponent {
         }
         this._lastReflowData = data;
 
-        const items = this._buildItems(data, metas);
+        const sortedData = this._sortState ? this._applySort(data) : data;
+        const items = this._buildItems(sortedData, metas);
         super.setItems(items);
         if (!this.getData('virtualScroll')) {
             this._buildGroupRowMap(items);
@@ -259,6 +263,45 @@ class TableComponent extends ItemGroupPooledComponent {
                 columnMetas: metas,
             };
         });
+    }
+
+    _onSort(data: any): void {
+        const colName = data?.colName ?? data?.actionData?.colName;
+        const direction = data?.direction ?? data?.actionData?.direction;
+        if (!colName || !direction) return;
+        if (direction === 'none') {
+            this._sortState = null;
+        } else {
+            this._sortState = { colName, direction };
+        }
+        if (this._isAfterInit) this._reflow();
+    }
+
+    _applySort(data: any[]): any[] {
+        if (!this._sortState || !this._columnMetaManager) return data;
+        const meta = this._columnMetaManager.get(this._sortState.colName);
+        if (!meta) return data;
+        const field = meta.field;
+        const direction = this._sortState.direction;
+        const sortFn = (a: any, b: any): number => {
+            const av = a?.[field];
+            const bv = b?.[field];
+            if (av == null && bv == null) return 0;
+            if (av == null) return 1;
+            if (bv == null) return -1;
+            if (typeof av === 'number' && typeof bv === 'number') {
+                return direction === 'asc' ? av - bv : bv - av;
+            }
+            const cmp = String(av).localeCompare(String(bv));
+            return direction === 'asc' ? cmp : -cmp;
+        };
+        if (this._isGroupedData(data)) {
+            return data.map(group => ({
+                ...group,
+                groupItems: [...(group.groupItems ?? [])].sort(sortFn),
+            }));
+        }
+        return [...data].sort(sortFn);
     }
 
     _disposeAllItems(): void {
