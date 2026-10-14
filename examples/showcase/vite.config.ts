@@ -103,6 +103,10 @@ export default defineConfig({
                 replacement: resolve(__dirname, '../../src/component-core'),
             },
             { find: '@qimenjs/component', replacement: resolve(__dirname, '../../src/component') },
+            {
+                find: '@qimenjs/component-advanced',
+                replacement: resolve(__dirname, '../../src/component-advanced'),
+            },
             { find: '@qimenjs/markdown', replacement: resolve(__dirname, '../../src/markdown') },
             {
                 find: '@qimenjs/imperative',
