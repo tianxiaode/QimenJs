@@ -186,17 +186,14 @@ class TableComponent extends ItemGroupPooledComponent {
 
         this._virtualEntityMode = false;
         const data = explicitEntity && !Array.isArray(localData) ? this.getEntityItems() : (localData ?? []);
-        const groupField = this.getData('groupField');
-        const effectiveData = (!this.hasEntity() && groupField) ? this._groupLocalData(data, groupField) : data;
-        const isGrouped = this._isGroupedData(effectiveData);
+        const isGrouped = this._isGroupedData(data);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
         if (wasGrouped !== isGrouped) {
             this._disposeAllItems();
         }
-        this._lastReflowData = effectiveData;
+        this._lastReflowData = data;
 
-        const sortedData = this._sortState ? this._applySort(effectiveData) : effectiveData;
-        const items = this._buildItems(sortedData, metas);
+        const items = this._buildItems(data, metas);
         super.setItems(items);
         if (!this.getData('virtualScroll')) {
             this._buildGroupRowMap(items);
@@ -282,7 +279,13 @@ class TableComponent extends ItemGroupPooledComponent {
         } else {
             this._sortState = { colName, direction };
         }
-        if (this._isAfterInit) this._reflow();
+        if (this.hasEntity() && this._isAfterInit) {
+            this.entityEmit(
+                ENTITY_COMMAND_EVENTS.SORT,
+                { colName, direction },
+                { source: this.getData('entityKey') }
+            );
+        }
     }
 
     _onToggleAll(data: any): void {
@@ -312,52 +315,7 @@ class TableComponent extends ItemGroupPooledComponent {
                 { groupField },
                 { source: this.getData('entityKey') }
             );
-        } else {
-            if (this._isAfterInit) this._reflow();
         }
-    }
-
-    _groupLocalData(data: any[], groupField: string): any[] {
-        if (!groupField || !Array.isArray(data) || data.length === 0) return data;
-        if (this._isGroupedData(data)) return data;
-        const groups = new Map<string, any[]>();
-        const order: string[] = [];
-        for (const item of data) {
-            const key = String(item?.[groupField] ?? '');
-            if (!groups.has(key)) {
-                groups.set(key, []);
-                order.push(key);
-            }
-            groups.get(key)!.push(item);
-        }
-        return order.map(key => ({ groupKey: key, groupItems: groups.get(key)! }));
-    }
-
-    _applySort(data: any[]): any[] {
-        if (!this._sortState || !this._columnMetaManager) return data;
-        const meta = this._columnMetaManager.get(this._sortState.colName);
-        if (!meta) return data;
-        const field = meta.field;
-        const direction = this._sortState.direction;
-        const sortFn = (a: any, b: any): number => {
-            const av = a?.[field];
-            const bv = b?.[field];
-            if (av == null && bv == null) return 0;
-            if (av == null) return 1;
-            if (bv == null) return -1;
-            if (typeof av === 'number' && typeof bv === 'number') {
-                return direction === 'asc' ? av - bv : bv - av;
-            }
-            const cmp = String(av).localeCompare(String(bv));
-            return direction === 'asc' ? cmp : -cmp;
-        };
-        if (this._isGroupedData(data)) {
-            return data.map(group => ({
-                ...group,
-                groupItems: [...(group.groupItems ?? [])].sort(sortFn),
-            }));
-        }
-        return [...data].sort(sortFn);
     }
 
     _disposeAllItems(): void {
