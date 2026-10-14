@@ -16,7 +16,7 @@
  * rating.on('change', ({ value }) => { ... })
  */
 
-import { Component, CommonPropsAbility } from '@qimenjs/component-core';
+import { Component } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { RATING_TPL } from './rating-tpl';
 import './rating.css';
@@ -188,7 +188,6 @@ class RatingComponent extends Component {
     }
 }
 
-RatingComponent.use([CommonPropsAbility]);
 RatingComponent.useTemplate(RATING_TPL);
 RatingComponent.define(RatingComponentDefs);
 
