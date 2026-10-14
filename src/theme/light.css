@@ -175,7 +175,7 @@
     --q-color-bg-l: 94%;
 
     --q-color-bg: hsl(var(--q-color-bg-h), var(--q-color-bg-s), var(--q-color-bg-l));
-    --q-color-bg-stripe: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) - 2%));
+    --q-color-bg-stripe: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) - 4%));
     --q-color-bg-secondary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 8%), calc(var(--q-color-bg-l) - 4%));
     --q-color-bg-tertiary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 14%), calc(var(--q-color-bg-l) - 8%));
     --q-color-bg-elevated: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) + 20%), calc(var(--q-color-bg-l) + 2%));
