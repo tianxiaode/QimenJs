@@ -3,21 +3,24 @@ import { ItemGroupPooledComponent } from '@qimenjs/component';
 import { ColumnOrderAbility, SelectionAbility } from '@qimenjs/component-abilities';
 import { ColumnMetaManager } from './engine/ColumnMetaManager';
 import { TableHeaderComponent } from './header/TableHeaderComponent';
-import { TableSummaryRowComponent } from './table-summary/TableSummaryRowComponent';
 import type {
-    ColumnDef,
     ColumnDefOrGroup,
-    ColumnGroupDef,
     ColumnMeta,
-    AggregatorType,
     TableSelectMode,
 } from './column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from './constants';
-import { ENTITY_COMMAND_EVENTS, ENTITY_LIST_EVENTS } from '@/events';
-import type { RangeLoadedData } from '@/entity/abilities/remote/RangeLoadAbility';
+import { ENTITY_COMMAND_EVENTS } from '@/events';
 import { Definitions } from '@/composable';
+import { TABLE_ABILITIES } from './abilities';
 import './table.css';
 
+/**
+ * TableComponent — 表格容器主类
+ *
+ * 只保留核心流程：模板、初始化编排（header 创建）、_reflow 渲染编排、
+ * _buildItems 数据构建。列样式/行选择/分组/汇总/斑马纹/虚拟滚动 entity
+ * 等能力拆分到 abilities/ 目录，通过 use() 注入原型。
+ */
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
     defaultItemType = 'table-row';
@@ -25,8 +28,6 @@ class TableComponent extends ItemGroupPooledComponent {
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
     _lastReflowData: any[] = [];
-    _groupRowMap: Map<string, { summaryRow: any; dataRows: any[] }> = new Map();
-    _summaryRow: TableSummaryRowComponent | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -115,157 +116,8 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._isAfterInit) this._reflow();
     }
 
-    _onSelectableOptionChange(value: TableSelectMode): void {
-        if (value === 'none') {
-            this.clearSelection();
-            this._syncRowSelectedStates();
-            this._updateHeaderSelectAllState();
-        } else {
-            this.initSelection({ mode: value === 'multiple' ? 'multiple' : 'single' });
-            this._syncRowSelectedStates();
-            this._updateHeaderSelectAllState();
-        }
-        if (this._header && this._header.getData('selectable') !== value) {
-            this._header.selectable = value;
-        }
-    }
-
     _onSelectDisabledOptionChange(): void {
         if (this._isAfterInit) this._reflow();
-    }
-
-    _onStripeOptionChange(_value: boolean): void {
-        this._applyRowBgVars();
-    }
-
-    _onRowBgOptionChange(_value: any): void {
-        this._applyRowBgVars();
-    }
-
-    _onStripeBgOptionChange(_value: any): void {
-        this._applyRowBgVars();
-    }
-
-    _applyRowBgVars(): void {
-        if (!this.el) return;
-        const rowBg = this.getData('rowBg');
-        const stripeBg = this.getData('stripeBg');
-        const stripe = this.getData('stripe') ?? true;
-        if (rowBg) {
-            this.el.style.setProperty('--q-table-odd-bg', rowBg);
-        } else {
-            this.el.style.removeProperty('--q-table-odd-bg');
-        }
-        if (!stripe) {
-            this.el.style.setProperty('--q-table-even-bg', rowBg || 'var(--q-color-bg, #fff)');
-        } else if (stripeBg) {
-            this.el.style.setProperty('--q-table-even-bg', stripeBg);
-        } else {
-            this.el.style.removeProperty('--q-table-even-bg');
-        }
-    }
-
-    /**
-     * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
-     * selectionChanged 事件由 domEvents emits 配置自动转发
-     * 有选择列的行禁用默认行选择，只有点击选择列单元格才触发选中
-     */
-    _onRowClick(domEvt: any): void {
-        if (this.getData('selectable') === 'none') return;
-        const item = domEvt?.targetComponent;
-        if (!item) return;
-        const data = item.getData?.('data');
-        if (!data || data._selectDisabled || !data._rowKey) return;
-        if (this._rowHasSelectionCell(item) && !this._isSelectionCellClick(item, domEvt)) return;
-        this.toggleSelect(data._rowKey, data);
-        this._syncRowSelectedStates();
-        this._updateHeaderSelectAllState();
-    }
-
-    _rowHasSelectionCell(row: any): boolean {
-        const metas = row?.getData?.('columnMetas') || [];
-        return metas.some((m: ColumnMeta) => m.selection);
-    }
-
-    _isSelectionCellClick(row: any, domEvt: any): boolean {
-        const clickTarget = domEvt?.data?.originalEvent?.target as HTMLElement | undefined;
-        if (!clickTarget) return false;
-        const metas = row?.getData?.('columnMetas') || [];
-        for (const meta of metas) {
-            if (!meta.selection) continue;
-            const cell = row?._cells?.get(meta.name);
-            if (cell?.el?.contains(clickTarget)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * 收集全部可选行（multiple 模式全选用）
-     */
-    _collectSelectableEntries(): Array<{ key: string; data: any }> {
-        const entries: Array<{ key: string; data: any }> = [];
-        const items = this.items;
-        if (!Array.isArray(items)) return entries;
-        for (const item of items) {
-            const data = item?.getData?.('data');
-            if (!data?._rowKey || data?._selectDisabled) continue;
-            entries.push({ key: data._rowKey, data });
-        }
-        return entries;
-    }
-
-    /**
-     * 全选/清空切换 — multiple 模式
-     */
-    toggleAllSelection(): void {
-        const entries = this._collectSelectableEntries();
-        if (entries.length === 0) return;
-        if (this.getSelectionCount() >= entries.length) {
-            this.clearSelection();
-        } else {
-            this.selectAll(entries);
-        }
-        this._syncRowSelectedStates();
-        this._updateHeaderSelectAllState();
-        this.emit('selectionChanged', this.defaultEventData);
-    }
-
-    _syncRowSelectedStates(): void {
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            const data = item.getData?.('data');
-            if (!data?._rowKey) continue;
-            const selected = this.isSelected(data._rowKey);
-            Promise.resolve(item.ready).then(() => {
-                if (typeof item.dispose === 'function' && item.isDisposed?.()) return;
-                item.setData('selected', selected);
-            });
-        }
-    }
-
-    _updateHeaderSelectAllState(): void {
-        if (!this._header || typeof (this._header as any).setSelectAllState !== 'function') return;
-        const selectable = this.getData('selectable');
-        if (selectable !== 'multiple') return;
-        const entries = this._collectSelectableEntries();
-        const selectedCount = entries.filter(e => this.isSelected(e.key)).length;
-        (this._header as any).setSelectAllState(
-            entries.length > 0 && selectedCount === entries.length,
-            selectedCount > 0 && selectedCount < entries.length
-        );
-    }
-
-    _onColumnResize(data: any): void {
-        const colName = data?.colName ?? data?.actionData?.colName;
-        const width = data?.actionData?.width ?? data?.width;
-        if (!colName || width === undefined) return;
-        this.el!.style.setProperty(`--q-table-col-${colName}-width`, `${width}px`);
-        if (this._columnMetaManager) {
-            const meta = this._columnMetaManager.get(colName);
-            if (meta) meta.width = `${width}px`;
-            this._applyFixedColumnOffsets(this._columnMetaManager.getAll());
-        }
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
@@ -346,43 +198,6 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     /**
-     * 取消已被禁选的行的选中状态（selectDisabled 函数可能在 reflow 后对已选行返回 true）
-     */
-    _deselectDisabledRows(): void {
-        if (this.getData('selectable') === 'none') return;
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        let changed = false;
-        for (const item of items) {
-            const data = item?.getData?.('data');
-            if (!data?._rowKey || !data?._selectDisabled) continue;
-            if (this.isSelected(data._rowKey)) {
-                this.deselect(data._rowKey);
-                changed = true;
-            }
-        }
-        if (changed) this._updateHeaderSelectAllState();
-    }
-
-    _applyZebraStripes(): void {
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        const isVirtual = this.getData('virtualScroll');
-        let stripeIndex = 0;
-        for (const item of items) {
-            if (!isVirtual) {
-                const isGroupSummary = item?.type === GROUP_SUMMARY_ROW_TYPE;
-                if (isGroupSummary || item?.hidden) continue;
-            }
-            item.removeCls?.('q-table-row--odd');
-            item.removeCls?.('q-table-row--even');
-            const idx = isVirtual ? (item._virtualIndex ?? 0) : stripeIndex;
-            item.addCls?.(idx % 2 === 0 ? 'q-table-row--odd' : 'q-table-row--even');
-            if (!isVirtual) stripeIndex++;
-        }
-    }
-
-    /**
      * 构建 item 数组：分组数据展开为「组行 + 组内行」扁平数组，通过 order 排序。
      * 每行生成 _rowKey（data.id 优先，fallback 全局计数），用于选择状态管理。
      * selectDisabled 函数对每行求值，结果写入 _selectDisabled 标记。
@@ -446,284 +261,6 @@ class TableComponent extends ItemGroupPooledComponent {
         });
     }
 
-    /** 判断是否为分组数据（[{ groupKey, groupItems }]） */
-    _isGroupedData(data: any[]): boolean {
-        return (
-            Array.isArray(data) &&
-            data.length > 0 &&
-            data[0] !== null &&
-            typeof data[0] === 'object' &&
-            'groupKey' in data[0] &&
-            Array.isArray(data[0].groupItems)
-        );
-    }
-
-    /** 按 groupAggregator 计算分组汇总行数据 */
-    _buildGroupSummary(group: any, metas: ColumnMeta[]): Record<string, any> {
-        const summary: Record<string, any> = {};
-        for (const meta of metas) {
-            if (!meta.groupAggregator) continue;
-            if (meta.groupAggregator === 'label') {
-                summary[meta.name] = group.groupKey;
-            } else {
-                summary[meta.name] = this._aggregate(meta, group.groupItems ?? []);
-            }
-        }
-        return summary;
-    }
-
-    _aggregate(meta: ColumnMeta, items: any[]): any {
-        const values = items.map(row => this._getFieldValue(row, meta.field));
-        switch (meta.groupAggregator) {
-            case 'sum':
-                return values.reduce((acc, v) => acc + (Number(v) || 0), 0);
-            case 'count':
-                return items.length;
-            case 'avg':
-                return values.length
-                    ? values.reduce((acc, v) => acc + (Number(v) || 0), 0) / values.length
-                    : '';
-            case 'min':
-                return values.length ? Math.min(...values.map(v => Number(v))) : '';
-            case 'max':
-                return values.length ? Math.max(...values.map(v => Number(v))) : '';
-            default:
-                return '';
-        }
-    }
-
-    _getFieldValue(obj: any, path: string): any {
-        if (!obj || !path) return undefined;
-        const keys = path.split('.');
-        let val = obj;
-        for (const key of keys) {
-            val = val?.[key];
-            if (val === undefined) break;
-        }
-        return val;
-    }
-
-    _buildGroupRowMap(itemsData: Record<string, any>[]): void {
-        this._groupRowMap = new Map();
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (let i = 0; i < items.length; i++) {
-            const groupKey = itemsData[i]?._groupKey;
-            if (groupKey === undefined) continue;
-            let entry = this._groupRowMap.get(groupKey);
-            if (!entry) {
-                entry = { summaryRow: null, dataRows: [] };
-                this._groupRowMap.set(groupKey, entry);
-            }
-            if (itemsData[i]?.type === GROUP_SUMMARY_ROW_TYPE) {
-                entry.summaryRow = items[i];
-            } else {
-                entry.dataRows.push(items[i]);
-            }
-        }
-    }
-
-    onGroupToggle(data: { groupKey: string; collapsed: boolean }): void {
-        const entry = this._groupRowMap?.get(data.groupKey);
-        if (!entry) return;
-        for (const row of entry.dataRows) {
-            row.hidden = data.collapsed;
-        }
-        this._applyZebraStripes();
-    }
-
-    _updateSummaryRow(): void {
-        const metas = this._columnMetaManager?.getAll() ?? [];
-        const hasSummary = metas.some(m => m.summary);
-
-        if (!hasSummary) {
-            if (this._summaryRow) {
-                this._summaryRow.dispose();
-                this._summaryRow = null;
-            }
-            return;
-        }
-
-        const summaryData = this._computeSummaryData(metas);
-
-        if (!this._summaryRow) {
-            const summaryArea = this.getNodeEl('summaryArea');
-            if (!summaryArea) return;
-            this._summaryRow = new TableSummaryRowComponent({ columnMetas: metas });
-            summaryArea.appendChild(this._summaryRow.el);
-        }
-
-        this._summaryRow.update(summaryData);
-    }
-
-    _computeSummaryData(metas: ColumnMeta[]): Record<string, any> {
-        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
-        const flatData = this._isGroupedData(data)
-            ? data.flatMap((g: any) => g.groupItems ?? [])
-            : data;
-        const summary: Record<string, any> = {};
-
-        for (const meta of metas) {
-            if (!meta.summary) continue;
-            if (meta.summary.label !== undefined) {
-                summary[meta.name] = meta.summary.label;
-            } else if (meta.summary.aggregator) {
-                summary[meta.name] = this._aggregateByType(meta, flatData, meta.summary.aggregator);
-            }
-        }
-
-        return summary;
-    }
-
-    _aggregateByType(meta: ColumnMeta, items: any[], aggregator: AggregatorType): any {
-        const values = items.map(row => this._getFieldValue(row, meta.field));
-        switch (aggregator) {
-            case 'sum':
-                return values.reduce((acc, v) => acc + (Number(v) || 0), 0);
-            case 'count':
-                return items.length;
-            case 'avg':
-                return values.length
-                    ? values.reduce((acc, v) => acc + (Number(v) || 0), 0) / values.length
-                    : '';
-            case 'min':
-                return values.length ? Math.min(...values.map(v => Number(v))) : '';
-            case 'max':
-                return values.length ? Math.max(...values.map(v => Number(v))) : '';
-            default:
-                return '';
-        }
-    }
-    _prepareColumnsForHeader(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[] {
-        return columns.map(col => {
-            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
-                const group = col as ColumnGroupDef;
-                return { ...group, children: this._prepareColumnsForHeader(group.children) };
-            }
-            const leaf = col as ColumnDef;
-            if (leaf.cellType === 'rownumber') {
-                return { ...leaf, name: '_rownum', title: leaf.title ?? '#' };
-            }
-            return leaf;
-        });
-    }
-
-    _applyColumnStyles(): void {
-        if (!this._columnMetaManager) return;
-        const metas = this._columnMetaManager.getAll();
-        if (!this.getColumnOrderCount()) {
-            this.initColumnOrder({ useCssVar: true, cssVarPrefix: '--q-table-col-' });
-        }
-        const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
-        const totalRows = this._isGroupedData(data)
-            ? data.reduce((sum: number, g: any) => sum + (g.groupItems?.length ?? 0), 0)
-            : data.length;
-        for (let i = 0; i < metas.length; i++) {
-            const meta = metas[i];
-            let width = meta.width;
-            if (meta.cellType === 'rownumber') {
-                width = this._computeRowNumberWidth(totalRows, meta.width);
-            }
-            if (width) {
-                this.el!.style.setProperty(`--q-table-col-${meta.name}-width`, width);
-            }
-            this.registerColumnEntry(meta.name, null, i, { isLeaf: true });
-        }
-        this._applyFixedColumnOffsets(metas);
-        this._setGroupColumnOrderVars();
-        this._applyRowBgVars();
-    }
-
-    _applyFixedColumnOffsets(metas: ColumnMeta[]): void {
-        let leftOffset = 0;
-        let rightOffset = 0;
-        const leftFixed: ColumnMeta[] = [];
-        const rightFixed: ColumnMeta[] = [];
-        for (const meta of metas) {
-            if (meta.fixed === 'left') leftFixed.push(meta);
-            else if (meta.fixed === 'right') rightFixed.push(meta);
-        }
-        for (const meta of leftFixed) {
-            this.el!.style.setProperty(`--q-table-col-${meta.name}-fixed-offset`, `${leftOffset}px`);
-            const w = this._resolveFixedWidth(meta);
-            if (w) leftOffset += w;
-        }
-        for (let i = rightFixed.length - 1; i >= 0; i--) {
-            const meta = rightFixed[i];
-            this.el!.style.setProperty(`--q-table-col-${meta.name}-fixed-offset`, `${rightOffset}px`);
-            const w = this._resolveFixedWidth(meta);
-            if (w) rightOffset += w;
-        }
-    }
-
-    _resolveFixedWidth(meta: ColumnMeta): number {
-        if (meta.cellType === 'rownumber') {
-            const data = this.hasEntity() ? this.getEntityItems() : (this.getData('data') ?? []);
-            const totalRows = this._isGroupedData(data)
-                ? data.reduce((sum: number, g: any) => sum + (g.groupItems?.length ?? 0), 0)
-                : data.length;
-            const w = this._computeRowNumberWidth(totalRows, meta.width);
-            return parseInt(w, 10) || 0;
-        }
-        if (meta.width && meta.width !== 'auto') {
-            return parseInt(meta.width, 10) || 0;
-        }
-        return 0;
-    }
-
-    _computeRowNumberWidth(totalRows: number, userWidth?: string): string {
-        if (userWidth && userWidth !== 'auto') return userWidth;
-        const digits = Math.max(1, String(totalRows).length);
-        return `${32 + digits * 8}px`;
-    }
-
-    _setGroupColumnOrderVars(): void {
-        const columns = this.getData('columns') || [];
-        const step = this.step ?? 100;
-        this._traverseGroupOrders(columns, 0, step);
-    }
-
-    _traverseGroupOrders(
-        columns: ColumnDefOrGroup[],
-        startLeafIndex: number,
-        step: number
-    ): number {
-        let leafIndex = startLeafIndex;
-        for (const col of columns) {
-            if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
-                const group = col as ColumnGroupDef;
-                const childStartLeafIndex = leafIndex;
-                leafIndex = this._traverseGroupOrders(group.children, leafIndex, step);
-                const minOrder = (childStartLeafIndex + 1) * step;
-                const groupOrder = minOrder - Math.floor(step / 2);
-                this.el!.style.setProperty(`--q-table-col-${group.name}-order`, String(groupOrder));
-            } else {
-                leafIndex++;
-            }
-        }
-        return leafIndex;
-    }
-
-    _updateItemsColumnMetas(): void {
-        const metas = this._columnMetaManager!.getAll();
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            if (typeof item.update === 'function') {
-                item.update({ columnMetas: metas });
-            }
-        }
-    }
-
-    _isReorderOnly(oldMetas: ColumnMeta[], newMetas: ColumnMeta[]): boolean {
-        if (oldMetas.length !== newMetas.length) return false;
-        const oldNames = new Set(oldMetas.map(m => m.name));
-        for (const m of newMetas) {
-            if (!oldNames.has(m.name)) return false;
-        }
-        return true;
-    }
-
     _disposeAllItems(): void {
         const items = this.items;
         if (Array.isArray(items)) {
@@ -737,87 +274,6 @@ class TableComponent extends ItemGroupPooledComponent {
                 if (typeof item.dispose === 'function') item.dispose();
             }
             this._hiddenItems.length = 0;
-        }
-    }
-
-    hideColumn(name: string): void {
-        this.componentEmit('hideColumn', { colName: name });
-    }
-
-    showColumn(name: string): void {
-        this.componentEmit('showColumn', { colName: name });
-    }
-
-    _onHideColumn(data: any): void {
-        const colName = data?.colName;
-        if (!colName) return;
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            if (typeof item.hideColumn === 'function') item.hideColumn(colName);
-        }
-    }
-
-    _onShowColumn(data: any): void {
-        const colName = data?.colName;
-        if (!colName) return;
-        const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            if (typeof item.showColumn === 'function') item.showColumn(colName);
-        }
-    }
-
-    moveColumn(from: number, to: number): void {
-        if (this._header && typeof this._header.moveColumn === 'function') {
-            this._header.moveColumn(from, to);
-        }
-    }
-
-    _onVirtualDataMissing(start: number, end: number): void {
-        if (this._virtualEntityMode) {
-            const clampedEnd = Math.min(end, this._entityTotal);
-            if (start >= clampedEnd) return;
-            if (!this._pendingRanges) this._pendingRanges = new Set();
-            const key = `${start}-${clampedEnd}`;
-            if (this._pendingRanges.has(key)) return;
-            this._pendingRanges.add(key);
-            this.entityLoadRange(start, clampedEnd);
-        }
-    }
-
-    onEntityRangeLoaded(data: RangeLoadedData): void {
-        if (!this._virtualEntityMode) return;
-        this._entityTotal = data.total;
-        if (this._pendingRanges) {
-            this._pendingRanges.delete(`${data.start}-${data.end}`);
-        }
-        const metas = this._columnMetaManager?.getAll() ?? [];
-        const selectDisabledFn = this.getData('selectDisabled');
-        const computeDisabled = (rowData: any): boolean => {
-            if (rowData?._selectDisabled) return true;
-            if (typeof selectDisabledFn === 'function') {
-                try { return !!selectDisabledFn(rowData); } catch { return false; }
-            }
-            return false;
-        };
-
-        for (let i = 0; i < data.items.length; i++) {
-            const rowData = data.items[i];
-            if (rowData == null) continue;
-            const idx = data.start + i;
-            if (idx >= this._virtualData.length) continue;
-            this._virtualData[idx] = {
-                data: { ...rowData, _rowKey: String(rowData?.id ?? `row-${idx}`), _rowNumber: idx + 1, _selectDisabled: computeDisabled(rowData) },
-                columnMetas: metas,
-            };
-        }
-
-        if (this._scrollUnbind) {
-            requestAnimationFrame(() => {
-                this._renderVirtualItems();
-                this._applyZebraStripes();
-            });
         }
     }
 
@@ -855,7 +311,7 @@ const TableComponentDefs: Definitions = {
     },
 } as const;
 
-TableComponent.use([ColumnOrderAbility, SelectionAbility]);
+TableComponent.use([ColumnOrderAbility, SelectionAbility, ...TABLE_ABILITIES]);
 TableComponent.define(TableComponentDefs);
 TableComponent.register();
 
