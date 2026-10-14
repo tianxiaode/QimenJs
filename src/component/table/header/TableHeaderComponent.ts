@@ -42,13 +42,12 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             source: 'self',
             events: {
                 sort: { handler: '_onSort', entities: '[action]' },
-                groupBy: { handler: '_onGroupBy', entities: '[action]' },
+                groupBy: { handler: '_onGroupBy' },
                 hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
                 showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
                 reorderStart: { handler: '_onReorderStart' },
                 reorderMove: { handler: '_onReorderMove' },
                 reorderEnd: { handler: '_onReorderEnd' },
-                toggleAll: { emits: ['toggleAll'] },
             },
         },
     ];
@@ -147,7 +146,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             newColumns.splice(insertIdx, 0, moved);
             this.setData('columns', newColumns, true);
             this.reorderColumn(fromName, toName, isLeft);
-            this.emit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
+            this.componentEmit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
             return;
         }
 
@@ -168,7 +167,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 newColumns[i] = { ...group, children: newChildren };
                 this.setData('columns', newColumns, true);
                 this.reorderColumn(fromName, toName, isLeft);
-                this.emit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
+                this.componentEmit('reorder', { columns: newColumns, from: fromName, to: toName, isLeft });
                 return;
             }
         }
@@ -659,7 +658,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const newGroupField = currentGroupField === colName ? '' : colName;
         this.setData('groupField', newGroupField);
         this._updateCellGroupField(newGroupField);
-        this.emit('groupBy', { groupField: newGroupField });
     }
 
     _onHideColumn(data: any): void {

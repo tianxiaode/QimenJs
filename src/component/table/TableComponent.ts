@@ -57,6 +57,9 @@ class TableComponent extends ItemGroupPooledComponent {
             events: {
                 resize: '_onColumnResize',
                 sort: '_onSort',
+                groupBy: '_onGroupBy',
+                toggleAll: '_onToggleAll',
+                reorder: '_onReorder',
                 groupToggle: 'onGroupToggle',
                 hideColumn: '_onHideColumn',
                 showColumn: '_onShowColumn',
@@ -98,20 +101,6 @@ class TableComponent extends ItemGroupPooledComponent {
                 entityKey: this.entityKey,
                 groupField: this.getData('groupField') ?? '',
                 selectable: this.getData('selectable') ?? 'none',
-            });
-            this._header.on('reorder', (ctx: any) => {
-                this.setData('columns', ctx.data.columns);
-                const metas = this._columnMetaManager?.getAll() ?? [];
-                if (metas.length > 0) {
-                    this.rebuildColumnOrders(metas.map(m => m.name));
-                    this._setGroupColumnOrderVars();
-                }
-            });
-            this._header.on('toggleAll', () => {
-                this.toggleAllSelection();
-            });
-            this._header.on('groupBy', (data: any) => {
-                this._onGroupBy(data);
             });
             headerArea.appendChild(this._header.el);
         }
@@ -296,8 +285,26 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._isAfterInit) this._reflow();
     }
 
+    _onToggleAll(data: any): void {
+        this.toggleAllSelection();
+    }
+
+    _onReorder(data: any): void {
+        const reorderData = data?.data ?? data;
+        this.setData('columns', reorderData.columns);
+        const metas = this._columnMetaManager?.getAll() ?? [];
+        if (metas.length > 0) {
+            this.rebuildColumnOrders(metas.map(m => m.name));
+            this._setGroupColumnOrderVars();
+        }
+    }
+
     _onGroupBy(data: any): void {
-        const groupField = data?.groupField ?? '';
+        const actionData = data?.actionData ?? data;
+        const colName = actionData?.colName ?? data?.colName;
+        if (!colName) return;
+        const currentGroupField = this.getData('groupField') ?? '';
+        const groupField = currentGroupField === colName ? '' : colName;
         this.setData('groupField', groupField);
         if (this.hasEntity() && !this.getData('virtualScroll')) {
             this.entityEmit(

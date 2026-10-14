@@ -84,6 +84,8 @@ export interface TableAbilityHost {
     _buildGroupRowMap(itemsData: Record<string, any>[]): void;
     onGroupToggle(data: { groupKey: string; collapsed: boolean }): void;
     _onGroupBy(data: any): void;
+    _onToggleAll(data: any): void;
+    _onReorder(data: any): void;
 
     _updateSummaryRow(): void;
     _computeSummaryData(metas: ColumnMeta[]): Record<string, any>;
