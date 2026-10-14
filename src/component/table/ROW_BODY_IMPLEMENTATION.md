@@ -98,11 +98,11 @@ Table option: `rowBody: RowBodyConfig | null`
 
 ### P3: property-grid + loader 异步加载
 
-- [ ] `_renderRowBody` 实现 `type: 'property-grid'`
-  - 创建 PropertyGridComponent 实例
+- [x] `_renderRowBody` 实现 `type: 'property-grid'`
+  - 创建 PropertyGridComponent 实例（通过 ComponentRegistrar）
   - 传入 fields + cols + data（行数据合并 loader 返回的详细数据）
   - 需注册 PropertyGridComponent（showcase register.ts）
-- [ ] **loader 异步加载**
+- [x] **loader 异步加载**
   - 展开时显示 loadingText
   - 调用 `loader(rowId, rowData)` 获取详细数据
   - 合并 `{ ...rowData, ...detailData }` 传给内容组件

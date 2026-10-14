@@ -900,3 +900,57 @@ export interface ColumnCompileResult {
     /** 表头最大深度 — 用于计算叶子行跨行高度 */
     headerDepth: number;
 }
+
+// ══════════════════════════════════════════════════════════════
+// Row Body 配置
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Row Body 内容类型 — 决定展开行 body 区域的渲染方式
+ *
+ * | type           | 配置字段                         | 说明                     |
+ * |----------------|----------------------------------|--------------------------|
+ * | property-grid  | fields, cols                    | PropertyGrid 展示行数据  |
+ * | table          | dataField, tableOptions         | 主从嵌套子表格           |
+ * | template       | template                        | 自定义 TemplateDecl      |
+ * | component      | component                       | 自定义组件类             |
+ * | html           | html                            | HTML 字符串或函数        |
+ */
+export type RowBodyType = 'property-grid' | 'table' | 'template' | 'component' | 'html';
+
+/**
+ * Row Body 配置 — TableComponent 的 rowBody option
+ *
+ * 配置后自动在第一列插入展开/折叠切换列（虚拟滚动模式下禁用）。
+ * loader 提供时，展开时异步加载详细数据并缓存，折叠再展开不重新加载。
+ *
+ * @example
+ * ```ts
+ * // property-grid + loader
+ * rowBody: {
+ *     type: 'property-grid',
+ *     fields: [{ key: 'name' }, { key: 'email' }],
+ *     cols: 2,
+ *     loader: async (rowId, rowData) => fetchDetail(rowId),
+ *     loadingText: '加载中...',
+ * }
+ *
+ * // html
+ * rowBody: {
+ *     type: 'html',
+ *     html: (data) => `<div>${data.description}</div>`,
+ * }
+ * ```
+ */
+export interface RowBodyConfig {
+    type: RowBodyType;
+    fields?: any[];
+    cols?: number;
+    dataField?: string;
+    tableOptions?: Record<string, any>;
+    template?: TplDecl;
+    component?: any;
+    html?: string | ((data: any) => string);
+    loader?: (rowId: string, rowData: any) => Promise<any>;
+    loadingText?: string;
+}

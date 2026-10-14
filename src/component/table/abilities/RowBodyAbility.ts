@@ -1,6 +1,6 @@
 import type { AbilityDefinition } from '@/composable';
 import type { TableAbilityHost } from './types';
-import type { ColumnDefOrGroup, TemplateDecl } from '../column-types';
+import type { ColumnDefOrGroup, TemplateDecl, RowBodyConfig } from '../column-types';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 
 function isTemplateDecl(value: any): value is TemplateDecl {
@@ -42,10 +42,7 @@ export const RowBodyAbility = {
         const rowBody = this.getData('rowBody');
         if (!rowBody) return;
 
-        const content = this._renderRowBody(row, rowData);
-        if (content) {
-            row.setBodyContent(content);
-        }
+        this._renderRowBodyWithLoader(row, rowData, rowKey);
 
         this.emit('rowExpand', data);
     },
@@ -57,8 +54,42 @@ export const RowBodyAbility = {
         this.emit('rowCollapse', data);
     },
 
+    _renderRowBodyWithLoader(this: TableAbilityHost, row: any, rowData: any, rowKey: string): void {
+        const rowBody: RowBodyConfig = this.getData('rowBody');
+        if (!rowBody || !row?.bodyEl) return;
+
+        const bodyEl = row.bodyEl;
+
+        if (rowBody.loader && !this._bodyCache.has(rowKey)) {
+            const loadingText = rowBody.loadingText ?? 'Loading...';
+            bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
+
+            rowBody.loader(rowKey, rowData).then((detailData: any) => {
+                this._bodyCache.set(rowKey, detailData);
+                const mergedData = { ...rowData, ...detailData };
+                const content = this._renderRowBody(row, mergedData);
+                if (content) {
+                    row.setBodyContent(content);
+                }
+            }).catch(() => {
+                bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+            });
+            return;
+        }
+
+        let mergedData = rowData;
+        if (rowBody.loader && this._bodyCache.has(rowKey)) {
+            mergedData = { ...rowData, ...this._bodyCache.get(rowKey) };
+        }
+
+        const content = this._renderRowBody(row, mergedData);
+        if (content) {
+            row.setBodyContent(content);
+        }
+    },
+
     _renderRowBody(this: TableAbilityHost, row: any, rowData: any): any {
-        const rowBody = this.getData('rowBody');
+        const rowBody: RowBodyConfig = this.getData('rowBody');
         if (!rowBody || !row?.bodyEl) return null;
 
         const bodyEl = row.bodyEl;
@@ -80,6 +111,17 @@ export const RowBodyAbility = {
                 const BaseCtor = ComponentRegistrar.getInstance().get('component') as any;
                 const SlotCls = BaseCtor.extend({ type: 'row-body-slot', tpl });
                 const inst = new SlotCls({ container: bodyEl });
+                return inst;
+            }
+
+            case 'property-grid': {
+                const PropertyGridCtor = ComponentRegistrar.getInstance().get('PropertyGrid') as any;
+                if (!PropertyGridCtor) return null;
+                const inst = new PropertyGridCtor({
+                    fields: rowBody.fields,
+                    data: rowData,
+                    cols: rowBody.cols ?? 2,
+                });
                 return inst;
             }
 
