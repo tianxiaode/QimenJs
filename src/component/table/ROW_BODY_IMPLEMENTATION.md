@@ -111,12 +111,12 @@ Table option: `rowBody: RowBodyConfig | null`
 
 ### P4: table 嵌套子表格 + component 自定义组件
 
-- [ ] `_renderRowBody` 实现 `type: 'table'`
+- [x] `_renderRowBody` 实现 `type: 'table'`
   - 从行数据 `data[dataField]` 获取子表格数据
   - 创建 TableComponent 实例，传入 `tableOptions` + `data`
   - 支持递归 rowBody（子表格也可配置 rowBody）
   - loader 加载子表格数据时合并到 `data[dataField]`
-- [ ] `_renderRowBody` 实现 `type: 'component'`
+- [x] `_renderRowBody` 实现 `type: 'component'`
   - `new component({ container: bodyEl })`
   - 构造后调用 `update({ data: rowData })` 传入行数据
 - [ ] **测试** — 嵌套表格 + 自定义组件验证

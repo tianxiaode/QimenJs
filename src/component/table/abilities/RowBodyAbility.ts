@@ -125,6 +125,28 @@ export const RowBodyAbility = {
                 return inst;
             }
 
+            case 'table': {
+                const TableCtor = ComponentRegistrar.getInstance().get('table') as any;
+                if (!TableCtor) return null;
+                const subData = rowBody.dataField ? rowData[rowBody.dataField] : rowData;
+                const options: Record<string, any> = {
+                    data: Array.isArray(subData) ? subData : [],
+                    ...(rowBody.tableOptions ?? {}),
+                };
+                const inst = new TableCtor(options);
+                return inst;
+            }
+
+            case 'component': {
+                const ComponentCtor = rowBody.component;
+                if (typeof ComponentCtor !== 'function') return null;
+                const inst = new ComponentCtor({ container: bodyEl });
+                if (typeof inst.update === 'function') {
+                    inst.update({ data: rowData });
+                }
+                return inst;
+            }
+
             default:
                 return null;
         }
