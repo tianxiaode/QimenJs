@@ -7,6 +7,7 @@ import { CheckboxCellComponent } from '../cells/CheckboxCellComponent';
 import { RadioCellComponent } from '../cells/RadioCellComponent';
 import { ActionCellComponent } from '../cells/ActionCellComponent';
 import { RowNumberCellComponent } from '../cells/RowNumberCellComponent';
+import { ExpandCellComponent } from '../cells/ExpandCellComponent';
 import { Definitions } from '@/composable';
 import './row.css';
 
@@ -17,12 +18,16 @@ const CELL_CLASS_MAP: Record<CellType, any> = {
     radio: RadioCellComponent,
     action: ActionCellComponent,
     rownumber: RowNumberCellComponent,
+    expand: ExpandCellComponent,
 };
 
 class RowComponent extends Component {
     static type = 'table-row';
 
     _cells: Map<string, any> = new Map();
+    _bodyEl: HTMLElement | null = null;
+    _bodyExpanded: boolean = false;
+    _bodyContent: any = null;
 
     listens: ListenItem[] = [
         {
@@ -30,6 +35,8 @@ class RowComponent extends Component {
             events: {
                 hideColumn: 'onHideColumn',
                 showColumn: 'onShowColumn',
+                expand: '_onExpandCellClick',
+                collapse: '_onExpandCellClick',
             },
         },
     ];
@@ -164,6 +171,8 @@ class RowComponent extends Component {
                 return { actions: value };
             case 'rownumber':
                 return { value: data._rowNumber ?? 0 };
+            case 'expand':
+                return { expanded: this._bodyExpanded };
             default:
                 return { value, format: meta.format };
         }
@@ -196,6 +205,86 @@ class RowComponent extends Component {
 
     onShowColumn(data: any): void {
         this.showColumn(data.colName);
+    }
+
+    _onExpandCellClick(data: any): void {
+        if (data?.expanded) {
+            this.expand();
+        } else {
+            this.collapse();
+        }
+    }
+
+    expand(): void {
+        if (this._bodyExpanded) return;
+        this._bodyExpanded = true;
+        this._syncExpandCellState();
+        this._createBodyEl();
+        this.componentEmit('rowExpand', {
+            rowKey: this.getData('data')?._rowKey,
+            rowData: this.getData('data'),
+            index: this.getData('data')?._rowNumber,
+        });
+    }
+
+    collapse(): void {
+        if (!this._bodyExpanded) return;
+        this._bodyExpanded = false;
+        this._syncExpandCellState();
+        this._destroyBodyEl();
+        this.componentEmit('rowCollapse', {
+            rowKey: this.getData('data')?._rowKey,
+            rowData: this.getData('data'),
+            index: this.getData('data')?._rowNumber,
+        });
+    }
+
+    _syncExpandCellState(): void {
+        const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+        for (const meta of columns) {
+            if (meta.cellType !== 'expand') continue;
+            const cell = this._cells.get(meta.name);
+            if (cell) {
+                Promise.resolve(cell.ready).then(() => {
+                    cell.update({ expanded: this._bodyExpanded });
+                });
+            }
+        }
+    }
+
+    _createBodyEl(): void {
+        if (this._bodyEl) return;
+        this._bodyEl = document.createElement('div');
+        this._bodyEl.className = 'q-table-row__body';
+        if (this.el?.parentNode) {
+            this.el.parentNode.insertBefore(this._bodyEl, this.el.nextSibling);
+        }
+    }
+
+    _destroyBodyEl(): void {
+        if (this._bodyContent?.dispose) {
+            this._bodyContent.dispose();
+        }
+        this._bodyContent = null;
+        if (this._bodyEl) {
+            this._bodyEl.remove();
+            this._bodyEl = null;
+        }
+    }
+
+    setBodyContent(content: any): void {
+        this._bodyContent = content;
+        if (this._bodyEl && content?.el) {
+            this._bodyEl.appendChild(content.el);
+        }
+    }
+
+    get bodyEl(): HTMLElement | null {
+        return this._bodyEl;
+    }
+
+    get isExpanded(): boolean {
+        return this._bodyExpanded;
     }
 
     setColumnOrder(_name: string, _order: number): void {}
@@ -237,6 +326,9 @@ const RowComponentDefs: Definitions = {
     },
     fields: {
         _cells: null,
+        _bodyEl: null,
+        _bodyExpanded: false,
+        _bodyContent: null,
     },
 } as const;
 

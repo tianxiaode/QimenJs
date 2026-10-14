@@ -32,7 +32,7 @@ function resolveWidth(w?: string | number): string | undefined {
 
 function resolveAlign(cellType: CellType, align?: ColumnAlign): ColumnAlign {
     if (align) return align;
-    if (cellType === 'checkbox' || cellType === 'action' || cellType === 'rownumber') return 'center';
+    if (cellType === 'checkbox' || cellType === 'action' || cellType === 'rownumber' || cellType === 'expand') return 'center';
     return 'left';
 }
 
@@ -129,12 +129,13 @@ export class ColumnMetaManager {
 
     private _compileLeafMeta(def: ColumnDef): ColumnMeta {
         const cellType: CellType = def.cellType || 'text';
-        const width = cellType === 'rownumber' && def.width === undefined ? 'auto' : resolveWidth(def.width);
         const isRowNumber = cellType === 'rownumber';
+        const isExpand = cellType === 'expand';
+        const width = isExpand ? '36px' : (cellType === 'rownumber' && def.width === undefined ? 'auto' : resolveWidth(def.width));
         return {
-            name: isRowNumber ? '_rownum' : def.name,
-            field: def.field || (isRowNumber ? '_rownum' : def.name),
-            title: isRowNumber ? (def.title ?? '#') : def.title,
+            name: isRowNumber ? '_rownum' : (isExpand ? '_expand' : def.name),
+            field: def.field || (isRowNumber ? '_rownum' : (isExpand ? '_expand' : def.name)),
+            title: isRowNumber ? (def.title ?? '#') : (isExpand ? '' : def.title),
             cellType,
             format: def.format,
             align: resolveAlign(cellType, def.align),
@@ -145,7 +146,7 @@ export class ColumnMetaManager {
             selection: def.selection ?? false,
             fixed: def.fixed,
             sortable: def.sortable ?? false,
-            resizable: def.resizable ?? (cellType !== 'checkbox' && cellType !== 'radio' && cellType !== 'rownumber'),
+            resizable: def.resizable ?? (cellType !== 'checkbox' && cellType !== 'radio' && cellType !== 'rownumber' && cellType !== 'expand'),
             draggable: def.draggable ?? false,
             editable: def.editable ?? false,
             editType: def.editType ?? 'text',

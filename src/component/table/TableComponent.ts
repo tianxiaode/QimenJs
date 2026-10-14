@@ -29,6 +29,7 @@ class TableComponent extends ItemGroupPooledComponent {
     _header: TableHeaderComponent | null = null;
     _lastReflowData: any[] = [];
     _sortState: { colName: string; direction: 'asc' | 'desc' } | null = null;
+    _bodyCache: Map<string, any> = new Map();
 
     get tpl(): TemplateDecl {
         return {
@@ -59,6 +60,8 @@ class TableComponent extends ItemGroupPooledComponent {
                 groupToggle: 'onGroupToggle',
                 hideColumn: '_onHideColumn',
                 showColumn: '_onShowColumn',
+                rowExpand: '_onRowExpand',
+                rowCollapse: '_onRowCollapse',
             },
         },
     ];
@@ -123,6 +126,11 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _onColumnsOptionChange(columns: ColumnDefOrGroup[]): void {
+        const adjusted = this._ensureExpandColumn(columns);
+        if (adjusted !== columns) {
+            this.setData('columns', adjusted, true);
+            columns = adjusted;
+        }
         if (!this._columnMetaManager) {
             this._columnMetaManager = new ColumnMetaManager();
         }
@@ -146,8 +154,14 @@ class TableComponent extends ItemGroupPooledComponent {
     }
 
     _reflow(): void {
-        const columns = this.getData('columns') || [];
+        let columns = this.getData('columns') || [];
         if (columns.length === 0) return;
+
+        columns = this._ensureExpandColumn(columns);
+        const currentColumns = this.getData('columns');
+        if (columns !== currentColumns) {
+            this.setData('columns', columns, true);
+        }
 
         if (!this._columnMetaManager) {
             this._columnMetaManager = new ColumnMetaManager();
@@ -326,6 +340,7 @@ class TableComponent extends ItemGroupPooledComponent {
         this._summaryRow = null;
         this._header?.dispose?.();
         this._header = null;
+        this._bodyCache.clear();
     }
 }
 
@@ -341,6 +356,7 @@ const TableComponentDefs: Definitions = {
         virtualScroll: false,
         itemHeight: 36,
         height: null,
+        rowBody: null,
     },
     fields: {
         _isAfterInit: false,
@@ -351,6 +367,7 @@ const TableComponentDefs: Definitions = {
         _entityTotal: 0,
         _virtualEntityMode: false,
         _pendingRanges: null,
+        _bodyCache: null,
     },
 } as const;
 

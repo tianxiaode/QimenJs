@@ -29,6 +29,7 @@ export interface TableAbilityHost {
     _hiddenItems: any[];
     _virtualData: any[];
     _scrollUnbind: (() => void) | null;
+    _bodyCache: Map<string, any>;
 
     getData(key: string): any;
     setData(key: string, value: any, raw?: boolean): void;
@@ -90,4 +91,9 @@ export interface TableAbilityHost {
 
     _onVirtualDataMissing(start: number, end: number): void;
     onEntityRangeLoaded(data: RangeLoadedData): void;
+
+    _ensureExpandColumn(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[];
+    _onRowExpand(data: any): void;
+    _onRowCollapse(data: any): void;
+    _renderRowBody(row: any, rowData: any): any;
 }

@@ -130,3 +130,33 @@
     background-color: var(--q-table-row-bg, var(--q-color-bg, #fff));
     box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.15);
 }
+
+.q-expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--q-color-text-secondary, #666);
+}
+
+.q-expand-icon::before {
+    content: '\25B6';
+}
+
+.q-expand-icon--expanded {
+    transform: rotate(90deg);
+}
+
+.q-table-row__body {
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
+    background: var(--q-color-bg-secondary, #f9f9f9);
+    padding: 8px 12px;
+    overflow: hidden;
+}

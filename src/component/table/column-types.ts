@@ -127,7 +127,7 @@ import type { TplDecl } from '../../component-core/types/tpl';
  * - action:   操作按钮组，使用 ButtonGroupComponent。
  * - rownumber: 行号，自动显示行序号（从1开始），列宽自动适配位数。
  */
-export type CellType = 'text' | 'tree' | 'checkbox' | 'radio' | 'action' | 'rownumber';
+export type CellType = 'text' | 'tree' | 'checkbox' | 'radio' | 'action' | 'rownumber' | 'expand';
 
 // ══════════════════════════════════════════════════════════════
 // 行选择模式
@@ -375,9 +375,22 @@ export interface RowNumberCellData {
 }
 
 /**
+ * ExpandCell update 数据
+ *
+ * @example
+ * ```ts
+ * cell.update({ expanded: false });
+ * ```
+ */
+export interface ExpandCellData {
+    /** 是否已展开 */
+    expanded: boolean;
+}
+
+/**
  * 单元格 update 数据 — 按 cellType 区分
  */
-export type CellData = TextCellData | TreeCellData | CheckboxCellData | RadioCellData | ActionCellData | RowNumberCellData;
+export type CellData = TextCellData | TreeCellData | CheckboxCellData | RadioCellData | ActionCellData | RowNumberCellData | ExpandCellData;
 
 // ══════════════════════════════════════════════════════════════
 // 自定义菜单项
