@@ -166,43 +166,51 @@
     --q-color-on-info-disabled: rgba(255, 255, 255, 0.6);
 
     /* ==========================================
-     3. 灰度/中性色（宣纸×墨色）
+     3. 灰度/中性色（宣纸×墨色）— HSL 基色 + calc 计算
      ========================================== */
 
-    /* -------- 背景色（宣纸系） -------- */
-    --q-color-bg: #f7f2e8;
-    --q-color-bg-secondary: #f0eadc;
-    --q-color-bg-tertiary: #e8e0d0;
-    --q-color-bg-elevated: #fcf8f0;
-    --q-color-bg-inverse: #1a1613;
+    /* -------- 背景色基色（宣纸系） -------- */
+    --q-color-bg-h: 40;
+    --q-color-bg-s: 48%;
+    --q-color-bg-l: 94%;
+
+    --q-color-bg: hsl(var(--q-color-bg-h), var(--q-color-bg-s), var(--q-color-bg-l));
+    --q-color-bg-stripe: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) - 2%));
+    --q-color-bg-secondary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 8%), calc(var(--q-color-bg-l) - 4%));
+    --q-color-bg-tertiary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 14%), calc(var(--q-color-bg-l) - 8%));
+    --q-color-bg-elevated: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) + 20%), calc(var(--q-color-bg-l) + 2%));
+    --q-color-bg-inverse: hsl(var(--q-color-text-h), var(--q-color-text-s), var(--q-color-text-l));
     --q-color-bg-overlay: rgba(247, 242, 232, 0.85);
-    --q-color-bg-hover: #e8e0d0;
-    --q-color-bg-disabled: #f0eadc;
-    --q-color-bg-subtle: #f0eadc;
+    --q-color-bg-hover: var(--q-color-bg-tertiary);
+    --q-color-bg-disabled: var(--q-color-bg-secondary);
+    --q-color-bg-subtle: var(--q-color-bg-secondary);
 
-    /* -------- 文本色（墨色系） -------- */
-    --q-color-text: #1a1613;
-    --q-color-text-secondary: #6b5f52;
-    --q-color-text-tertiary: #a09282;
-    --q-color-text-inverse: #f7f2e8;
-    --q-color-text-disabled: #c8bdb0;
-    --q-color-text-placeholder: #b5a692;
+    /* -------- 文本色基色（墨色系） -------- */
+    --q-color-text-h: 30;
+    --q-color-text-s: 16%;
+    --q-color-text-l: 9%;
 
-    /* -------- 边框色（青花线条） -------- */
-    --q-color-border: #c8bdb0;
-    --q-color-border-light: #e8e0d0;
-    --q-color-border-dark: #8a7a66;
-    --q-color-border-disabled: #ddd5c8;
-    /* 全局边框默认值 — 组件外框统一引用，主题改此一处全生效 */
+    --q-color-text: hsl(var(--q-color-text-h), var(--q-color-text-s), var(--q-color-text-l));
+    --q-color-text-secondary: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) - 3%), calc(var(--q-color-text-l) + 28%));
+    --q-color-text-tertiary: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) - 2%), calc(var(--q-color-text-l) + 48%));
+    --q-color-text-inverse: hsl(var(--q-color-bg-h), var(--q-color-bg-s), var(--q-color-bg-l));
+    --q-color-text-disabled: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) + 2%), calc(var(--q-color-text-l) + 65%));
+    --q-color-text-placeholder: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) + 3%), calc(var(--q-color-text-l) + 55%));
+
+    /* -------- 边框色（基于文本色计算） -------- */
+    --q-color-border: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) + 2%), calc(var(--q-color-text-l) + 65%));
+    --q-color-border-light: var(--q-color-bg-tertiary);
+    --q-color-border-dark: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) - 1%), calc(var(--q-color-text-l) + 38%));
+    --q-color-border-disabled: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) + 4%), calc(var(--q-color-text-l) + 71%));
     --q-border: 2px solid var(--q-color-border);
 
     /* -------- 分隔线 -------- */
-    --q-color-divider: #e8e0d0;
-    --q-color-divider-strong: #d9ccb8;
+    --q-color-divider: var(--q-color-bg-tertiary);
+    --q-color-divider-strong: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) + 14%), calc(var(--q-color-text-l) + 70%));
 
     /* -------- 骨架屏 -------- */
-    --q-color-skeleton: #e8e0d0;
-    --q-color-skeleton-shine: #f5efe0;
+    --q-color-skeleton: var(--q-color-bg-tertiary);
+    --q-color-skeleton-shine: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) + 3%), calc(var(--q-color-bg-l) - 2%));
 
     /* -------- 链接 -------- */
     --q-color-link: var(--q-color-primary);
