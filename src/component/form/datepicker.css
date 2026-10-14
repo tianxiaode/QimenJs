@@ -4,8 +4,8 @@
 }
 
 .q-datepicker--open .q-input__field {
-    border-color: var(--q-colors-primary, #0078d4);
-    box-shadow: 0 0 0 2px var(--q-colors-primary-ring, rgba(0, 120, 212, 0.2));
+    border-color: var(--q-color-primary, #0078d4);
+    box-shadow: 0 0 0 2px var(--q-color-primary-ring, rgba(0, 120, 212, 0.2));
 }
 
 /* 下拉浮层 */

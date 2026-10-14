@@ -54,7 +54,7 @@
 .q-step__circle {
     width: 28px;
     height: 28px;
-    border: 2px solid var(--q-colors-border, #dcdfe6);
+    border: 2px solid var(--q-color-border, #dcdfe6);
     border-radius: 0;
     display: flex;
     align-items: center;
@@ -75,7 +75,7 @@
 .q-step__tail {
     flex: 1;
     height: 2px;
-    background: var(--q-colors-border, #dcdfe6);
+    background: var(--q-color-border, #dcdfe6);
     margin: 0 4px;
     align-self: center;
 }
@@ -89,7 +89,7 @@
 }
 
 .q-step__tail--finish {
-    background: var(--q-colors-primary, #0078d4);
+    background: var(--q-color-primary, #0078d4);
 }
 
 /* 步骤内容 */
@@ -103,13 +103,13 @@
 
 .q-step__title {
     font-weight: 600;
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
     white-space: nowrap;
 }
 
 .q-step__description {
     font-size: 12px;
-    color: var(--q-colors-text-secondary, #666);
+    color: var(--q-color-text-secondary, #666);
     margin-top: 2px;
 }
 
@@ -117,38 +117,38 @@
 
 /* 等待 */
 .q-step__item--wait .q-step__circle {
-    border-color: var(--q-colors-border, #dcdfe6);
-    color: var(--q-colors-text-secondary, #666);
+    border-color: var(--q-color-border, #dcdfe6);
+    color: var(--q-color-text-secondary, #666);
 }
 .q-step__item--wait .q-step__title {
-    color: var(--q-colors-text-secondary, #666);
+    color: var(--q-color-text-secondary, #666);
 }
 
 /* 进行中 */
 .q-step__item--process .q-step__circle {
-    border-color: var(--q-colors-primary, #0078d4);
-    background: var(--q-colors-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+    background: var(--q-color-primary, #0078d4);
     color: #fff;
 }
 .q-step__item--process .q-step__title {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
     font-weight: 700;
 }
 
 /* 完成 */
 .q-step__item--finish .q-step__circle {
-    border-color: var(--q-colors-primary, #0078d4);
-    color: var(--q-colors-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
 }
 .q-step__item--finish .q-step__title {
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
 }
 
 /* 错误 */
 .q-step__item--error .q-step__circle {
-    border-color: var(--q-colors-error, #d13438);
-    color: var(--q-colors-error, #d13438);
+    border-color: var(--q-color-error, #d13438);
+    color: var(--q-color-error, #d13438);
 }
 .q-step__item--error .q-step__title {
-    color: var(--q-colors-error, #d13438);
+    color: var(--q-color-error, #d13438);
 }

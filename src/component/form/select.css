@@ -4,8 +4,8 @@
 }
 
 .q-select--open .q-input__field {
-    border-color: var(--q-colors-primary, #0078d4);
-    box-shadow: 0 0 0 2px var(--q-colors-primary-ring, rgba(0, 120, 212, 0.2));
+    border-color: var(--q-color-primary, #0078d4);
+    box-shadow: 0 0 0 2px var(--q-color-primary-ring, rgba(0, 120, 212, 0.2));
 }
 
 /* 下拉箭头 */
@@ -40,7 +40,7 @@
     padding: 8px 12px;
     font-size: 14px;
     line-height: 1.5;
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
     cursor: pointer;
     transition: background 0.1s;
     user-select: none;
@@ -51,17 +51,17 @@
 }
 
 .q-select__option--selected {
-    background: var(--q-colors-primary-light, rgba(0, 120, 212, 0.08));
-    color: var(--q-colors-primary, #0078d4);
+    background: var(--q-color-primary-light, rgba(0, 120, 212, 0.08));
+    color: var(--q-color-primary, #0078d4);
     font-weight: 600;
 }
 
 .q-select__option--selected:hover {
-    background: var(--q-colors-primary-light, rgba(0, 120, 212, 0.12));
+    background: var(--q-color-primary-light, rgba(0, 120, 212, 0.12));
 }
 
 .q-select__option--disabled {
-    color: var(--q-colors-text-disabled, #bfbfbf);
+    color: var(--q-color-text-disabled, #bfbfbf);
     cursor: not-allowed;
 }
 
@@ -73,7 +73,7 @@
 .q-select__empty {
     padding: 16px 12px;
     text-align: center;
-    color: var(--q-colors-text-placeholder, #bfbfbf);
+    color: var(--q-color-text-placeholder, #bfbfbf);
     font-size: 14px;
 }
 

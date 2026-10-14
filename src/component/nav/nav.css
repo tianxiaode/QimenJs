@@ -45,13 +45,13 @@
     padding: 10px 8px;
     cursor: var(--q-cursor-pointer);
     border-top: 1px solid var(--q-color-border, #e0e0e0);
-    color: var(--q-colors-text-secondary, #666);
+    color: var(--q-color-text-secondary, #666);
     transition: background var(--q-transition-fast), color var(--q-transition-fast);
     user-select: none;
 }
 
 .q-nav__collapse-toggle:hover {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
     background: var(--q-overlay-hover, rgba(0, 0, 0, 0.04));
 }
 
@@ -75,7 +75,7 @@
 
 .q-nav-overlay {
     background: var(--q-color-bg, #fff);
-    border: 2px solid var(--q-colors-border, #e0e0e0);
+    border: 2px solid var(--q-color-border, #e0e0e0);
     border-radius: 0;
     box-shadow: none;
     min-width: 160px;
@@ -93,7 +93,7 @@
     align-items: center;
     gap: var(--q-spacing-sm, 8px);
     padding: 8px 16px;
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
     cursor: pointer;
     white-space: nowrap;
     font-weight: 500;
@@ -101,7 +101,7 @@
 }
 
 .q-nav-overlay__item:hover {
-    color: var(--q-colors-primary, #0078d4);
+    color: var(--q-color-primary, #0078d4);
     background: rgba(0, 120, 212, 0.06);
 }
 
@@ -118,7 +118,7 @@
 .q-nav-tooltip {
     position: fixed;
     padding: 6px 12px;
-    background: var(--q-colors-text, #1a1a1a);
+    background: var(--q-color-text, #1a1a1a);
     color: var(--q-color-bg, #fff);
     font-size: var(--q-font-size-sm, 12px);
     font-weight: 600;

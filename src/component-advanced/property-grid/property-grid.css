@@ -21,7 +21,7 @@
 /* Label */
 .q-pgrid__label {
     font-weight: 600;
-    color: var(--q-colors-text-secondary, #666);
+    color: var(--q-color-text-secondary, #666);
     padding: 4px 0;
     box-sizing: border-box;
     word-break: break-word;
@@ -29,7 +29,7 @@
 
 /* Value */
 .q-pgrid__value {
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
     padding: 4px 0;
     box-sizing: border-box;
     word-break: break-word;
@@ -41,7 +41,7 @@
     appearance: none;
     width: 16px;
     height: 16px;
-    border: 2px solid var(--q-colors-border, #dcdfe6);
+    border: 2px solid var(--q-color-border, #dcdfe6);
     background: var(--q-color-bg, #fff);
     cursor: default;
     position: relative;
@@ -50,8 +50,8 @@
 }
 
 .q-pgrid__checkbox:checked {
-    background: var(--q-colors-primary, #0078d4);
-    border-color: var(--q-colors-primary, #0078d4);
+    background: var(--q-color-primary, #0078d4);
+    border-color: var(--q-color-primary, #0078d4);
 }
 
 .q-pgrid__checkbox:checked::after {
@@ -70,7 +70,7 @@
 .q-pgrid__chip {
     display: inline-block;
     padding: 2px 8px;
-    border: 1px solid var(--q-colors-border, #dcdfe6);
+    border: 1px solid var(--q-color-border, #dcdfe6);
     background: var(--q-color-bg-subtle, #f5f5f5);
     font-size: 12px;
     line-height: 1.4;
@@ -82,5 +82,5 @@
 .q-pgrid__value .q-pgrid {
     margin-top: 4px;
     padding-left: 12px;
-    border-left: 2px solid var(--q-colors-border, #dcdfe6);
+    border-left: 2px solid var(--q-color-border, #dcdfe6);
 }

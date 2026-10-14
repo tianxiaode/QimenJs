@@ -3,7 +3,7 @@
     flex-direction: column;
     gap: 0;
     box-sizing: border-box;
-    color: var(--q-colors-text, #1a1a1a);
+    color: var(--q-color-text, #1a1a1a);
 }
 
 .q-form__fields {

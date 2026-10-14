@@ -33,7 +33,7 @@
 }
 
 .q-accordion--horizontal .q-panel + .q-panel {
-    border-top: 2px solid var(--q-colors-border, #dcdfe6);
+    border-top: 2px solid var(--q-color-border, #dcdfe6);
     border-left: 0;
 }
 

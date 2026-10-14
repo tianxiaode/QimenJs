@@ -13,7 +13,7 @@
     height: 24px;
     font-size: 24px;
     line-height: 1;
-    color: var(--q-colors-border, #dcdfe6);
+    color: var(--q-color-border, #dcdfe6);
 }
 
 .q-rating__star::before {
@@ -30,11 +30,11 @@
 }
 
 .q-rating__star--full::before {
-    color: var(--q-colors-warning, #ca5010);
+    color: var(--q-color-warning, #ca5010);
 }
 
 .q-rating__star--empty::before {
-    color: var(--q-colors-border, #dcdfe6);
+    color: var(--q-color-border, #dcdfe6);
 }
 
 .q-rating__star--half {
@@ -42,7 +42,7 @@
 }
 
 .q-rating__star--half::before {
-    color: var(--q-colors-border, #dcdfe6);
+    color: var(--q-color-border, #dcdfe6);
 }
 
 .q-rating__star-left,
@@ -67,7 +67,7 @@
     display: block;
     width: 1em;
     height: 1em;
-    background: var(--q-colors-warning, #ca5010);
+    background: var(--q-color-warning, #ca5010);
     clip-path: polygon(
         50% 0%, 61% 35%, 98% 35%, 68% 57%,
         79% 91%, 50% 70%, 21% 91%, 32% 57%,
@@ -80,7 +80,7 @@
     display: block;
     width: 1em;
     height: 1em;
-    background: var(--q-colors-border, #dcdfe6);
+    background: var(--q-color-border, #dcdfe6);
     clip-path: polygon(
         50% 0%, 61% 35%, 98% 35%, 68% 57%,
         79% 91%, 50% 70%, 21% 91%, 32% 57%,

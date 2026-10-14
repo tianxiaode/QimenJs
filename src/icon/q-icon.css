@@ -84,7 +84,7 @@
    ======================================== */
 .q-icon--border {
   padding: .2em .25em .15em;
-  border: solid .08em var(--q-colors-border, #eee);
+  border: solid .08em var(--q-color-border, #eee);
   border-radius: .1em;
 }
 .q-icon--circle {

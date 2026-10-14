@@ -175,9 +175,9 @@
 
     --q-color-bg: hsl(var(--q-color-bg-h), var(--q-color-bg-s), var(--q-color-bg-l));
     --q-color-bg-stripe: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) + 4%));
-    --q-color-bg-secondary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 1%), calc(var(--q-color-bg-l) + 3%));
-    --q-color-bg-tertiary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 1%), calc(var(--q-color-bg-l) + 6%));
-    --q-color-bg-elevated: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) + 8%));
+    --q-color-bg-secondary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 1%), calc(var(--q-color-bg-l) + 8%));
+    --q-color-bg-tertiary: hsl(var(--q-color-bg-h), calc(var(--q-color-bg-s) - 2%), calc(var(--q-color-bg-l) + 12%));
+    --q-color-bg-elevated: hsl(var(--q-color-bg-h), var(--q-color-bg-s), calc(var(--q-color-bg-l) + 6%));
     --q-color-bg-inverse: hsl(var(--q-color-text-h), var(--q-color-text-s), var(--q-color-text-l));
     --q-color-bg-overlay: rgba(26, 21, 18, 0.85);
     --q-color-bg-hover: var(--q-color-bg-tertiary);
@@ -195,6 +195,7 @@
     --q-color-text-inverse: hsl(var(--q-color-bg-h), var(--q-color-bg-s), var(--q-color-bg-l));
     --q-color-text-disabled: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) - 5%), calc(var(--q-color-text-l) - 61%));
     --q-color-text-placeholder: hsl(var(--q-color-text-h), calc(var(--q-color-text-s) - 7%), calc(var(--q-color-text-l) - 55%));
+    --q-color-on-bg-secondary: var(--q-color-text);
 
     /* -------- 边框色（暗金/墨色） -------- */
     --q-color-border: hsl(calc(var(--q-color-text-h) - 5), calc(var(--q-color-text-s) - 5%), calc(var(--q-color-text-l) - 71%));
