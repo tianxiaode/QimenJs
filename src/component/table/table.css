@@ -3,6 +3,7 @@
     flex-direction: column;
     overflow: auto;
     position: relative;
+    color: var(--q-color-text);
 }
 
 .q-table__header-area {
