@@ -57,6 +57,7 @@ import {
     TableHeaderComponent,
     HeaderCellComponent,
     GroupHeaderCellComponent,
+    GroupSummaryRowComponent,
     ExpandCellComponent,
 } from '@qimenjs/component';
 import {
@@ -105,6 +106,7 @@ RowComponent.register();
 TableHeaderComponent.register();
 HeaderCellComponent.register();
 GroupHeaderCellComponent.register();
+GroupSummaryRowComponent.register();
 ExpandCellComponent.register();
 PropertyGridComponent.register();
 PropertyFieldComponent.register();
