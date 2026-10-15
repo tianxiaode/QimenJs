@@ -41,6 +41,7 @@ const PropertyGridComponentDefs: Definitions = {
         gap: '8px 16px',
         fields: null,
         data: null,
+        i18nScope: '',
     },
 } as const;
 
@@ -107,6 +108,7 @@ class PropertyGridComponent extends Component {
             const fc = new PropertyFieldComponent({
                 field,
                 data: this.data,
+                i18nScope: this.i18nScope,
             });
             gridEl.appendChild(fc.el);
             this._fieldComponents.push(fc);

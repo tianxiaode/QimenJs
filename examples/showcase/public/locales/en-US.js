@@ -174,4 +174,17 @@ __qimen_i18n_register__('en-US', {
         groupBy: 'Group by This Field',
         hideColumn: 'Hide Column',
     },
+    employee: {
+        email: 'Email',
+        phone: 'Phone',
+        address: 'Address',
+        status: 'Status',
+        joinDate: 'Join Date',
+        level: 'Level',
+        manager: 'Manager',
+        projectCount: 'Projects',
+        lastReview: 'Last Review',
+        remote: 'Remote',
+        skills: 'Skills',
+    },
 });

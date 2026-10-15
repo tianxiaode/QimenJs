@@ -129,6 +129,7 @@ export const RowBodyAbility = {
                     fields,
                     data: rowData,
                     cols: rowBody.cols ?? 2,
+                    i18nScope: rowBody.i18nScope ?? '',
                 });
                 return inst;
             }

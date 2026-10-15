@@ -955,4 +955,6 @@ export interface RowBodyConfig {
     loadingText?: string;
     /** 自动排除已在表格列中显示的字段（仅 property-grid 类型，fields 为空时生效） */
     excludeColumns?: boolean;
+    /** i18n 路径前缀，label 自动在此 scope 下查找（如 'employee' → '@employee.email'） */
+    i18nScope?: string;
 }

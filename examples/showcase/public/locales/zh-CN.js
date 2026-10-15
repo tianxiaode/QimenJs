@@ -174,4 +174,17 @@ __qimen_i18n_register__('zh-CN', {
         groupBy: '按此字段分组',
         hideColumn: '隐藏列',
     },
+    employee: {
+        email: '邮箱',
+        phone: '电话',
+        address: '地址',
+        status: '在职状态',
+        joinDate: '入职日期',
+        level: '职级等级',
+        manager: '直属上级',
+        projectCount: '项目数量',
+        lastReview: '最近评审',
+        remote: '远程办公',
+        skills: '专业技能',
+    },
 });

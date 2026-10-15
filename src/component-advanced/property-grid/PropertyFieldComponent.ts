@@ -27,6 +27,7 @@ const PropertyFieldComponentDefs: Definitions = {
     options: {
         field: null,
         data: null,
+        i18nScope: '',
     },
 } as const;
 
@@ -88,9 +89,15 @@ class PropertyFieldComponent extends Component {
         const def = this.field as PropertyField;
         if (!def) return;
         const labelKey = def.labelKey ?? def.key;
-        const labelText = def.i18n !== false ? resolveI18nValue(`@${labelKey}`) : labelKey;
-        this.setNodeText(labelText, 'label');
-        this.setNodeAttr('title', labelText, 'label');
+        const scope = this.i18nScope as string;
+        const fullKey = scope ? `${scope}.${labelKey}` : labelKey;
+        if (def.i18n !== false) {
+            this.setNodeText(`@${fullKey}`, 'label');
+            this.setNodeAttr('title', `@${fullKey}`, 'label');
+        } else {
+            this.setNodeText(labelKey, 'label');
+            this.setNodeAttr('title', labelKey, 'label');
+        }
     }
 
     private _applyValue(): void {

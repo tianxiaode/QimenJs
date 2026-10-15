@@ -49,6 +49,7 @@ const excludeColumnsRowBody: RowBodyConfig = {
     type: 'property-grid',
     excludeColumns: true,
     cols: 2,
+    i18nScope: 'employee',
 };
 
 const htmlRowBody: RowBodyConfig = {
