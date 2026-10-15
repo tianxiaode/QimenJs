@@ -56,8 +56,8 @@ class TableComponent extends ItemGroupPooledComponent {
             source: 'self',
             events: {
                 resize: '_onColumnResize',
-                sort: '_onSort',
-                groupBy: '_onGroupBy',
+                sort: { handler: '_onSort', entities: 'sort' },
+                groupBy: { handler: '_onGroupBy', entities: 'groupBy' },
                 toggleAll: '_onToggleAll',
                 reorder: '_onReorder',
                 reorderStart: '_onReorderStart',
@@ -284,13 +284,6 @@ class TableComponent extends ItemGroupPooledComponent {
             this._sortState = { colName, direction };
         }
         this._header?._applySort(colName, direction);
-        if (this.hasEntity() && this._isAfterInit) {
-            this.entityEmit(
-                ENTITY_COMMAND_EVENTS.SORT,
-                { colName, direction },
-                { source: this.getData('entityKey') }
-            );
-        }
     }
 
     _onToggleAll(data: any): void {
@@ -329,13 +322,6 @@ class TableComponent extends ItemGroupPooledComponent {
         if (this._header) {
             this._header.setData('groupField', groupField);
             this._header._updateCellGroupField(groupField);
-        }
-        if (this.hasEntity() && !this.getData('virtualScroll')) {
-            this.entityEmit(
-                ENTITY_COMMAND_EVENTS.GROUP_BY,
-                { groupField },
-                { source: this.getData('entityKey') }
-            );
         }
     }
 
