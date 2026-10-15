@@ -74,7 +74,6 @@ class PropertyGridComponent extends Component {
     onAfterInit(): void {
         this.addCls('q-pgrid');
         this._applyGrid();
-        this._createFields();
     }
 
     onLocaleChange(): void {
@@ -88,7 +87,7 @@ class PropertyGridComponent extends Component {
     private _applyGrid(): void {
         const gridEl = this.getNodeEl('grid');
         if (!gridEl) return;
-        gridEl.style.setProperty('--q-pgrid-cols', String(this.cols * 2));
+        gridEl.style.setProperty('--q-pgrid-cols', String(this.cols));
         gridEl.style.gap = this.gap;
     }
 

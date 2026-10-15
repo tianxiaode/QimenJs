@@ -953,4 +953,6 @@ export interface RowBodyConfig {
     html?: string | ((data: any) => string);
     loader?: (rowId: string, rowData: any) => Promise<any>;
     loadingText?: string;
+    /** 自动排除已在表格列中显示的字段（仅 property-grid 类型，fields 为空时生效） */
+    excludeColumns?: boolean;
 }

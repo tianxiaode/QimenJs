@@ -28,6 +28,12 @@ const propertyGridRowBody: RowBodyConfig = {
     cols: 2,
 };
 
+const excludeColumnsRowBody: RowBodyConfig = {
+    type: 'property-grid',
+    excludeColumns: true,
+    cols: 2,
+};
+
 const htmlRowBody: RowBodyConfig = {
     type: 'html',
     html: (data: any) => `
@@ -88,6 +94,32 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
                             columns: ROW_BODY_COLUMNS,
                             data: ROW_BODY_DATA,
                             rowBody: propertyGridRowBody,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: 'Exclude Columns（自动排除已显示列）',
+            code: `{ type: 'table', options: {
+    columns: [...],
+    data: [...],
+    rowBody: {
+        type: 'property-grid',
+        excludeColumns: true,
+        cols: 2,
+    }
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: ROW_BODY_COLUMNS,
+                            data: ROW_BODY_DATA,
+                            rowBody: excludeColumnsRowBody,
                         },
                     },
                 ],

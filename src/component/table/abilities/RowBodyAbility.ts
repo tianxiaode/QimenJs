@@ -1,6 +1,6 @@
 import type { AbilityDefinition } from '@/composable';
 import type { TableAbilityHost } from './types';
-import type { ColumnDefOrGroup, TemplateDecl, RowBodyConfig } from '../column-types';
+import type { ColumnDefOrGroup, ColumnMeta, TemplateDecl, RowBodyConfig } from '../column-types';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 
 function isTemplateDecl(value: any): value is TemplateDecl {
@@ -117,8 +117,16 @@ export const RowBodyAbility = {
             case 'property-grid': {
                 const PropertyGridCtor = ComponentRegistrar.getInstance().get('property-grid') as any;
                 if (!PropertyGridCtor) return null;
+                let fields = rowBody.fields;
+                if (!fields && rowBody.excludeColumns) {
+                    const columns: ColumnMeta[] = this.getData('columnMetas') || [];
+                    const shownFields = new Set(columns.map((c: ColumnMeta) => c.field));
+                    fields = Object.keys(rowData)
+                        .filter(k => !k.startsWith('_') && !shownFields.has(k))
+                        .map(k => ({ key: k }));
+                }
                 const inst = new PropertyGridCtor({
-                    fields: rowBody.fields,
+                    fields,
                     data: rowData,
                     cols: rowBody.cols ?? 2,
                 });

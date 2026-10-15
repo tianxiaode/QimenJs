@@ -9,31 +9,34 @@
 /* Grid 容器 */
 .q-pgrid__grid {
     display: grid;
-    grid-template-columns: repeat(var(--q-pgrid-cols, 4), 1fr);
+    grid-template-columns: repeat(var(--q-pgrid-cols, 2), 1fr);
     gap: 8px 16px;
 }
 
-/* 字段行 */
+/* 字段容器 — 作为 grid item，内部 label+value 水平排列 */
 .q-pgrid__field {
-    display: contents;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
 }
 
 /* Label */
 .q-pgrid__label {
+    flex-shrink: 0;
     font-weight: 600;
     color: var(--q-color-text-secondary, #666);
-    padding: 4px 0;
     box-sizing: border-box;
     word-break: break-word;
 }
 
 /* Value */
 .q-pgrid__value {
+    flex: 1;
+    min-width: 0;
     color: var(--q-color-text, #1a1a1a);
-    padding: 4px 0;
     box-sizing: border-box;
     word-break: break-word;
-    min-width: 0;
 }
 
 /* Boolean checkbox */
