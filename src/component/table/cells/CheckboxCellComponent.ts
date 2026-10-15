@@ -14,7 +14,6 @@
 import { BaseCellComponent } from './BaseCellComponent';
 import type { CheckboxCellData } from '../column-types';
 import type { TemplateDecl } from '@qimenjs/component-core';
-import { Definitions } from '@/composable';
 import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
 import './cellselect.css';
 
@@ -59,8 +58,7 @@ class CheckboxCellComponent extends BaseCellComponent {
         }
     }
 
-    _onValueOptionChange(_value: any): void {
-    }
+    _onValueOptionChange(_value: any): void {}
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { checked: this._checked };

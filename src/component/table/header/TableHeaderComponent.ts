@@ -41,10 +41,10 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         {
             source: 'self',
             events: {
-                sort: { handler: '_onSort', entities: '[action]' },
+                sort: { handler: '_onSort' },
                 groupBy: { handler: '_onGroupBy' },
-                hideColumn: { handler: '_onHideColumn', bridges: ['[action]'] },
-                showColumn: { handler: '_onShowColumn', bridges: ['[action]'] },
+                hideColumn: { handler: '_onHideColumn' },
+                showColumn: { handler: '_onShowColumn' },
                 reorderStart: { handler: '_onReorderStart' },
                 reorderMove: { handler: '_onReorderMove' },
                 reorderEnd: { handler: '_onReorderEnd' },
@@ -674,7 +674,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 col.hidden = true;
                 this.hideColumn(colName);
                 this._updateCellHideableColumns();
-                this.componentEmit('hideColumn', { colName });
             }
         }
     }
@@ -692,7 +691,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
                 col.hidden = false;
                 this.showColumn(colName);
                 this._updateCellHideableColumns();
-                this.componentEmit('showColumn', { colName });
             }
         }
     }
