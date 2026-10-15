@@ -1,7 +1,7 @@
 import type { ColumnMetaManager } from '../engine/ColumnMetaManager';
 import type { TableHeaderComponent } from '../header/TableHeaderComponent';
 import type { TableSummaryRowComponent } from '../table-summary/TableSummaryRowComponent';
-import type { ColumnMeta, ColumnDefOrGroup } from '../column-types';
+import type { ColumnMeta, ColumnDefOrGroup, RowBodyConfig } from '../column-types';
 import type { RangeLoadedData } from '@/entity/abilities/remote/RangeLoadAbility';
 
 /**
@@ -37,6 +37,7 @@ export interface TableAbilityHost {
     emit(event: string, data?: any): void;
     componentEmit(event: string, data?: any): void;
     entityEmit(event: string, data?: any, opts?: Record<string, any>): void;
+    entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void;
     entityLoadRange(start: number, end: number): void;
     getEntityItems(): any[];
     hasEntity(): boolean;
@@ -105,4 +106,7 @@ export interface TableAbilityHost {
     _onRowExpand(data: any): void;
     _onRowCollapse(data: any): void;
     _renderRowBody(row: any, rowData: any): any;
+    _renderRowBodyWithLoader(row: any, rowData: any, rowKey: string): void;
+    _renderRowBodyWithEntity(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;
+    _renderRowBodyWithLoaderFn(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;
 }

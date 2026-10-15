@@ -1,6 +1,7 @@
 import type { AbilityDefinition } from '@/composable';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import type { TableAbilityHost } from './types';
-import type { ColumnDefOrGroup, ColumnMeta, TemplateDecl, RowBodyConfig } from '../column-types';
+import type { ColumnDefOrGroup, ColumnMeta, RowBodyConfig } from '../column-types';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { ENTITY_LIST_EVENTS } from '@/events';
 
@@ -88,13 +89,19 @@ export const RowBodyAbility = {
             return;
         }
 
-        const bodyEl = row.bodyEl;
         const loadingText = rowBody.loadingText ?? 'Loading...';
-        bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
-
         const paramField = rowBody.entityParamField ?? 'id';
         const paramValue = rowData[paramField] ?? rowKey;
         const action = rowBody.entityAction;
+        if (!action) return;
+
+        const inst = this._renderRowBody(row, rowData);
+        if (inst) {
+            row.setBodyContent(inst);
+            if (typeof inst.showLoading === 'function') {
+                inst.showLoading(loadingText);
+            }
+        }
 
         const offGot = this.entityOn(entityKey, ENTITY_LIST_EVENTS.GOT, (detailData: any) => {
             offGot?.();
@@ -102,32 +109,60 @@ export const RowBodyAbility = {
             if (detailData) {
                 this._bodyCache.set(rowKey, detailData);
                 const mergedData = { ...rowData, ...detailData };
-                const content = this._renderRowBody(row, mergedData);
-                if (content) row.setBodyContent(content);
+                if (inst && typeof inst.hideLoading === 'function') {
+                    inst.hideLoading();
+                    inst.setData('data', mergedData);
+                } else {
+                    const content = this._renderRowBody(row, mergedData);
+                    if (content) row.setBodyContent(content);
+                }
             }
         });
 
         const offError = this.entityOn(entityKey, 'get:error', () => {
             offGot?.();
             offError?.();
-            bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+            if (inst && typeof inst.hideLoading === 'function') {
+                inst.hideLoading();
+            }
+            const bodyEl = row.bodyEl;
+            if (bodyEl) {
+                bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+            }
         });
 
         this.entityEmit(action, { id: paramValue }, { source: entityKey });
     },
 
     _renderRowBodyWithLoaderFn(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
-        const bodyEl = row.bodyEl;
         const loadingText = rowBody.loadingText ?? 'Loading...';
-        bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
+
+        const inst = this._renderRowBody(row, rowData);
+        if (inst) {
+            row.setBodyContent(inst);
+            if (typeof inst.showLoading === 'function') {
+                inst.showLoading(loadingText);
+            }
+        }
 
         rowBody.loader!(rowKey, rowData).then((detailData: any) => {
             this._bodyCache.set(rowKey, detailData);
             const mergedData = { ...rowData, ...detailData };
-            const content = this._renderRowBody(row, mergedData);
-            if (content) row.setBodyContent(content);
+            if (inst && typeof inst.hideLoading === 'function') {
+                inst.hideLoading();
+                inst.setData('data', mergedData);
+            } else {
+                const content = this._renderRowBody(row, mergedData);
+                if (content) row.setBodyContent(content);
+            }
         }).catch(() => {
-            bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+            if (inst && typeof inst.hideLoading === 'function') {
+                inst.hideLoading();
+            }
+            const bodyEl = row.bodyEl;
+            if (bodyEl) {
+                bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+            }
         });
     },
 

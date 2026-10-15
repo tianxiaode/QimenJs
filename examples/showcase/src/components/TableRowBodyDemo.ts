@@ -1,3 +1,5 @@
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
+import { dataDispatchCenter } from '@qimenjs/entity';
 import type { DemoConfig } from './types';
 import type { ColumnDefOrGroup, RowBodyConfig } from '@qimenjs/component';
 
@@ -97,6 +99,48 @@ const entityRowBody: RowBodyConfig = {
     entityParamField: 'id',
     loadingText: '加载详细数据...',
 };
+
+const ENTITY_KEY = 'demo-row-body-entity';
+
+class EntityRowBodyDemo extends Component {
+    static type = 'entity-row-body-demo';
+
+    _table: any = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                { tag: 'div', name: 'tableContainer', classes: 'q-demo__column' },
+            ],
+        };
+    }
+
+    onAfterInit(): void {
+        const container = this.getNodeEl('tableContainer');
+        if (!container) return;
+
+        const mgr = dataDispatchCenter.connect(ENTITY_KEY, 'local-readonly');
+        ROW_BODY_DATA.forEach(item => mgr.sourceData.set(item.id, item));
+        mgr.refreshView();
+
+        import('@qimenjs/component').then(({ TableComponent }) => {
+            this._table = new TableComponent({
+                columns: ROW_BODY_COLUMNS,
+                entityKey: ENTITY_KEY,
+                entityType: 'local-readonly',
+                rowBody: entityRowBody,
+            });
+
+            container.appendChild(this._table.el);
+        });
+
+        this.onCleanup(() => {
+            dataDispatchCenter.disconnect(ENTITY_KEY);
+        });
+    }
+}
 
 export const TABLE_ROW_BODY_DEMO: DemoConfig = {
     title: 'Table Row Body',
@@ -240,34 +284,23 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
             },
         },
         {
-            label: 'Entity 模式（通过 table entityKey 加载详情）',
-            code: `{ type: 'table', options: {
+            label: 'Entity 模式（通过 EntityManager 加载详情）',
+            code: `// Table 连接 LocalReadonlyEntityManager
+// 展开行时通过 entityAction='get' 获取行详情
+// EM 自动处理 loading/success/error 事件
+new TableComponent({
     columns: [...],
-    data: [...],
-    entityKey: 'employee',
+    entityKey: 'demo-row-body',
+    entityType: 'local-readonly',
     rowBody: {
         type: 'property-grid',
         excludeColumns: true,
         i18nScope: 'employee',
         entityAction: 'get',
         entityParamField: 'id',
-        loadingText: '加载详细数据...',
     }
-} }`,
-            template: {
-                tag: 'div',
-                classes: 'q-demo__column',
-                children: [
-                    {
-                        type: 'table',
-                        options: {
-                            columns: ROW_BODY_COLUMNS,
-                            data: ROW_BODY_DATA,
-                            rowBody: entityRowBody,
-                        },
-                    },
-                ],
-            },
+})`,
+            component: EntityRowBodyDemo,
         },
     ],
 };
