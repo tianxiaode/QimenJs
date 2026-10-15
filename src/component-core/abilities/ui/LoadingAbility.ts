@@ -38,7 +38,7 @@ export const LoadingAbility: AbilityDefinition = {
         return {
             type: 'loading',
             trigger: 'manual',
-            anchor: 'self',
+            anchor: cfg.anchor ?? 'self',
             placement: 'anchor-center',
             maskMode: cfg.maskMode ?? 'scoped',
             options: { ...(cfg.options ?? {}) },
@@ -62,9 +62,10 @@ export const LoadingAbility: AbilityDefinition = {
             return null;
         }
 
+        const anchor = decl.anchor === 'self' ? this.el! : decl.anchor as HTMLElement;
         const constr: any = {
             ...decl.options,
-            anchor: this.el!,
+            anchor,
             placement: decl.placement,
         };
         const mask = resolveFloatMask(decl);
@@ -95,7 +96,7 @@ export const LoadingAbility: AbilityDefinition = {
     hideLoading(): void {
         const inst = this._getLoadingInstance();
         if (inst) {
-            inst.hide();
+            inst.ready.then(() => inst.hide());
         }
     },
 
