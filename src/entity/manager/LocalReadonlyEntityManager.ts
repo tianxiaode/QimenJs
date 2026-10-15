@@ -49,7 +49,7 @@ export class LocalReadonlyEntityManager<
         super(config);
         this.initOptions();
         if (!this.schema.name) {
-            this.schema.name = this.entityType;
+            this.schema.name = (this.constructor as any).entityType;
         }
     }
 
