@@ -27,6 +27,7 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
+import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { Definitions } from '@/composable';
 import { PROPERTY_GRID_TPL } from './property-grid-tpl';
 import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';
@@ -95,9 +96,7 @@ class PropertyGridComponent extends Component {
         const gridEl = this.getNodeEl('grid');
         if (!gridEl) return;
 
-        const PropertyFieldComponent = (globalThis as any).__QimenComponentRegistrar?.get(
-            'PropertyField'
-        );
+        const PropertyFieldComponent = ComponentRegistrar.getInstance().get('property-field');
         if (!PropertyFieldComponent) return;
 
         this._fieldComponents = [];

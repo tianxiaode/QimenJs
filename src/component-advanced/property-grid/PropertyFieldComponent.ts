@@ -1,5 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
+import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { Definitions } from '@/composable';
 import { PROPERTY_FIELD_TPL } from './property-field-tpl';
 import { formatNumber } from '@/utils/number';
@@ -198,9 +199,7 @@ class PropertyFieldComponent extends Component {
     }
 
     private _renderNestedGrid(container: HTMLElement, data: Record<string, any>): void {
-        const PropertyGridComponent = (globalThis as any).__QimenComponentRegistrar?.get(
-            'PropertyGrid'
-        );
+        const PropertyGridComponent = ComponentRegistrar.getInstance().get('property-grid');
         if (!PropertyGridComponent) {
             container.textContent = JSON.stringify(data);
             return;
