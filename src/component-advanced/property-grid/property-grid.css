@@ -10,32 +10,57 @@
 .q-pgrid__grid {
     display: grid;
     grid-template-columns: repeat(var(--q-pgrid-cols, 2), 1fr);
-    gap: 8px 16px;
+    gap: 0;
+    border-top: 1px solid var(--q-color-border, #e0e0e0);
+    border-left: 1px solid var(--q-color-border, #e0e0e0);
 }
 
 /* 字段容器 — 作为 grid item，内部 label+value 水平排列 */
 .q-pgrid__field {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    align-items: stretch;
     min-width: 0;
+    border-right: 1px solid var(--q-color-border, #e0e0e0);
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
 }
 
-/* Label */
+/* Label — 固定宽度，右对齐，冒号结尾，超出截断 */
 .q-pgrid__label {
     flex-shrink: 0;
+    width: var(--q-pgrid-label-width, 100px);
+    padding: 6px 8px 6px 10px;
     font-weight: 600;
     color: var(--q-color-text-secondary, #666);
+    background: var(--q-color-bg-subtle, #f5f5f5);
     box-sizing: border-box;
-    word-break: break-word;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
 }
 
-/* Value */
+.q-pgrid__label::after {
+    content: '：';
+    font-weight: 400;
+    color: var(--q-color-text-secondary, #999);
+}
+
+/* Value — flex:1，超出截断，hover 显示完整内容 */
 .q-pgrid__value {
     flex: 1;
     min-width: 0;
+    padding: 6px 10px;
     color: var(--q-color-text, #1a1a1a);
     box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.q-pgrid__value:hover {
+    white-space: normal;
+    overflow: visible;
     word-break: break-word;
 }
 
