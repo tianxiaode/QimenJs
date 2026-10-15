@@ -77,7 +77,7 @@ class RatingComponent extends Component {
 
     _renderStars(): void {
         this.setNodeHtml('', 'stars');
-        const container = this._resolveNodeEl('stars');
+        const container = this.getNodeEl('stars');
         if (!container) return;
 
         for (let i = 1; i <= this.max; i++) {
@@ -105,7 +105,7 @@ class RatingComponent extends Component {
     }
 
     _bindEvents(): void {
-        const container = this._resolveNodeEl('stars');
+        const container = this.getNodeEl('stars');
         if (!container || this.readonly) return;
 
         container.addEventListener('mousemove', (e: MouseEvent) => {
@@ -151,7 +151,7 @@ class RatingComponent extends Component {
     }
 
     _applyVisual(value: number): void {
-        const container = this._resolveNodeEl('stars');
+        const container = this.getNodeEl('stars');
         if (!container) return;
 
         const stars = container.querySelectorAll('.q-rating__star') as NodeListOf<HTMLElement>;

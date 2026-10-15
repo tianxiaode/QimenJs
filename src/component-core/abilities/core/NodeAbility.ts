@@ -5,11 +5,11 @@
  *   nodeMap                → 所有节点的元数据映射（getter）
  *   getNode(name)          → 返回节点的 component（优先）或 el
  *   containsElement(name, target) → 判定 target 是否处于节点 DOM 内
- *   _resolveNodeEl(name)   → 解析节点的 DOM 元素（子组件取其 el）
+ *   getNodeEl(name)      → 解析节点的 DOM 元素（子组件取其 el）
  *   _resolveNodeTarget(name) → 解析节点的 { el, component } 目标信息
  *
  * NodePropAbility / CommonPropsAbility 通过 this._resolveNodeTarget /
- * this._resolveNodeEl 跨能力调用本能力的方法。
+ * this.getNodeEl 跨能力调用本能力的方法。
  */
 
 import type { AbilityDefinition } from '@/composable';

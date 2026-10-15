@@ -71,11 +71,11 @@ class PropertyFieldComponent extends Component {
         }
 
         if (def.labelCls) {
-            const labelEl = this._resolveNodeEl('label');
+            const labelEl = this.getNodeEl('label');
             if (labelEl) labelEl.classList.add(...def.labelCls.split(/\s+/));
         }
         if (def.cls) {
-            const valueEl = this._resolveNodeEl('value');
+            const valueEl = this.getNodeEl('value');
             if (valueEl) valueEl.classList.add(...def.cls.split(/\s+/));
         }
 
@@ -95,7 +95,7 @@ class PropertyFieldComponent extends Component {
         const def = this.field as PropertyField;
         if (!def) return;
         const raw = (this.data as Record<string, any>)?.[def.key];
-        const valueEl = this._resolveNodeEl('value');
+        const valueEl = this.getNodeEl('value');
         if (!valueEl) return;
 
         valueEl.innerHTML = '';

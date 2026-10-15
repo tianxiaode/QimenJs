@@ -73,7 +73,7 @@ class UploadButtonComponent extends Component {
 
     onBeforeDispose(): void {
         if (this._listClickBound) {
-            const listEl = this._resolveNodeEl('list');
+            const listEl = this.getNodeEl('list');
             if (listEl && this._boundListClick)
                 listEl.removeEventListener('click', this._boundListClick);
             this._listClickBound = false;
@@ -101,7 +101,7 @@ class UploadButtonComponent extends Component {
         this._subscribeFeedback();
 
         this._boundListClick = this._handleListClick.bind(this);
-        const listEl = this._resolveNodeEl('list');
+        const listEl = this.getNodeEl('list');
         if (listEl) {
             listEl.addEventListener('click', this._boundListClick);
             this._listClickBound = true;

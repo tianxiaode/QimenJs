@@ -93,12 +93,12 @@ class SecondPanelComponent extends Component {
 
     _renderPreview(): void {
         if (!this._previewData) return;
-        const previewEl = this._resolveNodeEl('preview');
+        const previewEl = this.getNodeEl('preview');
         renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
     }
 
     _renderColumns(): void {
-        const container = this._resolveNodeEl('digitColumns');
+        const container = this.getNodeEl('digitColumns');
         if (!container) return;
         container.innerHTML = '';
 

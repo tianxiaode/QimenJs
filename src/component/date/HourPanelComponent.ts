@@ -81,12 +81,12 @@ class HourPanelComponent extends Component {
 
     _renderPreview(): void {
         if (!this._previewData) return;
-        const previewEl = this._resolveNodeEl('preview');
+        const previewEl = this.getNodeEl('preview');
         renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
     }
 
     _renderGrid(): void {
-        const grid = this._resolveNodeEl('grid');
+        const grid = this.getNodeEl('grid');
         if (!grid) return;
         grid.innerHTML = '';
 

@@ -83,8 +83,8 @@ class DayGridComponent extends Component {
     }
 
     _createCells(): void {
-        const row = this._resolveNodeEl('weekdayRow');
-        const grid = this._resolveNodeEl('dayGrid');
+        const row = this.getNodeEl('weekdayRow');
+        const grid = this.getNodeEl('dayGrid');
         if (!row || !grid) return;
 
         this._weekdayCells = [];

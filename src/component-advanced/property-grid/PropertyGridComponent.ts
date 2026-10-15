@@ -85,14 +85,14 @@ class PropertyGridComponent extends Component {
     }
 
     private _applyGrid(): void {
-        const gridEl = this._resolveNodeEl('grid');
+        const gridEl = this.getNodeEl('grid');
         if (!gridEl) return;
         gridEl.style.setProperty('--q-pgrid-cols', String(this.cols * 2));
         gridEl.style.gap = this.gap;
     }
 
     private _createFields(): void {
-        const gridEl = this._resolveNodeEl('grid');
+        const gridEl = this.getNodeEl('grid');
         if (!gridEl) return;
 
         const PropertyFieldComponent = (globalThis as any).__QimenComponentRegistrar?.get(
@@ -120,7 +120,7 @@ class PropertyGridComponent extends Component {
             if (typeof fc.dispose === 'function') fc.dispose();
         }
         this._fieldComponents = [];
-        const gridEl = this._resolveNodeEl('grid');
+        const gridEl = this.getNodeEl('grid');
         if (gridEl) gridEl.innerHTML = '';
         this._createFields();
     }
