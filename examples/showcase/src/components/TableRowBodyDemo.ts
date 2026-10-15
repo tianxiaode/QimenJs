@@ -1,5 +1,5 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { dataDispatchCenter } from '@qimenjs/entity';
+import { dataDispatchCenter, LocalReadonlyEntityManager } from '@qimenjs/entity';
 import type { DemoConfig } from './types';
 import type { ColumnDefOrGroup, RowBodyConfig } from '@qimenjs/component';
 
@@ -101,6 +101,16 @@ const entityRowBody: RowBodyConfig = {
 };
 
 const ENTITY_KEY = 'demo-row-body-entity';
+const MOCK_ENTITY_TYPE = 'mock-row-body';
+
+class MockRowBodyEntityManager extends LocalReadonlyEntityManager {
+    static entityType = MOCK_ENTITY_TYPE;
+
+    async get(id: string | number) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return super.get(id);
+    }
+}
 
 class EntityRowBodyDemo extends Component {
     static type = 'entity-row-body-demo';
@@ -118,10 +128,12 @@ class EntityRowBodyDemo extends Component {
     }
 
     onAfterInit(): void {
+        MockRowBodyEntityManager.register();
+
         const container = this.getNodeEl('tableContainer');
         if (!container) return;
 
-        const mgr = dataDispatchCenter.connect(ENTITY_KEY, 'local-readonly');
+        const mgr = dataDispatchCenter.connect(ENTITY_KEY, MOCK_ENTITY_TYPE);
         ROW_BODY_DATA.forEach(item => mgr.sourceData.set(item.id, item));
         mgr.refreshView();
 
@@ -129,7 +141,7 @@ class EntityRowBodyDemo extends Component {
             this._table = new TableComponent({
                 columns: ROW_BODY_COLUMNS,
                 entityKey: ENTITY_KEY,
-                entityType: 'local-readonly',
+                entityType: MOCK_ENTITY_TYPE,
                 rowBody: entityRowBody,
             });
 
@@ -285,13 +297,13 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
         },
         {
             label: 'Entity 模式（通过 EntityManager 加载详情）',
-            code: `// Table 连接 LocalReadonlyEntityManager
+            code: `// Table 连接 MockRowBodyEntityManager（继承 LocalReadonlyEntityManager）
 // 展开行时通过 entityAction='get' 获取行详情
 // EM 自动处理 loading/success/error 事件
 new TableComponent({
     columns: [...],
     entityKey: 'demo-row-body',
-    entityType: 'local-readonly',
+    entityType: 'mock-row-body',
     rowBody: {
         type: 'property-grid',
         excludeColumns: true,

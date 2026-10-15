@@ -131,7 +131,7 @@ export const RowBodyAbility = {
             }
         });
 
-        this.entityEmit(action, { id: paramValue }, { source: entityKey });
+        this.entityEmit(action, paramValue, { source: entityKey });
     },
 
     _renderRowBodyWithLoaderFn(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {

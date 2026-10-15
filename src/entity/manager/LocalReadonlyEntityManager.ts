@@ -48,6 +48,9 @@ export class LocalReadonlyEntityManager<
     constructor(config?: Record<string, any>) {
         super(config);
         this.initOptions();
+        if (!this.schema.name) {
+            this.schema.name = this.entityType;
+        }
     }
 
     _onDataOptionChange(value: IEntity[]): void {
