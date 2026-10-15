@@ -109,5 +109,6 @@ export interface TableAbilityHost {
     _renderRowBodyWithLoader(row: any, rowData: any, rowKey: string): void;
     _renderRowBodyWithEntity(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;
     _renderRowBodyWithLoaderFn(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;
-    _showBodyLoading(bodyEl: HTMLElement, text: string): HTMLElement;
+    _showBodyLoading(bodyEl: HTMLElement, text: string): any;
+    _hideBodyLoading(loadingInst: any): void;
 }

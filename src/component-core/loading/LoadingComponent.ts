@@ -30,6 +30,7 @@ const LoadingComponentDefs: Definitions = {
     options: {
         text: null,
         persistent: true,
+        closeOnScroll: false,
     },
 };
 
