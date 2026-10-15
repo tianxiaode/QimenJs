@@ -31,7 +31,7 @@ import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
 import { Definitions } from '@/composable';
 import { PROPERTY_GRID_TPL } from './property-grid-tpl';
 import type { PropertyField, PropertyFieldType } from './PropertyFieldComponent';
-import './propertygrid.css';
+import './property-grid.css';
 
 export type { PropertyField, PropertyFieldType };
 
