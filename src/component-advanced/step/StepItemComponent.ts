@@ -27,7 +27,7 @@ class StepItemComponent extends Component {
     }
 
     _onDescriptionOptionChange(value: string): void {
-        this.setNodeProp('text', value, 'desc');
+        this.setNodeText(value, 'desc');
         this.setNodeHidden(!value, 'desc');
     }
 
@@ -41,7 +41,7 @@ class StepItemComponent extends Component {
 
     _onIndexOptionChange(value: number): void {
         if (!this.icon) {
-            this.setNodeProp('text', String(value + 1), 'number');
+            this.setNodeText(String(value + 1), 'number');
         }
     }
 
@@ -49,7 +49,7 @@ class StepItemComponent extends Component {
         this._applyIcon(this.icon);
         this._applyStatus(this.status);
         if (!this.icon) {
-            this.setNodeProp('text', String(this.index + 1), 'number');
+            this.setNodeText(String(this.index + 1), 'number');
         }
     }
 
@@ -70,10 +70,10 @@ class StepItemComponent extends Component {
 
     private _applyIcon(icon: string): void {
         if (icon) {
-            this.setNodeProp('text', icon, 'circle');
+            this.setNodeText(icon, 'circle');
             this.setNodeHidden(true, 'number');
         } else {
-            this.setNodeProp('text', String(this.index + 1), 'number');
+            this.setNodeText(String(this.index + 1), 'number');
             this.setNodeHidden(false, 'number');
         }
     }

@@ -89,7 +89,7 @@ class PropertyFieldComponent extends Component {
         if (!def) return;
         const labelKey = def.labelKey ?? def.key;
         const labelText = def.i18n !== false ? resolveI18nValue(`@${labelKey}`) : labelKey;
-        this.setNodeProp('text', labelText, 'label');
+        this.setNodeText(labelText, 'label');
     }
 
     private _applyValue(): void {

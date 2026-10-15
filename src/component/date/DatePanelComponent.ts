@@ -161,7 +161,7 @@ class DatePanelComponent extends Component {
             months && months.length === 12
                 ? `${this._viewYear} ${months[this._viewMonth - 1]}`
                 : `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
-        this.setNodeProp('text', text, 'dateLabel');
+        this.setNodeText(text, 'dateLabel');
     }
 
     _updateDayGrid(): void {

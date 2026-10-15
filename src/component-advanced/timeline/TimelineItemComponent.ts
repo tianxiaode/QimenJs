@@ -24,16 +24,16 @@ class TimelineItemComponent extends Component {
     }
 
     _onTitleOptionChange(value: string): void {
-        this.setNodeProp('text', value, 'title');
+        this.setNodeText(value, 'title');
     }
 
     _onDescriptionOptionChange(value: string): void {
-        this.setNodeProp('text', value, 'desc');
+        this.setNodeText(value, 'desc');
         this.setNodeHidden(!value, 'desc');
     }
 
     _onTimestampOptionChange(value: string): void {
-        this.setNodeProp('text', value, 'timestamp');
+        this.setNodeText(value, 'timestamp');
         this.setNodeHidden(!value, 'timestamp');
     }
 
@@ -59,10 +59,10 @@ class TimelineItemComponent extends Component {
 
     private _applyDot(dot: string): void {
         if (dot) {
-            this.setNodeProp('text', dot, 'dot');
+            this.setNodeText(dot, 'dot');
             this.addCls('q-timeline__dot--custom', 'dot');
         } else {
-            this.setNodeProp('text', '', 'dot');
+            this.setNodeText('', 'dot');
             this.removeCls('q-timeline__dot--custom', 'dot');
         }
     }
