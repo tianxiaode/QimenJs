@@ -160,6 +160,7 @@
     background: var(--q-color-bg-secondary, #f9f9f9);
     padding: 8px 12px;
     overflow: hidden;
+    min-height: 60px;
 }
 
 .q-table-row__body-loading {
