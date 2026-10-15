@@ -94,6 +94,8 @@ export interface Tooltiptoptions {
 export interface LoadingOptions {
     maskMode?: 'none' | 'scoped' | 'global';
     mask?: boolean | string;
+    /** 自定义锚点元素，默认 'self'（组件自身 el） */
+    anchor?: HTMLElement | 'self';
     /** 传给子组件（loading 浮层）的构造参数，如 { text, spinner } */
     options?: Record<string, any>;
 }
