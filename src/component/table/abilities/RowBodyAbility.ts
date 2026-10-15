@@ -96,11 +96,11 @@ export const RowBodyAbility = {
         if (!action) return;
 
         const inst = this._renderRowBody(row, rowData);
-        if (inst) {
+        const bodyEl = row.bodyEl;
+        let loadingEl: HTMLElement | null = null;
+        if (inst && bodyEl) {
             row.setBodyContent(inst);
-            if (typeof inst.showLoading === 'function') {
-                inst.showLoading(loadingText);
-            }
+            loadingEl = this._showBodyLoading(bodyEl, loadingText);
         }
 
         const offGot = this.entityOn(entityKey, ENTITY_LIST_EVENTS.GOT, (detailData: any) => {
@@ -109,8 +109,8 @@ export const RowBodyAbility = {
             if (detailData) {
                 this._bodyCache.set(rowKey, detailData);
                 const mergedData = { ...rowData, ...detailData };
-                if (inst && typeof inst.hideLoading === 'function') {
-                    inst.hideLoading();
+                loadingEl?.remove();
+                if (inst && typeof inst.setData === 'function') {
                     inst.setData('data', mergedData);
                 } else {
                     const content = this._renderRowBody(row, mergedData);
@@ -122,10 +122,7 @@ export const RowBodyAbility = {
         const offError = this.entityOn(entityKey, 'get:error', () => {
             offGot?.();
             offError?.();
-            if (inst && typeof inst.hideLoading === 'function') {
-                inst.hideLoading();
-            }
-            const bodyEl = row.bodyEl;
+            loadingEl?.remove();
             if (bodyEl) {
                 bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
             }
@@ -136,34 +133,39 @@ export const RowBodyAbility = {
 
     _renderRowBodyWithLoaderFn(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
         const loadingText = rowBody.loadingText ?? 'Loading...';
+        const bodyEl = row.bodyEl;
 
         const inst = this._renderRowBody(row, rowData);
-        if (inst) {
+        let loadingEl: HTMLElement | null = null;
+        if (inst && bodyEl) {
             row.setBodyContent(inst);
-            if (typeof inst.showLoading === 'function') {
-                inst.showLoading(loadingText);
-            }
+            loadingEl = this._showBodyLoading(bodyEl, loadingText);
         }
 
         rowBody.loader!(rowKey, rowData).then((detailData: any) => {
             this._bodyCache.set(rowKey, detailData);
             const mergedData = { ...rowData, ...detailData };
-            if (inst && typeof inst.hideLoading === 'function') {
-                inst.hideLoading();
+            loadingEl?.remove();
+            if (inst && typeof inst.setData === 'function') {
                 inst.setData('data', mergedData);
             } else {
                 const content = this._renderRowBody(row, mergedData);
                 if (content) row.setBodyContent(content);
             }
         }).catch(() => {
-            if (inst && typeof inst.hideLoading === 'function') {
-                inst.hideLoading();
-            }
-            const bodyEl = row.bodyEl;
+            loadingEl?.remove();
             if (bodyEl) {
                 bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
             }
         });
+    },
+
+    _showBodyLoading(this: TableAbilityHost, bodyEl: HTMLElement, text: string): HTMLElement {
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'q-table-row__body-loading-overlay';
+        loadingEl.textContent = text;
+        bodyEl.appendChild(loadingEl);
+        return loadingEl;
     },
 
     _renderRowBody(this: TableAbilityHost, row: any, rowData: any): any {
