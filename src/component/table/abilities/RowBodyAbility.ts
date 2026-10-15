@@ -115,7 +115,7 @@ export const RowBodyAbility = {
             }
 
             case 'property-grid': {
-                const PropertyGridCtor = ComponentRegistrar.getInstance().get('PropertyGrid') as any;
+                const PropertyGridCtor = ComponentRegistrar.getInstance().get('property-grid') as any;
                 if (!PropertyGridCtor) return null;
                 const inst = new PropertyGridCtor({
                     fields: rowBody.fields,

@@ -243,6 +243,7 @@ class RowComponent extends Component {
         if (this._bodyEl) return;
         this._bodyEl = document.createElement('div');
         this._bodyEl.className = 'q-table-row__body';
+        this._bodyEl.style.order = String((this.order ?? 0) + 1);
         if (this.el?.parentNode) {
             this.el.parentNode.insertBefore(this._bodyEl, this.el.nextSibling);
         }
