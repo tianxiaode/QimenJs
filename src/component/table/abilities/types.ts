@@ -67,6 +67,9 @@ export interface TableAbilityHost {
     _deselectDisabledRows(): void;
     _rowHasSelectionCell(row: any): boolean;
     _isSelectionCellClick(row: any, domEvt: any): boolean;
+    _onRowAreaClick(domEvt: any): void;
+    _onRowSelectClick(domEvt: any): void;
+    _isExpandCellClick(row: any, clickTarget: HTMLElement): boolean;
 
     _prepareColumnsForHeader(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[];
     _applyColumnStyles(): void;

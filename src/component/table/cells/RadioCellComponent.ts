@@ -21,12 +21,6 @@ import { Definitions } from '@/composable';
 import { RADIO_CELL_TPL } from './radio-cell-tpl';
 import './cellselect.css';
 
-const RadioCellComponentDefs: Definitions = {
-    options: {
-        controlled: false,
-    },
-} as const;
-
 class RadioCellComponent extends BaseCellComponent {
     get tpl(): TemplateDecl {
         return RADIO_CELL_TPL;
@@ -71,18 +65,10 @@ class RadioCellComponent extends BaseCellComponent {
     _onValueOptionChange(_value: any): void {
     }
 
-    onRootClick(): void {
-        if (this._disabled || this.controlled) return;
-        this._checked = !this._checked;
-        this._applyState();
-    }
-
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { checked: this._checked };
     }
 }
-
-RadioCellComponent.define(RadioCellComponentDefs);
 
 export { RadioCellComponent };
 /** 单选框单元格实例类型 */

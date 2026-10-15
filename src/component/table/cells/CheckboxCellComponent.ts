@@ -18,12 +18,6 @@ import { Definitions } from '@/composable';
 import { CHECKBOX_CELL_TPL } from './checkbox-cell-tpl';
 import './cellselect.css';
 
-const CheckboxCellComponentDefs: Definitions = {
-    options: {
-        controlled: false,
-    },
-} as const;
-
 class CheckboxCellComponent extends BaseCellComponent {
     get tpl(): TemplateDecl {
         return CHECKBOX_CELL_TPL;
@@ -68,18 +62,10 @@ class CheckboxCellComponent extends BaseCellComponent {
     _onValueOptionChange(_value: any): void {
     }
 
-    onRootClick(): void {
-        if (this._disabled || this.controlled) return;
-        this._checked = !this._checked;
-        this._applyState();
-    }
-
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { checked: this._checked };
     }
 }
-
-CheckboxCellComponent.define(CheckboxCellComponentDefs);
 
 export { CheckboxCellComponent };
 /** 复选框单元格实例类型 */

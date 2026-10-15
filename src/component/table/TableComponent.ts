@@ -70,7 +70,7 @@ class TableComponent extends ItemGroupPooledComponent {
     ];
 
     domEvents: DomEventsMap = {
-        click: [{ path: '[items]', handler: '_onRowClick', emits: ['selectionChanged'] }],
+        click: [{ path: '[items]', handler: '_onRowAreaClick', emits: ['selectionChanged'] }],
     };
 
     get defaultEventData(): Record<string, any> {

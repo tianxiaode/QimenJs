@@ -35,8 +35,6 @@ class RowComponent extends Component {
             events: {
                 hideColumn: 'onHideColumn',
                 showColumn: 'onShowColumn',
-                expand: '_onExpandCellClick',
-                collapse: '_onExpandCellClick',
             },
         },
     ];
@@ -88,9 +86,6 @@ class RowComponent extends Component {
         }
         if (meta.format && meta.cellType === 'text') {
             options.format = meta.format;
-        }
-        if (meta.selection) {
-            options.controlled = true;
         }
         const cell = new CellClass(options);
         return cell;
@@ -205,14 +200,6 @@ class RowComponent extends Component {
 
     onShowColumn(data: any): void {
         this.showColumn(data.colName);
-    }
-
-    _onExpandCellClick(data: any): void {
-        if (data?.expanded) {
-            this.expand();
-        } else {
-            this.collapse();
-        }
     }
 
     expand(): void {

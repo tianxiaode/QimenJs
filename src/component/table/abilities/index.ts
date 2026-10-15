@@ -1,5 +1,6 @@
 export * from './types';
 export * from './ZebraAbility';
+export * from './RowEventAbility';
 export * from './RowSelectAbility';
 export * from './TableColumnAbility';
 export * from './GroupAbility';
@@ -8,6 +9,7 @@ export * from './VirtualEntityAbility';
 export * from './RowBodyAbility';
 
 import { ZebraAbility } from './ZebraAbility';
+import { RowEventAbility } from './RowEventAbility';
 import { RowSelectAbility } from './RowSelectAbility';
 import { TableColumnAbility } from './TableColumnAbility';
 import { GroupAbility } from './GroupAbility';
@@ -17,6 +19,7 @@ import { RowBodyAbility } from './RowBodyAbility';
 
 export const TABLE_ABILITIES = [
     ZebraAbility,
+    RowEventAbility,
     RowSelectAbility,
     TableColumnAbility,
     GroupAbility,

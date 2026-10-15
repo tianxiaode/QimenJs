@@ -324,7 +324,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             align: 'center',
             fixed: leaf.fixed ?? null,
             sortable: isSelectionCol ? false : (leaf.sortable ?? false),
-            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber'),
+            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber' && leaf.cellType !== 'expand'),
             draggable: leaf.draggable ?? false,
             action: leaf.name,
             minWidth: leaf.minWidth ?? 0,
@@ -332,7 +332,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             groupable: isSelectionCol ? false : (leaf.groupable ?? false),
             groupField: this.getData('groupField') ?? '',
             customMenuItems: leaf.menuItems ?? null,
-            menuDisabled: isSelectionCol || !!leaf.menuDisabled || leaf.cellType === 'rownumber',
+            menuDisabled: isSelectionCol || !!leaf.menuDisabled || leaf.cellType === 'rownumber' || leaf.cellType === 'expand',
             selectionAll: isMultiSelect,
             eventKey,
         };
@@ -373,7 +373,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             eventKey,
             action: leaf.name,
             sortable: leaf.sortable ?? false,
-            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber'),
+            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber' && leaf.cellType !== 'expand'),
             draggable: leaf.draggable ?? false,
             groupable: leaf.groupable ?? false,
             groupField: this.getData('groupField') ?? '',
@@ -398,7 +398,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             title: leaf.title,
             align: leaf.align,
             sortable: leaf.sortable ?? false,
-            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber'),
+            resizable: leaf.resizable ?? (leaf.cellType !== 'checkbox' && leaf.cellType !== 'radio' && leaf.cellType !== 'rownumber' && leaf.cellType !== 'expand'),
             draggable: leaf.draggable ?? false,
             minWidth: leaf.minWidth ?? 50,
             groupable: leaf.groupable ?? false,
@@ -430,6 +430,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
         const leaf = col as ColumnDef;
         if (leaf.selection) continue;
         if (leaf.cellType === 'rownumber') continue;
+        if (leaf.cellType === 'expand') continue;
         result.push({ colName: leaf.name, title: leaf.title, hidden: leaf.hidden ?? false });
         }
         return result;

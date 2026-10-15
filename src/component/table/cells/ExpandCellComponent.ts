@@ -37,11 +37,6 @@ class ExpandCellComponent extends BaseCellComponent {
     _onValueOptionChange(_value: any): void {
     }
 
-    onRootClick(): void {
-        this._expanded = !this._expanded;
-        this._applyState();
-    }
-
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         return { expanded: this._expanded };
     }

@@ -26,11 +26,12 @@ export const RowSelectAbility = {
     },
 
     /**
-     * 行点击 — domEvents 委托，选择模式下切换选中 + 同步行状态
+     * 行选择 — RowEventAbility 分发中心委托
+     * 选择模式下切换选中 + 同步行状态
      * selectionChanged 事件由 domEvents emits 配置自动转发
      * 有选择列的行禁用默认行选择，只有点击选择列单元格才触发选中
      */
-    _onRowClick(this: TableAbilityHost, domEvt: any): void {
+    _onRowSelectClick(this: TableAbilityHost, domEvt: any): void {
         if (this.getData('selectable') === 'none') return;
         const item = domEvt?.targetComponent;
         if (!item) return;

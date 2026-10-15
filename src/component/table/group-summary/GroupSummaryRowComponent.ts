@@ -3,7 +3,6 @@ import type { ListenItem } from '@qimenjs/component-core';
 import type { ColumnMeta } from '../column-types';
 import { GROUP_SUMMARY_ROW_TYPE } from '../constants';
 import { TextCellComponent } from '../cells/TextCellComponent';
-import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './groupsummaryrow.css';
 
@@ -31,10 +30,6 @@ class GroupSummaryRowComponent extends Component {
         };
     }
 
-    domEvents: DomEventsMap = {
-        click: { path: 'root', handler: '_onToggle' },
-    };
-
     onAfterInit(): void {
         this._createCells();
 
@@ -44,7 +39,7 @@ class GroupSummaryRowComponent extends Component {
         }
     }
 
-    _onToggle(): void {
+    toggle(): void {
         this._collapsed = !this._collapsed;
         if (this._collapsed) {
             this.addCls('q-table-row--collapsed');
