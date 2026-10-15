@@ -16,14 +16,15 @@ const ROW_BODY_COLUMNS: ColumnDefOrGroup[] = [
 
 const propertyGridRowBody: RowBodyConfig = {
     type: 'property-grid',
+    i18nScope: 'employee',
     fields: [
-        { key: 'name', labelKey: '姓名' },
-        { key: 'age', labelKey: '年龄', type: 'number' },
-        { key: 'dept', labelKey: '部门' },
-        { key: 'salary', labelKey: '薪资', type: 'number', format: '#,##0' },
-        { key: 'email', labelKey: '邮箱', span: 2 },
-        { key: 'phone', labelKey: '电话' },
-        { key: 'address', labelKey: '地址', span: 2 },
+        { key: 'name', labelKey: 'name' },
+        { key: 'age', labelKey: 'age', type: 'number' },
+        { key: 'dept', labelKey: 'dept' },
+        { key: 'salary', labelKey: 'salary', type: 'number', format: '#,##0' },
+        { key: 'email', labelKey: 'email', span: 2 },
+        { key: 'phone', labelKey: 'phone' },
+        { key: 'address', labelKey: 'address', span: 2 },
     ],
     cols: 2,
 };

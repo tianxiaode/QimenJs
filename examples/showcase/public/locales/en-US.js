@@ -175,6 +175,10 @@ __qimen_i18n_register__('en-US', {
         hideColumn: 'Hide Column',
     },
     employee: {
+        name: 'Name',
+        age: 'Age',
+        dept: 'Department',
+        salary: 'Salary',
         email: 'Email',
         phone: 'Phone',
         address: 'Address',

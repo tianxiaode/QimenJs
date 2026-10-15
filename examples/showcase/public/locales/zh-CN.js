@@ -175,6 +175,10 @@ __qimen_i18n_register__('zh-CN', {
         hideColumn: '隐藏列',
     },
     employee: {
+        name: '姓名',
+        age: '年龄',
+        dept: '部门',
+        salary: '薪资',
         email: '邮箱',
         phone: '电话',
         address: '地址',
