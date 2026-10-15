@@ -97,10 +97,6 @@ const entityRowBody: RowBodyConfig = {
     entityParamField: 'id',
     loadingText: '加载详细数据...',
 };
-        };
-    },
-    loadingText: '加载详细数据...',
-};
 
 export const TABLE_ROW_BODY_DEMO: DemoConfig = {
     title: 'Table Row Body',
