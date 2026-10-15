@@ -261,9 +261,15 @@ class RowComponent extends Component {
     }
 
     setBodyContent(content: any): void {
+        if (this._bodyContent && typeof this._bodyContent.dispose === 'function') {
+            this._bodyContent.dispose();
+        }
         this._bodyContent = content;
-        if (this._bodyEl && content?.el) {
-            this._bodyEl.appendChild(content.el);
+        if (this._bodyEl) {
+            this._bodyEl.innerHTML = '';
+            if (content?.el) {
+                this._bodyEl.appendChild(content.el);
+            }
         }
     }
 

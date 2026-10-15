@@ -2,6 +2,7 @@ import type { AbilityDefinition } from '@/composable';
 import type { TableAbilityHost } from './types';
 import type { ColumnDefOrGroup, ColumnMeta, TemplateDecl, RowBodyConfig } from '../column-types';
 import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+import { ENTITY_LIST_EVENTS } from '@/events';
 
 function isTemplateDecl(value: any): value is TemplateDecl {
     return !!value && typeof value === 'object' && ('tag' in value || 'children' in value);
@@ -58,34 +59,76 @@ export const RowBodyAbility = {
         const rowBody: RowBodyConfig = this.getData('rowBody');
         if (!rowBody || !row?.bodyEl) return;
 
-        const bodyEl = row.bodyEl;
-
-        if (rowBody.loader && !this._bodyCache.has(rowKey)) {
-            const loadingText = rowBody.loadingText ?? 'Loading...';
-            bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
-
-            rowBody.loader(rowKey, rowData).then((detailData: any) => {
-                this._bodyCache.set(rowKey, detailData);
-                const mergedData = { ...rowData, ...detailData };
-                const content = this._renderRowBody(row, mergedData);
-                if (content) {
-                    row.setBodyContent(content);
-                }
-            }).catch(() => {
-                bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
-            });
+        if (this._bodyCache.has(rowKey)) {
+            const mergedData = { ...rowData, ...this._bodyCache.get(rowKey) };
+            const content = this._renderRowBody(row, mergedData);
+            if (content) row.setBodyContent(content);
             return;
         }
 
-        let mergedData = rowData;
-        if (rowBody.loader && this._bodyCache.has(rowKey)) {
-            mergedData = { ...rowData, ...this._bodyCache.get(rowKey) };
+        if (rowBody.entityAction) {
+            this._renderRowBodyWithEntity(row, rowData, rowKey, rowBody);
+            return;
         }
 
-        const content = this._renderRowBody(row, mergedData);
-        if (content) {
-            row.setBodyContent(content);
+        if (rowBody.loader) {
+            this._renderRowBodyWithLoaderFn(row, rowData, rowKey, rowBody);
+            return;
         }
+
+        const content = this._renderRowBody(row, rowData);
+        if (content) row.setBodyContent(content);
+    },
+
+    _renderRowBodyWithEntity(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
+        const entityKey = this.entityKey;
+        if (!entityKey) {
+            const content = this._renderRowBody(row, rowData);
+            if (content) row.setBodyContent(content);
+            return;
+        }
+
+        const bodyEl = row.bodyEl;
+        const loadingText = rowBody.loadingText ?? 'Loading...';
+        bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
+
+        const paramField = rowBody.entityParamField ?? 'id';
+        const paramValue = rowData[paramField] ?? rowKey;
+        const action = rowBody.entityAction;
+
+        const offGot = this.entityOn(entityKey, ENTITY_LIST_EVENTS.GOT, (detailData: any) => {
+            offGot?.();
+            offError?.();
+            if (detailData) {
+                this._bodyCache.set(rowKey, detailData);
+                const mergedData = { ...rowData, ...detailData };
+                const content = this._renderRowBody(row, mergedData);
+                if (content) row.setBodyContent(content);
+            }
+        });
+
+        const offError = this.entityOn(entityKey, 'get:error', () => {
+            offGot?.();
+            offError?.();
+            bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+        });
+
+        this.entityEmit(action, { id: paramValue }, { source: entityKey });
+    },
+
+    _renderRowBodyWithLoaderFn(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
+        const bodyEl = row.bodyEl;
+        const loadingText = rowBody.loadingText ?? 'Loading...';
+        bodyEl.innerHTML = `<div class="q-table-row__body-loading">${loadingText}</div>`;
+
+        rowBody.loader!(rowKey, rowData).then((detailData: any) => {
+            this._bodyCache.set(rowKey, detailData);
+            const mergedData = { ...rowData, ...detailData };
+            const content = this._renderRowBody(row, mergedData);
+            if (content) row.setBodyContent(content);
+        }).catch(() => {
+            bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+        });
     },
 
     _renderRowBody(this: TableAbilityHost, row: any, rowData: any): any {

@@ -76,13 +76,27 @@ const loaderRowBody: RowBodyConfig = {
         { key: 'level', labelKey: '职级' },
     ],
     cols: 2,
-    loader: async (rowId: string) => {
+    loader: async (_rowId: string) => {
         await new Promise(resolve => setTimeout(resolve, 500));
         return {
             performance: 85 + Math.floor(Math.random() * 15),
             projectCount: 3 + Math.floor(Math.random() * 8),
             lastReview: '2024-Q4',
             level: 'P' + (4 + Math.floor(Math.random() * 4)),
+        };
+    },
+    loadingText: '加载详细数据...',
+};
+
+const entityRowBody: RowBodyConfig = {
+    type: 'property-grid',
+    i18nScope: 'employee',
+    excludeColumns: true,
+    cols: 2,
+    entityAction: 'get',
+    entityParamField: 'id',
+    loadingText: '加载详细数据...',
+};
         };
     },
     loadingText: '加载详细数据...',
@@ -224,6 +238,36 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
                             columns: ROW_BODY_COLUMNS,
                             data: ROW_BODY_DATA,
                             rowBody: loaderRowBody,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: 'Entity 模式（通过 table entityKey 加载详情）',
+            code: `{ type: 'table', options: {
+    columns: [...],
+    data: [...],
+    entityKey: 'employee',
+    rowBody: {
+        type: 'property-grid',
+        excludeColumns: true,
+        i18nScope: 'employee',
+        entityAction: 'get',
+        entityParamField: 'id',
+        loadingText: '加载详细数据...',
+    }
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: ROW_BODY_COLUMNS,
+                            data: ROW_BODY_DATA,
+                            rowBody: entityRowBody,
                         },
                     },
                 ],
