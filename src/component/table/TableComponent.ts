@@ -60,6 +60,9 @@ class TableComponent extends ItemGroupPooledComponent {
                 groupBy: '_onGroupBy',
                 toggleAll: '_onToggleAll',
                 reorder: '_onReorder',
+                reorderStart: '_onReorderStart',
+                reorderMove: '_onReorderMove',
+                reorderEnd: '_onReorderEnd',
                 groupToggle: 'onGroupToggle',
                 hideColumn: '_onHideColumn',
                 showColumn: '_onShowColumn',
@@ -280,6 +283,7 @@ class TableComponent extends ItemGroupPooledComponent {
         } else {
             this._sortState = { colName, direction };
         }
+        this._header?._applySort(colName, direction);
         if (this.hasEntity() && this._isAfterInit) {
             this.entityEmit(
                 ENTITY_COMMAND_EVENTS.SORT,
@@ -303,6 +307,18 @@ class TableComponent extends ItemGroupPooledComponent {
         }
     }
 
+    _onReorderStart(data: any): void {
+        this._header?._onReorderStart(data);
+    }
+
+    _onReorderMove(data: any): void {
+        this._header?._onReorderMove(data);
+    }
+
+    _onReorderEnd(data: any): void {
+        this._header?._onReorderEnd(data);
+    }
+
     _onGroupBy(data: any): void {
         const actionData = data?.actionData ?? data;
         const colName = actionData?.colName ?? data?.colName;
@@ -310,6 +326,10 @@ class TableComponent extends ItemGroupPooledComponent {
         const currentGroupField = this.getData('groupField') ?? '';
         const groupField = currentGroupField === colName ? '' : colName;
         this.setData('groupField', groupField);
+        if (this._header) {
+            this._header.setData('groupField', groupField);
+            this._header._updateCellGroupField(groupField);
+        }
         if (this.hasEntity() && !this.getData('virtualScroll')) {
             this.entityEmit(
                 ENTITY_COMMAND_EVENTS.GROUP_BY,

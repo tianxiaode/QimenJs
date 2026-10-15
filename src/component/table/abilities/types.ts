@@ -88,6 +88,9 @@ export interface TableAbilityHost {
     _onGroupBy(data: any): void;
     _onToggleAll(data: any): void;
     _onReorder(data: any): void;
+    _onReorderStart(data: any): void;
+    _onReorderMove(data: any): void;
+    _onReorderEnd(data: any): void;
 
     _updateSummaryRow(): void;
     _computeSummaryData(metas: ColumnMeta[]): Record<string, any>;

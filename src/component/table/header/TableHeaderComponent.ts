@@ -2,7 +2,7 @@ import { ItemGroupPooledComponent } from '../../itemgroup/ItemGroupPooledCompone
 import { ColumnOrderAbility } from '@qimenjs/component-abilities';
 import type { ColumnDefOrGroup, ColumnDef, ColumnGroupDef } from '../column-types';
 import type { GroupChildConfig } from './GroupHeaderCellComponent';
-import type { DomEventsMap, ListenItem, TemplateDecl } from '@qimenjs/component-core';
+import type { DomEventsMap, TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { HeaderCellComponent } from './HeaderCellComponent';
 import { GroupHeaderCellComponent } from './GroupHeaderCellComponent';
@@ -36,21 +36,6 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             groupField: this.getData('groupField') ?? '',
         };
     }
-
-    listens: ListenItem[] = [
-        {
-            source: 'self',
-            events: {
-                sort: { handler: '_onSort' },
-                groupBy: { handler: '_onGroupBy' },
-                hideColumn: { handler: '_onHideColumn' },
-                showColumn: { handler: '_onShowColumn' },
-                reorderStart: { handler: '_onReorderStart' },
-                reorderMove: { handler: '_onReorderMove' },
-                reorderEnd: { handler: '_onReorderEnd' },
-            },
-        },
-    ];
 
     setSelectAllState(allSelected: boolean, someSelected: boolean): void {
         const items = this.items;

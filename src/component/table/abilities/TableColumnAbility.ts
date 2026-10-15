@@ -168,23 +168,27 @@ export const TableColumnAbility = {
     },
 
     _onHideColumn(this: TableAbilityHost, data: any): void {
-        const colName = data?.colName;
+        const colName = data?.colName ?? data?.actionData?.colName;
         if (!colName) return;
         const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            if (typeof item.hideColumn === 'function') item.hideColumn(colName);
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (typeof item.hideColumn === 'function') item.hideColumn(colName);
+            }
         }
+        this._header?._onHideColumn(data);
     },
 
     _onShowColumn(this: TableAbilityHost, data: any): void {
-        const colName = data?.colName;
+        const colName = data?.colName ?? data?.actionData?.colName;
         if (!colName) return;
         const items = this.items;
-        if (!Array.isArray(items)) return;
-        for (const item of items) {
-            if (typeof item.showColumn === 'function') item.showColumn(colName);
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                if (typeof item.showColumn === 'function') item.showColumn(colName);
+            }
         }
+        this._header?._onShowColumn(data);
     },
 
     moveColumn(this: TableAbilityHost, from: number, to: number): void {
