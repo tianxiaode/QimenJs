@@ -80,6 +80,9 @@ class TableComponent extends ItemGroupPooledComponent {
         return {
             selectedKeys: this.getSelectedKeys?.() ?? [],
             selectedData: this.getSelectedData?.() ?? [],
+            sortBy: this._sortState?.colName ?? '',
+            sortOrder: this._sortState?.direction ?? '',
+            groupField: this.getData('groupField') ?? '',
         };
     }
 
