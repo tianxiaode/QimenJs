@@ -27,6 +27,7 @@ import { Definitions } from '@/composable';
 const TextCellComponentDefs: Definitions = {
     options: {
         format: null,
+        enumMap: null,
     },
 } as const;
 
@@ -37,6 +38,10 @@ class TextCellComponent extends BaseCellComponent {
     }
 
     _formatValue(value: any): string {
+        if (this.enumMap && value != null) {
+            const mapped = this.enumMap[String(value)];
+            if (mapped !== undefined) return mapped;
+        }
         if (this.format === undefined || this.format === null) return String(value ?? '');
         if (typeof this.format === 'function') return this.format(value, undefined);
         return this._applyFormatPreset(value, this.format);

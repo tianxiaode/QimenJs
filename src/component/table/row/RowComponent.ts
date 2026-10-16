@@ -87,6 +87,9 @@ class RowComponent extends Component {
         if (meta.format && meta.cellType === 'text') {
             options.format = meta.format;
         }
+        if (meta.enumMap && meta.cellType === 'text') {
+            options.enumMap = meta.enumMap;
+        }
         const cell = new CellClass(options);
         return cell;
     }

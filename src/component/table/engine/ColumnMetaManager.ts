@@ -138,6 +138,7 @@ export class ColumnMetaManager {
             title: isRowNumber ? (def.title ?? '#') : (isExpand ? '' : def.title),
             cellType,
             format: def.format,
+            enumMap: def.enumMap,
             align: resolveAlign(cellType, def.align),
             width,
             minWidth: def.minWidth,

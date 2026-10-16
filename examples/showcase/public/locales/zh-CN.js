@@ -190,5 +190,8 @@ __qimen_i18n_register__('zh-CN', {
         lastReview: '最近评审',
         remote: '远程办公',
         skills: '专业技能',
+        statusActive: '在职',
+        statusInactive: '离职',
+        statusOnLeave: '休假',
     },
 });

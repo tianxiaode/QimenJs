@@ -190,5 +190,8 @@ __qimen_i18n_register__('en-US', {
         lastReview: 'Last Review',
         remote: 'Remote',
         skills: 'Skills',
+        statusActive: 'Active',
+        statusInactive: 'Inactive',
+        statusOnLeave: 'On Leave',
     },
 });

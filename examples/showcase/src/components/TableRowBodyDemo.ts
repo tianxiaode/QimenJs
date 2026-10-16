@@ -332,56 +332,53 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
     description: '行展开详情（RowBody）— property-grid / html / loader / entity / 嵌套子表 / 嵌套+entity 按需加载',
     sections: [
         {
-            label: '行展开 — Property Grid（fields 配置 / excludeColumns 自动排除已显示列）',
+            label: '行展开 — Property Grid（fields 显式配置）',
             code: `{ type: 'table', options: {
     columns: [...],
     data: [...],
     rowBody: {
         type: 'property-grid',
-        fields: [...],        // 方式一：显式字段配置
+        fields: [...],        // 显式字段配置
         cols: 2,
     }
-} }
-
-// 方式二：excludeColumns 为 true 且 fields 为空时，自动排除表格列已显示的字段
+} }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            columns: ROW_BODY_COLUMNS,
+                            data: ROW_BODY_DATA,
+                            rowBody: propertyGridRowBody,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '行展开 — Property Grid（excludeColumns 自动排除已显示列）',
+            code: `{ type: 'table', options: {
+    columns: [...],
+    data: [...],
     rowBody: {
         type: 'property-grid',
         excludeColumns: true,  // 自动排除 name/age/dept/salary
         cols: 2,
-    } }`,
+    }
+} }`,
             template: {
                 tag: 'div',
-                classes: 'q-demo__row',
+                classes: 'q-demo__column',
                 children: [
                     {
-                        tag: 'div',
-                        classes: 'q-demo__column',
-                        children: [
-                            { tag: 'div', classes: 'q-demo__section-label', options: { text: 'fields 配置' } },
-                            {
-                                type: 'table',
-                                options: {
-                                    columns: ROW_BODY_COLUMNS,
-                                    data: ROW_BODY_DATA,
-                                    rowBody: propertyGridRowBody,
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        tag: 'div',
-                        classes: 'q-demo__column',
-                        children: [
-                            { tag: 'div', classes: 'q-demo__section-label', options: { text: 'excludeColumns 自动排除' } },
-                            {
-                                type: 'table',
-                                options: {
-                                    columns: ROW_BODY_COLUMNS,
-                                    data: ROW_BODY_DATA,
-                                    rowBody: excludeColumnsRowBody,
-                                },
-                            },
-                        ],
+                        type: 'table',
+                        options: {
+                            columns: ROW_BODY_COLUMNS,
+                            data: ROW_BODY_DATA,
+                            rowBody: excludeColumnsRowBody,
+                        },
                     },
                 ],
             },

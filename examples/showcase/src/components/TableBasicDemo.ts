@@ -21,9 +21,33 @@ const I18N_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'salary', field: 'salary', displayKey: 'salary', width: 120, align: 'right', format: 'currency' },
 ];
 
+const ENUM_MAP_DATA = [
+    { id: 1, name: '张三', dept: '技术部', status: 'active' },
+    { id: 2, name: '李四', dept: '市场部', status: 'on_leave' },
+    { id: 3, name: '王五', dept: '管理层', status: 'active' },
+    { id: 4, name: '赵六', dept: '技术部', status: 'inactive' },
+];
+
+const ENUM_MAP_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'name', field: 'name', displayKey: 'name', width: 120 },
+    { name: 'dept', field: 'dept', displayKey: 'dept', width: 120, align: 'center' },
+    {
+        name: 'status',
+        field: 'status',
+        displayKey: 'status',
+        width: 100,
+        align: 'center',
+        enumMap: {
+            active: '@employee.statusActive',
+            inactive: '@employee.statusInactive',
+            on_leave: '@employee.statusOnLeave',
+        },
+    },
+];
+
 export const TABLE_BASIC_DEMO: DemoConfig = {
     title: 'Table 基础',
-    description: '表格基础功能 — 排序、分组列头、列拖拽重排序、列宽调整、列统计行、列标题本地化',
+    description: '表格基础功能 — 排序、分组列头、列拖拽重排序、列宽调整、列统计行、列标题本地化、枚举值本地化',
     sections: [
         {
             label: '综合表格',
@@ -105,6 +129,40 @@ export const TABLE_BASIC_DEMO: DemoConfig = {
                             i18nScope: 'employee',
                             columns: I18N_COLUMNS,
                             data: I18N_DATA,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '枚举值本地化（enumMap + i18n）',
+            code: `{ type: 'table', options: {
+    i18nScope: 'employee',
+    columns: [
+        { name: 'name', field: 'name', displayKey: 'name' },
+        { name: 'status', field: 'status', displayKey: 'status',
+          enumMap: {
+            active: '@employee.statusActive',
+            inactive: '@employee.statusInactive',
+            on_leave: '@employee.statusOnLeave',
+          }
+        },
+    ],
+    data: [{ status: 'active' }, { status: 'on_leave' }, ...],
+} }
+// enumMap 优先于 format：命中映射值后走 setNodeText 自动翻译
+// 未命中的值 fallback 到原始值
+// 语言切换时单元格自动刷新`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            i18nScope: 'employee',
+                            columns: ENUM_MAP_COLUMNS,
+                            data: ENUM_MAP_DATA,
                         },
                     },
                 ],

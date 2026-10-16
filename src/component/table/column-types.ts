@@ -549,6 +549,24 @@ export interface ColumnDef {
     format?: ColumnFormat;
 
     /**
+     * 枚举值映射 — 将单元格原始值映射为显示文本（支持 i18n）
+     *
+     * 运行时由 TextCell 优先查 enumMap，命中则用映射值（带 `@` 前缀走 i18n 自动翻译+语言切换刷新），
+     * 未命中再走 format，最终 fallback 到原始值。
+     *
+     * @example
+     * ```ts
+     * { name: 'status', field: 'status', title: '状态',
+     *   enumMap: {
+     *     'active': '@employee.status.active',
+     *     'inactive': '@employee.status.inactive',
+     *   }
+     * }
+     * ```
+     */
+    enumMap?: Record<string, string>;
+
+    /**
      * 自定义单元格模板 — 完全替换 cellType 默认生成的节点
      *
      * 提供时忽略 cellType，直接使用此 TplNode 作为单元格节点。
@@ -731,6 +749,9 @@ export interface ColumnMeta {
 
     /** 格式化（预设名或自定义函数），TextCell.update() 内使用 */
     format?: ColumnFormat;
+
+    /** 枚举值映射，TextCell.update() 内优先查 enumMap */
+    enumMap?: Record<string, string>;
 
     /** 文本对齐（已解析的最终值，考虑 cellType 默认值） */
     align: ColumnAlign;
