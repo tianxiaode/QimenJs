@@ -29,17 +29,27 @@ export const TableColumnAbility = {
     },
 
     _prepareColumnsForHeader(this: TableAbilityHost, columns: ColumnDefOrGroup[]): ColumnDefOrGroup[] {
+        const scope = this.getData('i18nScope') as string;
         return columns.map(col => {
             if ('children' in col && Array.isArray((col as ColumnGroupDef).children)) {
                 const group = col as ColumnGroupDef;
-                return { ...group, children: this._prepareColumnsForHeader(group.children) };
+                return {
+                    ...group,
+                    title: this._resolveColumnTitle(group.title, group.displayKey, scope),
+                    children: this._prepareColumnsForHeader(group.children),
+                };
             }
             const leaf = col as ColumnDef;
             if (leaf.cellType === 'rownumber') {
-                return { ...leaf, name: '_rownum', title: leaf.title ?? '#' };
+                return { ...leaf, name: '_rownum', title: this._resolveColumnTitle(leaf.title ?? '#', leaf.displayKey, scope) };
             }
-            return leaf;
+            return { ...leaf, title: this._resolveColumnTitle(leaf.title, leaf.displayKey, scope) };
         });
+    },
+
+    _resolveColumnTitle(this: TableAbilityHost, title: string | undefined, displayKey: string | undefined, scope: string): string | undefined {
+        if (!displayKey) return title;
+        return `@${scope ? `${scope}.` : ''}${displayKey}`;
     },
 
     _applyColumnStyles(this: TableAbilityHost): void {

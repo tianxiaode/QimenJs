@@ -367,6 +367,7 @@ const TableComponentDefs: Definitions = {
         itemHeight: 36,
         height: null,
         rowBody: null,
+        i18nScope: '',
     },
     fields: {
         _isAfterInit: false,

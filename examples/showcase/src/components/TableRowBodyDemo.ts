@@ -16,6 +16,13 @@ const ROW_BODY_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
 ];
 
+const I18N_COLUMNS: ColumnDefOrGroup[] = [
+    { name: 'name', field: 'name', displayKey: 'name', width: 120 },
+    { name: 'age', field: 'age', displayKey: 'age', width: 80, align: 'right' },
+    { name: 'dept', field: 'dept', displayKey: 'dept', width: 120, align: 'center' },
+    { name: 'salary', field: 'salary', displayKey: 'salary', width: 120, align: 'right', format: 'currency' },
+];
+
 const propertyGridRowBody: RowBodyConfig = {
     type: 'property-grid',
     i18nScope: 'employee',
@@ -382,6 +389,33 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
                                 },
                             },
                         ],
+                    },
+                ],
+            },
+        },
+        {
+            label: '列标题本地化（i18nScope + displayKey）',
+            code: `{ type: 'table', options: {
+    i18nScope: 'employee',   // 统一 scope 前缀
+    columns: [
+        { name: 'name', field: 'name', displayKey: 'name', ... },  // title 走 @employee.name
+        { name: 'age',  displayKey: 'age', ... },
+    ],
+    data: [...],
+} }
+// displayKey 配置后优先于 title；未配置的列 title 保持纯文本
+// 语言切换时表头自动刷新`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__column',
+                children: [
+                    {
+                        type: 'table',
+                        options: {
+                            i18nScope: 'employee',
+                            columns: I18N_COLUMNS,
+                            data: ROW_BODY_DATA,
+                        },
                     },
                 ],
             },

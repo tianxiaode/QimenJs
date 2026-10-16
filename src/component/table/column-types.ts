@@ -473,6 +473,14 @@ export interface ColumnDef {
      */
     title?: string;
 
+    /**
+     * 表头 i18n key — 配置后列标题走 `@{i18nScope}.{displayKey}` 自动翻译
+     *
+     * 配合 Table 的 i18nScope 统一 scope 前缀；displayKey 存在时优先于 title。
+     * 语言切换时表头文本自动刷新（title 节点 setNodeText 注册的 i18n 依赖）。
+     */
+    displayKey?: string;
+
     // ─── style: 列样式 ───
 
     /**
@@ -797,6 +805,8 @@ export interface ColumnMeta {
 export interface ColumnGroupDef {
     name: string;
     title?: string;
+    /** 表头 i18n key — 配置后组头标题走 `@{i18nScope}.{displayKey}` 自动翻译 */
+    displayKey?: string;
     children: ColumnDefOrGroup[];
 }
 

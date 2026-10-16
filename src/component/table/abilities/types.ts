@@ -73,6 +73,7 @@ export interface TableAbilityHost {
     _isExpandCellClick(row: any, clickTarget: HTMLElement): boolean;
 
     _prepareColumnsForHeader(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[];
+    _resolveColumnTitle(title: string | undefined, displayKey: string | undefined, scope: string): string | undefined;
     _applyColumnStyles(): void;
     _applyFixedColumnOffsets(metas: ColumnMeta[]): void;
     _resolveFixedWidth(meta: ColumnMeta): number;
