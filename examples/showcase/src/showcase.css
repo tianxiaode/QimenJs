@@ -385,3 +385,36 @@ body {
     word-break: break-all;
     text-align: center;
 }
+
+.q-demo__edit-log {
+    margin-top: 16px;
+    border: 1px solid var(--q-color-border, #e0e0e0);
+    border-radius: var(--q-radius-md, 4px);
+    overflow: hidden;
+}
+
+.q-demo__edit-log-title {
+    padding: 8px 12px;
+    background: var(--q-color-bg-secondary, #f5f5f5);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--q-color-text, #1a1a1a);
+}
+
+.q-demo__edit-log-content {
+    padding: 8px 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--q-color-text-secondary, #666);
+}
+
+.q-demo__edit-log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid var(--q-color-border, #f0f0f0);
+}
+
+.q-demo__edit-log-entry:last-child {
+    border-bottom: none;
+}

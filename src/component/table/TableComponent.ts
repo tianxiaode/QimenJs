@@ -112,6 +112,7 @@ class TableComponent extends ItemGroupPooledComponent {
         }
 
         this._isAfterInit = true;
+        this._initEdit();
         this._reflow();
     }
 
@@ -368,6 +369,8 @@ const TableComponentDefs: Definitions = {
         height: null,
         rowBody: null,
         i18nScope: '',
+        editTrigger: 'dblclick',
+        editRules: null,
     },
     fields: {
         _isAfterInit: false,
@@ -379,6 +382,9 @@ const TableComponentDefs: Definitions = {
         _virtualEntityMode: false,
         _pendingRanges: null,
         _bodyCache: null,
+        _editOverlay: null,
+        _editingRowKey: null,
+        _editingRowData: null,
     },
 } as const;
 

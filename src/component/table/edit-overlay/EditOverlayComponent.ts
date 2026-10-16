@@ -1,6 +1,7 @@
-import { Component } from '../../../component-core/Component';
-import type { ColumnDefOrGroup, ColumnDef, EditType } from '../column-types';
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
+import type { ColumnDef, ColumnMeta, EditType } from '../column-types';
 import { Definitions } from '@/composable';
+import './edit-overlay.css';
 
 const EDIT_TYPE_INPUT_MAP: Record<EditType, string> = {
     text: 'text',
@@ -13,151 +14,229 @@ const EDIT_TYPE_INPUT_MAP: Record<EditType, string> = {
 class EditOverlayComponent extends Component {
     static type = 'q-table-edit-overlay';
 
-    _activeColName: string | null = null;
+    _activeRowData: any = null;
+    _editableMetas: ColumnMeta[] = [];
+    _originalValues: Record<string, any> = {};
+    _errorMessages: Record<string, string> = {};
 
-    get tpl(): any {
+    get tpl(): TemplateDecl {
         return {
             tag: 'div',
             name: 'root',
             classes: 'q-edit-overlay',
+            children: [
+                {
+                    tag: 'div',
+                    name: 'editArea',
+                    classes: 'q-edit-overlay__edit-area',
+                },
+                {
+                    tag: 'div',
+                    name: 'errorArea',
+                    classes: 'q-edit-overlay__error-area',
+                },
+                {
+                    tag: 'div',
+                    name: 'actions',
+                    classes: 'q-edit-overlay__actions',
+                    children: [
+                        {
+                            tag: 'button',
+                            name: 'cancelBtn',
+                            classes: 'q-edit-overlay__cancel',
+                            options: { text: '取消' },
+                        },
+                        {
+                            tag: 'button',
+                            name: 'saveBtn',
+                            classes: 'q-edit-overlay__save',
+                            options: { text: '保存' },
+                        },
+                    ],
+                },
+            ],
         };
     }
 
     onAfterInit(): void {
-        this._createSlots();
-        this._createActions();
-        this._createError();
-        this._hideAllSlots();
+        this._buildEditors();
+        this._hideAllEditors();
     }
 
-    _createSlots(): void {
-        const columns: ColumnDefOrGroup[] = this.getData('columns') || [];
-        for (const col of columns) {
-            if (this._isGroup(col)) continue;
-            const def = col as ColumnDef;
-            if (!def.editable) continue;
+    _buildEditors(): void {
+        const editArea = this.getNodeEl('editArea');
+        if (!editArea) return;
 
-            const slot = document.createElement('div');
-            slot.className = 'q-edit-overlay__slot';
-            slot.style.display = 'none';
-            slot.dataset.colName = def.name;
+        const metas: ColumnMeta[] = this.getData('editableMetas') || [];
+        this._editableMetas = metas;
 
-            const input = this._createInput(def);
-            slot.appendChild(input);
+        for (const meta of metas) {
+            const editorWrapper = document.createElement('div');
+            editorWrapper.className = 'q-edit-overlay__field';
+            editorWrapper.dataset.colName = meta.name;
+            editorWrapper.style.display = 'none';
 
-            this.el.appendChild(slot);
+            const label = document.createElement('label');
+            label.className = 'q-edit-overlay__field-label';
+            label.textContent = meta.title || meta.name;
+
+            const input = this._createEditor(meta);
+            editorWrapper.appendChild(label);
+            editorWrapper.appendChild(input);
+
+            editArea.appendChild(editorWrapper);
         }
     }
 
-    _createInput(def: ColumnDef): HTMLElement {
-        const inputType = EDIT_TYPE_INPUT_MAP[def.editType ?? 'text'] || 'text';
+    _createEditor(meta: ColumnMeta): HTMLElement {
+        const editType = meta.editType ?? 'text';
+
+        if (editType === 'custom' && meta.editComponent) {
+            const container = document.createElement('div');
+            container.className = 'q-edit-overlay__custom-editor';
+            container.dataset.colName = meta.name;
+            return container;
+        }
+
+        const inputType = EDIT_TYPE_INPUT_MAP[editType] || 'text';
         const input = document.createElement('input');
         input.className = 'q-edit-overlay__input';
         input.type = inputType;
-        input.dataset.colName = def.name;
+        input.dataset.colName = meta.name;
+
+        if (editType === 'select') {
+            input.setAttribute('placeholder', '请选择...');
+        }
+
         return input;
     }
 
-    _createActions(): void {
-        const actions = document.createElement('div');
-        actions.className = 'q-edit-overlay__actions';
+    activate(rowData: any, editableMetas: ColumnMeta[]): void {
+        this._activeRowData = rowData;
+        this._editableMetas = editableMetas;
+        this._originalValues = {};
+        this._errorMessages = {};
 
-        const save = document.createElement('span');
-        save.className = 'q-edit-overlay__save';
-        actions.appendChild(save);
+        this._hideAllEditors();
+        this._clearErrors();
 
-        const cancel = document.createElement('span');
-        cancel.className = 'q-edit-overlay__cancel';
-        actions.appendChild(cancel);
+        for (const meta of editableMetas) {
+            const value = rowData?.[meta.field] ?? '';
+            this._originalValues[meta.name] = value;
+            this._setEditorValue(meta.name, value);
+            this._showEditor(meta.name);
+        }
 
-        this.el.appendChild(actions);
-    }
-
-    _createError(): void {
-        const error = document.createElement('div');
-        error.className = 'q-edit-overlay__error';
-        error.style.display = 'none';
-        this.el.appendChild(error);
-    }
-
-    activate(colName: string, value?: any): void {
-        this._activeColName = colName;
-        this._hideAllSlots();
-        this._showSlot(colName);
-        this._clearError();
-        this._setValue(colName, value);
-        this._focusInput(colName);
+        this._focusFirstEditor();
     }
 
     deactivate(): void {
-        this._activeColName = null;
-        this._hideAllSlots();
-        this._clearError();
+        this._activeRowData = null;
+        this._originalValues = {};
+        this._errorMessages = {};
+        this._hideAllEditors();
+        this._clearErrors();
     }
 
-    getEditValue(): any {
-        if (!this._activeColName) return undefined;
-        const input = this._getInput(this._activeColName);
-        return input ? input.value : undefined;
+    getEditValues(): Record<string, any> {
+        const values: Record<string, any> = {};
+        for (const meta of this._editableMetas) {
+            values[meta.name] = this._getEditorValue(meta.name);
+        }
+        return values;
     }
 
-    showError(message: string): void {
-        const error = this.el.querySelector('.q-edit-overlay__error');
-        if (error) {
-            error.textContent = message;
-            (error as HTMLElement).style.display = '';
+    getOriginalValues(): Record<string, any> {
+        return { ...this._originalValues };
+    }
+
+    showErrors(errors: Record<string, string>): void {
+        this._errorMessages = { ...errors };
+        this._renderErrors();
+    }
+
+    _renderErrors(): void {
+        const errorArea = this.getNodeEl('errorArea');
+        if (!errorArea) return;
+        errorArea.innerHTML = '';
+
+        for (const [colName, message] of Object.entries(this._errorMessages)) {
+            if (!message) continue;
+            const field = this.el.querySelector(`.q-edit-overlay__field[data-col-name="${colName}"]`);
+            if (field) {
+                field.classList.add('q-edit-overlay__field--error');
+            }
+            const errorItem = document.createElement('div');
+            errorItem.className = 'q-edit-overlay__error-item';
+            errorItem.textContent = message;
+            errorArea.appendChild(errorItem);
+        }
+
+        const hasErrors = Object.values(this._errorMessages).some(v => v);
+        if (!hasErrors) {
+            this._clearFieldErrors();
         }
     }
 
-    _hideAllSlots(): void {
-        const slots = this.el.querySelectorAll('.q-edit-overlay__slot');
-        slots.forEach((slot: Element) => {
-            (slot as HTMLElement).style.display = 'none';
+    _clearErrors(): void {
+        this._errorMessages = {};
+        const errorArea = this.getNodeEl('errorArea');
+        if (errorArea) errorArea.innerHTML = '';
+        this._clearFieldErrors();
+    }
+
+    _clearFieldErrors(): void {
+        const fields = this.el.querySelectorAll('.q-edit-overlay__field');
+        fields.forEach((f: Element) => f.classList.remove('q-edit-overlay__field--error'));
+    }
+
+    _hideAllEditors(): void {
+        const fields = this.el.querySelectorAll('.q-edit-overlay__field');
+        fields.forEach((f: Element) => {
+            (f as HTMLElement).style.display = 'none';
         });
     }
 
-    _showSlot(colName: string): void {
-        const slot = this.el.querySelector(`.q-edit-overlay__slot[data-col-name="${colName}"]`);
-        if (slot) (slot as HTMLElement).style.display = '';
+    _showEditor(colName: string): void {
+        const field = this.el.querySelector(`.q-edit-overlay__field[data-col-name="${colName}"]`);
+        if (field) (field as HTMLElement).style.display = '';
     }
 
-    _clearError(): void {
-        const error = this.el.querySelector('.q-edit-overlay__error');
-        if (error) {
-            error.textContent = '';
-            (error as HTMLElement).style.display = 'none';
-        }
-    }
-
-    _setValue(colName: string, value?: any): void {
+    _setEditorValue(colName: string, value: any): void {
         const input = this._getInput(colName);
-        if (input && value !== undefined) {
-            input.value = String(value);
-        }
+        if (input) input.value = String(value ?? '');
     }
 
-    _focusInput(colName: string): void {
+    _getEditorValue(colName: string): any {
         const input = this._getInput(colName);
-        if (input) {
-            this.nextFrame(() => input.focus());
+        if (!input) return undefined;
+        if (input.type === 'number') {
+            return input.value === '' ? null : Number(input.value);
         }
+        return input.value;
     }
 
     _getInput(colName: string): HTMLInputElement | null {
         return this.el.querySelector(`input[data-col-name="${colName}"]`) as HTMLInputElement | null;
     }
 
-    _isGroup(col: ColumnDefOrGroup): boolean {
-        return 'children' in col && Array.isArray((col as any).children);
+    _focusFirstEditor(): void {
+        const firstInput = this.el.querySelector('.q-edit-overlay__input') as HTMLInputElement | null;
+        if (firstInput) {
+            this.nextFrame(() => firstInput.focus());
+        }
     }
 }
 
 const EditOverlayComponentDefs: Definitions = {
     options: {
-        columns: null,
+        editableMetas: null,
     },
     fields: {
-        _activeColName: null,
+        _activeRowData: null,
+        _editableMetas: null,
+        _originalValues: null,
+        _errorMessages: null,
     },
 } as const;
 

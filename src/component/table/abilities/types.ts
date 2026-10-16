@@ -112,4 +112,13 @@ export interface TableAbilityHost {
     _renderRowBodyWithLoaderFn(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;
     _applyRowBodyData(inst: any, row: any, mergedData: any, rowBody: RowBodyConfig): void;
     _showBodyLoading(bodyEl: HTMLElement, text: string): HTMLElement;
+
+    _initEdit(): void;
+    _onRowEditTrigger(domEvt: any): void;
+    _startEdit(row: any, rowData: any, editableMetas: any[]): void;
+    _bindEditActions(): void;
+    _saveEdit(): void;
+    _cancelEdit(): void;
+    _closeEditOverlay(): void;
+    _validateEditValues(values: Record<string, any>): Record<string, string>;
 }
