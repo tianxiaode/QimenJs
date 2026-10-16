@@ -49,19 +49,25 @@ export const TableEditAbility = {
         this._editingRowKey = rowData._rowKey ?? String(rowData.id ?? '');
         this._editingRowData = rowData;
 
-        this._editOverlay = new EditOverlayComponent({
+        const overlay = new EditOverlayComponent({
             editableMetas,
         });
-
-        this._editOverlay.activate(rowData, editableMetas);
+        this._editOverlay = overlay;
 
         const anchorEl = row.el;
-        this._editOverlay._showOverlay({
-            anchor: anchorEl,
-            placement: 'bottom',
-        });
 
-        this._bindEditActions();
+        Promise.resolve(overlay.ready).then(() => {
+            if (this._editOverlay !== overlay) return;
+
+            overlay.activate(rowData, editableMetas);
+
+            overlay._showOverlay({
+                anchor: anchorEl,
+                placement: 'bottom',
+            });
+
+            this._bindEditActions();
+        });
     },
 
     _bindEditActions(this: TableAbilityHost): void {
