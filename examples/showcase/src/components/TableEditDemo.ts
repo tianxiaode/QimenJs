@@ -102,9 +102,9 @@ class CellEditDemo extends Component {
                 const items = this._table.getData('data');
                 const idx = items.findIndex((item: any) => String(item.id) === String(data.rowKey));
                 if (idx >= 0) {
-                    items[idx] = { ...items[idx], ...data.newValues };
-                    this._table.setData('data', items);
-                    this._table._reflow();
+                    const newItems = [...items];
+                    newItems[idx] = { ...items[idx], ...data.newValues };
+                    this._table.setData('data', newItems);
                 }
             });
 
@@ -179,9 +179,9 @@ class RowEditDemo extends Component {
                 const items = this._table.getData('data');
                 const idx = items.findIndex((item: any) => String(item.id) === String(data.rowKey));
                 if (idx >= 0) {
-                    items[idx] = { ...items[idx], ...data.newValues };
-                    this._table.setData('data', items);
-                    this._table._reflow();
+                    const newItems = [...items];
+                    newItems[idx] = { ...items[idx], ...data.newValues };
+                    this._table.setData('data', newItems);
                 }
             });
 
