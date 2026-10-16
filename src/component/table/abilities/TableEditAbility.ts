@@ -108,12 +108,12 @@ export const TableEditAbility = {
     },
 
     _onEditSave(this: TableAbilityHost, data: any): void {
-        this.componentEmit('editSave', data);
+        this.emit('editSave', data);
         this._closeEditOverlay();
     },
 
     _onEditCancel(this: TableAbilityHost, data: any): void {
-        this.componentEmit('editCancel', data);
+        this.emit('editCancel', data);
         this._closeEditOverlay();
     },
 
