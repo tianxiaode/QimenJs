@@ -20,6 +20,8 @@ export const TableEditAbility = {
     _editOverlay: null as EditOverlayComponent | null,
     _editingRowKey: null as string | null,
     _editingRowData: null as any | null,
+    _editingRow: null as any | null,
+    _editScrollHandler: null as (() => void) | null,
 
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
@@ -66,6 +68,7 @@ export const TableEditAbility = {
 
         this._editingRowKey = rowData._rowKey ?? String(rowData.id ?? '');
         this._editingRowData = rowData;
+        this._editingRow = row;
 
         const cellPositions = this._collectCellPositions(row, editableMetas);
         const rowRect = row.el.getBoundingClientRect();
@@ -89,18 +92,35 @@ export const TableEditAbility = {
         Promise.resolve(overlay.ready).then(() => {
             if (this._editOverlay !== overlay) return;
 
-            overlay.el.style.position = 'fixed';
-            overlay.el.style.left = `${rowRect.left}px`;
-            overlay.el.style.top = `${rowRect.top}px`;
-            overlay.el.style.width = `${rowRect.width}px`;
-            overlay.el.style.height = `${rowRect.height}px`;
-
+            this._syncOverlayPosition();
             overlay.mountToOverlay(overlay.el);
-
             overlay.activate(rowData);
-
             this._bindEditActions();
+            this._bindScrollSync();
         });
+    },
+
+    _syncOverlayPosition(this: TableAbilityHost): void {
+        if (!this._editOverlay || !this._editingRow) return;
+        const rowRect = this._editingRow.el.getBoundingClientRect();
+        const overlay = this._editOverlay;
+        overlay.el.style.position = 'fixed';
+        overlay.el.style.left = `${rowRect.left}px`;
+        overlay.el.style.top = `${rowRect.top}px`;
+        overlay.el.style.width = `${rowRect.width}px`;
+        overlay.el.style.height = `${rowRect.height}px`;
+    },
+
+    _bindScrollSync(this: TableAbilityHost): void {
+        if (this._editScrollHandler) return;
+        this._editScrollHandler = () => this._syncOverlayPosition();
+        window.addEventListener('scroll', this._editScrollHandler, true);
+    },
+
+    _unbindScrollSync(this: TableAbilityHost): void {
+        if (!this._editScrollHandler) return;
+        window.removeEventListener('scroll', this._editScrollHandler, true);
+        this._editScrollHandler = null;
     },
 
     _collectCellPositions(this: TableAbilityHost, row: any, editableMetas: ColumnMeta[]): any[] {
@@ -177,12 +197,14 @@ export const TableEditAbility = {
     _closeEditOverlay(this: TableAbilityHost): void {
         if (!this._editOverlay) return;
 
+        this._unbindScrollSync();
         this._editOverlay.deactivate();
         this._editOverlay.unmountFromOverlay(this._editOverlay.el);
         this._editOverlay.dispose();
         this._editOverlay = null;
         this._editingRowKey = null;
         this._editingRowData = null;
+        this._editingRow = null;
     },
 
     _validateEditValues(this: TableAbilityHost, values: Record<string, any>): Record<string, string> {
