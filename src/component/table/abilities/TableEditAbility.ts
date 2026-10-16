@@ -184,7 +184,7 @@ export const TableEditAbility = {
 
     _handleEditActionClick(this: TableAbilityHost, e: any): void {
         if (!this._editOverlay) return;
-        const target = e?.target;
+        const target = e?.data?.originalEvent?.target as HTMLElement | undefined;
         if (!target) return;
 
         const saveBtn = this._editOverlay.getNodeEl('saveBtn');
