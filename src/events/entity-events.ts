@@ -138,6 +138,7 @@ export const ENTITY_COMMAND_EVENTS = {
     SUBMIT_EDIT: 'submitEdit',
     CANCEL_EDIT: 'cancelEdit',
     ROLLBACK_ALL: 'rollbackAll',
+    EDIT_SAVE: 'editSave',
 
     // 树命令
     EXPAND: 'expand',

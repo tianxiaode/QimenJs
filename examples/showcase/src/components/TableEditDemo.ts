@@ -1,5 +1,6 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import { dataDispatchCenter, LocalReadonlyEntityManager } from '@qimenjs/entity';
+import { ENTITY_COMMAND_EVENTS } from '@qimenjs/events';
 import type { DemoConfig } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
 
@@ -57,6 +58,22 @@ const MOCK_ENTITY_TYPE = 'mock-edit-entity';
 
 class MockEditEntityManager extends LocalReadonlyEntityManager {
     static entityType = MOCK_ENTITY_TYPE;
+
+    constructor(config?: Record<string, any>) {
+        super(config);
+        this.entityOn(this.entityKey!, ENTITY_COMMAND_EVENTS.EDIT_SAVE, (data: any) => {
+            this.editSave(data);
+        });
+    }
+
+    editSave(data: { rowKey: string | number; newValues: Record<string, any> }): void {
+        const id = Number(data.rowKey);
+        const existing = this.sourceData.get(id);
+        if (!existing) return;
+        this.sourceData.set(id, { ...existing, ...data.newValues });
+        this.refreshView();
+        this.emitEvent('editSaved', { rowKey: id, newValues: data.newValues });
+    }
 }
 
 class CellEditDemo extends Component {
@@ -131,6 +148,7 @@ class CellEditDemo extends Component {
                 if (orig !== val) changes.push(`${key}: ${orig} → ${val}`);
             }
             entry.textContent += changes.length > 0 ? ` | ${changes.join(', ')}` : ' | 无变更';
+            entry.textContent += ' | → 本地数据更新';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -210,6 +228,7 @@ class RowEditDemo extends Component {
                 if (orig !== val) changes.push(`${key}: ${orig} → ${val}`);
             }
             entry.textContent += changes.length > 0 ? ` | ${changes.join(', ')}` : ' | 无变更';
+            entry.textContent += ' | → 本地数据更新';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -233,7 +252,7 @@ class EntityEditDemo extends Component {
                     name: 'logArea',
                     classes: 'q-demo__edit-log',
                     children: [
-                        { tag: 'div', classes: 'q-demo__edit-log-title', options: { text: '编辑事件日志（Entity 数据交互）' } },
+                        { tag: 'div', classes: 'q-demo__edit-log-title', options: { text: '编辑事件日志（Entity 全流程）' } },
                         { tag: 'div', name: 'logContent', classes: 'q-demo__edit-log-content' },
                     ],
                 },
@@ -263,15 +282,15 @@ class EntityEditDemo extends Component {
             this._table.on('editSave', (eventCtx: any) => {
                 const data = eventCtx.data ?? eventCtx;
                 this._log('editSave', data);
-                const rowKey = data.rowKey;
-                const newValues = data.newValues;
-                mgr.sourceData.set(Number(rowKey), { ...mgr.sourceData.get(Number(rowKey)), ...newValues });
-                mgr.refreshView();
             });
 
             this._table.on('editCancel', (eventCtx: any) => {
                 const data = eventCtx.data ?? eventCtx;
                 this._log('editCancel', data);
+            });
+
+            this._table.entityOn(ENTITY_KEY, 'editSaved', (result: any) => {
+                this._log('editSaved', result);
             });
 
             container.appendChild(this._table.el);
@@ -295,7 +314,9 @@ class EntityEditDemo extends Component {
                 if (orig !== val) changes.push(`${key}: ${orig} → ${val}`);
             }
             entry.textContent += changes.length > 0 ? ` | ${changes.join(', ')}` : ' | 无变更';
-            entry.textContent += ' | → entityEmit update';
+            entry.textContent += ' | → entities 转发 editSave → EM';
+        } else if (event === 'editSaved') {
+            entry.textContent += ' | → EM 处理完成，表格自动刷新';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -344,10 +365,11 @@ export const TABLE_EDIT_DEMO: DemoConfig = {
             component: RowEditDemo,
         },
         {
-            label: 'Entity 数据交互（编辑保存 → EntityManager 更新）',
-            code: `// Table 连接 MockEditEntityManager
-// editSave 事件中通过 mgr.sourceData.set() 更新数据
-// mgr.refreshView() 触发表格刷新
+            label: 'Entity 数据交互（entities 转发 → EM 处理 → 自动刷新）',
+            code: `// Table 显式连接 MockEditEntityManager
+// editSave → entities: 'editSave' 转发到 EntityEventBus
+// EM 接收 editSave action → 更新 sourceData → refreshView
+// LISTED 事件 → 表格自动刷新
 new TableComponent({
     columns: [...],
     entityKey: 'demo-edit-entity',
@@ -356,10 +378,10 @@ new TableComponent({
     editRules: { name: { required: true }, ... },
 })
 
+// demo 只需监听 editSave 事件记录日志
+// 数据更新和刷新全由 entities 转发 + EM 自动完成
 table.on('editSave', (data) => {
-    mgr.sourceData.set(Number(data.rowKey),
-        { ...mgr.sourceData.get(Number(data.rowKey)), ...data.newValues });
-    mgr.refreshView();  // 表格自动刷新
+    console.log('editSave', data.rowKey, data.newValues)
 })`,
             component: EntityEditDemo,
         },
