@@ -97,7 +97,8 @@ class CellEditDemo extends Component {
                 editMode: 'cell',
             });
 
-            this._table.on('editSave', (data: any) => {
+            this._table.on('editSave', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editSave', data);
                 const items = this._table.getData('data');
                 const idx = items.findIndex((item: any) => String(item.id) === String(data.rowKey));
@@ -108,7 +109,8 @@ class CellEditDemo extends Component {
                 }
             });
 
-            this._table.on('editCancel', (data: any) => {
+            this._table.on('editCancel', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editCancel', data);
             });
 
@@ -174,7 +176,8 @@ class RowEditDemo extends Component {
                 editRules: ROW_EDIT_RULES,
             });
 
-            this._table.on('editSave', (data: any) => {
+            this._table.on('editSave', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editSave', data);
                 const items = this._table.getData('data');
                 const idx = items.findIndex((item: any) => String(item.id) === String(data.rowKey));
@@ -185,7 +188,8 @@ class RowEditDemo extends Component {
                 }
             });
 
-            this._table.on('editCancel', (data: any) => {
+            this._table.on('editCancel', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editCancel', data);
             });
 
@@ -256,7 +260,8 @@ class EntityEditDemo extends Component {
                 editRules: ENTITY_EDIT_RULES,
             });
 
-            this._table.on('editSave', (data: any) => {
+            this._table.on('editSave', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editSave', data);
                 const rowKey = data.rowKey;
                 const newValues = data.newValues;
@@ -264,7 +269,8 @@ class EntityEditDemo extends Component {
                 mgr.refreshView();
             });
 
-            this._table.on('editCancel', (data: any) => {
+            this._table.on('editCancel', (eventCtx: any) => {
+                const data = eventCtx.data ?? eventCtx;
                 this._log('editCancel', data);
             });
 

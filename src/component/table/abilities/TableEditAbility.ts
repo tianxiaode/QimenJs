@@ -107,13 +107,11 @@ export const TableEditAbility = {
         });
     },
 
-    _onEditSave(this: TableAbilityHost, data: any): void {
-        this.emit('editSave', data);
+    _onEditSave(this: TableAbilityHost): void {
         this._closeEditOverlay();
     },
 
-    _onEditCancel(this: TableAbilityHost, data: any): void {
-        this.emit('editCancel', data);
+    _onEditCancel(this: TableAbilityHost): void {
         this._closeEditOverlay();
     },
 

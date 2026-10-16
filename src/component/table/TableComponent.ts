@@ -68,8 +68,8 @@ class TableComponent extends ItemGroupPooledComponent {
                 showColumn: '_onShowColumn',
                 rowExpand: '_onRowExpand',
                 rowCollapse: '_onRowCollapse',
-                editSave: '_onEditSave',
-                editCancel: '_onEditCancel',
+                editSave: { handler: '_onEditSave', emits: ['editSave'], entities: 'editSave' },
+                editCancel: { handler: '_onEditCancel', emits: ['editCancel'] },
             },
         },
     ];

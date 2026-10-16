@@ -16,6 +16,7 @@ export const ACTION_PAIRS: Record<string, { success: string; error: string; load
     update: { success: 'updated', error: 'update:error', loading: 'update:loading' },
     delete: { success: 'deleted', error: 'delete:error', loading: 'delete:loading' },
     toggle: { success: 'toggled', error: 'toggle:error', loading: 'toggle:loading' },
+    editSave: { success: 'editSaved', error: 'editSave:error', loading: 'editSave:loading' },
     save: { success: 'saved', error: 'save:error', loading: 'save:loading' },
     batchDelete: { success: 'deleted', error: 'batchDelete:error', loading: 'batchDelete:loading' },
     filter: { success: 'listed', error: 'filter:error', loading: 'filter:loading' },
