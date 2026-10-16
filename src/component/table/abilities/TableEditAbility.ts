@@ -23,6 +23,9 @@ export const TableEditAbility = {
     _editingRow: null as any | null,
     _editScrollUnbind: null as (() => void) | null,
     _editScrollOff: null as (() => void) | null,
+    _editSaveUnbind: null as (() => void) | null,
+    _editCancelUnbind: null as (() => void) | null,
+    _editClickOff: null as (() => void) | null,
 
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
@@ -156,10 +159,44 @@ export const TableEditAbility = {
         const cancelBtn = this._editOverlay.getNodeEl('cancelBtn');
 
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => this._saveEdit());
+            this._editSaveUnbind = this.bind(saveBtn, 'click');
         }
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => this._cancelEdit());
+            this._editCancelUnbind = this.bind(cancelBtn, 'click');
+        }
+        this._editClickOff = this.on('dom:click', (e: any) => this._handleEditActionClick(e));
+    },
+
+    _unbindEditActions(this: TableAbilityHost): void {
+        if (this._editSaveUnbind) {
+            this._editSaveUnbind();
+            this._editSaveUnbind = null;
+        }
+        if (this._editCancelUnbind) {
+            this._editCancelUnbind();
+            this._editCancelUnbind = null;
+        }
+        if (this._editClickOff) {
+            this._editClickOff();
+            this._editClickOff = null;
+        }
+    },
+
+    _handleEditActionClick(this: TableAbilityHost, e: any): void {
+        if (!this._editOverlay) return;
+        const target = e?.target;
+        if (!target) return;
+
+        const saveBtn = this._editOverlay.getNodeEl('saveBtn');
+        const cancelBtn = this._editOverlay.getNodeEl('cancelBtn');
+
+        if (target === saveBtn) {
+            this._saveEdit();
+            return;
+        }
+        if (target === cancelBtn) {
+            this._cancelEdit();
+            return;
         }
     },
 
@@ -203,6 +240,7 @@ export const TableEditAbility = {
     _closeEditOverlay(this: TableAbilityHost): void {
         if (!this._editOverlay) return;
 
+        this._unbindEditActions();
         this._unbindScrollSync();
         this._editOverlay.deactivate();
         this._editOverlay.unmountFromOverlay(this._editOverlay.el);

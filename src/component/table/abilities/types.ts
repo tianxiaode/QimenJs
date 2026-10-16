@@ -36,6 +36,9 @@ export interface TableAbilityHost {
     _editingRow: any | null;
     _editScrollUnbind: (() => void) | null;
     _editScrollOff: (() => void) | null;
+    _editSaveUnbind: (() => void) | null;
+    _editCancelUnbind: (() => void) | null;
+    _editClickOff: (() => void) | null;
 
     getData(key: string): any;
     setData(key: string, value: any, raw?: boolean): void;
@@ -129,6 +132,8 @@ export interface TableAbilityHost {
     _unbindScrollSync(): void;
     _collectCellPositions(row: any, editableMetas: any[]): any[];
     _bindEditActions(): void;
+    _unbindEditActions(): void;
+    _handleEditActionClick(e: any): void;
     _saveEdit(): void;
     _cancelEdit(): void;
     _closeEditOverlay(): void;
