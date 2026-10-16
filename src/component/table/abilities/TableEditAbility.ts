@@ -13,7 +13,7 @@ import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
  * - 透明浮动层覆盖行：不破坏行 DOM，视觉上是行内直接编辑
  * - input 只出现在 editable 单元格位置：通过 cell.getBoundingClientRect() 精确定位
  * - 取消/保存按钮在行右侧：不遮挡单元格内容
- * - 必须点取消按钮关闭：不响应点击外部/Escape
+ * - EditOverlayComponent 自己处理 click 事件，通过 componentEmit 通知 TableComponent
  * - 验证错误：input 标红 + 下方错误提示
  */
 export const TableEditAbility = {
@@ -23,9 +23,8 @@ export const TableEditAbility = {
     _editingRow: null as any | null,
     _editScrollUnbind: null as (() => void) | null,
     _editScrollOff: null as (() => void) | null,
-    _editSaveUnbind: null as (() => void) | null,
-    _editCancelUnbind: null as (() => void) | null,
-    _editClickOff: null as (() => void) | null,
+    _editSaveOff: null as (() => void) | null,
+    _editCancelOff: null as (() => void) | null,
 
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
@@ -67,7 +66,7 @@ export const TableEditAbility = {
 
     _startEdit(this: TableAbilityHost, row: any, rowData: any, editableMetas: ColumnMeta[]): void {
         if (this._editOverlay) {
-            this._cancelEdit();
+            this._closeEditOverlay();
         }
 
         this._editingRowKey = rowData._rowKey ?? String(rowData.id ?? '');
@@ -86,12 +85,27 @@ export const TableEditAbility = {
             }
         }
 
+        const eventKey = this.eventKey ?? this.getData('eventKey');
+        const editRules = this.getData('editRules');
+
         const overlay = new EditOverlayComponent({
             editableMetas,
             cellPositions,
             actionsLeft,
+            rowKey: this._editingRowKey,
+            eventKey,
+            editRules,
         });
         this._editOverlay = overlay;
+
+        this._editSaveOff = this.componentOn(eventKey, 'editSave', (data: any) => {
+            this.componentEmit('editSave', data);
+            this._closeEditOverlay();
+        });
+        this._editCancelOff = this.componentOn(eventKey, 'editCancel', (data: any) => {
+            this.componentEmit('editCancel', data);
+            this._closeEditOverlay();
+        });
 
         Promise.resolve(overlay.ready).then(() => {
             if (this._editOverlay !== overlay) return;
@@ -99,7 +113,6 @@ export const TableEditAbility = {
             this._syncOverlayPosition();
             overlay.mountToOverlay(overlay.el);
             overlay.activate(rowData);
-            this._bindEditActions();
             this._bindScrollSync();
         });
     },
@@ -152,95 +165,17 @@ export const TableEditAbility = {
         return positions;
     },
 
-    _bindEditActions(this: TableAbilityHost): void {
-        if (!this._editOverlay) return;
-
-        const saveBtn = this._editOverlay.getNodeEl('saveBtn');
-        const cancelBtn = this._editOverlay.getNodeEl('cancelBtn');
-
-        if (saveBtn) {
-            this._editSaveUnbind = this.bind(saveBtn, 'click');
-        }
-        if (cancelBtn) {
-            this._editCancelUnbind = this.bind(cancelBtn, 'click');
-        }
-        this._editClickOff = this.on('dom:click', (e: any) => this._handleEditActionClick(e));
-    },
-
-    _unbindEditActions(this: TableAbilityHost): void {
-        if (this._editSaveUnbind) {
-            this._editSaveUnbind();
-            this._editSaveUnbind = null;
-        }
-        if (this._editCancelUnbind) {
-            this._editCancelUnbind();
-            this._editCancelUnbind = null;
-        }
-        if (this._editClickOff) {
-            this._editClickOff();
-            this._editClickOff = null;
-        }
-    },
-
-    _handleEditActionClick(this: TableAbilityHost, e: any): void {
-        if (!this._editOverlay) return;
-        const target = e?.data?.originalEvent?.target as HTMLElement | undefined;
-        if (!target) return;
-
-        const saveBtn = this._editOverlay.getNodeEl('saveBtn');
-        const cancelBtn = this._editOverlay.getNodeEl('cancelBtn');
-
-        if (target === saveBtn) {
-            this._saveEdit();
-            return;
-        }
-        if (target === cancelBtn) {
-            this._cancelEdit();
-            return;
-        }
-    },
-
-    _saveEdit(this: TableAbilityHost): void {
-        if (!this._editOverlay) return;
-
-        const values = this._editOverlay.getEditValues();
-        const errors = this._validateEditValues(values);
-
-        if (Object.keys(errors).length > 0) {
-            this._editOverlay.showErrors(errors);
-            return;
-        }
-
-        const rowKey = this._editingRowKey;
-        const originalValues = this._editOverlay.getOriginalValues();
-
-        this.componentEmit('editSave', {
-            rowKey,
-            originalValues,
-            newValues: values,
-        });
-
-        this._closeEditOverlay();
-    },
-
-    _cancelEdit(this: TableAbilityHost): void {
-        if (!this._editOverlay) return;
-
-        const rowKey = this._editingRowKey;
-        const originalValues = this._editOverlay.getOriginalValues();
-
-        this.componentEmit('editCancel', {
-            rowKey,
-            originalValues,
-        });
-
-        this._closeEditOverlay();
-    },
-
     _closeEditOverlay(this: TableAbilityHost): void {
         if (!this._editOverlay) return;
 
-        this._unbindEditActions();
+        if (this._editSaveOff) {
+            this._editSaveOff();
+            this._editSaveOff = null;
+        }
+        if (this._editCancelOff) {
+            this._editCancelOff();
+            this._editCancelOff = null;
+        }
         this._unbindScrollSync();
         this._editOverlay.deactivate();
         this._editOverlay.unmountFromOverlay(this._editOverlay.el);
@@ -249,41 +184,5 @@ export const TableEditAbility = {
         this._editingRowKey = null;
         this._editingRowData = null;
         this._editingRow = null;
-    },
-
-    _validateEditValues(this: TableAbilityHost, values: Record<string, any>): Record<string, string> {
-        const errors: Record<string, string> = {};
-        const metas = this._columnMetaManager?.getAll() ?? [];
-        const editRules = this.getData('editRules') ?? {};
-
-        for (const meta of metas) {
-            if (!meta.editable) continue;
-            const rules = editRules[meta.name];
-            if (!rules) continue;
-
-            const value = values[meta.name];
-            const ruleList = Array.isArray(rules) ? rules : [rules];
-
-            for (const rule of ruleList) {
-                if (rule.required && (value == null || value === '')) {
-                    errors[meta.name] = `${meta.title || meta.name}不能为空`;
-                    break;
-                }
-                if (rule.min != null && typeof value === 'number' && value < rule.min) {
-                    errors[meta.name] = `${meta.title || meta.name}不能小于 ${rule.min}`;
-                    break;
-                }
-                if (rule.max != null && typeof value === 'number' && value > rule.max) {
-                    errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
-                    break;
-                }
-                if (rule.pattern && typeof value === 'string' && !new RegExp(rule.pattern).test(value)) {
-                    errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
-                    break;
-                }
-            }
-        }
-
-        return errors;
     },
 } satisfies AbilityDefinition;

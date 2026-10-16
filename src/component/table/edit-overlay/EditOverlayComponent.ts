@@ -19,8 +19,16 @@ interface CellPosition {
     height: number;
 }
 
+interface EditRule {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+    message?: string;
+}
+
 const ICON_CHECK = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const ICON_CLOSE = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const ICON_CLOSE = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 class EditOverlayComponent extends Component {
     static type = 'q-table-edit-overlay';
@@ -29,6 +37,7 @@ class EditOverlayComponent extends Component {
     _cellPositions: CellPosition[] = [];
     _originalValues: Record<string, any> = {};
     _errorMessages: Record<string, string> = {};
+    _editClickOff: (() => void) | null = null;
 
     get tpl(): TemplateDecl {
         return {
@@ -63,6 +72,7 @@ class EditOverlayComponent extends Component {
         this._buildEditors();
         this._setupIcons();
         this._positionActions();
+        this._bindActions();
     }
 
     _setupIcons(): void {
@@ -89,6 +99,89 @@ class EditOverlayComponent extends Component {
             actions.style.height = '';
             actions.style.padding = '2px 4px';
         }
+    }
+
+    _bindActions(): void {
+        const saveBtn = this.getNodeEl('saveBtn');
+        const cancelBtn = this.getNodeEl('cancelBtn');
+
+        if (saveBtn) this.bind(saveBtn, 'click');
+        if (cancelBtn) this.bind(cancelBtn, 'click');
+        this._editClickOff = this.on('dom:click', (e: any) => this._handleActionClick(e));
+    }
+
+    _handleActionClick(e: any): void {
+        const target = e?.data?.originalEvent?.target as HTMLElement | undefined;
+        if (!target) return;
+
+        const saveBtn = this.getNodeEl('saveBtn');
+        const cancelBtn = this.getNodeEl('cancelBtn');
+
+        if (target === saveBtn) {
+            this._saveEdit();
+            return;
+        }
+        if (target === cancelBtn) {
+            this._cancelEdit();
+            return;
+        }
+    }
+
+    _saveEdit(): void {
+        const values = this.getEditValues();
+        const errors = this._validateValues(values);
+
+        if (Object.keys(errors).length > 0) {
+            this.showErrors(errors);
+            return;
+        }
+
+        this.componentEmit('editSave', {
+            rowKey: this.getData('rowKey'),
+            originalValues: this.getOriginalValues(),
+            newValues: values,
+        });
+    }
+
+    _cancelEdit(): void {
+        this.componentEmit('editCancel', {
+            rowKey: this.getData('rowKey'),
+            originalValues: this.getOriginalValues(),
+        });
+    }
+
+    _validateValues(values: Record<string, any>): Record<string, string> {
+        const errors: Record<string, string> = {};
+        const editRules = this.getData('editRules') ?? {};
+
+        for (const meta of this._editableMetas) {
+            const rules = editRules[meta.name];
+            if (!rules) continue;
+
+            const value = values[meta.name];
+            const ruleList = Array.isArray(rules) ? rules : [rules];
+
+            for (const rule of ruleList) {
+                if (rule.required && (value == null || value === '')) {
+                    errors[meta.name] = `${meta.title || meta.name}不能为空`;
+                    break;
+                }
+                if (rule.min != null && typeof value === 'number' && value < rule.min) {
+                    errors[meta.name] = `${meta.title || meta.name}不能小于 ${rule.min}`;
+                    break;
+                }
+                if (rule.max != null && typeof value === 'number' && value > rule.max) {
+                    errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
+                    break;
+                }
+                if (rule.pattern && typeof value === 'string' && !new RegExp(rule.pattern).test(value)) {
+                    errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
+                    break;
+                }
+            }
+        }
+
+        return errors;
     }
 
     _buildEditors(): void {
@@ -250,12 +343,15 @@ const EditOverlayComponentDefs: Definitions = {
         editableMetas: null,
         cellPositions: null,
         actionsLeft: null,
+        rowKey: null,
+        editRules: null,
     },
     fields: {
         _editableMetas: null,
         _cellPositions: null,
         _originalValues: null,
         _errorMessages: null,
+        _editClickOff: null,
     },
 } as const;
 

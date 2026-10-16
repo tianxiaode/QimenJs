@@ -36,15 +36,15 @@ export interface TableAbilityHost {
     _editingRow: any | null;
     _editScrollUnbind: (() => void) | null;
     _editScrollOff: (() => void) | null;
-    _editSaveUnbind: (() => void) | null;
-    _editCancelUnbind: (() => void) | null;
-    _editClickOff: (() => void) | null;
+    _editSaveOff: (() => void) | null;
+    _editCancelOff: (() => void) | null;
 
     getData(key: string): any;
     setData(key: string, value: any, raw?: boolean): void;
     getNodeEl(name: string): HTMLElement | undefined;
     emit(event: string, data?: any): void;
     componentEmit(event: string, data?: any): void;
+    componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void;
     entityEmit(event: string, data?: any, opts?: Record<string, any>): void;
     entityOn(entityKey: string, eventName: string, handler: (data: any) => void): () => void;
     entityLoadRange(start: number, end: number): void;
@@ -131,11 +131,5 @@ export interface TableAbilityHost {
     _bindScrollSync(): void;
     _unbindScrollSync(): void;
     _collectCellPositions(row: any, editableMetas: any[]): any[];
-    _bindEditActions(): void;
-    _unbindEditActions(): void;
-    _handleEditActionClick(e: any): void;
-    _saveEdit(): void;
-    _cancelEdit(): void;
     _closeEditOverlay(): void;
-    _validateEditValues(values: Record<string, any>): Record<string, string>;
 }
