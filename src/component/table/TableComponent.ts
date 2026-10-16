@@ -195,7 +195,7 @@ class TableComponent extends ItemGroupPooledComponent {
 
         this._virtualEntityMode = false;
         const entityItems = this.getEntityItems();
-        const data = (this.hasEntity() && entityItems.length > 0) ? entityItems : (localData ?? []);
+        const data = (explicitEntity && this.hasEntity() && entityItems.length > 0) ? entityItems : (localData ?? []);
         const isGrouped = this._isGroupedData(data);
         const wasGrouped = this._isGroupedData(this._lastReflowData);
         if (wasGrouped !== isGrouped) {
