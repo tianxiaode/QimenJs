@@ -13,7 +13,8 @@ import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
  * - 透明浮动层覆盖行：不破坏行 DOM，视觉上是行内直接编辑
  * - input 只出现在 editable 单元格位置：通过 cell.getBoundingClientRect() 精确定位
  * - 取消/保存按钮在行右侧：不遮挡单元格内容
- * - EditOverlayComponent 自己处理 click 事件，通过 componentEmit 通知 TableComponent
+ * - EditOverlayComponent 通过 domEvents 委托按钮 click，通过 componentEmit 通知 TableComponent
+ * - TableComponent 通过 listens 声明式监听 editSave/editCancel
  * - 验证错误：input 标红 + 下方错误提示
  */
 export const TableEditAbility = {
@@ -23,8 +24,6 @@ export const TableEditAbility = {
     _editingRow: null as any | null,
     _editScrollUnbind: null as (() => void) | null,
     _editScrollOff: null as (() => void) | null,
-    _editSaveOff: null as (() => void) | null,
-    _editCancelOff: null as (() => void) | null,
 
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
@@ -98,15 +97,6 @@ export const TableEditAbility = {
         });
         this._editOverlay = overlay;
 
-        this._editSaveOff = this.componentOn(eventKey, 'editSave', (data: any) => {
-            this.componentEmit('editSave', data);
-            this._closeEditOverlay();
-        });
-        this._editCancelOff = this.componentOn(eventKey, 'editCancel', (data: any) => {
-            this.componentEmit('editCancel', data);
-            this._closeEditOverlay();
-        });
-
         Promise.resolve(overlay.ready).then(() => {
             if (this._editOverlay !== overlay) return;
 
@@ -115,6 +105,16 @@ export const TableEditAbility = {
             overlay.activate(rowData);
             this._bindScrollSync();
         });
+    },
+
+    _onEditSave(this: TableAbilityHost, data: any): void {
+        this.componentEmit('editSave', data);
+        this._closeEditOverlay();
+    },
+
+    _onEditCancel(this: TableAbilityHost, data: any): void {
+        this.componentEmit('editCancel', data);
+        this._closeEditOverlay();
     },
 
     _syncOverlayPosition(this: TableAbilityHost): void {
@@ -168,14 +168,6 @@ export const TableEditAbility = {
     _closeEditOverlay(this: TableAbilityHost): void {
         if (!this._editOverlay) return;
 
-        if (this._editSaveOff) {
-            this._editSaveOff();
-            this._editSaveOff = null;
-        }
-        if (this._editCancelOff) {
-            this._editCancelOff();
-            this._editCancelOff = null;
-        }
         this._unbindScrollSync();
         this._editOverlay.deactivate();
         this._editOverlay.unmountFromOverlay(this._editOverlay.el);

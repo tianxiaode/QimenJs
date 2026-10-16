@@ -1,5 +1,6 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { ColumnMeta, EditType } from '../column-types';
+import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './edit-overlay.css';
 
@@ -37,7 +38,13 @@ class EditOverlayComponent extends Component {
     _cellPositions: CellPosition[] = [];
     _originalValues: Record<string, any> = {};
     _errorMessages: Record<string, string> = {};
-    _editClickOff: (() => void) | null = null;
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'saveBtn', handler: '_onSaveClick' },
+            { path: 'cancelBtn', handler: '_onCancelClick' },
+        ],
+    };
 
     get tpl(): TemplateDecl {
         return {
@@ -72,7 +79,6 @@ class EditOverlayComponent extends Component {
         this._buildEditors();
         this._setupIcons();
         this._positionActions();
-        this._bindActions();
     }
 
     _setupIcons(): void {
@@ -101,33 +107,7 @@ class EditOverlayComponent extends Component {
         }
     }
 
-    _bindActions(): void {
-        const saveBtn = this.getNodeEl('saveBtn');
-        const cancelBtn = this.getNodeEl('cancelBtn');
-
-        if (saveBtn) this.bind(saveBtn, 'click');
-        if (cancelBtn) this.bind(cancelBtn, 'click');
-        this._editClickOff = this.on('dom:click', (e: any) => this._handleActionClick(e));
-    }
-
-    _handleActionClick(e: any): void {
-        const target = e?.data?.originalEvent?.target as HTMLElement | undefined;
-        if (!target) return;
-
-        const saveBtn = this.getNodeEl('saveBtn');
-        const cancelBtn = this.getNodeEl('cancelBtn');
-
-        if (target === saveBtn) {
-            this._saveEdit();
-            return;
-        }
-        if (target === cancelBtn) {
-            this._cancelEdit();
-            return;
-        }
-    }
-
-    _saveEdit(): void {
+    _onSaveClick(): void {
         const values = this.getEditValues();
         const errors = this._validateValues(values);
 
@@ -143,7 +123,7 @@ class EditOverlayComponent extends Component {
         });
     }
 
-    _cancelEdit(): void {
+    _onCancelClick(): void {
         this.componentEmit('editCancel', {
             rowKey: this.getData('rowKey'),
             originalValues: this.getOriginalValues(),
@@ -351,7 +331,6 @@ const EditOverlayComponentDefs: Definitions = {
         _cellPositions: null,
         _originalValues: null,
         _errorMessages: null,
-        _editClickOff: null,
     },
 } as const;
 
