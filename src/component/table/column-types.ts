@@ -957,8 +957,10 @@ export interface RowBodyConfig {
     excludeColumns?: boolean;
     /** i18n 路径前缀，label 自动在此 scope 下查找（如 'employee' → '@employee.email'） */
     i18nScope?: string;
-    /** 实体命令（如 'get'），展开时通过 table 的 entityKey 发送命令获取行详情 */
+    /** 实体命令（如 'get'），展开时发送命令获取行详情 */
     entityAction?: string;
     /** 实体命令参数提取的字段名（默认用 idField），从 rowData 中提取作为命令参数 */
     entityParamField?: string;
+    /** 行展开详情的实体 key（默认用表自身的 entityKey）；嵌套场景下每层 rowBody 可指向不同的 EM */
+    entityKey?: string;
 }

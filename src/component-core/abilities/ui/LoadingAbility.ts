@@ -62,7 +62,7 @@ export const LoadingAbility: AbilityDefinition = {
             return null;
         }
 
-        const anchor = decl.anchor === 'self' ? this.el! : decl.anchor as HTMLElement;
+        const anchor = decl.anchor === 'self' ? this.el! : (decl.anchor as HTMLElement);
         const constr: any = {
             ...decl.options,
             anchor,

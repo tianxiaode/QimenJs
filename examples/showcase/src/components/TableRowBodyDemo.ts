@@ -184,6 +184,107 @@ class MockRowBodyEntityManager extends LocalReadonlyEntityManager {
     };
 }
 
+const NESTED_ORDER_ENTITY_KEY = 'demo-nested-order-ent';
+const NESTED_PRODUCT_ENTITY_KEY = 'demo-nested-product-ent';
+const MOCK_NESTED_ORDER_TYPE = 'mock-nested-order';
+const MOCK_NESTED_PRODUCT_TYPE = 'mock-nested-product';
+
+class MockNestedOrderEntityManager extends LocalReadonlyEntityManager {
+    static entityType = MOCK_NESTED_ORDER_TYPE;
+
+    get = async (id: string | number) => {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        return super.get(id);
+    };
+}
+
+class MockNestedProductEntityManager extends LocalReadonlyEntityManager {
+    static entityType = MOCK_NESTED_PRODUCT_TYPE;
+
+    get = async (id: string | number) => {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        return super.get(id);
+    };
+}
+
+const nestedEntityRowBody: RowBodyConfig = {
+    type: 'table',
+    dataField: 'products',
+    entityAction: 'get',
+    entityParamField: 'orderNo',
+    loadingText: '加载订单商品...',
+    tableOptions: {
+        columns: [
+            { name: 'sku', field: 'sku', title: 'SKU', width: 100 },
+            { name: 'name', field: 'name', title: '商品名称', width: 150 },
+            { name: 'qty', field: 'qty', title: '数量', width: 70, align: 'right' },
+            { name: 'price', field: 'price', title: '单价', width: 100, align: 'right', format: 'currency' },
+        ],
+        rowBody: {
+            type: 'table',
+            dataField: 'batches',
+            entityAction: 'get',
+            entityKey: NESTED_PRODUCT_ENTITY_KEY,
+            entityParamField: 'sku',
+            loadingText: '加载批次信息...',
+            tableOptions: {
+                columns: [
+                    { name: 'batch', field: 'batch', title: '批次号', width: 110 },
+                    { name: 'warehouse', field: 'warehouse', title: '仓库', width: 100 },
+                    { name: 'stock', field: 'stock', title: '批次库存', width: 90, align: 'right' },
+                    { name: 'shelf', field: 'shelf', title: '货位', width: 100 },
+                ],
+            },
+        },
+    },
+};
+
+class NestedEntityRowBodyDemo extends Component {
+    static type = 'nested-entity-row-body-demo';
+
+    _table: any = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-demo__column',
+            children: [
+                { tag: 'div', name: 'tableContainer', classes: 'q-demo__column' },
+            ],
+        };
+    }
+
+    onAfterInit(): void {
+        MockNestedOrderEntityManager.register();
+        MockNestedProductEntityManager.register();
+
+        const container = this.getNodeEl('tableContainer');
+        if (!container) return;
+
+        const orderMgr = dataDispatchCenter.connect(NESTED_ORDER_ENTITY_KEY, MOCK_NESTED_ORDER_TYPE);
+        NESTED_TABLE_DATA.forEach(item => orderMgr.sourceData.set(item.orderNo, item));
+        orderMgr.refreshView();
+
+        const productMgr = dataDispatchCenter.connect(NESTED_PRODUCT_ENTITY_KEY, MOCK_NESTED_PRODUCT_TYPE);
+        NESTED_TABLE_DATA.flatMap(o => o.products).forEach(item => productMgr.sourceData.set(item.sku, item));
+
+        import('@qimenjs/component').then(({ TableComponent }) => {
+            this._table = new TableComponent({
+                columns: NESTED_ORDER_COLUMNS,
+                entityKey: NESTED_ORDER_ENTITY_KEY,
+                entityType: MOCK_NESTED_ORDER_TYPE,
+                rowBody: nestedEntityRowBody,
+            });
+            container.appendChild(this._table.el);
+        });
+
+        this.onCleanup(() => {
+            dataDispatchCenter.disconnect(NESTED_ORDER_ENTITY_KEY);
+            dataDispatchCenter.disconnect(NESTED_PRODUCT_ENTITY_KEY);
+        });
+    }
+}
+
 class EntityRowBodyDemo extends Component {
     static type = 'entity-row-body-demo';
 
@@ -424,6 +525,32 @@ const nestedRowBody: RowBodyConfig = {
                     },
                 ],
             },
+        },
+        {
+            label: 'Table 嵌套 + Entity 按需加载（独立 EM，3 层）',
+            code: `// 嵌套 + entity 加载：每层 rowBody 自声明 entityKey（不同 EM），展开时向指定 EM 发 get
+// L1 订单表：父表 entityKey → 订单 EM，get(orderNo) 详情中 products 渲染子表
+// L2 商品子表：rowBody.entityKey → 商品 EM，get(sku) 详情中 batches 渲染孙表
+const nestedEntityRowBody: RowBodyConfig = {
+    type: 'table',
+    dataField: 'products',
+    entityAction: 'get',
+    entityParamField: 'orderNo',   // 默认用父表自己的 entityKey
+    loadingText: '加载订单商品...',
+    tableOptions: {
+        columns: [...],
+        rowBody: {                  // L2 子表（自身不配 entityKey，数据由 GOT 注入）
+            type: 'table',
+            dataField: 'batches',
+            entityAction: 'get',
+            entityKey: 'demo-nested-product-ent',  // 指向商品 EM
+            entityParamField: 'sku',
+            loadingText: '加载批次信息...',
+            tableOptions: { columns: [...] },
+        },
+    },
+}`,
+            component: NestedEntityRowBodyDemo,
         },
     ],
 };

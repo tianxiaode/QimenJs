@@ -81,8 +81,14 @@ export const RowBodyAbility = {
         if (content) row.setBodyContent(content);
     },
 
-    _renderRowBodyWithEntity(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
-        const entityKey = this.entityKey;
+    _renderRowBodyWithEntity(
+        this: TableAbilityHost,
+        row: any,
+        rowData: any,
+        rowKey: string,
+        rowBody: RowBodyConfig
+    ): void {
+        const entityKey = rowBody.entityKey ?? this.entityKey;
         if (!entityKey) {
             const content = this._renderRowBody(row, rowData);
             if (content) row.setBodyContent(content);
@@ -110,12 +116,7 @@ export const RowBodyAbility = {
                 this._bodyCache.set(rowKey, detailData);
                 const mergedData = { ...rowData, ...detailData };
                 loadingEl?.remove();
-                if (inst && typeof inst.setData === 'function') {
-                    inst.setData('data', mergedData);
-                } else {
-                    const content = this._renderRowBody(row, mergedData);
-                    if (content) row.setBodyContent(content);
-                }
+                this._applyRowBodyData(inst, row, mergedData, rowBody);
             }
         });
 
@@ -131,7 +132,13 @@ export const RowBodyAbility = {
         this.entityEmit(action, paramValue, { source: entityKey });
     },
 
-    _renderRowBodyWithLoaderFn(this: TableAbilityHost, row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void {
+    _renderRowBodyWithLoaderFn(
+        this: TableAbilityHost,
+        row: any,
+        rowData: any,
+        rowKey: string,
+        rowBody: RowBodyConfig
+    ): void {
         const loadingText = rowBody.loadingText ?? 'Loading...';
         const bodyEl = row.bodyEl;
 
@@ -142,22 +149,43 @@ export const RowBodyAbility = {
             loadingEl = this._showBodyLoading(bodyEl, loadingText);
         }
 
-        rowBody.loader!(rowKey, rowData).then((detailData: any) => {
-            this._bodyCache.set(rowKey, detailData);
-            const mergedData = { ...rowData, ...detailData };
-            loadingEl?.remove();
+        rowBody.loader!(rowKey, rowData)
+            .then((detailData: any) => {
+                this._bodyCache.set(rowKey, detailData);
+                const mergedData = { ...rowData, ...detailData };
+                loadingEl?.remove();
+                this._applyRowBodyData(inst, row, mergedData, rowBody);
+            })
+            .catch(() => {
+                loadingEl?.remove();
+                if (bodyEl) {
+                    bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
+                }
+            });
+    },
+
+    _applyRowBodyData(
+        this: TableAbilityHost,
+        inst: any,
+        row: any,
+        mergedData: any,
+        rowBody: RowBodyConfig
+    ): void {
+        if (rowBody.type === 'table' && rowBody.dataField) {
+            const subData = mergedData[rowBody.dataField];
             if (inst && typeof inst.setData === 'function') {
-                inst.setData('data', mergedData);
-            } else {
-                const content = this._renderRowBody(row, mergedData);
-                if (content) row.setBodyContent(content);
+                inst.setData('data', Array.isArray(subData) ? subData : []);
+            } else if (row.bodyEl) {
+                row.bodyEl.innerHTML = '';
             }
-        }).catch(() => {
-            loadingEl?.remove();
-            if (bodyEl) {
-                bodyEl.innerHTML = '<div class="q-table-row__body-error">Load failed</div>';
-            }
-        });
+            return;
+        }
+        if (inst && typeof inst.setData === 'function') {
+            inst.setData('data', mergedData);
+        } else {
+            const content = this._renderRowBody(row, mergedData);
+            if (content) row.setBodyContent(content);
+        }
     },
 
     _showBodyLoading(this: TableAbilityHost, bodyEl: HTMLElement, text: string): HTMLElement {
@@ -182,13 +210,17 @@ export const RowBodyAbility = {
 
         switch (rowBody.type) {
             case 'html': {
-                const htmlContent = typeof rowBody.html === 'function'
-                    ? rowBody.html(rowData)
-                    : rowBody.html;
+                const htmlContent =
+                    typeof rowBody.html === 'function' ? rowBody.html(rowData) : rowBody.html;
                 if (typeof htmlContent === 'string') {
                     bodyEl.innerHTML = htmlContent;
                 }
-                return { el: bodyEl, dispose: () => { bodyEl.innerHTML = ''; } };
+                return {
+                    el: bodyEl,
+                    dispose: () => {
+                        bodyEl.innerHTML = '';
+                    },
+                };
             }
 
             case 'template': {
@@ -201,7 +233,9 @@ export const RowBodyAbility = {
             }
 
             case 'property-grid': {
-                const PropertyGridCtor = ComponentRegistrar.getInstance().get('property-grid') as any;
+                const PropertyGridCtor = ComponentRegistrar.getInstance().get(
+                    'property-grid'
+                ) as any;
                 if (!PropertyGridCtor) return null;
                 let fields = rowBody.fields;
                 if (!fields && rowBody.excludeColumns) {
