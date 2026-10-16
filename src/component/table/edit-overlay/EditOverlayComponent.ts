@@ -19,6 +19,9 @@ interface CellPosition {
     height: number;
 }
 
+const ICON_CHECK = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_CLOSE = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+
 class EditOverlayComponent extends Component {
     static type = 'q-table-edit-overlay';
 
@@ -42,21 +45,30 @@ class EditOverlayComponent extends Component {
                         {
                             tag: 'button',
                             name: 'cancelBtn',
-                            classes: 'q-edit-overlay__btn q-edit-overlay__cancel',
+                            classes: 'q-edit-overlay__icon-btn q-edit-overlay__cancel',
                         },
                         {
                             tag: 'button',
                             name: 'saveBtn',
-                            classes: 'q-edit-overlay__btn q-edit-overlay__save',
+                            classes: 'q-edit-overlay__icon-btn q-edit-overlay__save',
                         },
                     ],
                 },
+                { tag: 'div', name: 'errorBar', classes: 'q-edit-overlay__error-bar' },
             ],
         };
     }
 
     onAfterInit(): void {
         this._buildEditors();
+        this._setupIcons();
+    }
+
+    _setupIcons(): void {
+        const saveBtn = this.getNodeEl('saveBtn');
+        const cancelBtn = this.getNodeEl('cancelBtn');
+        if (saveBtn) saveBtn.innerHTML = ICON_CHECK;
+        if (cancelBtn) cancelBtn.innerHTML = ICON_CLOSE;
     }
 
     _buildEditors(): void {
@@ -150,32 +162,41 @@ class EditOverlayComponent extends Component {
     }
 
     _renderErrors(): void {
+        const errorBar = this.getNodeEl('errorBar');
+        if (!errorBar) return;
+
+        this._clearErrors();
+
+        const hasErrors = Object.values(this._errorMessages).some(v => v);
+        if (!hasErrors) {
+            errorBar.style.display = 'none';
+            return;
+        }
+
+        errorBar.style.display = '';
+        errorBar.innerHTML = '';
+
         for (const [colName, message] of Object.entries(this._errorMessages)) {
+            if (!message) continue;
             const cell = this.el.querySelector(`.q-edit-overlay__cell[data-col-name="${colName}"]`);
-            if (cell) {
-                if (message) {
-                    cell.classList.add('q-edit-overlay__cell--error');
-                    const errorTip = document.createElement('div');
-                    errorTip.className = 'q-edit-overlay__error-tip';
-                    errorTip.textContent = message;
-                    cell.appendChild(errorTip);
-                } else {
-                    cell.classList.remove('q-edit-overlay__cell--error');
-                    const tip = cell.querySelector('.q-edit-overlay__error-tip');
-                    if (tip) tip.remove();
-                }
-            }
+            if (cell) cell.classList.add('q-edit-overlay__cell--error');
+
+            const item = document.createElement('div');
+            item.className = 'q-edit-overlay__error-item';
+            item.textContent = message;
+            errorBar.appendChild(item);
         }
     }
 
     _clearErrors(): void {
-        this._errorMessages = {};
         const cells = this.el.querySelectorAll('.q-edit-overlay__cell');
-        cells.forEach((cell: Element) => {
-            cell.classList.remove('q-edit-overlay__cell--error');
-            const tip = cell.querySelector('.q-edit-overlay__error-tip');
-            if (tip) tip.remove();
-        });
+        cells.forEach((cell: Element) => cell.classList.remove('q-edit-overlay__cell--error'));
+
+        const errorBar = this.getNodeEl('errorBar');
+        if (errorBar) {
+            errorBar.innerHTML = '';
+            errorBar.style.display = 'none';
+        }
     }
 
     _setEditorValue(colName: string, value: any): void {
