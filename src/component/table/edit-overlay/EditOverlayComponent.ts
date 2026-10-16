@@ -38,11 +38,13 @@ class EditOverlayComponent extends Component {
     _cellPositions: CellPosition[] = [];
     _originalValues: Record<string, any> = {};
     _errorMessages: Record<string, string> = {};
+    _rowData: Record<string, any> | null = null;
+    _pendingNewValues: Record<string, any> | null = null;
 
     domEvents: DomEventsMap = {
         click: [
-            { path: 'saveBtn', handler: '_onSaveClick' },
-            { path: 'cancelBtn', handler: '_onCancelClick' },
+            { path: 'saveBtn', handler: '_onSaveClick', entities: 'update', bridges: 'editSave' },
+            { path: 'cancelBtn', handler: '_onCancelClick', bridges: 'editCancel' },
         ],
     };
 
@@ -72,6 +74,14 @@ class EditOverlayComponent extends Component {
                 },
                 { tag: 'div', name: 'errorBar', classes: 'q-edit-overlay__error-bar' },
             ],
+        };
+    }
+
+    get defaultEventData(): Record<string, any> {
+        if (!this._pendingNewValues || !this._rowData) return {};
+        return {
+            ...this._rowData,
+            ...this._pendingNewValues,
         };
     }
 
@@ -112,22 +122,16 @@ class EditOverlayComponent extends Component {
         const errors = this._validateValues(values);
 
         if (Object.keys(errors).length > 0) {
+            this._pendingNewValues = null;
             this.showErrors(errors);
             return;
         }
 
-        this.componentEmit('editSave', {
-            rowKey: this.getData('rowKey'),
-            originalValues: this.getOriginalValues(),
-            newValues: values,
-        });
+        this._pendingNewValues = values;
     }
 
     _onCancelClick(): void {
-        this.componentEmit('editCancel', {
-            rowKey: this.getData('rowKey'),
-            originalValues: this.getOriginalValues(),
-        });
+        this._pendingNewValues = null;
     }
 
     _validateValues(values: Record<string, any>): Record<string, string> {
@@ -218,8 +222,10 @@ class EditOverlayComponent extends Component {
     }
 
     activate(rowData: any): void {
+        this._rowData = rowData;
         this._originalValues = {};
         this._errorMessages = {};
+        this._pendingNewValues = null;
 
         for (const meta of this._editableMetas) {
             const value = rowData?.[meta.field] ?? '';
@@ -232,8 +238,10 @@ class EditOverlayComponent extends Component {
     }
 
     deactivate(): void {
+        this._rowData = null;
         this._originalValues = {};
         this._errorMessages = {};
+        this._pendingNewValues = null;
         this._clearErrors();
     }
 
@@ -325,12 +333,15 @@ const EditOverlayComponentDefs: Definitions = {
         actionsLeft: null,
         rowKey: null,
         editRules: null,
+        entityKey: null,
     },
     fields: {
         _editableMetas: null,
         _cellPositions: null,
         _originalValues: null,
         _errorMessages: null,
+        _rowData: null,
+        _pendingNewValues: null,
     },
 } as const;
 

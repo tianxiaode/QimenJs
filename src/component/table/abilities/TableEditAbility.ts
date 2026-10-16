@@ -85,6 +85,7 @@ export const TableEditAbility = {
         }
 
         const eventKey = this.eventKey ?? this.getData('eventKey');
+        const entityKey = this.entityKey ?? this.getData('entityKey');
         const editRules = this.getData('editRules');
 
         const overlay = new EditOverlayComponent({
@@ -93,6 +94,7 @@ export const TableEditAbility = {
             actionsLeft,
             rowKey: this._editingRowKey,
             eventKey,
+            entityKey,
             editRules,
         });
         this._editOverlay = overlay;
