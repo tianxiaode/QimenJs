@@ -21,7 +21,8 @@ export const TableEditAbility = {
     _editingRowKey: null as string | null,
     _editingRowData: null as any | null,
     _editingRow: null as any | null,
-    _editScrollHandler: null as (() => void) | null,
+    _editScrollUnbind: null as (() => void) | null,
+    _editScrollOff: null as (() => void) | null,
 
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
@@ -112,15 +113,20 @@ export const TableEditAbility = {
     },
 
     _bindScrollSync(this: TableAbilityHost): void {
-        if (this._editScrollHandler) return;
-        this._editScrollHandler = () => this._syncOverlayPosition();
-        window.addEventListener('scroll', this._editScrollHandler, true);
+        if (this._editScrollUnbind) return;
+        this._editScrollUnbind = this.bind(document, 'scroll', { capture: true });
+        this._editScrollOff = this.on('dom:scroll', () => this._syncOverlayPosition());
     },
 
     _unbindScrollSync(this: TableAbilityHost): void {
-        if (!this._editScrollHandler) return;
-        window.removeEventListener('scroll', this._editScrollHandler, true);
-        this._editScrollHandler = null;
+        if (this._editScrollUnbind) {
+            this._editScrollUnbind();
+            this._editScrollUnbind = null;
+        }
+        if (this._editScrollOff) {
+            this._editScrollOff();
+            this._editScrollOff = null;
+        }
     },
 
     _collectCellPositions(this: TableAbilityHost, row: any, editableMetas: ColumnMeta[]): any[] {

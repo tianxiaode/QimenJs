@@ -34,7 +34,8 @@ export interface TableAbilityHost {
     _editingRowKey: string | null;
     _editingRowData: any | null;
     _editingRow: any | null;
-    _editScrollHandler: (() => void) | null;
+    _editScrollUnbind: (() => void) | null;
+    _editScrollOff: (() => void) | null;
 
     getData(key: string): any;
     setData(key: string, value: any, raw?: boolean): void;
@@ -47,6 +48,8 @@ export interface TableAbilityHost {
     getEntityItems(): any[];
     hasEntity(): boolean;
     _renderVirtualItems(): void;
+    bind(target: EventTarget, semantic: string, options?: { capture?: boolean }): () => void;
+    on(event: string, handler: (data: any) => void): () => void;
 
     initColumnOrder(config: { useCssVar: boolean; cssVarPrefix: string }): void;
     registerColumnEntry(name: string, width: any, index: number, extra?: Record<string, any>): void;
