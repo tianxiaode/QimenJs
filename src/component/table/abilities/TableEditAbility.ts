@@ -24,20 +24,10 @@ export const TableEditAbility = {
     _editingRowKey: null as string | null,
     _editingRowData: null as any | null,
 
-    _initEdit(this: TableAbilityHost): void {
-        const trigger = this.getData('editTrigger') ?? 'dblclick';
-        const eventName = trigger === 'click' ? 'click' : 'dblclick';
-
-        this.domEvents = {
-            ...(this.domEvents || {}),
-            [eventName]: [
-                ...(this.domEvents?.[eventName] || []),
-                { path: '[items]', handler: '_onRowEditTrigger' },
-            ],
-        };
-    },
-
     _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
+        const trigger = this.getData('editTrigger') ?? 'dblclick';
+        if (trigger !== 'dblclick') return;
+
         const row = domEvt?.targetComponent;
         if (!row) return;
 
@@ -136,7 +126,10 @@ export const TableEditAbility = {
         this._editingRowData = null;
     },
 
-    _validateEditValues(this: TableAbilityHost, values: Record<string, any>): Record<string, string> {
+    _validateEditValues(
+        this: TableAbilityHost,
+        values: Record<string, any>
+    ): Record<string, string> {
         const errors: Record<string, string> = {};
         const metas = this._columnMetaManager?.getAll() ?? [];
         const editRules = this.getData('editRules') ?? {};
@@ -162,7 +155,11 @@ export const TableEditAbility = {
                     errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
                     break;
                 }
-                if (rule.pattern && typeof value === 'string' && !new RegExp(rule.pattern).test(value)) {
+                if (
+                    rule.pattern &&
+                    typeof value === 'string' &&
+                    !new RegExp(rule.pattern).test(value)
+                ) {
                     errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
                     break;
                 }

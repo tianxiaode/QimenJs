@@ -113,7 +113,6 @@ export interface TableAbilityHost {
     _applyRowBodyData(inst: any, row: any, mergedData: any, rowBody: RowBodyConfig): void;
     _showBodyLoading(bodyEl: HTMLElement, text: string): HTMLElement;
 
-    _initEdit(): void;
     _onRowEditTrigger(domEvt: any): void;
     _startEdit(row: any, rowData: any, editableMetas: any[]): void;
     _bindEditActions(): void;

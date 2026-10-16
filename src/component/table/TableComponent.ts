@@ -74,6 +74,7 @@ class TableComponent extends ItemGroupPooledComponent {
 
     domEvents: DomEventsMap = {
         click: [{ path: '[items]', handler: '_onRowAreaClick', emits: ['selectionChanged'] }],
+        dblclick: [{ path: '[items]', handler: '_onRowEditTrigger' }],
     };
 
     get defaultEventData(): Record<string, any> {
@@ -112,7 +113,6 @@ class TableComponent extends ItemGroupPooledComponent {
         }
 
         this._isAfterInit = true;
-        this._initEdit();
         this._reflow();
     }
 
