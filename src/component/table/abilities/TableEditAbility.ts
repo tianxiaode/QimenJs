@@ -35,7 +35,28 @@ export const TableEditAbility = {
         const editableMetas = metas.filter((m: ColumnMeta) => m.editable);
         if (editableMetas.length === 0) return;
 
-        this._startEdit(row, rowData, editableMetas);
+        const editMode = this.getData('editMode') ?? 'row';
+        let targetMetas = editableMetas;
+
+        if (editMode === 'cell') {
+            const clickTarget = domEvt?.data?.originalEvent?.target as HTMLElement | undefined;
+            const clickedColName = this._findClickedColName(row, clickTarget);
+            if (!clickedColName) return;
+            targetMetas = editableMetas.filter((m: ColumnMeta) => m.name === clickedColName);
+            if (targetMetas.length === 0) return;
+        }
+
+        this._startEdit(row, rowData, targetMetas);
+    },
+
+    _findClickedColName(this: TableAbilityHost, row: any, clickTarget: HTMLElement | undefined): string | null {
+        if (!clickTarget) return null;
+        for (const [colName, cell] of row._cells ?? []) {
+            if (cell?.el?.contains(clickTarget)) {
+                return colName;
+            }
+        }
+        return null;
     },
 
     _startEdit(this: TableAbilityHost, row: any, rowData: any, editableMetas: ColumnMeta[]): void {
@@ -49,9 +70,19 @@ export const TableEditAbility = {
         const cellPositions = this._collectCellPositions(row, editableMetas);
         const rowRect = row.el.getBoundingClientRect();
 
+        let actionsLeft: number | null = null;
+        if (cellPositions.length > 0) {
+            const lastPos = cellPositions[cellPositions.length - 1];
+            const lastRight = lastPos.left + lastPos.width;
+            if (rowRect.width - lastRight >= 56) {
+                actionsLeft = lastRight + 4;
+            }
+        }
+
         const overlay = new EditOverlayComponent({
             editableMetas,
             cellPositions,
+            actionsLeft,
         });
         this._editOverlay = overlay;
 

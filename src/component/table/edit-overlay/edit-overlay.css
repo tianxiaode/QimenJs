@@ -42,12 +42,9 @@
 
 .q-edit-overlay__actions {
     position: absolute;
-    right: 0;
-    top: 0;
     display: flex;
     gap: 2px;
     padding: 0 2px;
-    height: 100%;
     align-items: center;
     z-index: 2;
 }

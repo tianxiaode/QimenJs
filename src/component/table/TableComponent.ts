@@ -370,6 +370,7 @@ const TableComponentDefs: Definitions = {
         rowBody: null,
         i18nScope: '',
         editTrigger: 'dblclick',
+        editMode: 'row',
         editRules: null,
     },
     fields: {

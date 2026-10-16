@@ -84,13 +84,14 @@ class RowComponent extends Component {
             options.width = `var(--q-table-col-${meta.name}-width)`;
             options.minWidth = '0';
         }
-        if (meta.format && meta.cellType === 'text') {
-            options.format = meta.format;
-        }
-        if (meta.enumMap && meta.cellType === 'text') {
-            options.enumMap = meta.enumMap;
-        }
         const cell = new CellClass(options);
+
+        if (meta.flex && meta.flex > 0) {
+            const basis = meta.width ? `var(--q-table-col-${meta.name}-width)` : '0px';
+            cell.el.style.flex = `${meta.flex} 1 ${basis}`;
+            cell.el.style.minWidth = '0';
+        }
+
         return cell;
     }
 

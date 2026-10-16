@@ -496,6 +496,22 @@ export interface ColumnDef {
     width?: string | number;
 
     /**
+     * 弹性填充 — 列自动填满表格剩余宽度
+     *
+     * flex: 1  → 该列 flex-grow:1，填满剩余空间
+     * flex: 2  → 该列 flex-grow:2，比 flex:1 列多占一倍剩余空间
+     *
+     * 多列可同时设置 flex，按比例分配剩余宽度。
+     * 设置 flex 后 width 作为 flex-basis（初始尺寸），不设则 flex-basis 为 0。
+     *
+     * @example
+     * { name: 'email', field: 'email', title: '邮箱', flex: 1 }  // 填满剩余
+     * { name: 'name', field: 'name', title: '姓名', width: 120 },
+     * { name: 'email', field: 'email', title: '邮箱', flex: 1 }  // 填满剩余
+     */
+    flex?: number;
+
+    /**
      * 最小列宽 — 限制 resize 的下界
      */
     minWidth?: number;
@@ -758,6 +774,9 @@ export interface ColumnMeta {
 
     /** 解析后的列宽字符串 */
     width?: string;
+
+    /** 弹性填充比例（flex-grow），0 表示不填充 */
+    flex?: number;
 
     /** 最小列宽 */
     minWidth?: number;

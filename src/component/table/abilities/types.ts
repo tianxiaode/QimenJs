@@ -30,6 +30,9 @@ export interface TableAbilityHost {
     _virtualData: any[];
     _scrollUnbind: (() => void) | null;
     _bodyCache: Map<string, any>;
+    _editOverlay: any;
+    _editingRowKey: string | null;
+    _editingRowData: any | null;
 
     getData(key: string): any;
     setData(key: string, value: any, raw?: boolean): void;
@@ -114,7 +117,9 @@ export interface TableAbilityHost {
     _showBodyLoading(bodyEl: HTMLElement, text: string): HTMLElement;
 
     _onRowEditTrigger(domEvt: any): void;
+    _findClickedColName(row: any, clickTarget: HTMLElement | undefined): string | null;
     _startEdit(row: any, rowData: any, editableMetas: any[]): void;
+    _collectCellPositions(row: any, editableMetas: any[]): any[];
     _bindEditActions(): void;
     _saveEdit(): void;
     _cancelEdit(): void;

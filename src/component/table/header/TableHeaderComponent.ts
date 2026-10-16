@@ -354,6 +354,7 @@ class TableHeaderComponent extends ItemGroupPooledComponent {
             align: 'center',
             fixed: leaf.fixed ?? null,
             minWidth: leaf.minWidth ?? 50,
+            flex: leaf.flex ?? 0,
             order: `var(--q-table-col-${leaf.name}-order)`,
             eventKey,
             action: leaf.name,

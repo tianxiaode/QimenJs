@@ -62,6 +62,7 @@ class EditOverlayComponent extends Component {
     onAfterInit(): void {
         this._buildEditors();
         this._setupIcons();
+        this._positionActions();
     }
 
     _setupIcons(): void {
@@ -69,6 +70,25 @@ class EditOverlayComponent extends Component {
         const cancelBtn = this.getNodeEl('cancelBtn');
         if (saveBtn) saveBtn.innerHTML = ICON_CHECK;
         if (cancelBtn) cancelBtn.innerHTML = ICON_CLOSE;
+    }
+
+    _positionActions(): void {
+        const actions = this.getNodeEl('actions');
+        if (!actions) return;
+
+        const actionsLeft = this.getData('actionsLeft');
+        if (actionsLeft != null) {
+            actions.style.left = `${actionsLeft}px`;
+            actions.style.right = '';
+            actions.style.top = '0';
+            actions.style.height = '100%';
+        } else {
+            actions.style.left = '';
+            actions.style.right = '0';
+            actions.style.top = '100%';
+            actions.style.height = '';
+            actions.style.padding = '2px 4px';
+        }
     }
 
     _buildEditors(): void {
@@ -229,6 +249,7 @@ const EditOverlayComponentDefs: Definitions = {
     options: {
         editableMetas: null,
         cellPositions: null,
+        actionsLeft: null,
     },
     fields: {
         _editableMetas: null,

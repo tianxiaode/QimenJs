@@ -10,12 +10,12 @@ const EDIT_DATA = [
     { id: 4, name: '赵六', age: 31, salary: 18000, dept: '技术部', email: 'zhaoliu@co.com' },
 ];
 
-const SINGLE_EDIT_COLUMNS: ColumnDefOrGroup[] = [
+const CELL_EDIT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120 },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
-    { name: 'email', field: 'email', title: '邮箱', width: 200, editable: true },
+    { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
 ];
 
 const ROW_EDIT_COLUMNS: ColumnDefOrGroup[] = [
@@ -23,7 +23,7 @@ const ROW_EDIT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', editable: true, editType: 'number' },
     { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', editable: true },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', editable: true, editType: 'number' },
-    { name: 'email', field: 'email', title: '邮箱', width: 200, editable: true },
+    { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
 ];
 
 const ROW_EDIT_RULES = {
@@ -59,8 +59,8 @@ class MockEditEntityManager extends LocalReadonlyEntityManager {
     static entityType = MOCK_ENTITY_TYPE;
 }
 
-class SingleCellEditDemo extends Component {
-    static type = 'single-cell-edit-demo';
+class CellEditDemo extends Component {
+    static type = 'cell-edit-demo';
 
     _table: any = null;
     _logEl: HTMLElement | null = null;
@@ -91,9 +91,10 @@ class SingleCellEditDemo extends Component {
 
         import('@qimenjs/component').then(({ TableComponent }) => {
             this._table = new TableComponent({
-                columns: SINGLE_EDIT_COLUMNS,
+                columns: CELL_EDIT_COLUMNS,
                 data: [...EDIT_DATA],
                 editTrigger: 'dblclick',
+                editMode: 'cell',
             });
 
             this._table.on('editSave', (data: any) => {
@@ -169,6 +170,7 @@ class RowEditDemo extends Component {
                 columns: ROW_EDIT_COLUMNS,
                 data: [...EDIT_DATA],
                 editTrigger: 'dblclick',
+                editMode: 'row',
                 editRules: ROW_EDIT_RULES,
             });
 
@@ -296,41 +298,43 @@ class EntityEditDemo extends Component {
 
 export const TABLE_EDIT_DEMO: DemoConfig = {
     title: 'Table 行编辑',
-    description: '行编辑 — 双击行触发浮动层编辑，支持验证、取消/保存按钮、Entity 数据交互',
+    description: '行编辑 — 双击触发浮动层编辑，支持 cell/row 模式、验证、取消/保存按钮、Entity 数据交互',
     sections: [
         {
-            label: '单单元格编辑（只有 email 列可编辑）',
+            label: 'Cell 编辑模式（双击单元格只编辑该列）',
             code: `{ type: 'table', options: {
     columns: [
-        { name: 'name', field: 'name', title: '姓名' },
-        { name: 'email', field: 'email', title: '邮箱', editable: true },
+        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
     ],
     data: [...],
     editTrigger: 'dblclick',
+    editMode: 'cell',
 } }
-// 双击行 → 浮动层覆盖行 → 只有 email 单元格显示 input
-// 行右侧显示 ✓ 保存 / ✗ 取消 图标按钮`,
-            component: SingleCellEditDemo,
+// editMode: 'cell' → 双击单元格只编辑该列
+// email 列 flex: 1 → 自动填满剩余宽度
+// 双击非 editable 单元格不会触发编辑`,
+            component: CellEditDemo,
         },
         {
-            label: '行编辑（多列可编辑 + 验证）',
+            label: 'Row 编辑模式（多列同时编辑 + 验证）',
             code: `{ type: 'table', options: {
     columns: [
         { name: 'name', field: 'name', title: '姓名', editable: true },
         { name: 'age', field: 'age', title: '年龄', editable: true, editType: 'number' },
-        { name: 'email', field: 'email', title: '邮箱', editable: true },
+        { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
     ],
     data: [...],
     editTrigger: 'dblclick',
+    editMode: 'row',
     editRules: {
         name: { required: true },
         age: { required: true, min: 18, max: 65 },
         email: { required: true, pattern: '^[^@]+@[^@]+', message: '邮箱格式不正确' },
     },
 } }
-// 所有 editable 列同时显示 input
-// 验证失败：input 标红 + 浮动层底部错误栏
-// 必须点 ✗ 取消按钮才能关闭浮动层`,
+// editMode: 'row' → 双击行所有 editable 列同时显示 input
+// 验证失败：input 标红 + 浮动层底部错误栏`,
             component: RowEditDemo,
         },
         {

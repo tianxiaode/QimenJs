@@ -141,6 +141,7 @@ export class ColumnMetaManager {
             enumMap: def.enumMap,
             align: resolveAlign(cellType, def.align),
             width,
+            flex: def.flex ?? 0,
             minWidth: def.minWidth,
             maxWidth: def.maxWidth,
             hidden: def.hidden ?? false,

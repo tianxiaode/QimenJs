@@ -28,6 +28,7 @@ const HeaderCellComponentDefs: Definitions = {
         sortState: 'none',
         selectAllChecked: false,
         selectAllIndeterminate: false,
+        flex: 0,
     },
 } as const;
 
@@ -142,6 +143,21 @@ class HeaderCellComponent extends Component {
             width: `var(--q-table-col-${this.colName}-width)`,
             minWidth: `var(--q-table-col-${this.colName}-min-width, ${this.minWidth}px)`,
         });
+        this._applyFlex();
+    }
+
+    _onFlexOptionChange(_value: number): void {
+        this._applyFlex();
+    }
+
+    _applyFlex(): void {
+        if (this.flex && this.flex > 0) {
+            const basis = `var(--q-table-col-${this.colName}-width, 0px)`;
+            this.setStyles({
+                flex: `${this.flex} 1 ${basis}`,
+                minWidth: '0',
+            });
+        }
     }
 
     _onTitleOptionChange(_value: string): void {
