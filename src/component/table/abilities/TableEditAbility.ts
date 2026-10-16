@@ -6,18 +6,15 @@ import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
 /**
  * TableEditAbility — 表格行编辑能力
  *
- * 双击行触发编辑：创建 EditOverlayComponent 浮动层覆盖在行上方，
- * 显示该行所有 editable 列的编辑器，底部统一操作栏（取消 + 保存）。
+ * 双击行触发编辑：创建透明浮动层覆盖在行上方，
+ * 只在 editable 单元格位置显示 input，行右侧显示取消/保存按钮。
  *
  * 关键设计：
- * - 浮动层模式：不破坏行 DOM 结构，编辑器溢出单元格边界不受限
- * - 只有一对取消/保存按钮：底部固定操作栏，多列编辑时统一操作
- * - 必须点取消按钮关闭：不响应点击外部/Escape，避免误触丢失数据
- * - 验证错误：浮动层内错误区域 + 字段标红
- *
- * 通过 TableComponent option editTrigger 配置触发方式：
- * - 'dblclick'（默认）：双击行进入编辑
- * - 'click'：单击行进入编辑
+ * - 透明浮动层覆盖行：不破坏行 DOM，视觉上是行内直接编辑
+ * - input 只出现在 editable 单元格位置：通过 cell.getBoundingClientRect() 精确定位
+ * - 取消/保存按钮在行右侧：不遮挡单元格内容
+ * - 必须点取消按钮关闭：不响应点击外部/Escape
+ * - 验证错误：input 标红 + 下方错误提示
  */
 export const TableEditAbility = {
     _editOverlay: null as EditOverlayComponent | null,
@@ -49,25 +46,50 @@ export const TableEditAbility = {
         this._editingRowKey = rowData._rowKey ?? String(rowData.id ?? '');
         this._editingRowData = rowData;
 
+        const cellPositions = this._collectCellPositions(row, editableMetas);
+        const rowRect = row.el.getBoundingClientRect();
+
         const overlay = new EditOverlayComponent({
             editableMetas,
+            cellPositions,
         });
         this._editOverlay = overlay;
-
-        const anchorEl = row.el;
 
         Promise.resolve(overlay.ready).then(() => {
             if (this._editOverlay !== overlay) return;
 
-            overlay.activate(rowData, editableMetas);
+            overlay.el.style.position = 'fixed';
+            overlay.el.style.left = `${rowRect.left}px`;
+            overlay.el.style.top = `${rowRect.top}px`;
+            overlay.el.style.width = `${rowRect.width}px`;
+            overlay.el.style.height = `${rowRect.height}px`;
 
-            overlay._showOverlay({
-                anchor: anchorEl,
-                placement: 'bottom',
-            });
+            overlay.mountToOverlay(overlay.el);
+
+            overlay.activate(rowData);
 
             this._bindEditActions();
         });
+    },
+
+    _collectCellPositions(this: TableAbilityHost, row: any, editableMetas: ColumnMeta[]): any[] {
+        const positions: any[] = [];
+        const rowRect = row.el.getBoundingClientRect();
+
+        for (const meta of editableMetas) {
+            const cell = row._cells?.get(meta.name);
+            if (!cell?.el) continue;
+            const cellRect = cell.el.getBoundingClientRect();
+            positions.push({
+                colName: meta.name,
+                left: cellRect.left - rowRect.left,
+                top: cellRect.top - rowRect.top,
+                width: cellRect.width,
+                height: cellRect.height,
+            });
+        }
+
+        return positions;
     },
 
     _bindEditActions(this: TableAbilityHost): void {
@@ -125,17 +147,14 @@ export const TableEditAbility = {
         if (!this._editOverlay) return;
 
         this._editOverlay.deactivate();
-        this._editOverlay._hideOverlay();
+        this._editOverlay.unmountFromOverlay(this._editOverlay.el);
         this._editOverlay.dispose();
         this._editOverlay = null;
         this._editingRowKey = null;
         this._editingRowData = null;
     },
 
-    _validateEditValues(
-        this: TableAbilityHost,
-        values: Record<string, any>
-    ): Record<string, string> {
+    _validateEditValues(this: TableAbilityHost, values: Record<string, any>): Record<string, string> {
         const errors: Record<string, string> = {};
         const metas = this._columnMetaManager?.getAll() ?? [];
         const editRules = this.getData('editRules') ?? {};
@@ -161,11 +180,7 @@ export const TableEditAbility = {
                     errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
                     break;
                 }
-                if (
-                    rule.pattern &&
-                    typeof value === 'string' &&
-                    !new RegExp(rule.pattern).test(value)
-                ) {
+                if (rule.pattern && typeof value === 'string' && !new RegExp(rule.pattern).test(value)) {
                     errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
                     break;
                 }
