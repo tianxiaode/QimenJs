@@ -330,6 +330,19 @@ class EditOverlayComponent extends Component {
         }
 
         errorBar.style.display = 'block';
+        errorBar.style.left = '';
+        errorBar.style.top = '';
+        errorBar.style.right = '';
+
+        const firstErrorCol = Object.keys(this._errorMessages).find(k => this._errorMessages[k]);
+        const pos = firstErrorCol
+            ? this._cellPositions.find(p => p.colName === firstErrorCol)
+            : null;
+        if (pos) {
+            errorBar.style.left = `${pos.left}px`;
+            errorBar.style.top = `${pos.top + pos.height}px`;
+        }
+
         errorBar.innerHTML = '';
 
         for (const [colName, message] of Object.entries(this._errorMessages)) {

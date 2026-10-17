@@ -122,11 +122,9 @@
 
 .q-edit-overlay__error-bar {
     position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
     display: none;
     padding: 4px 8px;
+    max-width: 320px;
     background: var(--q-color-bg, #fff);
     border: 1px solid var(--q-color-danger, #e53e3e);
     border-top: none;
