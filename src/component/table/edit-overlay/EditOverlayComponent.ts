@@ -48,6 +48,7 @@ class EditOverlayComponent extends Component {
             },
             { path: 'cancelBtn', handler: '_onCancelClick', bridges: ['editCancel'] },
         ],
+        keydown: [{ path: 'root', handler: '_onKeyDown' }],
     };
 
     get tpl(): TemplateDecl {
@@ -136,6 +137,19 @@ class EditOverlayComponent extends Component {
 
     _onCancelClick(): void {
         this._pendingNewValues = null;
+    }
+
+    _onKeyDown(domEvt: any): void {
+        const originalEvent = domEvt?.data?.originalEvent;
+        const key = originalEvent?.key;
+
+        if (key === 'Enter') {
+            originalEvent?.preventDefault?.();
+            this.getNodeEl('saveBtn')?.click();
+        } else if (key === 'Escape') {
+            originalEvent?.preventDefault?.();
+            this.getNodeEl('cancelBtn')?.click();
+        }
     }
 
     _validateValues(values: Record<string, any>): Record<string, string> {
