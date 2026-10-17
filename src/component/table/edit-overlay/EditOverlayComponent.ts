@@ -134,7 +134,8 @@ class EditOverlayComponent extends Component {
         return this._pendingNewValues !== null;
     }
 
-    beforeForwardBridge(): boolean {
+    beforeForwardBridge(ctx: any): boolean {
+        if (ctx?.config?.bridges?.includes('editCancel')) return true;
         return this._pendingNewValues !== null;
     }
 

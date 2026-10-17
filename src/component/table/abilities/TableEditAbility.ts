@@ -102,12 +102,14 @@ export const TableEditAbility = {
         });
     },
 
-    _onEditSave(): void {
+    _onEditSave(data: any): void {
         this._closeEditOverlay();
+        this.emit('editSave', data);
     },
 
-    _onEditCancel(): void {
+    _onEditCancel(data: any): void {
         this._closeEditOverlay();
+        this.emit('editCancel', data);
     },
 
     _syncOverlayPosition(): void {
