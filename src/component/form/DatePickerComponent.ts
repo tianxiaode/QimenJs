@@ -51,6 +51,7 @@ const DatePickerComponentDefs: Definitions = {
 } as const;
 
 class DatePickerComponent extends InputComponent {
+    static type = 'date-picker';
     _dateValue: DateTimeValue | null = null;
     _originalValue: DateTimeValue | null = null;
     _dropdownOpen: boolean = false;

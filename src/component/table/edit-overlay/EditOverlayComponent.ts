@@ -1,13 +1,16 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import type { ColumnMeta } from '../column-types';
+import type { ColumnMeta, EditType } from '../column-types';
 import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
-import { NumberInputComponent } from '@/component/form/NumberInputComponent';
-import { SelectComponent, type SelectOption } from '@/component/form/SelectComponent';
-import { DatePickerComponent } from '@/component/form/DatePickerComponent';
 import { ValidationErrorBuilder, ValidationErrorCode } from '@/validation';
 import { t } from '@/i18n';
 import './edit-overlay.css';
+
+const EDIT_TYPE_TO_COMPONENT: Record<Exclude<EditType, 'text' | 'custom'>, string> = {
+    number: 'number-input',
+    select: 'select',
+    date: 'date-picker',
+};
 
 interface CellPosition {
     colName: string;
@@ -234,16 +237,45 @@ class EditOverlayComponent extends Component {
         const editOptions = meta.editOptions ?? {};
 
         if (editType === 'text') {
-            const input = document.createElement('input');
-            input.className = 'q-edit-overlay__input';
-            input.type = 'text';
-            input.dataset.colName = meta.name;
+            this._createNativeInput(meta, cellWrapper);
+            return;
+        }
 
-            if (meta.align === 'center') {
-                input.style.textAlign = 'center';
-            } else if (meta.align === 'right') {
-                input.style.textAlign = 'right';
-            }
+        const componentType = editType === 'custom'
+            ? meta.editComponent
+            : EDIT_TYPE_TO_COMPONENT[editType as Exclude<EditType, 'text' | 'custom'>];
+
+        if (!componentType) {
+            this._createNativeInput(meta, cellWrapper);
+            return;
+        }
+
+        const Ctor = this.resolveComponent(componentType);
+        if (!Ctor) {
+            this._createNativeInput(meta, cellWrapper);
+            return;
+        }
+
+        const component = new (Ctor as any)({ ...editOptions });
+        if (component.el) cellWrapper.appendChild(component.el);
+        this._editors.set(meta.name, { kind: 'framework', component });
+    }
+
+    _createNativeInput(meta: ColumnMeta, cellWrapper: HTMLElement): void {
+        const input = document.createElement('input');
+        input.className = 'q-edit-overlay__input';
+        input.type = 'text';
+        input.dataset.colName = meta.name;
+
+        if (meta.align === 'center') {
+            input.style.textAlign = 'center';
+        } else if (meta.align === 'right') {
+            input.style.textAlign = 'right';
+        }
+
+        cellWrapper.appendChild(input);
+        this._editors.set(meta.name, { kind: 'native', input });
+    }
 
             cellWrapper.appendChild(input);
             this._editors.set(meta.name, { kind: 'native', input });

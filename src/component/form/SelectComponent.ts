@@ -47,6 +47,7 @@ const SelectComponentDefs: Definitions = {
 } as const;
 
 class SelectComponent extends InputComponent {
+    static type = 'select';
     _selectedValue: string | number | (string | number)[] | undefined = undefined;
     _dropdownOpen: boolean = false;
     _dropdownIconItem: any = null;
