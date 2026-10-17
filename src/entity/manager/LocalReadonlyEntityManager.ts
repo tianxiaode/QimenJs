@@ -43,7 +43,6 @@ export class LocalReadonlyEntityManager<
         [CMD.SORT]: 'sort',
         [CMD.GROUP_BY]: 'groupBy',
         [CMD.GET]: 'get',
-        [CMD.UPDATE]: 'updateItem',
     };
 
     constructor(config?: Record<string, any>) {

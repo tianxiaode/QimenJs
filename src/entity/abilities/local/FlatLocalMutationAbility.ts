@@ -39,6 +39,12 @@ export const FlatLocalMutationAbility = {
     async _internalSave(isBatch: boolean = false) {
         if (!this.hasChanges) return;
 
+        if (!this.isRemote) {
+            this.clearChanges();
+            this.emitEvent(ENTITY_CRUD_EVENTS.SAVED);
+            return;
+        }
+
         const { added, updated } = this.changes;
         const updatedList = Array.from(updated.values());
 
@@ -57,6 +63,7 @@ export const FlatLocalMutationAbility = {
             }
         }
 
+        this.clearChanges();
         this.emitEvent(ENTITY_CRUD_EVENTS.SAVED);
     },
 } satisfies AbilityDefinition;

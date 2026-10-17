@@ -49,6 +49,7 @@ function createHost() {
     class TestHost extends ComposableBase {
         schema = { idField: 'id', idType: 'string' };
         sourceData = new Map<string, any>();
+        isRemote = true;
         setCache = jest.fn().mockResolvedValue(undefined);
         refreshView = jest.fn();
         fetch = jest.fn().mockResolvedValue({ data: {}, metadata: { hasError: false } });

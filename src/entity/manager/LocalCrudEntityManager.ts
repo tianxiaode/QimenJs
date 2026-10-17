@@ -55,6 +55,10 @@ export class LocalCrudEntityManager<
         [CMD.TOGGLE]: 'toggle',
         [CMD.SAVE]: 'save',
         [CMD.DELETE]: 'delete',
+        [CMD.START_EDIT]: 'startEdit',
+        [CMD.SUBMIT_EDIT]: 'submitEdit',
+        [CMD.CANCEL_EDIT]: 'cancelEdit',
+        [CMD.ROLLBACK_ALL]: 'rollbackAll',
     };
 
     constructor(config?: Record<string, any>) {

@@ -1,5 +1,5 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import { dataDispatchCenter, LocalReadonlyEntityManager } from '@qimenjs/entity';
+import { dataDispatchCenter, LocalCrudEntityManager } from '@qimenjs/entity';
 import { ENTITY_COMMAND_EVENTS } from '@qimenjs/events';
 import type { DemoConfig } from './types';
 import type { ColumnDefOrGroup } from '@qimenjs/component';
@@ -71,29 +71,6 @@ const ENTITY_EDIT_RULES = {
 const CELL_ENTITY_KEY = 'demo-cell-edit-entity';
 const ROW_ENTITY_KEY = 'demo-row-edit-entity';
 const ENTITY_KEY = 'demo-edit-entity';
-const MOCK_CELL_TYPE = 'mock-cell-edit';
-const MOCK_ROW_TYPE = 'mock-row-edit';
-const MOCK_ENTITY_TYPE = 'mock-edit-entity';
-
-class MockEditEntityManager extends LocalReadonlyEntityManager {
-    static entityType = MOCK_ENTITY_TYPE;
-
-    constructor(config?: Record<string, any>) {
-        super(config);
-        this.entityOn(this.entityKey!, ENTITY_COMMAND_EVENTS.EDIT_SAVE, (data: any) => {
-            this.editSave(data);
-        });
-    }
-
-    editSave(data: { rowKey: string | number; newValues: Record<string, any> }): void {
-        const id = Number(data.rowKey);
-        const existing = this.sourceData.get(id);
-        if (!existing) return;
-        this.sourceData.set(id, { ...existing, ...data.newValues });
-        this.refreshView();
-        this.emitEvent('editSaved', { rowKey: id, newValues: data.newValues });
-    }
-}
 
 class CellEditDemo extends Component {
     static type = 'cell-edit-demo';
@@ -125,8 +102,8 @@ class CellEditDemo extends Component {
         this._logEl = this.getNodeEl('logContent');
         if (!container) return;
 
-        LocalReadonlyEntityManager.register();
-        const mgr = dataDispatchCenter.connect(CELL_ENTITY_KEY, 'local-readonly');
+        LocalCrudEntityManager.register();
+        const mgr = dataDispatchCenter.connect(CELL_ENTITY_KEY, 'local-crud');
         EDIT_DATA.forEach(item => mgr.sourceData.set(item.id, item));
         mgr.refreshView();
 
@@ -134,7 +111,7 @@ class CellEditDemo extends Component {
             this._table = new TableComponent({
                 columns: CELL_EDIT_COLUMNS,
                 entityKey: CELL_ENTITY_KEY,
-                entityType: 'local-readonly',
+                entityType: 'local-crud',
                 editTrigger: 'dblclick',
                 editMode: 'cell',
                 editRules: CELL_EDIT_RULES,
@@ -165,7 +142,7 @@ class CellEditDemo extends Component {
         const time = new Date().toLocaleTimeString();
         entry.textContent = `[${time}] ${event}: rowKey=${data.rowKey ?? data.id}`;
         if (event === 'editSave') {
-            entry.textContent += ' | → entities:update → EM updateItem → 表格自动刷新';
+            entry.textContent += ' | → entities:update → EM update → 表格自动刷新';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -202,8 +179,8 @@ class RowEditDemo extends Component {
         this._logEl = this.getNodeEl('logContent');
         if (!container) return;
 
-        LocalReadonlyEntityManager.register();
-        const mgr = dataDispatchCenter.connect(ROW_ENTITY_KEY, 'local-readonly');
+        LocalCrudEntityManager.register();
+        const mgr = dataDispatchCenter.connect(ROW_ENTITY_KEY, 'local-crud');
         EDIT_DATA.forEach(item => mgr.sourceData.set(item.id, item));
         mgr.refreshView();
 
@@ -211,7 +188,7 @@ class RowEditDemo extends Component {
             this._table = new TableComponent({
                 columns: ROW_EDIT_COLUMNS,
                 entityKey: ROW_ENTITY_KEY,
-                entityType: 'local-readonly',
+                entityType: 'local-crud',
                 editTrigger: 'dblclick',
                 editMode: 'row',
                 editRules: ROW_EDIT_RULES,
@@ -242,7 +219,7 @@ class RowEditDemo extends Component {
         const time = new Date().toLocaleTimeString();
         entry.textContent = `[${time}] ${event}: rowKey=${data.rowKey ?? data.id}`;
         if (event === 'editSave') {
-            entry.textContent += ' | → entities:update → EM updateItem → 表格自动刷新';
+            entry.textContent += ' | → entities:update → EM update → 表格自动刷新';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -279,8 +256,8 @@ class EntityEditDemo extends Component {
         this._logEl = this.getNodeEl('logContent');
         if (!container) return;
 
-        MockEditEntityManager.register();
-        const mgr = dataDispatchCenter.connect(ENTITY_KEY, MOCK_ENTITY_TYPE);
+        LocalCrudEntityManager.register();
+        const mgr = dataDispatchCenter.connect(ENTITY_KEY, 'local-crud');
         ENTITY_EDIT_DATA.forEach(item => mgr.sourceData.set(item.id, item));
         mgr.refreshView();
 
@@ -288,7 +265,7 @@ class EntityEditDemo extends Component {
             this._table = new TableComponent({
                 columns: ENTITY_EDIT_COLUMNS,
                 entityKey: ENTITY_KEY,
-                entityType: MOCK_ENTITY_TYPE,
+                entityType: 'local-crud',
                 editTrigger: 'dblclick',
                 editRules: ENTITY_EDIT_RULES,
             });
@@ -303,8 +280,12 @@ class EntityEditDemo extends Component {
                 this._log('editCancel', data);
             });
 
-            this._table.entityOn(ENTITY_KEY, 'editSaved', (result: any) => {
-                this._log('editSaved', result);
+            this._table.entityOn(ENTITY_KEY, 'updated', (result: any) => {
+                this._log('updated', result);
+            });
+
+            this._table.entityOn(ENTITY_KEY, 'saved', () => {
+                this._log('saved', {});
             });
 
             container.appendChild(this._table.el);
@@ -322,9 +303,11 @@ class EntityEditDemo extends Component {
         const time = new Date().toLocaleTimeString();
         entry.textContent = `[${time}] ${event}: rowKey=${data.rowKey ?? data.id}`;
         if (event === 'editSave') {
-            entry.textContent += ' | → entities:update → EM updateItem → 表格自动刷新';
-        } else if (event === 'editSaved') {
-            entry.textContent += ' | → EM 处理完成，表格自动刷新';
+            entry.textContent += ' | → entities:update → EM update → 表格自动刷新';
+        } else if (event === 'updated') {
+            entry.textContent += ' | → EM 更新完成';
+        } else if (event === 'saved') {
+            entry.textContent += ' | → EM 批量保存完成';
         }
         this._logEl.appendChild(entry);
         this._logEl.scrollTop = this._logEl.scrollHeight;
@@ -347,7 +330,7 @@ export const TABLE_EDIT_DEMO: DemoConfig = {
         { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
     ],
     entityKey: 'demo-cell-edit-entity',
-    entityType: 'local-readonly',
+    entityType: 'local-crud',
     editTrigger: 'dblclick',
     editMode: 'cell',
     editRules: { name: { required: true }, age: { min: 18, max: 65 }, ... },
@@ -367,7 +350,7 @@ export const TABLE_EDIT_DEMO: DemoConfig = {
         { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
     ],
     entityKey: 'demo-row-edit-entity',
-    entityType: 'local-readonly',
+    entityType: 'local-crud',
     editTrigger: 'dblclick',
     editMode: 'row',
     editRules: {
@@ -383,19 +366,14 @@ export const TABLE_EDIT_DEMO: DemoConfig = {
         },
         {
             label: '自定义 Entity 数据交互（派生 EM 模拟远程 update）',
-            code: `// 派生 LocalReadonlyEntityManager，覆写 editSave 模拟远程 update
-class MockEditEntityManager extends LocalReadonlyEntityManager {
-    constructor(config) {
-        super(config);
-        this.entityOn(this.entityKey, 'editSave', (data) => this.editSave(data));
-    }
-    editSave(data) {
-        const existing = this.sourceData.get(Number(data.rowKey));
-        this.sourceData.set(Number(data.rowKey), { ...existing, ...data.newValues });
-        this.refreshView();
-        this.emitEvent('editSaved', { rowKey: data.rowKey, newValues: data.newValues });
-    }
-}
+            code: `// 使用 LocalCrudEntityManager，支持 update/save/cancelEdit 等编辑命令
+// TableComponent 通过统一命令事件与 EM 交互：
+//   entities: 'update' → EM update（updateItem + 记录 changes + 刷新视图）
+//   entities: 'cancelEdit' → EM cancelEdit（恢复快照）
+//   entities: 'save' → EM save（确认变更 + 清空 changes）
+// LocalCrudEntityManager eventMap 统一映射：
+//   UPDATE → update, START_EDIT → startEdit, CANCEL_EDIT → cancelEdit,
+//   SUBMIT_EDIT → submitEdit, ROLLBACK_ALL → rollbackAll, SAVE → save
 
 new TableComponent({
     columns: [
@@ -406,7 +384,7 @@ new TableComponent({
         { name: 'joinDate', field: 'joinDate', editable: true, editType: 'date' },
     ],
     entityKey: 'demo-edit-entity',
-    entityType: 'mock-edit-entity',
+    entityType: 'local-crud',
     editTrigger: 'dblclick',
     editRules: { name: { required: true }, ... },
 })
@@ -417,9 +395,9 @@ new TableComponent({
 // editType: 'date' → DatePickerComponent（框架组件）
 // editType: 'custom' → editComponent 指定的框架组件
 // EditOverlayComponent domEvents 直接声明：
-//   entities: 'update' → EM updateItem（本地 EM 自动处理）
+//   entities: 'update' → EM update（记录 changes + 刷新视图）
 //   bridges: 'editSave' → TableComponent 关闭浮动层
-// 全流程：editSave → entities:update → EM → refreshView → LISTED → 表格刷新`,
+// 全流程：editSave → entities:update → EM update → refreshView → LISTED → 表格刷新`,
             component: EntityEditDemo,
         },
     ],
