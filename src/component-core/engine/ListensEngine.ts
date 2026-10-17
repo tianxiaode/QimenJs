@@ -126,7 +126,8 @@ export class ListensEngine {
             // 2. EventForwarder 六路转发
             const config = ListensEngine._extractForwardConfig(mapping);
             if (config) {
-                EventForwarder.forward(instance, config, data, undefined, eventName);
+                const condition = ListensEngine._extractCondition(mapping);
+                EventForwarder.forward(instance, config, data, undefined, eventName, condition);
             }
         };
     }
@@ -188,6 +189,13 @@ export class ListensEngine {
      */
     private static _isOnce(mapping: EventMapping): boolean {
         return mapping !== true && typeof mapping === 'object' && mapping.once === true;
+    }
+
+    private static _extractCondition(
+        mapping: EventMapping
+    ): ((ctx?: { data?: any }) => boolean) | undefined {
+        if (mapping === true || typeof mapping !== 'object') return undefined;
+        return mapping.condition;
     }
 
     // ─── 各类型绑定实现 ───

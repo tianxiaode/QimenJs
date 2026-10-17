@@ -55,6 +55,7 @@ export class DomEventsEngine {
             entities: rule.entities,
             router: rule.router,
             system: rule.system,
+            condition: rule.condition,
             handler: rule.handler,
             once: rule.once,
             debounce: rule.debounce,
@@ -399,7 +400,7 @@ export class DomEventsEngine {
         if (domEvt?.actionData) {
             extraData.actionData = domEvt.actionData;
         }
-        EventForwarder.forward(instance, rule, extraData, domEvt, domEvt?.action);
+        EventForwarder.forward(instance, rule, extraData, domEvt, domEvt?.action, rule.condition);
     }
 
     private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {

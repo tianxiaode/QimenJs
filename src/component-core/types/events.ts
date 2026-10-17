@@ -80,6 +80,9 @@ export interface DelegatedEventRule {
     /** 转发为系统事件 */
     system?: string[];
 
+    /** 转发条件 — 返回 false 时阻止该规则的所有转发 */
+    condition?: (ctx?: { domEvent?: any; data?: any }) => boolean;
+
     /**
      * DOM 事件委托 → 调用组件本地方法
      *
@@ -145,6 +148,14 @@ export interface DomEventRule {
 
     /** 转发为系统事件 */
     system?: string[];
+
+    /**
+     * 转发条件 — 返回 false 时阻止该规则的所有转发（不影响 handler 执行）
+     *
+     * 与 beforeForward 钩子互补：condition 是声明式的，写在规则旁边；
+     * 钩子是命令式的，可做跨路由判断。两者叠加，condition 先于钩子检查。
+     */
+    condition?: (ctx?: { domEvent?: any; data?: any }) => boolean;
 
     /** 事件数据声明 */
     data?: string[] | Record<string, string[]>;
@@ -233,6 +244,7 @@ export type EventMapping =
           file?: string;
           router?: string;
           system?: string[];
+          condition?: (ctx?: { data?: any }) => boolean;
       };
 
 /**

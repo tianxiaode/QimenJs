@@ -185,9 +185,12 @@ export class EventForwarder {
         config: ForwardConfig,
         extraData?: any,
         domEvent?: any,
-        actualAction?: string
+        actualAction?: string,
+        condition?: (ctx?: { domEvent?: any; data?: any }) => boolean
     ): void {
         const data = EventForwarder.collectEventData(instance, extraData);
+
+        if (typeof condition === 'function' && !condition({ domEvent, data })) return;
 
         const ctx: ForwardContext = {
             instance,
