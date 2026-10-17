@@ -150,21 +150,22 @@ class EditOverlayComponent extends Component {
             const ruleList = Array.isArray(rules) ? rules : [rules];
             const editType = meta.editType ?? 'text';
             const ctx = { field: meta.name, label: meta.title || meta.name, value };
+            const label = meta.title || meta.name;
 
             for (const rule of ruleList) {
                 if (rule.required && (value == null || value === '')) {
                     const err = ValidationErrorBuilder.required(ctx);
-                    errors[meta.name] = t(err.code, true);
+                    errors[meta.name] = `${label}: ${t(err.code, true)}`;
                     break;
                 }
                 if (rule.min != null && typeof value === 'number' && value < rule.min) {
                     const err = ValidationErrorBuilder.too_small(rule.min, value, false, ctx);
-                    errors[meta.name] = t(err.code, true);
+                    errors[meta.name] = `${label}: ${t(err.code, true)}`;
                     break;
                 }
                 if (rule.max != null && typeof value === 'number' && value > rule.max) {
                     const err = ValidationErrorBuilder.too_large(rule.max, value, false, ctx);
-                    errors[meta.name] = t(err.code, true);
+                    errors[meta.name] = `${label}: ${t(err.code, true)}`;
                     break;
                 }
                 if (
@@ -173,17 +174,17 @@ class EditOverlayComponent extends Component {
                     !new RegExp(rule.pattern).test(value)
                 ) {
                     const err = ValidationErrorBuilder.pattern_mismatch(rule.pattern, value, ctx);
-                    errors[meta.name] = rule.message || t(err.code, true);
+                    errors[meta.name] = `${label}: ${rule.message || t(err.code, true)}`;
                     break;
                 }
                 if (rule.minLength != null && typeof value === 'string' && value.length < rule.minLength) {
                     const err = ValidationErrorBuilder.too_small(rule.minLength, value.length, false, ctx);
-                    errors[meta.name] = t(err.code, true);
+                    errors[meta.name] = `${label}: ${t(err.code, true)}`;
                     break;
                 }
                 if (rule.maxLength != null && typeof value === 'string' && value.length > rule.maxLength) {
                     const err = ValidationErrorBuilder.too_large(rule.maxLength, value.length, false, ctx);
-                    errors[meta.name] = t(err.code, true);
+                    errors[meta.name] = `${label}: ${t(err.code, true)}`;
                     break;
                 }
             }
@@ -328,7 +329,7 @@ class EditOverlayComponent extends Component {
             return;
         }
 
-        errorBar.style.display = '';
+        errorBar.style.display = 'block';
         errorBar.innerHTML = '';
 
         for (const [colName, message] of Object.entries(this._errorMessages)) {
