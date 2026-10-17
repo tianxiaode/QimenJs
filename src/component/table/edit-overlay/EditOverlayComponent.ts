@@ -1,16 +1,11 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import type { ColumnMeta, EditType } from '../column-types';
+import type { ColumnMeta } from '../column-types';
 import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { NumberInputComponent } from '@/component/form/NumberInputComponent';
+import { SelectComponent, type SelectOption } from '@/component/form/SelectComponent';
+import { DatePickerComponent } from '@/component/form/DatePickerComponent';
 import './edit-overlay.css';
-
-const EDIT_TYPE_INPUT_MAP: Record<EditType, string> = {
-    text: 'text',
-    number: 'number',
-    date: 'date',
-    select: 'select',
-    custom: 'text',
-};
 
 interface CellPosition {
     colName: string;
@@ -28,6 +23,12 @@ interface EditRule {
     message?: string;
 }
 
+interface EditorEntry {
+    kind: 'native' | 'framework';
+    input?: HTMLInputElement;
+    component?: any;
+}
+
 const ICON_CHECK = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const ICON_CLOSE = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -40,11 +41,12 @@ class EditOverlayComponent extends Component {
     _errorMessages: Record<string, string> = {};
     _rowData: Record<string, any> | null = null;
     _pendingNewValues: Record<string, any> | null = null;
+    _editors: Map<string, EditorEntry> = new Map();
 
     domEvents: DomEventsMap = {
         click: [
-            { path: 'saveBtn', handler: '_onSaveClick', entities: 'update', bridges: 'editSave' },
-            { path: 'cancelBtn', handler: '_onCancelClick', bridges: 'editCancel' },
+            { path: 'saveBtn', handler: '_onSaveClick', entities: 'update', bridges: ['editSave'] },
+            { path: 'cancelBtn', handler: '_onCancelClick', bridges: ['editCancel'] },
         ],
     };
 
@@ -89,6 +91,10 @@ class EditOverlayComponent extends Component {
         this._buildEditors();
         this._setupIcons();
         this._positionActions();
+    }
+
+    onBeforeDispose(): void {
+        this._disposeEditors();
     }
 
     _setupIcons(): void {
@@ -181,44 +187,85 @@ class EditOverlayComponent extends Component {
             const pos = positions.find(p => p.colName === meta.name);
             if (!pos) continue;
 
-            const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'q-edit-overlay__cell';
-            inputWrapper.dataset.colName = meta.name;
-            inputWrapper.style.left = `${pos.left}px`;
-            inputWrapper.style.top = `${pos.top}px`;
-            inputWrapper.style.width = `${pos.width}px`;
-            inputWrapper.style.height = `${pos.height}px`;
+            const cellWrapper = document.createElement('div');
+            cellWrapper.className = 'q-edit-overlay__cell';
+            cellWrapper.dataset.colName = meta.name;
+            cellWrapper.style.left = `${pos.left}px`;
+            cellWrapper.style.top = `${pos.top}px`;
+            cellWrapper.style.width = `${pos.width}px`;
+            cellWrapper.style.height = `${pos.height}px`;
 
-            const input = this._createEditor(meta);
-            inputWrapper.appendChild(input);
-
-            editLayer.appendChild(inputWrapper);
+            this._createEditor(meta, cellWrapper);
+            editLayer.appendChild(cellWrapper);
         }
     }
 
-    _createEditor(meta: ColumnMeta): HTMLElement {
+    _createEditor(meta: ColumnMeta, cellWrapper: HTMLElement): void {
         const editType = meta.editType ?? 'text';
+        const editOptions = meta.editOptions ?? {};
+
+        if (editType === 'text') {
+            const input = document.createElement('input');
+            input.className = 'q-edit-overlay__input';
+            input.type = 'text';
+            input.dataset.colName = meta.name;
+
+            if (meta.align === 'center') {
+                input.style.textAlign = 'center';
+            } else if (meta.align === 'right') {
+                input.style.textAlign = 'right';
+            }
+
+            cellWrapper.appendChild(input);
+            this._editors.set(meta.name, { kind: 'native', input });
+            return;
+        }
+
+        if (editType === 'number') {
+            const component = new NumberInputComponent({
+                controls: false,
+                ...editOptions,
+            });
+            if (component.el) cellWrapper.appendChild(component.el);
+            this._editors.set(meta.name, { kind: 'framework', component });
+            return;
+        }
+
+        if (editType === 'select') {
+            const component = new SelectComponent({
+                options: (editOptions.options ?? []) as SelectOption[],
+                ...editOptions,
+            });
+            if (component.el) cellWrapper.appendChild(component.el);
+            this._editors.set(meta.name, { kind: 'framework', component });
+            return;
+        }
+
+        if (editType === 'date') {
+            const component = new DatePickerComponent({
+                ...editOptions,
+            });
+            if (component.el) cellWrapper.appendChild(component.el);
+            this._editors.set(meta.name, { kind: 'framework', component });
+            return;
+        }
 
         if (editType === 'custom' && meta.editComponent) {
-            const container = document.createElement('div');
-            container.className = 'q-edit-overlay__custom-editor';
-            container.dataset.colName = meta.name;
-            return container;
+            const Ctor = this.resolveComponent(meta.editComponent);
+            if (Ctor) {
+                const component = new (Ctor as any)({ ...editOptions });
+                if (component.el) cellWrapper.appendChild(component.el);
+                this._editors.set(meta.name, { kind: 'framework', component });
+                return;
+            }
         }
 
-        const inputType = EDIT_TYPE_INPUT_MAP[editType] || 'text';
         const input = document.createElement('input');
         input.className = 'q-edit-overlay__input';
-        input.type = inputType;
+        input.type = 'text';
         input.dataset.colName = meta.name;
-
-        if (meta.align === 'center') {
-            input.style.textAlign = 'center';
-        } else if (meta.align === 'right') {
-            input.style.textAlign = 'right';
-        }
-
-        return input;
+        cellWrapper.appendChild(input);
+        this._editors.set(meta.name, { kind: 'native', input });
     }
 
     activate(rowData: any): void {
@@ -227,14 +274,32 @@ class EditOverlayComponent extends Component {
         this._errorMessages = {};
         this._pendingNewValues = null;
 
+        const frameworkReadyPromises: Promise<any>[] = [];
+
         for (const meta of this._editableMetas) {
             const value = rowData?.[meta.field] ?? '';
             this._originalValues[meta.name] = value;
-            this._setEditorValue(meta.name, value);
+
+            const editor = this._editors.get(meta.name);
+            if (!editor) continue;
+
+            if (editor.kind === 'native' && editor.input) {
+                editor.input.value = String(value ?? '');
+            } else if (editor.kind === 'framework' && editor.component) {
+                const cmp = editor.component;
+                frameworkReadyPromises.push(
+                    Promise.resolve(cmp.ready).then(() => cmp.setFormValue(value))
+                );
+            }
         }
 
         this._clearErrors();
-        this._focusFirstEditor();
+
+        if (frameworkReadyPromises.length > 0) {
+            Promise.all(frameworkReadyPromises).then(() => this._focusFirstEditor());
+        } else {
+            this._focusFirstEditor();
+        }
     }
 
     deactivate(): void {
@@ -279,7 +344,7 @@ class EditOverlayComponent extends Component {
 
         for (const [colName, message] of Object.entries(this._errorMessages)) {
             if (!message) continue;
-            const cell = this.el.querySelector(`.q-edit-overlay__cell[data-col-name="${colName}"]`);
+            const cell = this.el?.querySelector(`.q-edit-overlay__cell[data-col-name="${colName}"]`);
             if (cell) cell.classList.add('q-edit-overlay__cell--error');
 
             const item = document.createElement('div');
@@ -290,8 +355,8 @@ class EditOverlayComponent extends Component {
     }
 
     _clearErrors(): void {
-        const cells = this.el.querySelectorAll('.q-edit-overlay__cell');
-        cells.forEach((cell: Element) => cell.classList.remove('q-edit-overlay__cell--error'));
+        const cells = this.el?.querySelectorAll('.q-edit-overlay__cell');
+        cells?.forEach((cell: Element) => cell.classList.remove('q-edit-overlay__cell--error'));
 
         const errorBar = this.getNodeEl('errorBar');
         if (errorBar) {
@@ -300,29 +365,58 @@ class EditOverlayComponent extends Component {
         }
     }
 
-    _setEditorValue(colName: string, value: any): void {
-        const input = this._getInput(colName);
-        if (input) input.value = String(value ?? '');
-    }
-
     _getEditorValue(colName: string): any {
-        const input = this._getInput(colName);
-        if (!input) return undefined;
-        if (input.type === 'number') {
-            return input.value === '' ? null : Number(input.value);
-        }
-        return input.value;
-    }
+        const editor = this._editors.get(colName);
+        if (!editor) return undefined;
 
-    _getInput(colName: string): HTMLInputElement | null {
-        return this.el.querySelector(`input[data-col-name="${colName}"]`) as HTMLInputElement | null;
+        if (editor.kind === 'native' && editor.input) {
+            if (editor.input.type === 'number') {
+                return editor.input.value === '' ? null : Number(editor.input.value);
+            }
+            return editor.input.value;
+        }
+
+        if (editor.kind === 'framework' && editor.component) {
+            return editor.component.getFormValue();
+        }
+
+        return undefined;
     }
 
     _focusFirstEditor(): void {
-        const firstInput = this.el.querySelector('.q-edit-overlay__input') as HTMLInputElement | null;
-        if (firstInput) {
-            this.nextFrame(() => firstInput.focus());
+        for (const meta of this._editableMetas) {
+            const editor = this._editors.get(meta.name);
+            if (!editor) continue;
+
+            if (editor.kind === 'native' && editor.input) {
+                this.nextFrame(() => editor.input!.focus());
+                return;
+            }
+
+            if (editor.kind === 'framework' && editor.component) {
+                const cmp = editor.component;
+                Promise.resolve(cmp.ready).then(() => {
+                    if (typeof cmp.focus === 'function') {
+                        cmp.focus();
+                    } else {
+                        const fieldEl = cmp.getNodeEl?.('field') as HTMLInputElement | undefined;
+                        fieldEl?.focus();
+                    }
+                });
+                return;
+            }
         }
+    }
+
+    _disposeEditors(): void {
+        for (const [, editor] of this._editors) {
+            if (editor.kind === 'framework' && editor.component) {
+                if (typeof editor.component.dispose === 'function') {
+                    editor.component.dispose();
+                }
+            }
+        }
+        this._editors.clear();
     }
 }
 
@@ -342,6 +436,7 @@ const EditOverlayComponentDefs: Definitions = {
         _errorMessages: null,
         _rowData: null,
         _pendingNewValues: null,
+        _editors: null,
     },
 } as const;
 

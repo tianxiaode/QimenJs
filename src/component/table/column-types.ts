@@ -714,6 +714,16 @@ export interface ColumnDef {
      */
     editComponent?: string;
 
+    /**
+     * 编辑器组件选项 — 传递给框架 form field 组件的配置
+     *
+     * editType 为 'select' 时可传 { options: [{ label, value }] }；
+     * editType 为 'number' 时可传 { min, max, step, precision }；
+     * editType 为 'date' 时可传 { showSeconds }；
+     * editType 为 'custom' 时透传给自定义组件。
+     */
+    editOptions?: Record<string, any>;
+
     // ─── summary: 统计聚合 ───
 
     /**
@@ -810,6 +820,9 @@ export interface ColumnMeta {
 
     /** 自定义编辑器组件类型（仅 editType='custom' 时有效） */
     editComponent?: string;
+
+    /** 编辑器组件选项（透传给框架 form field 组件） */
+    editOptions?: Record<string, any>;
 
     /** 分组统计聚合函数 */
     groupAggregator?: AggregatorType;

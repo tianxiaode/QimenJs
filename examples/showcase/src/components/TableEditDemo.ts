@@ -35,15 +35,23 @@ const ROW_EDIT_RULES = {
 };
 
 const ENTITY_EDIT_DATA = [
-    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部' },
-    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部' },
-    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层' },
+    { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部', joinDate: '2023-01-15' },
+    { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', joinDate: '2022-06-01' },
+    { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层', joinDate: '2020-03-10' },
+];
+
+const DEPT_OPTIONS = [
+    { label: '技术部', value: '技术部' },
+    { label: '市场部', value: '市场部' },
+    { label: '管理层', value: '管理层' },
+    { label: '财务部', value: '财务部' },
 ];
 
 const ENTITY_EDIT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120, editable: true },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', editable: true, editType: 'number' },
-    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', editable: true },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', editable: true, editType: 'select', editOptions: { options: DEPT_OPTIONS } },
+    { name: 'joinDate', field: 'joinDate', title: '入职日期', width: 140, editable: true, editType: 'date' },
     { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', editable: true, editType: 'number' },
 ];
 
@@ -377,13 +385,24 @@ class MockEditEntityManager extends LocalReadonlyEntityManager {
 }
 
 new TableComponent({
-    columns: [...],
+    columns: [
+        { name: 'name', field: 'name', editable: true },
+        { name: 'age', field: 'age', editable: true, editType: 'number' },
+        { name: 'dept', field: 'dept', editable: true, editType: 'select',
+          editOptions: { options: [{ label: '技术部', value: '技术部' }] } },
+        { name: 'joinDate', field: 'joinDate', editable: true, editType: 'date' },
+    ],
     entityKey: 'demo-edit-entity',
     entityType: 'mock-edit-entity',
     editTrigger: 'dblclick',
     editRules: { name: { required: true }, ... },
 })
 
+// editType: 'text' → 原生 input
+// editType: 'number' → NumberInputComponent（框架组件）
+// editType: 'select' → SelectComponent（框架组件，需 editOptions.options）
+// editType: 'date' → DatePickerComponent（框架组件）
+// editType: 'custom' → editComponent 指定的框架组件
 // EditOverlayComponent domEvents 直接声明：
 //   entities: 'update' → EM updateItem（本地 EM 自动处理）
 //   bridges: 'editSave' → TableComponent 关闭浮动层
