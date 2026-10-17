@@ -11,6 +11,13 @@ const EDIT_DATA = [
     { id: 4, name: '赵六', age: 31, salary: 18000, dept: '技术部', email: 'zhaoliu@co.com' },
 ];
 
+const DEPT_OPTIONS = [
+    { label: '技术部', value: '技术部' },
+    { label: '%E5%B8%82%E5%9C%BA%E9%83%A8', value: '市场部' },
+    { label: '管理层', value: '管理层' },
+    { label: '财务部', value: '财务部' },
+];
+
 const CELL_EDIT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120, editable: true },
     { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', editable: true, editType: 'number' },
@@ -45,13 +52,6 @@ const ENTITY_EDIT_DATA = [
     { id: 1, name: '张三', age: 28, salary: 15000, dept: '技术部', joinDate: '2023-01-15' },
     { id: 2, name: '李四', age: 35, salary: 22000, dept: '市场部', joinDate: '2022-06-01' },
     { id: 3, name: '王五', age: 42, salary: 30000, dept: '管理层', joinDate: '2020-03-10' },
-];
-
-const DEPT_OPTIONS = [
-    { label: '技术部', value: '技术部' },
-    { label: '市场部', value: '市场部' },
-    { label: '管理层', value: '管理层' },
-    { label: '财务部', value: '财务部' },
 ];
 
 const ENTITY_EDIT_COLUMNS: ColumnDefOrGroup[] = [
