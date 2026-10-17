@@ -245,16 +245,10 @@ class EditOverlayComponent extends Component {
             ? meta.editComponent
             : EDIT_TYPE_TO_COMPONENT[editType as Exclude<EditType, 'text' | 'custom'>];
 
-        if (!componentType) {
-            this._createNativeInput(meta, cellWrapper);
-            return;
-        }
+        if (!componentType) return;
 
         const Ctor = this.resolveComponent(componentType);
-        if (!Ctor) {
-            this._createNativeInput(meta, cellWrapper);
-            return;
-        }
+        if (!Ctor) return;
 
         const component = new (Ctor as any)({ ...editOptions });
         if (component.el) cellWrapper.appendChild(component.el);
