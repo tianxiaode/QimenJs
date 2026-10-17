@@ -1,6 +1,8 @@
 import type { AbilityDefinition } from '@/composable';
-import type { ColumnMeta } from '../column-types';
+import type { ColumnMeta, EditRule } from '../column-types';
+import type { ValidationRule } from '@/schema';
 import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
+import { dataDispatchCenter } from '@/entity';
 
 /**
  * TableEditAbility — 表格行编辑能力
@@ -77,7 +79,7 @@ export const TableEditAbility = {
 
         const eventKey = this.eventKey ?? this.getData('eventKey');
         const entityKey = this.entityKey ?? this.getData('entityKey');
-        const editRules = this.getData('editRules');
+        const editRules = this._resolveEditRules(editableMetas);
 
         const overlay = new EditOverlayComponent({
             editableMetas,
@@ -154,6 +156,68 @@ export const TableEditAbility = {
         }
 
         return positions;
+    },
+
+    _resolveEditRules(editableMetas: ColumnMeta[]): Record<string, EditRule | EditRule[]> {
+        const userRules = this.getData('editRules') ?? {};
+        const entityKey = this.entityKey ?? this.getData('entityKey');
+
+        if (!entityKey) return userRules;
+
+        const mgr = dataDispatchCenter.getManager(entityKey);
+        if (!mgr || typeof mgr.getSchemaRules !== 'function') return userRules;
+
+        let schemaRules: Record<string, ValidationRule[]>;
+        try {
+            schemaRules = mgr.getSchemaRules() ?? {};
+        } catch {
+            return userRules;
+        }
+
+        const merged: Record<string, EditRule | EditRule[]> = {};
+
+        for (const meta of editableMetas) {
+            const fieldRules = schemaRules[meta.field] ?? schemaRules[meta.name];
+            if (fieldRules && fieldRules.length > 0) {
+                const converted = this._convertValidationRules(fieldRules);
+                if (converted) merged[meta.name] = converted;
+            }
+        }
+
+        return { ...merged, ...userRules };
+    },
+
+    _convertValidationRules(rules: ValidationRule[]): EditRule | EditRule[] | null {
+        const result: EditRule[] = [];
+
+        for (const rule of rules) {
+            const editRule: EditRule = {};
+
+            if (rule.required) editRule.required = true;
+            if (rule.message) editRule.message = rule.message;
+
+            if (rule.type === 'number') {
+                if (rule.min != null) editRule.min = rule.min;
+                if (rule.max != null) editRule.max = rule.max;
+            }
+
+            if (rule.type === 'string' || rule.type === 'split') {
+                if (rule.minLength != null) editRule.minLength = rule.minLength;
+                if (rule.maxLength != null) editRule.maxLength = rule.maxLength;
+            }
+
+            if (rule.type === 'format') {
+                if (rule.pattern) editRule.pattern = String(rule.pattern);
+            }
+
+            if (Object.keys(editRule).length > 0) {
+                result.push(editRule);
+            }
+        }
+
+        if (result.length === 0) return null;
+        if (result.length === 1) return result[0];
+        return result;
     },
 
     _closeEditOverlay(): void {

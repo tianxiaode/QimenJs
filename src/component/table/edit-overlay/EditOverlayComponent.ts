@@ -1,5 +1,5 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
-import type { ColumnMeta, EditType } from '../column-types';
+import type { ColumnMeta, EditType, EditRule } from '../column-types';
 import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { ValidationErrorBuilder } from '@/validation';
@@ -18,16 +18,6 @@ interface CellPosition {
     top: number;
     width: number;
     height: number;
-}
-
-interface EditRule {
-    required?: boolean;
-    min?: number;
-    max?: number;
-    minLength?: number;
-    maxLength?: number;
-    pattern?: string;
-    message?: string;
 }
 
 interface EditorEntry {

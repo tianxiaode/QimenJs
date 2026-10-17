@@ -163,6 +163,16 @@ export type TableSelectMode = 'none' | 'single' | 'multiple';
  */
 export type EditType = 'text' | 'number' | 'date' | 'select' | 'custom';
 
+export interface EditRule {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    message?: string;
+}
+
 // ══════════════════════════════════════════════════════════════
 // 聚合类型
 // ══════════════════════════════════════════════════════════════
