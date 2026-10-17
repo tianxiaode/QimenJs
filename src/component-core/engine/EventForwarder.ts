@@ -20,7 +20,7 @@
 import type { EventContext, EventChainLink } from '@/context';
 import { EventContextBuilder } from '@/context';
 import { globalEventBus } from '@/events';
-import { object } from '@/utils';
+import { object, string } from '@/utils';
 import { ComponentEntityDispatch } from './ComponentEntityDispatch';
 
 /** 事件转发数据类型：emit/bridge/entity/float/router/system/file */
@@ -28,10 +28,6 @@ export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 
 
 /** 转发路由键名 */
 export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file';
-
-function _capitalize(s: string): string {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
 
 /** 事件转发配置，定义六路转发的目标 */
 export interface ForwardConfig {
@@ -96,9 +92,9 @@ function _forwardEntities(ctx: ForwardContext): void {
         ctx.config.entities === '[action]' && ctx.actualAction
             ? ctx.actualAction
             : ctx.config.entities!;
-    const entityKey = EventForwarder.resolveKey(
-        ctx.instance.entityKey ?? ctx.instance.getData?.('entityKey')
-    ) ?? '';
+    const entityKey =
+        EventForwarder.resolveKey(ctx.instance.entityKey ?? ctx.instance.getData?.('entityKey')) ??
+        '';
     ComponentEntityDispatch.dispatch(ctx.instance, entityKey, resolvedName, ctx.data);
 }
 
@@ -207,14 +203,14 @@ export class EventForwarder {
                 : null;
 
         const globalHook = instance.beforeForward;
-        if (typeof globalHook === 'function' && !globalHook.call(instance, domEvent)) return;
+        if (typeof globalHook === 'function' && !globalHook.call(instance, { config, data, domEvent, actualAction })) return;
 
         for (const route of FORWARD_ROUTES) {
             if (!route.canExecute(ctx)) continue;
             if (allowed && !allowed.includes(route.key)) continue;
 
-            const routeHook = instance[`beforeForward${_capitalize(route.key)}`];
-            if (typeof routeHook === 'function' && !routeHook.call(instance, domEvent)) continue;
+            const routeHook = instance[`beforeForward${string.capitalize(route.key)}`];
+            if (typeof routeHook === 'function' && !routeHook.call(instance, { route: route.key, config, data, domEvent, actualAction })) continue;
 
             route.execute(ctx);
         }
