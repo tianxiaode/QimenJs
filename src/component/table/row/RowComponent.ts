@@ -85,6 +85,7 @@ class RowComponent extends Component {
             options.minWidth = '0';
         }
         const cell = new CellClass(options);
+        cell.el!.dataset.colName = meta.name;
 
         if (meta.flex && meta.flex > 0) {
             const basis = meta.width ? `var(--q-table-col-${meta.name}-width)` : '0px';

@@ -123,7 +123,6 @@ export interface TableAbilityHost {
     _showBodyLoading(bodyEl: HTMLElement, text: string): HTMLElement;
 
     _onRowEditTrigger(domEvt: any): void;
-    _findClickedColName(row: any, clickTarget: HTMLElement | undefined): string | null;
     _startEdit(row: any, rowData: any, editableMetas: any[]): void;
     _syncOverlayPosition(): void;
     _bindScrollSync(): void;

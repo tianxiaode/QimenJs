@@ -1,5 +1,4 @@
 import type { AbilityDefinition } from '@/composable';
-import type { TableAbilityHost } from './types';
 import type { ColumnMeta } from '../column-types';
 import { EditOverlayComponent } from '../edit-overlay/EditOverlayComponent';
 
@@ -25,7 +24,7 @@ export const TableEditAbility = {
     _editScrollUnbind: null as (() => void) | null,
     _editScrollOff: null as (() => void) | null,
 
-    _onRowEditTrigger(this: TableAbilityHost, domEvt: any): void {
+    _onRowEditTrigger(domEvt: any): void {
         const trigger = this.getData('editTrigger') ?? 'dblclick';
         if (trigger !== 'dblclick') return;
 
@@ -44,7 +43,9 @@ export const TableEditAbility = {
 
         if (editMode === 'cell') {
             const clickTarget = domEvt?.data?.originalEvent?.target as HTMLElement | undefined;
-            const clickedColName = this._findClickedColName(row, clickTarget);
+            const cellEl = clickTarget?.closest('[data-col-name]') as HTMLElement | null;
+            if (!cellEl) return;
+            const clickedColName = cellEl.dataset.colName;
             if (!clickedColName) return;
             targetMetas = editableMetas.filter((m: ColumnMeta) => m.name === clickedColName);
             if (targetMetas.length === 0) return;
@@ -53,17 +54,7 @@ export const TableEditAbility = {
         this._startEdit(row, rowData, targetMetas);
     },
 
-    _findClickedColName(this: TableAbilityHost, row: any, clickTarget: HTMLElement | undefined): string | null {
-        if (!clickTarget) return null;
-        for (const [colName, cell] of row._cells ?? []) {
-            if (cell?.el?.contains(clickTarget)) {
-                return colName;
-            }
-        }
-        return null;
-    },
-
-    _startEdit(this: TableAbilityHost, row: any, rowData: any, editableMetas: ColumnMeta[]): void {
+    _startEdit(row: any, rowData: any, editableMetas: ColumnMeta[]): void {
         if (this._editOverlay) {
             this._closeEditOverlay();
         }
@@ -109,32 +100,32 @@ export const TableEditAbility = {
         });
     },
 
-    _onEditSave(this: TableAbilityHost): void {
+    _onEditSave(): void {
         this._closeEditOverlay();
     },
 
-    _onEditCancel(this: TableAbilityHost): void {
+    _onEditCancel(): void {
         this._closeEditOverlay();
     },
 
-    _syncOverlayPosition(this: TableAbilityHost): void {
+    _syncOverlayPosition(): void {
         if (!this._editOverlay || !this._editingRow) return;
         const rowRect = this._editingRow.el.getBoundingClientRect();
         const overlay = this._editOverlay;
-        overlay.el.style.position = 'fixed';
-        overlay.el.style.left = `${rowRect.left}px`;
-        overlay.el.style.top = `${rowRect.top}px`;
-        overlay.el.style.width = `${rowRect.width}px`;
-        overlay.el.style.height = `${rowRect.height}px`;
+        overlay.el!.style.position = 'fixed';
+        overlay.el!.style.left = `${rowRect.left}px`;
+        overlay.el!.style.top = `${rowRect.top}px`;
+        overlay.el!.style.width = `${rowRect.width}px`;
+        overlay.el!.style.height = `${rowRect.height}px`;
     },
 
-    _bindScrollSync(this: TableAbilityHost): void {
+    _bindScrollSync(): void {
         if (this._editScrollUnbind) return;
         this._editScrollUnbind = this.bind(document, 'scroll', { capture: true });
         this._editScrollOff = this.on('dom:scroll', () => this._syncOverlayPosition());
     },
 
-    _unbindScrollSync(this: TableAbilityHost): void {
+    _unbindScrollSync(): void {
         if (this._editScrollUnbind) {
             this._editScrollUnbind();
             this._editScrollUnbind = null;
@@ -145,7 +136,7 @@ export const TableEditAbility = {
         }
     },
 
-    _collectCellPositions(this: TableAbilityHost, row: any, editableMetas: ColumnMeta[]): any[] {
+    _collectCellPositions(row: any, editableMetas: ColumnMeta[]): any[] {
         const positions: any[] = [];
         const rowRect = row.el.getBoundingClientRect();
 
@@ -165,12 +156,12 @@ export const TableEditAbility = {
         return positions;
     },
 
-    _closeEditOverlay(this: TableAbilityHost): void {
+    _closeEditOverlay(): void {
         if (!this._editOverlay) return;
 
         this._unbindScrollSync();
         this._editOverlay.deactivate();
-        this._editOverlay.unmountFromOverlay(this._editOverlay.el);
+        this._editOverlay.unmountFromOverlay(this._editOverlay.el!);
         this._editOverlay.dispose();
         this._editOverlay = null;
         this._editingRowKey = null;
