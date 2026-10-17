@@ -29,11 +29,8 @@ interface EditorEntry {
     component?: any;
 }
 
-const ICON_CHECK = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const ICON_CLOSE = `<svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
 class EditOverlayComponent extends Component {
-    static type = 'q-table-edit-overlay';
+    static type = 'table-edit-overlay';
 
     _editableMetas: ColumnMeta[] = [];
     _cellPositions: CellPosition[] = [];
@@ -100,8 +97,8 @@ class EditOverlayComponent extends Component {
     _setupIcons(): void {
         const saveBtn = this.getNodeEl('saveBtn');
         const cancelBtn = this.getNodeEl('cancelBtn');
-        if (saveBtn) saveBtn.innerHTML = ICON_CHECK;
-        if (cancelBtn) cancelBtn.innerHTML = ICON_CLOSE;
+        if (saveBtn) saveBtn.innerHTML = '<i class="q-icon q-icon-check"></i>';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="q-icon q-icon-close"></i>';
     }
 
     _positionActions(): void {
@@ -172,7 +169,11 @@ class EditOverlayComponent extends Component {
                     errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
                     break;
                 }
-                if (rule.pattern && typeof value === 'string' && !new RegExp(rule.pattern).test(value)) {
+                if (
+                    rule.pattern &&
+                    typeof value === 'string' &&
+                    !new RegExp(rule.pattern).test(value)
+                ) {
                     errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
                     break;
                 }
@@ -352,7 +353,9 @@ class EditOverlayComponent extends Component {
 
         for (const [colName, message] of Object.entries(this._errorMessages)) {
             if (!message) continue;
-            const cell = this.el?.querySelector(`.q-edit-overlay__cell[data-col-name="${colName}"]`);
+            const cell = this.el?.querySelector(
+                `.q-edit-overlay__cell[data-col-name="${colName}"]`
+            );
             if (cell) cell.classList.add('q-edit-overlay__cell--error');
 
             const item = document.createElement('div');

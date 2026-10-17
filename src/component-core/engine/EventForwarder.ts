@@ -203,14 +203,28 @@ export class EventForwarder {
                 : null;
 
         const globalHook = instance.beforeForward;
-        if (typeof globalHook === 'function' && !globalHook.call(instance, { config, data, domEvent, actualAction })) return;
+        if (
+            typeof globalHook === 'function' &&
+            !globalHook.call(instance, { config, data, domEvent, actualAction })
+        )
+            return;
 
         for (const route of FORWARD_ROUTES) {
             if (!route.canExecute(ctx)) continue;
             if (allowed && !allowed.includes(route.key)) continue;
 
             const routeHook = instance[`beforeForward${string.capitalize(route.key)}`];
-            if (typeof routeHook === 'function' && !routeHook.call(instance, { route: route.key, config, data, domEvent, actualAction })) continue;
+            if (
+                typeof routeHook === 'function' &&
+                !routeHook.call(instance, {
+                    route: route.key,
+                    config,
+                    data,
+                    domEvent,
+                    actualAction,
+                })
+            )
+                continue;
 
             route.execute(ctx);
         }
