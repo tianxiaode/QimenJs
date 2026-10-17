@@ -12,12 +12,19 @@ const EDIT_DATA = [
 ];
 
 const CELL_EDIT_COLUMNS: ColumnDefOrGroup[] = [
-    { name: 'name', field: 'name', title: '姓名', width: 120 },
-    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right' },
-    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center' },
-    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency' },
+    { name: 'name', field: 'name', title: '姓名', width: 120, editable: true },
+    { name: 'age', field: 'age', title: '年龄', width: 80, align: 'right', editable: true, editType: 'number' },
+    { name: 'dept', field: 'dept', title: '部门', width: 120, align: 'center', editable: true, editType: 'select', editOptions: { options: DEPT_OPTIONS } },
+    { name: 'salary', field: 'salary', title: '薪资', width: 120, align: 'right', format: 'currency', editable: true, editType: 'number' },
     { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
 ];
+
+const CELL_EDIT_RULES = {
+    name: { required: true },
+    age: { required: true, min: 18, max: 65 },
+    salary: { required: true, min: 0 },
+    email: { required: true, pattern: '^[^@]+@[^@]+\\.[^@]+$', message: '邮箱格式不正确' },
+};
 
 const ROW_EDIT_COLUMNS: ColumnDefOrGroup[] = [
     { name: 'name', field: 'name', title: '姓名', width: 120, editable: true },
@@ -130,6 +137,7 @@ class CellEditDemo extends Component {
                 entityType: 'local-readonly',
                 editTrigger: 'dblclick',
                 editMode: 'cell',
+                editRules: CELL_EDIT_RULES,
             });
 
             this._table.on('editSave', (eventCtx: any) => {
@@ -331,17 +339,22 @@ export const TABLE_EDIT_DEMO: DemoConfig = {
             label: 'Cell 编辑模式（双击单元格只编辑该列）',
             code: `{ type: 'table', options: {
     columns: [
-        { name: 'name', field: 'name', title: '姓名', width: 120 },
+        { name: 'name', field: 'name', title: '姓名', width: 120, editable: true },
+        { name: 'age', field: 'age', title: '年龄', width: 80, editable: true, editType: 'number' },
+        { name: 'dept', field: 'dept', title: '部门', width: 120, editable: true, editType: 'select',
+          editOptions: { options: [...] } },
+        { name: 'salary', field: 'salary', title: '薪资', width: 120, editable: true, editType: 'number' },
         { name: 'email', field: 'email', title: '邮箱', flex: 1, editable: true },
     ],
     entityKey: 'demo-cell-edit-entity',
     entityType: 'local-readonly',
     editTrigger: 'dblclick',
     editMode: 'cell',
+    editRules: { name: { required: true }, age: { min: 18, max: 65 }, ... },
 } }
 // editMode: 'cell' → 双击单元格只编辑该列
-// email 列 flex: 1 → 自动填满剩余宽度
-// 双击非 editable 单元格不会触发编辑
+// 所有列均可编辑：text/number/select 类型混合
+// 双击任意单元格 → 浮动层精确定位到该 cell
 // 保存 → entities:'update' → EM updateItem → 表格自动刷新`,
             component: CellEditDemo,
         },
