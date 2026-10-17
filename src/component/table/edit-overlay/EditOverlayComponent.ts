@@ -5,6 +5,8 @@ import { Definitions } from '@/composable';
 import { NumberInputComponent } from '@/component/form/NumberInputComponent';
 import { SelectComponent, type SelectOption } from '@/component/form/SelectComponent';
 import { DatePickerComponent } from '@/component/form/DatePickerComponent';
+import { ValidationErrorBuilder, ValidationErrorCode } from '@/validation';
+import { t } from '@/i18n';
 import './edit-overlay.css';
 
 interface CellPosition {
@@ -19,6 +21,8 @@ interface EditRule {
     required?: boolean;
     min?: number;
     max?: number;
+    minLength?: number;
+    maxLength?: number;
     pattern?: string;
     message?: string;
 }
@@ -155,18 +159,23 @@ class EditOverlayComponent extends Component {
 
             const value = values[meta.name];
             const ruleList = Array.isArray(rules) ? rules : [rules];
+            const editType = meta.editType ?? 'text';
+            const ctx = { field: meta.name, label: meta.title || meta.name, value };
 
             for (const rule of ruleList) {
                 if (rule.required && (value == null || value === '')) {
-                    errors[meta.name] = `${meta.title || meta.name}不能为空`;
+                    const err = ValidationErrorBuilder.required(ctx);
+                    errors[meta.name] = t(err.code, true);
                     break;
                 }
                 if (rule.min != null && typeof value === 'number' && value < rule.min) {
-                    errors[meta.name] = `${meta.title || meta.name}不能小于 ${rule.min}`;
+                    const err = ValidationErrorBuilder.too_small(rule.min, value, false, ctx);
+                    errors[meta.name] = t(err.code, true);
                     break;
                 }
                 if (rule.max != null && typeof value === 'number' && value > rule.max) {
-                    errors[meta.name] = `${meta.title || meta.name}不能大于 ${rule.max}`;
+                    const err = ValidationErrorBuilder.too_large(rule.max, value, false, ctx);
+                    errors[meta.name] = t(err.code, true);
                     break;
                 }
                 if (
@@ -174,7 +183,18 @@ class EditOverlayComponent extends Component {
                     typeof value === 'string' &&
                     !new RegExp(rule.pattern).test(value)
                 ) {
-                    errors[meta.name] = rule.message || `${meta.title || meta.name}格式不正确`;
+                    const err = ValidationErrorBuilder.pattern_mismatch(rule.pattern, value, ctx);
+                    errors[meta.name] = rule.message || t(err.code, true);
+                    break;
+                }
+                if (rule.minLength != null && typeof value === 'string' && value.length < rule.minLength) {
+                    const err = ValidationErrorBuilder.too_small(rule.minLength, value.length, false, ctx);
+                    errors[meta.name] = t(err.code, true);
+                    break;
+                }
+                if (rule.maxLength != null && typeof value === 'string' && value.length > rule.maxLength) {
+                    const err = ValidationErrorBuilder.too_large(rule.maxLength, value.length, false, ctx);
+                    errors[meta.name] = t(err.code, true);
                     break;
                 }
             }
