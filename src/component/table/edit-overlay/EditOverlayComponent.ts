@@ -45,7 +45,7 @@ class EditOverlayComponent extends Component {
 
     domEvents: DomEventsMap = {
         click: [
-            { path: 'saveBtn', handler: '_onSaveClick', entities: 'update', bridges: ['editSave'], condition: '_canForwardSave' },
+            { path: 'saveBtn', handler: '_onSaveClick', entities: 'update', bridges: ['editSave'] },
             { path: 'cancelBtn', handler: '_onCancelClick', bridges: ['editCancel'] },
         ],
     };
@@ -136,7 +136,11 @@ class EditOverlayComponent extends Component {
         this._pendingNewValues = values;
     }
 
-    _canForwardSave(): boolean {
+    beforeForwardEntity(): boolean {
+        return this._pendingNewValues !== null;
+    }
+
+    beforeForwardBridge(): boolean {
         return this._pendingNewValues !== null;
     }
 

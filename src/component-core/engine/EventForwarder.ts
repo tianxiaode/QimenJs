@@ -29,8 +29,10 @@ export type EventDataType = 'emit' | 'bridge' | 'entity' | 'float' | 'router' | 
 /** 转发路由键名 */
 export type ForwardRouteKey = 'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file';
 
-/** 事件转发条件 — string 阻止所有转发，Record 按路由区分 */
-export type EventCondition = string | Partial<Record<ForwardRouteKey, string>>;
+function _capitalize(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 /** 事件转发配置，定义六路转发的目标 */
 export interface ForwardConfig {
     emits?: string[];
@@ -187,8 +189,7 @@ export class EventForwarder {
         config: ForwardConfig,
         extraData?: any,
         domEvent?: any,
-        actualAction?: string,
-        condition?: EventCondition
+        actualAction?: string
     ): void {
         const data = EventForwarder.collectEventData(instance, extraData);
 
@@ -205,22 +206,15 @@ export class EventForwarder {
                 ? instance.getForwardFilter(domEvent)
                 : null;
 
+        const globalHook = instance.beforeForward;
+        if (typeof globalHook === 'function' && !globalHook.call(instance, domEvent)) return;
+
         for (const route of FORWARD_ROUTES) {
             if (!route.canExecute(ctx)) continue;
             if (allowed && !allowed.includes(route.key)) continue;
 
-            if (condition) {
-                if (typeof condition === 'string') {
-                    const fn = instance[condition];
-                    if (typeof fn === 'function' && !fn.call(instance, domEvent)) return;
-                } else {
-                    const routeCondition = condition[route.key];
-                    if (routeCondition) {
-                        const fn = instance[routeCondition];
-                        if (typeof fn === 'function' && !fn.call(instance, domEvent)) continue;
-                    }
-                }
-            }
+            const routeHook = instance[`beforeForward${_capitalize(route.key)}`];
+            if (typeof routeHook === 'function' && !routeHook.call(instance, domEvent)) continue;
 
             route.execute(ctx);
         }

@@ -81,22 +81,6 @@ export interface DelegatedEventRule {
     system?: string[];
 
     /**
-     * 转发条件 — 控制是否执行转发
-     *
-     * - string：组件方法名，返回 false 时阻止整条 rule 的所有转发
-     * - Record：按转发路由区分，每个路由独立条件方法，返回 false 时只跳过该路由
-     *
-     * @example
-     * ```ts
-     * // 验证失败时阻止所有转发
-     * { condition: '_canForward' }
-     * // 验证失败时只阻止 entity 转发，bridge 仍触发
-     * { condition: { entity: '_canForwardEntity', bridge: '_canForwardBridge' } }
-     * ```
-     */
-    condition?: string | Partial<Record<'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file', string>>;
-
-    /**
      * DOM 事件委托 → 调用组件本地方法
      *
      * - true：自动推导方法名（on{LastSegment}{Event}）
@@ -161,14 +145,6 @@ export interface DomEventRule {
 
     /** 转发为系统事件 */
     system?: string[];
-
-    /**
-     * 转发条件 — 控制是否执行转发
-     *
-     * - string：组件方法名，返回 false 时阻止整条 rule 的所有转发
-     * - Record：按转发路由区分，每个路由独立条件方法
-     */
-    condition?: string | Partial<Record<'emit' | 'bridge' | 'entity' | 'router' | 'system' | 'file', string>>;
 
     /** 事件数据声明 */
     data?: string[] | Record<string, string[]>;
