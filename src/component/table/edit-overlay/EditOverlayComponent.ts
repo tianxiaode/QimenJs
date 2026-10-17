@@ -80,11 +80,9 @@ class EditOverlayComponent extends Component {
     }
 
     get defaultEventData(): Record<string, any> {
-        if (!this._pendingNewValues || !this._rowData) return {};
-        return {
-            ...this._rowData,
-            ...this._pendingNewValues,
-        };
+        const rowKey = this.getData('rowKey');
+        if (!this._pendingNewValues || !this._rowData) return { rowKey };
+        return { rowKey, ...this._rowData, ...this._pendingNewValues };
     }
 
     onAfterInit(): void {

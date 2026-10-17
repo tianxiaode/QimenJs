@@ -138,17 +138,17 @@ const FORWARD_ROUTES: ForwardRoute[] = [
         execute: _forwardEmits,
     },
     {
-        key: 'bridge',
-        canExecute: ctx =>
-            !!ctx.config.bridges?.length && !!EventForwarder.resolveKey(ctx.instance.eventKey),
-        execute: _forwardBridges,
-    },
-    {
         key: 'entity',
         canExecute: ctx =>
             !!ctx.config.entities &&
             !!(ctx.instance.entityKey ?? ctx.instance.getData?.('entityKey')),
         execute: _forwardEntities,
+    },
+    {
+        key: 'bridge',
+        canExecute: ctx =>
+            !!ctx.config.bridges?.length && !!EventForwarder.resolveKey(ctx.instance.eventKey),
+        execute: _forwardBridges,
     },
     {
         key: 'router',
