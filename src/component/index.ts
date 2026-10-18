@@ -32,8 +32,19 @@ export * from './html';
 // 表单组件
 export { InputComponent } from './form/InputComponent';
 export { InputFieldBodyComponent } from './form/InputFieldBodyComponent';
+export { NumberInputComponent } from './form/NumberInputComponent';
+export { SelectComponent } from './form/SelectComponent';
+export { SwitchComponent } from './form/SwitchComponent';
+export { CheckboxGroupComponent } from './form/CheckboxGroupComponent';
+export { RadioGroupComponent } from './form/RadioGroupComponent';
+export { DatePickerComponent } from './form/DatePickerComponent';
+export { SliderComponent } from './form/SliderComponent';
+export { TextareaComponent } from './form/TextareaComponent';
 export { PasswordInputComponent } from './form/PasswordInputComponent';
 export { PasswordStrengthComponent } from './form/PasswordStrengthComponent';
+export { FormComponent } from './form/FormComponent';
+export { FormFieldComponent } from './form/FormFieldComponent';
+export { InputInfoGroupComponent } from './form/InputInfoGroupComponent';
 
 // 菜单组件
 export { MenuItemComponent } from './menu/MenuItemComponent';

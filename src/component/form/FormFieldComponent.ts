@@ -5,7 +5,6 @@ import { Definitions } from '@/composable';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './formfield.css';
 
-import type { ValidationRule } from '@qimenjs/schema';
 import { validate as doValidate } from '@qimenjs/validation';
 
 export type LabelPosition = 'top' | 'left' | 'right';
