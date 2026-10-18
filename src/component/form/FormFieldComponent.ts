@@ -21,7 +21,6 @@ const LABEL_POSITION_MAP: Record<LabelPosition, string> = {
 const FormFieldComponentDefs: Definitions = {
     options: {
         label: null,
-        i18nLabel: null,
         labelPosition: 'top',
         labelWidth: null,
         required: false,
@@ -49,16 +48,6 @@ class FormFieldComponent extends Component {
     _initialValue: any = undefined;
 
     _onLabelOptionChange(value: string): void {
-        if (value) {
-            this._labelText = value;
-            const el = this.getNodeEl('label');
-            if (el) el.textContent = value;
-            this.setNodeHidden(false, 'labelGroup');
-            this._applyRequiredConfig();
-        }
-    }
-
-    _onI18nLabelOptionChange(value: string): void {
         if (value) {
             const text = resolveI18nValue(value);
             this._labelText = text;
