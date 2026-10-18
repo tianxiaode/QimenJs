@@ -146,6 +146,10 @@ class InputComponent extends FormFieldComponent {
         });
         if (item?.el) {
             item.el.classList.add('q-input__clear-btn', 'q-close');
+            item.el.addEventListener('click', (e: Event) => {
+                e.stopPropagation();
+                this.onClearBtnClick();
+            });
         }
         this._clearBtnItem = item;
     }
