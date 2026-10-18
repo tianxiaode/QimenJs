@@ -28,6 +28,8 @@ const FormFieldComponentDefs: Definitions = {
         size: null,
         colSpan: 0,
         error: null,
+        help: null,
+        info: null,
     },
     fields: {
         fieldName: '',
@@ -44,6 +46,7 @@ class FormFieldComponent extends Component {
     }
 
     _initialValue: any = undefined;
+    _infoItem: any = null;
 
     _onLabelOptionChange(value: string): void {
         if (value) {
@@ -95,6 +98,31 @@ class FormFieldComponent extends Component {
         } else {
             this.removeError();
             this.removeCls('q-formfield--error');
+        }
+    }
+
+    _onHelpOptionChange(value: string): void {
+        if (value) {
+            this.addHelp(value);
+        } else {
+            this.removeHelp();
+        }
+    }
+
+    _onInfoOptionChange(value: any): void {
+        if (this._infoItem) {
+            const infoGroup = this.getComponent('infoGroup') as any;
+            if (infoGroup) {
+                const idx = infoGroup.items?.indexOf(this._infoItem);
+                if (idx != null && idx >= 0) infoGroup.removeAt(idx);
+            }
+            this._infoItem = null;
+        }
+        if (value) {
+            const data = typeof value === 'string' ? { text: value } : value;
+            this.addInfo(data);
+            const infoGroup = this.getComponent('infoGroup') as any;
+            this._infoItem = infoGroup?.items?.[infoGroup.items.length - 1] ?? null;
         }
     }
 
