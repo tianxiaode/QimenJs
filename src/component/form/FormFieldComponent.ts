@@ -2,7 +2,6 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
-import { resolveI18nValue } from '@qimenjs/i18n';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './formfield.css';
 
@@ -28,6 +27,7 @@ const FormFieldComponentDefs: Definitions = {
         requiredMarkPosition: 'after',
         size: null,
         colSpan: 0,
+        error: null,
     },
     fields: {
         fieldName: '',
@@ -43,16 +43,11 @@ class FormFieldComponent extends Component {
         return FORMFIELD_TPL;
     }
 
-    _error: string = '';
-    _labelText: string = '';
     _initialValue: any = undefined;
 
     _onLabelOptionChange(value: string): void {
         if (value) {
-            const text = resolveI18nValue(value);
-            this._labelText = text;
-            const el = this.getNodeEl('label');
-            if (el) el.textContent = text;
+            this.setNodeText(value, 'label');
             this.setNodeHidden(false, 'labelGroup');
             this._applyRequiredConfig();
         }
@@ -73,7 +68,7 @@ class FormFieldComponent extends Component {
     }
 
     _onRequiredOptionChange(value: boolean): void {
-        if (value && this._labelText) {
+        if (value && this.label) {
             this._applyRequiredConfig();
             this.setNodeHidden(false, 'requiredMark');
         } else {
@@ -91,6 +86,16 @@ class FormFieldComponent extends Component {
 
     _onColSpanOptionChange(value: number): void {
         this.el!.style.gridColumn = value > 1 ? `span ${value}` : '';
+    }
+
+    _onErrorOptionChange(value: string): void {
+        if (value) {
+            this.addError(value);
+            this.addCls('q-formfield--error');
+        } else {
+            this.removeError();
+            this.removeCls('q-formfield--error');
+        }
     }
 
     onAfterInit(): void {
@@ -177,26 +182,8 @@ class FormFieldComponent extends Component {
         return infoGroup?.removeInfo(index);
     }
 
-    get error(): string {
-        return this._error;
-    }
-    set error(v: string) {
-        this._error = v;
-        if (v) {
-            this.addError(v);
-            this.addCls('q-formfield--error');
-        } else {
-            this.removeError();
-            this.removeCls('q-formfield--error');
-        }
-    }
-
     get field(): any {
         return this.getNode('field');
-    }
-
-    _applyState(): void {
-        this.toggleCls('q-formfield--error', !!this._error);
     }
 
     getFormValue(): any {
@@ -212,7 +199,7 @@ class FormFieldComponent extends Component {
     }
 
     getFormError(): string {
-        return this._error ?? '';
+        return this.getData('error') ?? '';
     }
 
     formReset(defaultValue?: any): void {
