@@ -59,6 +59,18 @@ import {
     GroupHeaderCellComponent,
     GroupSummaryRowComponent,
     ExpandCellComponent,
+    InputComponent,
+    NumberInputComponent,
+    SelectComponent,
+    SwitchComponent,
+    CheckboxGroupComponent,
+    RadioGroupComponent,
+    DatePickerComponent,
+    SliderComponent,
+    TextareaComponent,
+    PasswordInputComponent,
+    FormComponent,
+    FormFieldComponent,
 } from '@qimenjs/component';
 import {
     PropertyGridComponent,
@@ -110,3 +122,15 @@ GroupSummaryRowComponent.register();
 ExpandCellComponent.register();
 PropertyGridComponent.register();
 PropertyFieldComponent.register();
+InputComponent.register();
+NumberInputComponent.register();
+SelectComponent.register();
+SwitchComponent.register();
+CheckboxGroupComponent.register();
+RadioGroupComponent.register();
+DatePickerComponent.register();
+SliderComponent.register();
+TextareaComponent.register();
+PasswordInputComponent.register();
+FormComponent.register();
+FormFieldComponent.register();

@@ -42,6 +42,13 @@ import { TABLE_ROW_BODY_DEMO } from '../components/TableRowBodyDemo';
 import { TABLE_EDIT_DEMO } from '../components/TableEditDemo';
 import { TAG_DEMO } from '../components/TagDemo';
 import { ENTITY_SOURCE_DEMO } from '../components/EntitySourceDemo';
+import { INPUT_DEMO } from '../components/InputDemo';
+import { SELECT_DEMO } from '../components/SelectDemo';
+import { SWITCH_DEMO } from '../components/SwitchDemo';
+import { CHECKBOX_DEMO, RADIO_DEMO } from '../components/CheckboxRadioDemo';
+import { DATEPICKER_DEMO } from '../components/DatePickerDemo';
+import { SLIDER_DEMO, TEXTAREA_DEMO } from '../components/SliderTextareaDemo';
+import { FORM_DEMO } from '../components/FormDemo';
 
 /** 组件分类 */
 const COMPONENT_CATEGORIES = [
@@ -78,7 +85,7 @@ const COMPONENT_CATEGORIES = [
     },
     {
         label: '表单',
-        components: ['Date', 'Form', 'Toggle'],
+        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'DatePicker', 'Slider', 'Textarea', 'Form'],
     },
     {
         label: '交互工具',
@@ -127,6 +134,15 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Edit: TABLE_EDIT_DEMO,
     Tag: TAG_DEMO,
     EntitySource: ENTITY_SOURCE_DEMO,
+    Input: INPUT_DEMO,
+    Select: SELECT_DEMO,
+    Switch: SWITCH_DEMO,
+    Checkbox: CHECKBOX_DEMO,
+    Radio: RADIO_DEMO,
+    DatePicker: DATEPICKER_DEMO,
+    Slider: SLIDER_DEMO,
+    Textarea: TEXTAREA_DEMO,
+    Form: FORM_DEMO,
 };
 
 /** TreeNav items：分类为可展开父节点，组件为叶子节点带 href */
