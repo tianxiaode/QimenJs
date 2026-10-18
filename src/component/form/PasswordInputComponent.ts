@@ -82,14 +82,15 @@ class PasswordInputComponent extends InputComponent {
     }
 
     _mountEyeToggle(): void {
-        this.addAction({
+        const item = this.addAction({
             type: IconComponent,
             iconCls: this.visible ? 'eye-off' : 'eye',
-            cls: 'q-password-toggle',
             order: EYE_BTN_ORDER,
         });
-        const actionsCmp = this._getActionsCmp();
-        this._eyeBtnItem = actionsCmp?.items[actionsCmp.items.length - 1] ?? null;
+        if (item?.el) {
+            item.el.classList.add('q-password-toggle');
+        }
+        this._eyeBtnItem = item;
     }
 
     onFieldBodyActionClick(data: any): void {

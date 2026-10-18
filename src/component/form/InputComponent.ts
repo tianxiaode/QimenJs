@@ -140,12 +140,14 @@ class InputComponent extends FormFieldComponent {
         if (this._clearBtnItem) return;
         const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
-        actionsCmp.add({
+        const item = actionsCmp.add({
             type: TextComponent,
-            cls: 'q-input__clear-btn q-close',
             order: CLEAR_BTN_ORDER,
         });
-        this._clearBtnItem = actionsCmp.items[actionsCmp.items.length - 1] ?? null;
+        if (item?.el) {
+            item.el.classList.add('q-input__clear-btn', 'q-close');
+        }
+        this._clearBtnItem = item;
     }
 
     onClearBtnClick(): void {

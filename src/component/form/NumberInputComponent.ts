@@ -77,23 +77,25 @@ class NumberInputComponent extends InputComponent {
         if (this._stepUpItem) return;
         this._setFieldBodyNodeHidden(false, 'actions');
 
-        this.addAction({
+        const upItem = this.addAction({
             type: TextComponent,
-            cls: 'q-number-input__step q-number-input__step-up',
             text: '▲',
             order: STEP_UP_ORDER,
         });
-        const actionsCmp = this._getActionsCmp();
-        const items = actionsCmp?.items ?? [];
-        this._stepUpItem = items[items.length - 1] ?? null;
+        if (upItem?.el) {
+            upItem.el.classList.add('q-number-input__step', 'q-number-input__step-up');
+        }
+        this._stepUpItem = upItem;
 
-        this.addAction({
+        const downItem = this.addAction({
             type: TextComponent,
-            cls: 'q-number-input__step q-number-input__step-down',
             text: '▼',
             order: STEP_DOWN_ORDER,
         });
-        this._stepDownItem = actionsCmp?.items[actionsCmp.items.length - 1] ?? null;
+        if (downItem?.el) {
+            downItem.el.classList.add('q-number-input__step', 'q-number-input__step-down');
+        }
+        this._stepDownItem = downItem;
     }
 
     _unmountStepButtons(): void {
