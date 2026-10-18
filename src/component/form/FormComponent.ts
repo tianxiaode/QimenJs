@@ -57,6 +57,7 @@ const FormComponentDefs: Definitions = {
         action: 'create',
         editId: null,
         fields: null,
+        labelWidth: null,
     },
 } as const;
 
@@ -78,6 +79,12 @@ class FormComponent extends ItemGroupStaticComponent {
     _editId: string | number | null = null;
     _entityUnsubs: (() => void)[] = [];
     _submitting: boolean = false;
+
+    _onLabelWidthOptionChange(value: string): void {
+        if (value) {
+            this.el!.style.setProperty('--q-formfield-label-width', value);
+        }
+    }
 
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical', gap: '16px', cols: 1 };
