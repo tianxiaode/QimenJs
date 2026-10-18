@@ -37,21 +37,21 @@ class NumberInputComponent extends InputComponent {
     _stepDownItem: any = null;
 
     _onMinOptionChange(value: number | null): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value != null) fieldEl.setAttribute('min', String(value));
         else fieldEl.removeAttribute('min');
     }
 
     _onMaxOptionChange(value: number | null): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value != null) fieldEl.setAttribute('max', String(value));
         else fieldEl.removeAttribute('max');
     }
 
     _onStepOptionChange(value: number): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) fieldEl.setAttribute('step', String(value));
     }
 
@@ -67,7 +67,7 @@ class NumberInputComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-input--number');
 
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             fieldEl.setAttribute('inputmode', 'numeric');
         }
@@ -75,7 +75,7 @@ class NumberInputComponent extends InputComponent {
 
     _mountStepButtons(): void {
         if (this._stepUpItem) return;
-        this.setNodeHidden(false, 'actions');
+        this._setFieldBodyNodeHidden(false, 'actions');
 
         this.addAction({
             type: TextComponent,
@@ -152,7 +152,7 @@ class NumberInputComponent extends InputComponent {
     }
 
     onFieldInput(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         const raw = fieldEl?.value ?? '';
         this.value = raw;
         const num = parseFloat(raw);

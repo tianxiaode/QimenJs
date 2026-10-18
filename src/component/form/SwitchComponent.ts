@@ -19,13 +19,17 @@ class SwitchComponent extends FormFieldComponent {
         return SWITCH_TPL;
     }
 
+    _getTrackEl(): HTMLElement | undefined {
+        return this.getComponent('fieldBody')?.getNodeEl('track');
+    }
+
     _onCheckedOptionChange(value: boolean): void {
         this.toggleCls('q-switch--checked', value);
         this.toggleCls('q-switch--error', !!this._error);
-        const trackEl = this.getNodeEl('track');
+        const trackEl = this._getTrackEl();
         if (trackEl) {
-            (trackEl as HTMLElement).setAttribute('aria-checked', String(value));
-            (trackEl as HTMLElement).setAttribute('role', 'switch');
+            trackEl.setAttribute('aria-checked', String(value));
+            trackEl.setAttribute('role', 'switch');
         }
         this._updateText();
     }
@@ -33,10 +37,10 @@ class SwitchComponent extends FormFieldComponent {
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const trackEl = this.getNodeEl('track');
+        const trackEl = this._getTrackEl();
         if (trackEl) {
-            if (value) (trackEl as HTMLElement).setAttribute('aria-disabled', 'true');
-            else (trackEl as HTMLElement).removeAttribute('aria-disabled');
+            if (value) trackEl.setAttribute('aria-disabled', 'true');
+            else trackEl.removeAttribute('aria-disabled');
         }
     }
 
@@ -65,13 +69,13 @@ class SwitchComponent extends FormFieldComponent {
     }
 
     _updateText(): void {
-        const trackEl = this.getNodeEl('track');
+        const trackEl = this._getTrackEl();
         if (!trackEl) return;
         const text = this.checked ? this.activeText : this.inactiveText;
         if (text) {
-            (trackEl as HTMLElement).setAttribute('data-text', text);
+            trackEl.setAttribute('data-text', text);
         } else {
-            (trackEl as HTMLElement).removeAttribute('data-text');
+            trackEl.removeAttribute('data-text');
         }
     }
 

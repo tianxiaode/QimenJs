@@ -209,8 +209,8 @@ class FormFieldComponent extends Component {
         return infoGroup?.removeInfo(index);
     }
 
-    get field(): any {
-        return this.getNode('field');
+    get field(): HTMLInputElement | undefined {
+        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLInputElement | undefined;
     }
 
     getFormValue(): any {

@@ -46,7 +46,7 @@ class PasswordInputComponent extends InputComponent {
     _strengthItem: any = null;
 
     _onVisibleOptionChange(value: boolean): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             fieldEl.setAttribute('type', value ? 'text' : 'password');
         }
@@ -59,9 +59,9 @@ class PasswordInputComponent extends InputComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input--password');
-        this.setNodeHidden(false, 'suffix');
+        this._setFieldBodyNodeHidden(false, 'suffix');
 
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl && this.type === 'text') {
             fieldEl.setAttribute('type', this.visible ? 'text' : 'password');
         }

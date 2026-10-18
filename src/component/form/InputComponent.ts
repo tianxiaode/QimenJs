@@ -32,8 +32,16 @@ class InputComponent extends FormFieldComponent {
     _clearable: boolean = false;
     _clearBtnItem: any = null;
 
+    _getFieldEl(): HTMLInputElement | undefined {
+        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLInputElement | undefined;
+    }
+
+    _setFieldBodyNodeHidden(hidden: boolean, nodeName: string): void {
+        this.getComponent('fieldBody')?.setNodeHidden(hidden, nodeName);
+    }
+
     _onValueOptionChange(value: string): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         if (fieldEl && fieldEl.value !== value) {
             fieldEl.value = value;
         }
@@ -41,19 +49,19 @@ class InputComponent extends FormFieldComponent {
     }
 
     _onPlaceholderOptionChange(value: string): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value) fieldEl.setAttribute('placeholder', value);
         else fieldEl.removeAttribute('placeholder');
     }
 
     _onTypeOptionChange(value: string): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) fieldEl.setAttribute('type', value);
     }
 
     _onReadonlyOptionChange(value: boolean): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             if (value) fieldEl.setAttribute('readonly', 'true');
             else fieldEl.removeAttribute('readonly');
@@ -62,7 +70,7 @@ class InputComponent extends FormFieldComponent {
     }
 
     _onMaxLengthOptionChange(value: number | null): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value != null) fieldEl.setAttribute('maxlength', String(value));
         else fieldEl.removeAttribute('maxlength');
@@ -71,21 +79,21 @@ class InputComponent extends FormFieldComponent {
     _onClearableOptionChange(value: boolean): void {
         this._clearable = value;
         if (value) {
-            this.setNodeHidden(false, 'actions');
+            this._setFieldBodyNodeHidden(false, 'actions');
             this._initClearBtn();
             this._toggleClearBtn();
         } else {
             if (this._clearBtnItem) {
                 this._clearBtnItem.el.hidden = true;
             }
-            this.setNodeHidden(true, 'actions');
+            this._setFieldBodyNodeHidden(true, 'actions');
         }
     }
 
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             if (value) fieldEl.setAttribute('disabled', 'true');
             else fieldEl.removeAttribute('disabled');
@@ -141,7 +149,7 @@ class InputComponent extends FormFieldComponent {
         this.value = '';
         this.emit('input', { value: '' });
         this._toggleClearBtn();
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.focus();
     }
 
@@ -152,7 +160,7 @@ class InputComponent extends FormFieldComponent {
     }
 
     onFieldInput(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         this.value = fieldEl?.value ?? '';
         this._toggleClearBtn();
         if (this._shouldValidate('input')) this._doValidate();
@@ -170,7 +178,7 @@ class InputComponent extends FormFieldComponent {
     }
 
     onFieldChange(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         this.value = fieldEl?.value ?? '';
         if (this._shouldValidate('change')) this._doValidate();
     }
@@ -182,7 +190,7 @@ class InputComponent extends FormFieldComponent {
     addAction(data: Record<string, any>): any {
         const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return null;
-        this.setNodeHidden(false, 'actions');
+        this._setFieldBodyNodeHidden(false, 'actions');
         return actionsCmp.add(data);
     }
 
@@ -190,7 +198,7 @@ class InputComponent extends FormFieldComponent {
         const actionsCmp = this.getComponent('actions') as any;
         if (!actionsCmp) return undefined;
         const result = actionsCmp.removeAt(index);
-        if (actionsCmp.count === 0) this.setNodeHidden(true, 'actions');
+        if (actionsCmp.count === 0) this._setFieldBodyNodeHidden(true, 'actions');
         return result;
     }
 
@@ -202,17 +210,17 @@ class InputComponent extends FormFieldComponent {
     }
 
     focus(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.focus();
     }
 
     blur(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.blur();
     }
 
     select(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.select();
     }
 

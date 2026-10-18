@@ -28,8 +28,12 @@ class TextareaComponent extends FormFieldComponent {
     _minRows: number = 1;
     _maxRows: number = Infinity;
 
+    _getFieldEl(): HTMLTextAreaElement | undefined {
+        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLTextAreaElement | undefined;
+    }
+
     _onValueOptionChange(value: string): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         if (fieldEl && fieldEl.value !== value) {
             fieldEl.value = value;
         }
@@ -37,14 +41,14 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     _onPlaceholderOptionChange(value: string): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value) fieldEl.setAttribute('placeholder', value);
         else fieldEl.removeAttribute('placeholder');
     }
 
     _onReadonlyOptionChange(value: boolean): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             if (value) fieldEl.setAttribute('readonly', 'true');
             else fieldEl.removeAttribute('readonly');
@@ -53,21 +57,21 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     _onRowsOptionChange(value: number | null): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value != null) fieldEl.setAttribute('rows', String(value));
         else fieldEl.removeAttribute('rows');
     }
 
     _onMaxLengthOptionChange(value: number | null): void {
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
         if (value != null) fieldEl.setAttribute('maxlength', String(value));
         else fieldEl.removeAttribute('maxlength');
     }
 
     _onResizeOptionChange(value: string | null): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             (fieldEl as HTMLElement).style.resize = value ?? 'vertical';
         }
@@ -88,7 +92,7 @@ class TextareaComponent extends FormFieldComponent {
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const fieldEl = this.getNodeEl('field');
+        const fieldEl = this._getFieldEl();
         if (fieldEl) {
             if (value) fieldEl.setAttribute('disabled', 'true');
             else fieldEl.removeAttribute('disabled');
@@ -108,7 +112,7 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     onFieldInput(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         this.value = fieldEl?.value ?? '';
         if (this._autoSize) this._autoResize();
         if (this._shouldValidate('input')) this._doValidate();
@@ -126,7 +130,7 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     onFieldChange(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         this.value = fieldEl?.value ?? '';
         if (this._shouldValidate('change')) this._doValidate();
     }
@@ -136,7 +140,7 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     _autoResize(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         if (!fieldEl) return;
 
         fieldEl.style.height = 'auto';
@@ -157,12 +161,12 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     focus(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.focus();
     }
 
     blur(): void {
-        const fieldEl = this.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        const fieldEl = this._getFieldEl();
         fieldEl?.blur();
     }
 

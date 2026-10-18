@@ -99,8 +99,8 @@ class SelectComponent extends InputComponent {
     }
 
     _mountDropdownIcon(): void {
-        this.setNodeHidden(false, 'dropdownIcon');
-        const dropdownEl = this.nodeMap?.dropdownIcon?.el as HTMLElement | null;
+        this._setFieldBodyNodeHidden(false, 'dropdownIcon');
+        const dropdownEl = this.getComponent('fieldBody')?.getNodeEl('dropdownIcon');
         if (dropdownEl) {
             dropdownEl.textContent = '▼';
             dropdownEl.style.fontSize = '10px';
@@ -187,7 +187,7 @@ class SelectComponent extends InputComponent {
             panel.appendChild(empty);
         }
 
-        const wrapperEl = this.nodeMap?.fieldBody?.el as HTMLElement | null;
+        const wrapperEl = this.getNodeEl('fieldBody');
         if (wrapperEl) {
             wrapperEl.appendChild(panel);
             this._panelEl = panel;

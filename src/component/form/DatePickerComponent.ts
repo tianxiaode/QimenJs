@@ -90,8 +90,8 @@ class DatePickerComponent extends InputComponent {
     }
 
     _mountDropdownIcon(): void {
-        this.setNodeHidden(false, 'dropdownIcon');
-        const dropdownEl = this.nodeMap?.dropdownIcon?.el as HTMLElement | null;
+        this._setFieldBodyNodeHidden(false, 'dropdownIcon');
+        const dropdownEl = this.getComponent('fieldBody')?.getNodeEl('dropdownIcon');
         if (dropdownEl) {
             dropdownEl.textContent = '📅';
             dropdownEl.style.cursor = 'pointer';
@@ -250,7 +250,7 @@ class DatePickerComponent extends InputComponent {
         container.appendChild(panelContainer);
         this._panelEl = container;
 
-        const wrapperEl = this.nodeMap?.fieldBody?.el as HTMLElement | null;
+        const wrapperEl = this.getNodeEl('fieldBody');
         if (wrapperEl) {
             wrapperEl.appendChild(container);
         }
