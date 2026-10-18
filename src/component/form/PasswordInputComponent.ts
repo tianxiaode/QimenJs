@@ -88,14 +88,14 @@ class PasswordInputComponent extends InputComponent {
             cls: 'q-password-toggle',
             order: EYE_BTN_ORDER,
         });
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         this._eyeBtnItem = actionsCmp?.items[actionsCmp.items.length - 1] ?? null;
     }
 
     onFieldBodyActionClick(data: any): void {
         const index = data?.index;
         if (index === undefined) return;
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
         if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
             this.onClearBtnClick();

@@ -40,6 +40,10 @@ class InputComponent extends FormFieldComponent {
         this.getComponent('fieldBody')?.setNodeHidden(hidden, nodeName);
     }
 
+    _getActionsCmp(): any {
+        return this.getComponent('fieldBody')?.getComponent('actions') as any;
+    }
+
     _onValueOptionChange(value: string): void {
         const fieldEl = this._getFieldEl();
         if (fieldEl && fieldEl.value !== value) {
@@ -116,7 +120,7 @@ class InputComponent extends FormFieldComponent {
     onFieldBodyActionClick(data: any): void {
         const index = data?.index;
         if (index === undefined) return;
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
         if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
             this.onClearBtnClick();
@@ -134,12 +138,11 @@ class InputComponent extends FormFieldComponent {
 
     _initClearBtn(): void {
         if (this._clearBtnItem) return;
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
         actionsCmp.add({
             type: TextComponent,
-            cls: 'q-input__clear-btn',
-            text: '×',
+            cls: 'q-input__clear-btn q-close',
             order: CLEAR_BTN_ORDER,
         });
         this._clearBtnItem = actionsCmp.items[actionsCmp.items.length - 1] ?? null;
@@ -188,14 +191,14 @@ class InputComponent extends FormFieldComponent {
     }
 
     addAction(data: Record<string, any>): any {
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return null;
         this._setFieldBodyNodeHidden(false, 'actions');
         return actionsCmp.add(data);
     }
 
     removeAction(index: number): any {
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return undefined;
         const result = actionsCmp.removeAt(index);
         if (actionsCmp.count === 0) this._setFieldBodyNodeHidden(true, 'actions');
@@ -203,7 +206,7 @@ class InputComponent extends FormFieldComponent {
     }
 
     setActionHidden(index: number, hidden: boolean): void {
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
         const item = actionsCmp.getAt(index);
         if (item?.el) item.el.hidden = hidden;

@@ -83,7 +83,7 @@ class NumberInputComponent extends InputComponent {
             text: '▲',
             order: STEP_UP_ORDER,
         });
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         const items = actionsCmp?.items ?? [];
         this._stepUpItem = items[items.length - 1] ?? null;
 
@@ -97,7 +97,7 @@ class NumberInputComponent extends InputComponent {
     }
 
     _unmountStepButtons(): void {
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
         if (this._stepUpItem) {
             const idx = this._itemsIndexOf(actionsCmp, this._stepUpItem);
@@ -114,7 +114,7 @@ class NumberInputComponent extends InputComponent {
     onFieldBodyActionClick(data: any): void {
         const index = data?.index;
         if (index === undefined) return;
-        const actionsCmp = this.getComponent('actions') as any;
+        const actionsCmp = this._getActionsCmp();
         if (!actionsCmp) return;
 
         if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {

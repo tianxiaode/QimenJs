@@ -81,8 +81,6 @@
     border: none;
     background: transparent;
     color: var(--q-color-text-placeholder);
-    font-size: var(--q-font-size-lg);
-    line-height: 1;
     cursor: var(--q-cursor-pointer);
     border-radius: var(--q-radius-md);
     transition: color var(--q-transition-fast);
