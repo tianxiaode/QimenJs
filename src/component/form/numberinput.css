@@ -1,3 +1,26 @@
 .q-input--number {
     /* TODO: 添加样式 */
 }
+
+.q-number-input__step {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    cursor: var(--q-cursor-pointer);
+    color: var(--q-color-text-secondary);
+    font-size: 10px;
+    user-select: none;
+    transition: color var(--q-transition-fast);
+}
+
+.q-number-input__step:hover {
+    color: var(--q-color-text);
+}
+
+.q-input--disabled .q-number-input__step {
+    cursor: var(--q-cursor-not-allowed);
+    opacity: var(--q-opacity-disabled);
+}

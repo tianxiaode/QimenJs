@@ -34,9 +34,9 @@ class CheckboxGroupComponent extends FormFieldComponent {
     }
 
     _onDirectionOptionChange(value: string): void {
-        const optionsCmp = this.getComponent('options') as any;
-        if (optionsCmp) {
-            optionsCmp.direction = value;
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.direction = value;
         }
     }
 
@@ -57,23 +57,23 @@ class CheckboxGroupComponent extends FormFieldComponent {
     }
 
     _renderOptions(): void {
-        const optionsCmp = this.getComponent('options') as any;
-        if (!optionsCmp) return;
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (!fieldBodyCmp) return;
 
-        optionsCmp.clear();
+        fieldBodyCmp.clear();
         this._checkboxItems = [];
 
         const items = this.items ?? [];
         const currentValues = this.value ?? [];
         for (const opt of items) {
             const checked = currentValues.includes(opt.value);
-            optionsCmp.add({
+            fieldBodyCmp.add({
                 type: TextComponent,
                 cls: 'q-checkbox-group__item',
                 text: opt.label,
                 order: 0,
             });
-            const itemObj = optionsCmp.items[optionsCmp.items.length - 1];
+            const itemObj = fieldBodyCmp.items[fieldBodyCmp.items.length - 1];
             if (itemObj) {
                 const el = itemObj.el as HTMLElement;
                 if (el) {

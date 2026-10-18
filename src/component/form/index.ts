@@ -1,5 +1,5 @@
 export { InputComponent, type InputType } from './InputComponent';
-export { InputFieldBodyComponent } from './InputFieldBodyComponent';
+export { InputFieldComponent } from './InputFieldComponent';
 export {
     PasswordInputComponent,
     type PasswordStrength,
@@ -22,7 +22,7 @@ export {
     type FormFieldConfig,
 } from './FormComponent';
 export { formCSS } from './form.css';
-export { TextareaFieldBodyComponent } from './TextareaFieldBodyComponent';
+export { TextareaFieldComponent } from './TextareaFieldComponent';
 export { TextareaComponent } from './TextareaComponent';
 export { NumberInputComponent } from './NumberInputComponent';
 export { numberInputCSS } from './number-input.css';
@@ -30,12 +30,10 @@ export { SelectComponent, type SelectOption } from './SelectComponent';
 export { selectCSS } from './select.css';
 export { SwitchFieldBodyComponent } from './SwitchFieldBodyComponent';
 export { SwitchComponent } from './SwitchComponent';
-export { CheckboxGroupFieldBodyComponent } from './CheckboxGroupFieldBodyComponent';
 export {
     CheckboxGroupComponent,
     type CheckboxOption,
 } from './CheckboxGroupComponent';
-export { RadioGroupFieldBodyComponent } from './RadioGroupFieldBodyComponent';
 export { RadioGroupComponent, type RadioOption } from './RadioGroupComponent';
 export { DatePickerComponent } from './DatePickerComponent';
 export { datepickerCSS } from './datepicker.css';

@@ -2,7 +2,7 @@
  * DatePickerComponent 日期时间选择器
  *
  * 从 InputComponent 派生，共享统一模板（继承父类模板，无需 useTemplate）。
- * InputFieldBody 已预留 dropdownIcon 节点，DatePicker 开启该节点。
+ * 下拉图标按需 add 进 fieldBody（order 排序，无预留槽位）。
  * field 设为 readonly，通过下拉面板选择值。
  *
  * 面板导航栏内嵌预览，单击字段进入对应面板，选完自动流转。
@@ -28,6 +28,7 @@ import { HourPanelComponent } from '../date/HourPanelComponent';
 import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
 import { Definitions } from '@/composable';
+import { IconComponent } from '../icon/IconComponent';
 import './datepicker.css';
 import {
     createDateTimeValue,
@@ -42,6 +43,7 @@ import {
 import type { PanelPreviewData } from '../date/panel-preview';
 
 const FIELD_ORDER: DateTimeField[] = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+const DROPDOWN_ICON_ORDER = 30;
 
 const DatePickerComponentDefs: Definitions = {
     options: {
@@ -59,6 +61,7 @@ class DatePickerComponent extends InputComponent {
     _flowQueue: DateTimeField[] = [];
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
+    _dropdownIconItem: any = null;
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -90,12 +93,17 @@ class DatePickerComponent extends InputComponent {
     }
 
     _mountDropdownIcon(): void {
-        this._setFieldBodyNodeHidden(false, 'dropdownIcon');
-        const dropdownEl = this.getComponent('fieldBody')?.getNodeEl('dropdownIcon');
-        if (dropdownEl) {
-            dropdownEl.textContent = '📅';
-            dropdownEl.style.cursor = 'pointer';
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp || this._dropdownIconItem) return;
+        const item = fieldBodyCmp.add({
+            type: IconComponent,
+            iconCls: 'q-chevron-down',
+            order: DROPDOWN_ICON_ORDER,
+        });
+        if (item?.el) {
+            item.el.classList.add('q-input__dropdown-icon');
         }
+        this._dropdownIconItem = item;
     }
 
     onFieldFocus(): void {

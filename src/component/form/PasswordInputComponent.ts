@@ -50,7 +50,7 @@ class PasswordInputComponent extends InputComponent {
         if (fieldEl) {
             fieldEl.setAttribute('type', value ? 'text' : 'password');
         }
-        const eyeCmp = this._eyeBtnItem?.component;
+        const eyeCmp = this._eyeBtnItem;
         if (eyeCmp && typeof eyeCmp.update === 'function') {
             eyeCmp.update({ iconCls: value ? 'eye-off' : 'eye' });
         }
@@ -59,7 +59,6 @@ class PasswordInputComponent extends InputComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input--password');
-        this._setFieldBodyNodeHidden(false, 'suffix');
 
         const fieldEl = this._getFieldEl();
         if (fieldEl && this.type === 'text') {
@@ -82,28 +81,21 @@ class PasswordInputComponent extends InputComponent {
     }
 
     _mountEyeToggle(): void {
-        const item = this.addAction({
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp || this._eyeBtnItem) return;
+        const item = fieldBodyCmp.add({
             type: IconComponent,
             iconCls: this.visible ? 'eye-off' : 'eye',
             order: EYE_BTN_ORDER,
         });
         if (item?.el) {
             item.el.classList.add('q-password-toggle');
+            item.el.addEventListener('click', (e: Event) => {
+                e.stopPropagation();
+                this.toggleVisibility();
+            });
         }
         this._eyeBtnItem = item;
-    }
-
-    onFieldBodyActionClick(data: any): void {
-        const index = data?.index;
-        if (index === undefined) return;
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-        if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
-            this.onClearBtnClick();
-        }
-        if (this._eyeBtnItem && this._itemsIndexOf(actionsCmp, this._eyeBtnItem) === index) {
-            this.toggleVisibility();
-        }
     }
 
     _mountStrengthIndicator(): void {

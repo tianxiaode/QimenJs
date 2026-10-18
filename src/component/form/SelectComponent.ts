@@ -2,7 +2,7 @@
  * SelectComponent 下拉选择组件
  *
  * 从 InputComponent 派生，共享统一模板（继承父类模板，无需 useTemplate）。
- * InputFieldBody 已预留 dropdownIcon 节点，Select 开启该节点并添加下拉箭头图标。
+ * 下拉箭头图标按需 add 进 fieldBody（order 排序，无预留槽位）。
  * field 设为 readonly，通过下拉面板选择值。
  *
  * 特有功能：
@@ -29,6 +29,7 @@
 
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
+import { IconComponent } from '../icon/IconComponent';
 import './select.css';
 
 export interface SelectOption {
@@ -37,6 +38,8 @@ export interface SelectOption {
     disabled?: boolean;
     group?: string;
 }
+
+const DROPDOWN_ICON_ORDER = 30;
 
 const SelectComponentDefs: Definitions = {
     options: {
@@ -99,14 +102,17 @@ class SelectComponent extends InputComponent {
     }
 
     _mountDropdownIcon(): void {
-        this._setFieldBodyNodeHidden(false, 'dropdownIcon');
-        const dropdownEl = this.getComponent('fieldBody')?.getNodeEl('dropdownIcon');
-        if (dropdownEl) {
-            dropdownEl.textContent = '▼';
-            dropdownEl.style.fontSize = '10px';
-            dropdownEl.style.color = 'var(--q-colors-text-secondary, #666)';
-            dropdownEl.style.cursor = 'pointer';
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp || this._dropdownIconItem) return;
+        const item = fieldBodyCmp.add({
+            type: IconComponent,
+            iconCls: 'q-chevron-down',
+            order: DROPDOWN_ICON_ORDER,
+        });
+        if (item?.el) {
+            item.el.classList.add('q-input__dropdown-icon');
         }
+        this._dropdownIconItem = item;
     }
 
     onFieldFocus(): void {

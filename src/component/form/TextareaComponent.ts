@@ -1,6 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
+import { TextareaFieldComponent } from './TextareaFieldComponent';
 import { TEXTAREA_TPL } from './textarea-tpl';
 import './textarea.css';
 
@@ -27,9 +28,22 @@ class TextareaComponent extends FormFieldComponent {
     _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
     _minRows: number = 1;
     _maxRows: number = Infinity;
+    _fieldItem: any = null;
+
+    createChildren(childReady?: () => void): void {
+        super.createChildren(childReady);
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp && !this._fieldItem) {
+            fieldBodyCmp.addCls('q-textarea__wrapper');
+            this._fieldItem = fieldBodyCmp.add({
+                type: TextareaFieldComponent,
+                order: 0,
+            });
+        }
+    }
 
     _getFieldEl(): HTMLTextAreaElement | undefined {
-        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLTextAreaElement | undefined;
+        return this._fieldItem?.el as HTMLTextAreaElement | undefined;
     }
 
     _onValueOptionChange(value: string): void {
@@ -102,12 +116,12 @@ class TextareaComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-textarea');
-        const fieldBodyCmp = this.getComponent('fieldBody') as any;
-        if (fieldBodyCmp) {
-            fieldBodyCmp.on('input', () => this.onFieldInput());
-            fieldBodyCmp.on('focus', () => this.onFieldFocus());
-            fieldBodyCmp.on('blur', () => this.onFieldBlur());
-            fieldBodyCmp.on('change', () => this.onFieldChange());
+        const fieldItem = this._fieldItem;
+        if (fieldItem) {
+            fieldItem.on('input', () => this.onFieldInput());
+            fieldItem.on('focus', () => this.onFieldFocus());
+            fieldItem.on('blur', () => this.onFieldBlur());
+            fieldItem.on('change', () => this.onFieldChange());
         }
     }
 

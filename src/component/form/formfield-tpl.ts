@@ -1,8 +1,12 @@
 import type { TemplateDecl } from '@/component-core';
 import { InputInfoGroupComponent } from './InputInfoGroupComponent';
-import { InputFieldBodyComponent } from './InputFieldBodyComponent';
+import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
 
-export function createFormFieldTpl(fieldBodyType: new (...args: any[]) => any): TemplateDecl {
+export function createFormFieldTpl(
+    fieldBodyType: new (...args: any[]) => any,
+    fieldBodyClasses?: string,
+    fieldBodyOptions?: Record<string, any>
+): TemplateDecl {
     return {
         tag: 'div',
         classes: 'q-formfield',
@@ -21,10 +25,15 @@ export function createFormFieldTpl(fieldBodyType: new (...args: any[]) => any): 
                     { tag: 'span', name: 'separator', classes: 'q-formfield__separator' },
                 ],
             },
-            { name: 'fieldBody', type: fieldBodyType, classes: 'q-formfield__wrapper' },
+            {
+                name: 'fieldBody',
+                type: fieldBodyType,
+                classes: fieldBodyClasses ?? 'q-formfield__wrapper',
+                options: fieldBodyOptions,
+            },
             { name: 'infoGroup', type: InputInfoGroupComponent },
         ],
     };
 }
 
-export const FORMFIELD_TPL: TemplateDecl = createFormFieldTpl(InputFieldBodyComponent);
+export const FORMFIELD_TPL: TemplateDecl = createFormFieldTpl(ItemGroupStaticComponent);

@@ -5,7 +5,6 @@ import './numberinput.css';
 
 const STEP_UP_ORDER = 20;
 const STEP_DOWN_ORDER = 21;
-
 function clamp(v: number, min?: number, max?: number): number {
     if (min !== undefined && v < min) return min;
     if (max !== undefined && v > max) return max;
@@ -75,62 +74,48 @@ class NumberInputComponent extends InputComponent {
 
     _mountStepButtons(): void {
         if (this._stepUpItem) return;
-        this._setFieldBodyNodeHidden(false, 'actions');
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
 
-        const upItem = this.addAction({
+        const upItem = fieldBodyCmp.add({
             type: TextComponent,
             text: '▲',
             order: STEP_UP_ORDER,
         });
         if (upItem?.el) {
             upItem.el.classList.add('q-number-input__step', 'q-number-input__step-up');
+            upItem.el.addEventListener('click', (e: Event) => {
+                e.stopPropagation();
+                this.stepUp();
+            });
         }
         this._stepUpItem = upItem;
 
-        const downItem = this.addAction({
+        const downItem = fieldBodyCmp.add({
             type: TextComponent,
             text: '▼',
             order: STEP_DOWN_ORDER,
         });
         if (downItem?.el) {
             downItem.el.classList.add('q-number-input__step', 'q-number-input__step-down');
+            downItem.el.addEventListener('click', (e: Event) => {
+                e.stopPropagation();
+                this.stepDown();
+            });
         }
         this._stepDownItem = downItem;
     }
 
     _unmountStepButtons(): void {
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-        if (this._stepUpItem) {
-            const idx = this._itemsIndexOf(actionsCmp, this._stepUpItem);
-            if (idx >= 0) actionsCmp.removeAt(idx);
-            this._stepUpItem = null;
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
+        for (const ref of [this._stepUpItem, this._stepDownItem]) {
+            if (!ref) continue;
+            const idx = fieldBodyCmp.items?.indexOf(ref) ?? -1;
+            if (idx >= 0) fieldBodyCmp.removeAt(idx);
         }
-        if (this._stepDownItem) {
-            const idx = this._itemsIndexOf(actionsCmp, this._stepDownItem);
-            if (idx >= 0) actionsCmp.removeAt(idx);
-            this._stepDownItem = null;
-        }
-    }
-
-    onFieldBodyActionClick(data: any): void {
-        const index = data?.index;
-        if (index === undefined) return;
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-
-        if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
-            this.onClearBtnClick();
-            return;
-        }
-        if (this._stepUpItem && this._itemsIndexOf(actionsCmp, this._stepUpItem) === index) {
-            this.stepUp();
-            return;
-        }
-        if (this._stepDownItem && this._itemsIndexOf(actionsCmp, this._stepDownItem) === index) {
-            this.stepDown();
-            return;
-        }
+        this._stepUpItem = null;
+        this._stepDownItem = null;
     }
 
     stepUp(): void {

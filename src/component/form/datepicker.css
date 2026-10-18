@@ -29,7 +29,7 @@
 }
 
 /* 禁用状态 */
-.q-datepicker.q-input--disabled .q-input__slot--dropdown {
+.q-datepicker.q-input--disabled .q-input__dropdown-icon {
     cursor: not-allowed;
     opacity: 0.4;
 }

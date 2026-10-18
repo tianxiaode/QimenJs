@@ -7,13 +7,11 @@
 
 .q-textarea__wrapper {
     position: relative;
-    display: flex;
-    align-items: flex-start;
 }
 
 .q-textarea__field {
-    display: block;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     min-height: var(--q-textarea-field-min-height);
     padding: var(--q-textarea-field-padding);
     border: var(--q-border);

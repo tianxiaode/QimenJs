@@ -31,7 +31,7 @@ export * from './html';
 
 // 表单组件
 export { InputComponent } from './form/InputComponent';
-export { InputFieldBodyComponent } from './form/InputFieldBodyComponent';
+export { InputFieldComponent } from './form/InputFieldComponent';
 export { NumberInputComponent } from './form/NumberInputComponent';
 export { SelectComponent } from './form/SelectComponent';
 export { SwitchComponent } from './form/SwitchComponent';

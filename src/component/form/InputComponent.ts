@@ -2,13 +2,15 @@ import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import type { ValidationRule } from '@qimenjs/schema';
-import { TextComponent } from '../text/TextComponent';
+import { IconComponent } from '../icon/IconComponent';
+import { InputFieldComponent } from './InputFieldComponent';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './input.css';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
 
-const CLEAR_BTN_ORDER = 0;
+const FIELD_ITEM_ORDER = 0;
+const CLEAR_BTN_ORDER = 10;
 
 const InputComponentDefs: Definitions = {
     options: {
@@ -30,18 +32,30 @@ class InputComponent extends FormFieldComponent {
 
     _focused: boolean = false;
     _clearable: boolean = false;
+    _fieldItem: any = null;
     _clearBtnItem: any = null;
 
+    createChildren(childReady?: () => void): void {
+        super.createChildren(childReady);
+        this._initFieldItem();
+    }
+
+    _getFieldBody(): any {
+        return this.getComponent('fieldBody') as any;
+    }
+
+    _initFieldItem(): void {
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp || this._fieldItem) return;
+        fieldBodyCmp.addCls('q-input__wrapper');
+        this._fieldItem = fieldBodyCmp.add({
+            type: InputFieldComponent,
+            order: FIELD_ITEM_ORDER,
+        });
+    }
+
     _getFieldEl(): HTMLInputElement | undefined {
-        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLInputElement | undefined;
-    }
-
-    _setFieldBodyNodeHidden(hidden: boolean, nodeName: string): void {
-        this.getComponent('fieldBody')?.setNodeHidden(hidden, nodeName);
-    }
-
-    _getActionsCmp(): any {
-        return this.getComponent('fieldBody')?.getComponent('actions') as any;
+        return this._fieldItem?.el as HTMLInputElement | undefined;
     }
 
     _onValueOptionChange(value: string): void {
@@ -83,14 +97,10 @@ class InputComponent extends FormFieldComponent {
     _onClearableOptionChange(value: boolean): void {
         this._clearable = value;
         if (value) {
-            this._setFieldBodyNodeHidden(false, 'actions');
             this._initClearBtn();
             this._toggleClearBtn();
         } else {
-            if (this._clearBtnItem) {
-                this._clearBtnItem.el.classList.add('hidden');
-            }
-            this._setFieldBodyNodeHidden(true, 'actions');
+            this._removeClearBtn();
         }
     }
 
@@ -107,51 +117,42 @@ class InputComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input');
-        const fieldBodyCmp = this.getComponent('fieldBody') as any;
-        if (fieldBodyCmp) {
-            fieldBodyCmp.on('actionClick', (data: any) => this.onFieldBodyActionClick(data));
-            fieldBodyCmp.on('input', () => this.onFieldInput());
-            fieldBodyCmp.on('focus', () => this.onFieldFocus());
-            fieldBodyCmp.on('blur', () => this.onFieldBlur());
-            fieldBodyCmp.on('change', () => this.onFieldChange());
+        const fieldItem = this._fieldItem;
+        if (fieldItem) {
+            fieldItem.on('input', () => this.onFieldInput());
+            fieldItem.on('focus', () => this.onFieldFocus());
+            fieldItem.on('blur', () => this.onFieldBlur());
+            fieldItem.on('change', () => this.onFieldChange());
         }
-    }
-
-    onFieldBodyActionClick(data: any): void {
-        const index = data?.index;
-        if (index === undefined) return;
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-        if (this._clearBtnItem && this._itemsIndexOf(actionsCmp, this._clearBtnItem) === index) {
-            this.onClearBtnClick();
-        }
-    }
-
-    _itemsIndexOf(group: any, item: any): number {
-        const items = group.items;
-        if (!Array.isArray(items)) return -1;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i] === item) return i;
-        }
-        return -1;
     }
 
     _initClearBtn(): void {
         if (this._clearBtnItem) return;
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-        const item = actionsCmp.add({
-            type: TextComponent,
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
+        const item = fieldBodyCmp.add({
+            type: IconComponent,
+            iconCls: 'q-close',
             order: CLEAR_BTN_ORDER,
         });
         if (item?.el) {
-            item.el.classList.add('q-input__clear-btn', 'q-close');
+            item.el.classList.add('q-input__clear-btn');
             item.el.addEventListener('click', (e: Event) => {
                 e.stopPropagation();
                 this.onClearBtnClick();
             });
         }
         this._clearBtnItem = item;
+    }
+
+    _removeClearBtn(): void {
+        if (!this._clearBtnItem) return;
+        const fieldBodyCmp = this._getFieldBody();
+        if (fieldBodyCmp) {
+            const idx = fieldBodyCmp.items?.indexOf(this._clearBtnItem) ?? -1;
+            if (idx >= 0) fieldBodyCmp.removeAt(idx);
+        }
+        this._clearBtnItem = null;
     }
 
     onClearBtnClick(): void {
@@ -197,24 +198,21 @@ class InputComponent extends FormFieldComponent {
     }
 
     addAction(data: Record<string, any>): any {
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return null;
-        this._setFieldBodyNodeHidden(false, 'actions');
-        return actionsCmp.add(data);
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return null;
+        return fieldBodyCmp.add(data);
     }
 
     removeAction(index: number): any {
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return undefined;
-        const result = actionsCmp.removeAt(index);
-        if (actionsCmp.count === 0) this._setFieldBodyNodeHidden(true, 'actions');
-        return result;
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return undefined;
+        return fieldBodyCmp.removeAt(index);
     }
 
     setActionHidden(index: number, hidden: boolean): void {
-        const actionsCmp = this._getActionsCmp();
-        if (!actionsCmp) return;
-        const item = actionsCmp.getAt(index);
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
+        const item = fieldBodyCmp.getAt(index);
         if (item?.el) item.el.hidden = hidden;
     }
 

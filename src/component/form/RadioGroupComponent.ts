@@ -33,9 +33,9 @@ class RadioGroupComponent extends FormFieldComponent {
     }
 
     _onDirectionOptionChange(value: string): void {
-        const optionsCmp = this.getComponent('options') as any;
-        if (optionsCmp) {
-            optionsCmp.direction = value;
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.direction = value;
         }
     }
 
@@ -56,22 +56,22 @@ class RadioGroupComponent extends FormFieldComponent {
     }
 
     _renderOptions(): void {
-        const optionsCmp = this.getComponent('options') as any;
-        if (!optionsCmp) return;
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (!fieldBodyCmp) return;
 
-        optionsCmp.clear();
+        fieldBodyCmp.clear();
         this._radioItems = [];
 
         const items = this.items ?? [];
         for (const opt of items) {
             const checked = this.value === opt.value;
-            optionsCmp.add({
+            fieldBodyCmp.add({
                 type: 'Text',
                 cls: 'q-radio-group__item',
                 text: opt.label,
                 order: 0,
             });
-            const itemObj = optionsCmp.items[optionsCmp.items.length - 1];
+            const itemObj = fieldBodyCmp.items[fieldBodyCmp.items.length - 1];
             if (itemObj) {
                 const el = itemObj.el as HTMLElement;
                 if (el) {

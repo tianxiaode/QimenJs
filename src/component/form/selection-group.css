@@ -1,15 +1,8 @@
 .q-checkbox-group__wrapper {
-    display: flex;
     align-items: flex-start;
 }
 
-.q-checkbox-group__options .q-itemgroup__items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--q-space-sm);
-}
-
-.q-checkbox-group__options .q-itemgroup__items > * {
+.q-checkbox-group__wrapper .q-itemgroup__items > * {
     display: inline-flex;
 }
 
@@ -53,17 +46,10 @@
 }
 
 .q-radio-group__wrapper {
-    display: flex;
     align-items: flex-start;
 }
 
-.q-radio-group__options .q-itemgroup__items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--q-space-sm);
-}
-
-.q-radio-group__options .q-itemgroup__items > * {
+.q-radio-group__wrapper .q-itemgroup__items > * {
     display: inline-flex;
 }
 
