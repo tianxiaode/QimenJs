@@ -121,6 +121,9 @@ export const InitAbility = {
             const placeholder = this._findByPath(indexPath);
             if (!placeholder) continue;
             placeholder.replaceWith(child.el!);
+            if (nodeMeta.classes) {
+                child.addCls(nodeMeta.classes);
+            }
             if (name) {
                 this._setNodeEl(name, child.el!);
                 this._setComponent(name, child);

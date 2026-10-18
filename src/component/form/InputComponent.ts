@@ -88,7 +88,7 @@ class InputComponent extends FormFieldComponent {
             this._toggleClearBtn();
         } else {
             if (this._clearBtnItem) {
-                this._clearBtnItem.el.hidden = true;
+                this._clearBtnItem.el.classList.add('hidden');
             }
             this._setFieldBodyNodeHidden(true, 'actions');
         }
@@ -161,7 +161,7 @@ class InputComponent extends FormFieldComponent {
     _toggleClearBtn(): void {
         if (!this._clearable || !this._clearBtnItem) return;
         const hasValue = !!this.value;
-        this._clearBtnItem.el.hidden = !hasValue;
+        this._clearBtnItem.el.classList.toggle('hidden', !hasValue);
     }
 
     onFieldInput(): void {
