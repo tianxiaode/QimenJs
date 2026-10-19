@@ -66,17 +66,21 @@ export function createItemFromDef(host: ContainerResolveHost, def: ContainerItem
         return new (def as any)({});
     }
     if (typeof def === 'object' && def !== null) {
-        const itemType = (def as any).type;
-        if (!itemType) {
+        const { type: itemType, ...props } = def as Record<string, any>;
+        if (itemType == null) {
             host.logger?.warn?.('[createItemFromDef] 对象 item 缺少 type，忽略', def);
             return null;
+        }
+        // type 为模板对象：{ type: {...TemplateDecl}, ...props } 形态
+        if (isTemplateDecl(itemType)) {
+            return createTemplateItem(itemType, host.logger);
         }
         const ItemClass = typeof itemType === 'function' ? itemType : host.resolveComponent(itemType);
         if (!ItemClass) {
             host.logger?.warn?.(`[createItemFromDef] 组件类型 "${itemType}" 未注册`);
             return null;
         }
-        return new (ItemClass as any)(def);
+        return new (ItemClass as any)(props);
     }
     host.logger?.warn?.('[createItemFromDef] 无效 item 定义，忽略', def);
     return null;

@@ -2,7 +2,7 @@ import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { NAVBAR_TPL } from './navbar-tpl';
 import { Definitions } from '@/composable';
-import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+import { createItemFromDef } from '../container/resolve';
 import { DropdownComponent } from '../dropdown/DropdownComponent';
 import { SYSTEM_EVENTS, systemEventBus } from '@/events';
 import './navbar.css';
@@ -135,53 +135,43 @@ class NavbarComponent extends Component {
     _renderItems(items: any[]): void {
         const defaults = this.getData('defaultItemOption') ?? {};
         for (const config of items) {
-            this._createItem({ ...defaults, ...config });
+            this._createItem(typeof config === 'string' ? config : { ...defaults, ...config });
         }
     }
 
+    /**
+     * 创建 navbar item — 统一走 Container 四路解析
+     *
+     * - string：HTML 内容（@ 前缀 i18n）
+     * - { type: 组件类|注册名|模板, ...props }：组件或模板
+     * - TemplateDecl：纯 DOM 模板
+     * dock 字段只决定落位容器（leftItems/centerItems/rightItems），不参与解析。
+     */
     _createItem(config: any): any {
-        const dock = config.dock ?? 'right';
+        const dock = typeof config === 'string' ? 'right' : (config.dock ?? 'right');
         const containerName = `${dock}Items`;
         const container = this.getNodeEl(containerName);
         if (!container) return null;
 
-        const instance = this._instantiateItem(config, container);
-        if (!instance) return null;
+        let item: any;
+        let itemName: string | undefined;
+        if (typeof config === 'string') {
+            item = createItemFromDef(this, config);
+        } else {
+            const { dock: _dock, ...def } = config;
+            item = createItemFromDef(this, def);
+            itemName = config.action ?? config.text;
+        }
+        if (!item?.el) return null;
 
-        const itemName = config.action ?? config.text;
+        container.appendChild(item.el);
+
         if (itemName) {
-            this._setComponent(itemName, instance);
+            this._setComponent(itemName, item);
         }
 
-        this._itemInstances.push(instance);
-        return instance;
-    }
-
-    _instantiateItem(config: any, container: HTMLElement): any {
-        const type = config.type;
-        const props = { ...config };
-        delete props.type;
-        delete props.dock;
-
-        if (typeof type === 'function') {
-            const instance = new type(props);
-            container.appendChild(instance.el);
-            return instance;
-        }
-
-        if (typeof type === 'string') {
-            const ItemClass = ComponentRegistrar.getInstance().get(type);
-            if (!ItemClass) return null;
-            const instance = new ItemClass(props);
-            container.appendChild(instance.el!);
-            return instance;
-        }
-
-        if (type && typeof type === 'object' && ('tag' in type || 'children' in type)) {
-            return this._createSlotComponent(type, container);
-        }
-
-        return null;
+        this._itemInstances.push(item);
+        return item;
     }
 
     _onFixedOptionChange(value: boolean) {
@@ -195,9 +185,11 @@ class NavbarComponent extends Component {
             this._menuDropdown.dispose();
             this._menuDropdown = null;
         }
-        for (const instance of this._itemInstances) {
-            if (typeof instance.dispose === 'function') {
-                instance.dispose();
+        for (const item of this._itemInstances) {
+            if (typeof item?.dispose === 'function') {
+                item.dispose();
+            } else if (item?.el?.parentNode) {
+                item.el.parentNode.removeChild(item.el);
             }
         }
         this._itemInstances = [];
