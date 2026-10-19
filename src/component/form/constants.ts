@@ -6,3 +6,9 @@ export const EYE_BTN_ORDER = 400;
 export const STEP_UP_ORDER = 500;
 export const STEP_DOWN_ORDER = 501;
 export const DROPDOWN_ICON_ORDER = 600;
+
+export const LABEL_POSITION_MAP: Record<string, string> = {
+    top: 'q-formfield--top',
+    left: 'q-formfield--left',
+    right: 'q-formfield--right',
+};
