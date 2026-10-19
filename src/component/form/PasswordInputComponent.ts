@@ -34,6 +34,9 @@ const STRENGTH_ORDER = 5;
 
 const PasswordInputComponentDefs: Definitions = {
     options: {
+        placeholder: null,
+        clearable: false,
+        maxLength: null,
         visible: false,
     },
 } as const;

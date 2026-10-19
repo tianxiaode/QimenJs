@@ -43,6 +43,8 @@ const DROPDOWN_ICON_ORDER = 30;
 
 const SelectComponentDefs: Definitions = {
     options: {
+        placeholder: null,
+        clearable: false,
         options: [],
         multiple: false,
         filterable: false,
@@ -228,6 +230,14 @@ class SelectComponent extends InputComponent {
         this._syncDisplayValue();
         this.emit('select:change', { value: this._selectedValue, option: opt });
         if (this._shouldValidate('change')) this._doValidate();
+    }
+
+    onClearBtnClick(): void {
+        this._selectedValue = undefined;
+        this._syncDisplayValue();
+        this.emit('select:change', { value: undefined });
+        this._toggleClearBtn();
+        this._fieldItem?.focus();
     }
 
     _syncDisplayValue(): void {

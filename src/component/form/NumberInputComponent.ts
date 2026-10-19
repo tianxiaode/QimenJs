@@ -1,6 +1,6 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { TextComponent } from '../text/TextComponent';
+import { IconComponent } from '../icon/IconComponent';
 import './numberinput.css';
 
 const STEP_UP_ORDER = 20;
@@ -19,6 +19,8 @@ function toPrecision(v: number, precision?: number): number {
 
 const NumberInputComponentDefs: Definitions = {
     options: {
+        placeholder: null,
+        clearable: false,
         type: 'number',
         min: null,
         max: null,
@@ -72,8 +74,8 @@ class NumberInputComponent extends InputComponent {
         if (!fieldBodyCmp) return;
 
         const upItem = fieldBodyCmp.add({
-            type: TextComponent,
-            text: '▲',
+            type: IconComponent,
+            iconCls: 'q-chevron-up',
             order: STEP_UP_ORDER,
         });
         if (upItem?.el) {
@@ -86,8 +88,8 @@ class NumberInputComponent extends InputComponent {
         this._stepUpItem = upItem;
 
         const downItem = fieldBodyCmp.add({
-            type: TextComponent,
-            text: '▼',
+            type: IconComponent,
+            iconCls: 'q-chevron-down',
             order: STEP_DOWN_ORDER,
         });
         if (downItem?.el) {

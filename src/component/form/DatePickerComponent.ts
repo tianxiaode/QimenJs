@@ -47,6 +47,8 @@ const DROPDOWN_ICON_ORDER = 30;
 
 const DatePickerComponentDefs: Definitions = {
     options: {
+        placeholder: null,
+        clearable: false,
         showSeconds: true,
         startDayOfWeek: 0,
     },
@@ -305,6 +307,14 @@ class DatePickerComponent extends InputComponent {
         this._dateValue = { ...this._originalValue! };
         this._syncDisplayValue();
         this._closeDropdown();
+    }
+
+    onClearBtnClick(): void {
+        this._dateValue = null;
+        this._syncDisplayValue();
+        this.emit('datePicker:change', { value: null });
+        this._toggleClearBtn();
+        this._fieldItem?.focus();
     }
 
     _syncDisplayValue(): void {
