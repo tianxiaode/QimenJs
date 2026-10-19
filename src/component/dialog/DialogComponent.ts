@@ -6,6 +6,7 @@ import { Definitions } from '@/composable';
 import { DIALOG_TPL } from './dialog-tpl';
 import { ButtonComponent } from '../button/ButtonComponent';
 import { IconComponent } from '../icon/IconComponent';
+import type { ContainerItemDef } from '../container/types';
 import './dialog.css';
 
 type DialogActionKey = 'confirm' | 'cancel' | 'ok' | 'save' | 'close' | 'apply' | 'reset';
@@ -42,6 +43,7 @@ const DialogComponentDefs: Definitions = {
         subtitle: null,
         width: null,
         closable: true,
+        body: null,
     },
     fields: {
         confirm: undefined,
@@ -67,6 +69,7 @@ class DialogComponent extends Component {
     domEvents?: DomEventsMap | undefined = {
         click: [
             { path: 'header.[items]', handler: true, emits: ['[action]'] },
+            { path: 'body.[items]', handler: true, emits: ['[action]'] },
             { path: 'footer', handler: true, emits: ['[action]'] },
         ],
     };
@@ -88,6 +91,16 @@ class DialogComponent extends Component {
 
     _onWidthOptionChange(value: string): void {
         if (value) this.el?.style.setProperty('--q-dialog-width', value);
+    }
+
+    _onBodyOptionChange(value: ContainerItemDef | ContainerItemDef[] | null): void {
+        const bodyComp = this.getComponent('body') as any;
+        if (!bodyComp) return;
+        if (value == null) {
+            bodyComp.clear();
+            return;
+        }
+        bodyComp.setItems(Array.isArray(value) ? value : [value]);
     }
 
     onHeaderActionCloseClick(): void {

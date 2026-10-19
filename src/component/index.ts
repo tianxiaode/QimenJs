@@ -16,6 +16,7 @@ export { TabComponent } from './tabs/TabComponent';
 export { TabBarComponent } from './tabs/TabBarComponent';
 export { TabsComponent } from './tabs/TabsComponent';
 
+export * from './container';
 export * from './button';
 export { DropdownComponent } from './dropdown/DropdownComponent';
 export { ToggleComponent } from './toggle/ToggleComponent';
