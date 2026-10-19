@@ -1,3 +1,5 @@
+import type { ComponentClass, TemplateDecl } from './component';
+
 /**
  * 隐藏模式 — 控制 hidden 时的 DOM 表现
  *
@@ -111,3 +113,17 @@ export interface ArrowOption {
     /** 箭头节点名称，默认 'arrow'（对应模板中 name 的 name 部分） */
     arrowName?: string;
 }
+
+/**
+ * 插槽内容声明（renderSlot 通用，四路）
+ *
+ * - string：HTML 字符串（@ 前缀 i18n 求值），直接注入节点 innerHTML
+ * - 组件类：以目标节点为 container 实例化并自动挂载，随宿主销毁
+ * - TemplateDecl：以临时插槽组件承载（走完整组件初始化流程），el 即 decl 根节点无额外包裹
+ * - 配置对象：{ type: 组件类|注册名, ...props }，type 剔除后透传实例化
+ */
+export type SlotContent =
+    | string
+    | ComponentClass
+    | TemplateDecl
+    | ({ type: ComponentClass | string } & Record<string, any>);

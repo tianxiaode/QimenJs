@@ -209,10 +209,12 @@ export const OptionAbility: AbilityDefinition = {
     /**
      * 渲染内容区（宿主内容类 option 通用，如 Card 的 body/footer）
      *
-     * - string：HTML 注入 innerHTML
+     * 四路内容（与 Container item 解析对齐）：
+     * - string：HTML 注入 innerHTML（@ 前缀 i18n 求值）
      * - 组件类：以目标节点作为 container 实例化并自动挂载
      * - TemplateDecl：以临时插槽组件承载（动态派生子类，走完整组件初始化流程），
      *   el 即 decl 根节点，无额外包裹层
+     * - 配置对象：{ type: 组件类|注册名, ...props }，type 剔除后透传实例化
      *
      * 生命周期：
      * - 换值：先 dispose 旧组件实例再渲染新内容
@@ -229,19 +231,29 @@ export const OptionAbility: AbilityDefinition = {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
 
+        let inst: any;
         if (typeof value === 'string') {
             this.setNodeHtml(value, nodeName);
+            return;
         } else if (typeof value === 'function') {
-            const inst = new value({ container: el });
-            slots[nodeName] = inst;
-            this.childComponentList.push(inst);
-            this.setData(nodeName, inst, true);
+            inst = new value({ container: el });
         } else if (isTemplateDecl(value)) {
-            const inst = this._createSlotComponent(value, el);
-            slots[nodeName] = inst;
-            this.childComponentList.push(inst);
-            this.setData(nodeName, inst, true);
+            inst = this._createSlotComponent(value, el);
+        } else if (typeof value === 'object' && value !== null) {
+            const { type, ...props } = value as Record<string, any>;
+            const ItemClass = typeof type === 'function' ? type : this.resolveComponent(type);
+            if (!ItemClass) {
+                this.logger.warn(`renderSlot: 组件类型 "${type}" 未注册`);
+                return;
+            }
+            inst = new (ItemClass as any)({ ...props, container: el });
+        } else {
+            this.logger.warn('renderSlot: 无效内容定义，忽略', value);
+            return;
         }
+        slots[nodeName] = inst;
+        this.childComponentList.push(inst);
+        this.setData(nodeName, inst, true);
     },
 
     _createSlotComponent(decl: TemplateDecl, container: HTMLElement): any {
