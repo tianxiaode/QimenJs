@@ -1,5 +1,5 @@
 import type { TemplateDecl } from '@/component-core';
-import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { ContainerComponent } from '../container/ContainerComponent';
 import { InputInfoGroupComponent } from './InputInfoGroupComponent';
 
 export const FORMFIELD_TPL: TemplateDecl = {
@@ -22,7 +22,7 @@ export const FORMFIELD_TPL: TemplateDecl = {
         },
         {
             name: 'fieldBody',
-            type: ItemGroupStaticComponent,
+            type: ContainerComponent,
             classes: 'q-formfield__wrapper',
         },
         { name: 'infoGroup', type: InputInfoGroupComponent },

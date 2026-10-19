@@ -138,6 +138,26 @@ describe('ContainerComponent', () => {
         });
     });
 
+    describe('add 的 opts 第二参', () => {
+        it('opts.order 覆盖排序', () => {
+            const a = instance.add('<span>a</span>', { order: 100 });
+            const b = instance.add('<span>b</span>', { order: 0 });
+            expect(instance.items[0]).toBe(b);
+            expect(instance.items[1]).toBe(a);
+        });
+
+        it('opts.cls 追加到 item 根节点（支持多类）', () => {
+            const item = instance.add('<span>x</span>', { cls: 'foo bar' });
+            expect(item.el.classList.contains('foo')).toBe(true);
+            expect(item.el.classList.contains('bar')).toBe(true);
+        });
+
+        it('opts.cls 对组件 item 同样生效', () => {
+            const item = instance.add(FakeItemComponent, { cls: 'on-component' });
+            expect(item.el.classList.contains('on-component')).toBe(true);
+        });
+    });
+
     describe('配置对象 item', () => {
         it('type 为组件类', () => {
             const item = instance.add({ type: FakeItemComponent, name: 'fake1' });

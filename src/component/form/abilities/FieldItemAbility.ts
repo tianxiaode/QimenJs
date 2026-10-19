@@ -1,18 +1,18 @@
 import type { AbilityDefinition } from '@/composable';
-import type { PrefixSuffixDef, FieldType } from '../types';
+import type { ContainerItemDef } from '../../container/types';
+import type { FieldType } from '../types';
 import { InputFieldComponent } from '../InputFieldComponent';
 import { TextareaFieldComponent } from '../TextareaFieldComponent';
 import { IconComponent } from '../../icon/IconComponent';
-import { TextComponent } from '../../text/TextComponent';
 import { PREFIX_ORDER, FIELD_ITEM_ORDER, SUFFIX_ORDER, CLEAR_BTN_ORDER } from '../constants';
 
 export const FieldItemAbility = {
-    _onPrefixOptionChange(value: PrefixSuffixDef | null): void {
+    _onPrefixOptionChange(value: ContainerItemDef | null): void {
         this._unmountPrefix();
         if (value) this._mountPrefix(value);
     },
 
-    _onSuffixOptionChange(value: PrefixSuffixDef | null): void {
+    _onSuffixOptionChange(value: ContainerItemDef | null): void {
         this._unmountSuffix();
         if (value) this._mountSuffix(value);
     },
@@ -54,19 +54,13 @@ export const FieldItemAbility = {
         return this._fieldItem?.el as HTMLElement | undefined;
     },
 
-    _mountPrefix(value: PrefixSuffixDef): void {
+    _mountPrefix(value: ContainerItemDef): void {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
-        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
-        const item = fieldBodyCmp.add({
-            type: isIcon ? IconComponent : TextComponent,
-            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
+        this._prefixItem = fieldBodyCmp.add(value, {
             order: PREFIX_ORDER,
+            cls: 'q-input__prefix',
         });
-        if (item?.el) {
-            item.el.classList.add('q-input__prefix');
-        }
-        this._prefixItem = item;
     },
 
     _unmountPrefix(): void {
@@ -79,19 +73,13 @@ export const FieldItemAbility = {
         this._prefixItem = null;
     },
 
-    _mountSuffix(value: PrefixSuffixDef): void {
+    _mountSuffix(value: ContainerItemDef): void {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
-        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
-        const item = fieldBodyCmp.add({
-            type: isIcon ? IconComponent : TextComponent,
-            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
+        this._suffixItem = fieldBodyCmp.add(value, {
             order: SUFFIX_ORDER,
+            cls: 'q-input__suffix',
         });
-        if (item?.el) {
-            item.el.classList.add('q-input__suffix');
-        }
-        this._suffixItem = item;
     },
 
     _unmountSuffix(): void {
@@ -108,19 +96,17 @@ export const FieldItemAbility = {
         if (this._clearBtnItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
-        const item = fieldBodyCmp.add({
-            type: IconComponent,
-            iconCls: 'q-close',
-            order: CLEAR_BTN_ORDER,
-        });
+        this._clearBtnItem = fieldBodyCmp.add(
+            { type: IconComponent, iconCls: 'q-close' },
+            { order: CLEAR_BTN_ORDER, cls: 'q-input__clear-btn' }
+        );
+        const item = this._clearBtnItem;
         if (item?.el) {
-            item.el.classList.add('q-input__clear-btn');
             item.el.addEventListener('click', (e: Event) => {
                 e.stopPropagation();
                 this.onClearBtnClick();
             });
         }
-        this._clearBtnItem = item;
     },
 
     _removeClearBtn(): void {

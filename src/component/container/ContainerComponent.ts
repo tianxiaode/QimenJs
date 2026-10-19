@@ -214,9 +214,11 @@ class ContainerComponent extends Component {
         this.emit('itemchange', { type: 'set', count: this.count });
     }
 
-    add(def: ContainerItemDef): any {
+    add(def: ContainerItemDef, opts?: { order?: number; cls?: string }): any {
         const item = this._createItem(def);
         if (!item) return null;
+        if (opts?.order != null) item.order = opts.order;
+        if (opts?.cls) item.el?.classList.add(...opts.cls.split(/\s+/));
         const { name, action } = this._extractIdentity(def);
         item.action = item.action ?? action;
         this._ensureItems().push(item);
