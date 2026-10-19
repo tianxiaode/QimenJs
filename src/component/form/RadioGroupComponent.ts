@@ -16,6 +16,7 @@ const RadioGroupComponentDefs: Definitions = {
         value: null,
         direction: 'vertical',
         items: [],
+        fieldType: null,
     },
 } as const;
 

@@ -17,6 +17,7 @@ const CheckboxGroupComponentDefs: Definitions = {
         value: [],
         direction: 'vertical',
         items: [],
+        fieldType: null,
     },
 } as const;
 

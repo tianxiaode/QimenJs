@@ -1,9 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
-import { TextareaFieldComponent } from './TextareaFieldComponent';
 import { TEXTAREA_TPL } from './textarea-tpl';
-import { FIELD_ITEM_ORDER } from './constants';
 import './textarea.css';
 
 const TextareaComponentDefs: Definitions = {
@@ -15,6 +13,7 @@ const TextareaComponentDefs: Definitions = {
         maxLength: null,
         resize: null,
         autoSize: false,
+        fieldType: 'textarea',
     },
 } as const;
 
@@ -36,23 +35,6 @@ class TextareaComponent extends FormFieldComponent {
     _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
     _minRows: number = 1;
     _maxRows: number = Infinity;
-    _fieldItem: any = null;
-
-    createChildren(childReady?: () => void): void {
-        super.createChildren(childReady);
-        const fieldBodyCmp = this.getComponent('fieldBody') as any;
-        if (fieldBodyCmp && !this._fieldItem) {
-            fieldBodyCmp.addCls('q-textarea__wrapper');
-            this._fieldItem = fieldBodyCmp.add({
-                type: TextareaFieldComponent,
-                order: FIELD_ITEM_ORDER,
-            });
-        }
-    }
-
-    _getFieldEl(): HTMLTextAreaElement | undefined {
-        return this._fieldItem?.el as HTMLTextAreaElement | undefined;
-    }
 
     _onValueOptionChange(value: string): void {
         const fieldItem = this._fieldItem;

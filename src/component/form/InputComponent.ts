@@ -1,18 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
-import type { ValidationRule } from '@qimenjs/schema';
-import { IconComponent } from '../icon/IconComponent';
-import { TextComponent } from '../text/TextComponent';
-import { InputFieldComponent } from './InputFieldComponent';
 import { FORMFIELD_TPL } from './formfield-tpl';
-import type { PrefixSuffixDef } from './types';
-import {
-    PREFIX_ORDER,
-    FIELD_ITEM_ORDER,
-    SUFFIX_ORDER,
-    CLEAR_BTN_ORDER,
-} from './constants';
 import './input.css';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
@@ -24,9 +13,6 @@ const InputComponentDefs: Definitions = {
         type: 'text',
         readonly: false,
         maxLength: null,
-        clearable: false,
-        prefix: null,
-        suffix: null,
     },
 } as const;
 
@@ -45,34 +31,6 @@ class InputComponent extends FormFieldComponent {
     };
 
     _focused: boolean = false;
-    _clearable: boolean = false;
-    _fieldItem: any = null;
-    _clearBtnItem: any = null;
-    _prefixItem: any = null;
-    _suffixItem: any = null;
-
-    createChildren(childReady?: () => void): void {
-        super.createChildren(childReady);
-        this._initFieldItem();
-    }
-
-    _getFieldBody(): any {
-        return this.getComponent('fieldBody') as any;
-    }
-
-    _initFieldItem(): void {
-        const fieldBodyCmp = this._getFieldBody();
-        if (!fieldBodyCmp || this._fieldItem) return;
-        fieldBodyCmp.addCls('q-input__wrapper');
-        this._fieldItem = fieldBodyCmp.add({
-            type: InputFieldComponent,
-            order: FIELD_ITEM_ORDER,
-        });
-    }
-
-    _getFieldEl(): HTMLInputElement | undefined {
-        return this._fieldItem?.el as HTMLInputElement | undefined;
-    }
 
     _onValueOptionChange(value: string): void {
         const fieldItem = this._fieldItem;
@@ -101,26 +59,6 @@ class InputComponent extends FormFieldComponent {
         if (fieldItem) fieldItem.maxLength = value;
     }
 
-    _onClearableOptionChange(value: boolean): void {
-        this._clearable = value;
-        if (value) {
-            this._initClearBtn();
-            this._toggleClearBtn();
-        } else {
-            this._removeClearBtn();
-        }
-    }
-
-    _onPrefixOptionChange(value: PrefixSuffixDef | null): void {
-        this._unmountPrefix();
-        if (value) this._mountPrefix(value);
-    }
-
-    _onSuffixOptionChange(value: PrefixSuffixDef | null): void {
-        this._unmountSuffix();
-        if (value) this._mountSuffix(value);
-    }
-
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
@@ -133,96 +71,11 @@ class InputComponent extends FormFieldComponent {
         this.addCls('q-input');
     }
 
-    _mountPrefix(value: PrefixSuffixDef): void {
-        const fieldBodyCmp = this._getFieldBody();
-        if (!fieldBodyCmp) return;
-        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
-        const item = fieldBodyCmp.add({
-            type: isIcon ? IconComponent : TextComponent,
-            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
-            order: PREFIX_ORDER,
-        });
-        if (item?.el) {
-            item.el.classList.add('q-input__prefix');
-        }
-        this._prefixItem = item;
-    }
-
-    _unmountPrefix(): void {
-        if (!this._prefixItem) return;
-        const fieldBodyCmp = this._getFieldBody();
-        if (fieldBodyCmp) {
-            const idx = fieldBodyCmp.items?.indexOf(this._prefixItem) ?? -1;
-            if (idx >= 0) fieldBodyCmp.removeAt(idx);
-        }
-        this._prefixItem = null;
-    }
-
-    _mountSuffix(value: PrefixSuffixDef): void {
-        const fieldBodyCmp = this._getFieldBody();
-        if (!fieldBodyCmp) return;
-        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
-        const item = fieldBodyCmp.add({
-            type: isIcon ? IconComponent : TextComponent,
-            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
-            order: SUFFIX_ORDER,
-        });
-        if (item?.el) {
-            item.el.classList.add('q-input__suffix');
-        }
-        this._suffixItem = item;
-    }
-
-    _unmountSuffix(): void {
-        if (!this._suffixItem) return;
-        const fieldBodyCmp = this._getFieldBody();
-        if (fieldBodyCmp) {
-            const idx = fieldBodyCmp.items?.indexOf(this._suffixItem) ?? -1;
-            if (idx >= 0) fieldBodyCmp.removeAt(idx);
-        }
-        this._suffixItem = null;
-    }
-
-    _initClearBtn(): void {
-        if (this._clearBtnItem) return;
-        const fieldBodyCmp = this._getFieldBody();
-        if (!fieldBodyCmp) return;
-        const item = fieldBodyCmp.add({
-            type: IconComponent,
-            iconCls: 'q-close',
-            order: CLEAR_BTN_ORDER,
-        });
-        if (item?.el) {
-            item.el.classList.add('q-input__clear-btn');
-            item.el.addEventListener('click', (e: Event) => {
-                e.stopPropagation();
-                this.onClearBtnClick();
-            });
-        }
-        this._clearBtnItem = item;
-    }
-
-    _removeClearBtn(): void {
-        if (!this._clearBtnItem) return;
-        const fieldBodyCmp = this._getFieldBody();
-        if (fieldBodyCmp) {
-            const idx = fieldBodyCmp.items?.indexOf(this._clearBtnItem) ?? -1;
-            if (idx >= 0) fieldBodyCmp.removeAt(idx);
-        }
-        this._clearBtnItem = null;
-    }
-
     onClearBtnClick(): void {
         this.value = '';
         this.emit('input', { value: '' });
         this._toggleClearBtn();
         this._fieldItem?.focus();
-    }
-
-    _toggleClearBtn(): void {
-        if (!this._clearable || !this._clearBtnItem) return;
-        const hasValue = !!this.value;
-        this._clearBtnItem.el.classList.toggle('hidden', !hasValue);
     }
 
     onFieldInput(): void {

@@ -12,6 +12,7 @@ const SliderComponentDefs: Definitions = {
         max: 100,
         step: 1,
         showValue: true,
+        fieldType: null,
     },
 } as const;
 

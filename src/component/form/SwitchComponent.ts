@@ -9,6 +9,7 @@ const SwitchComponentDefs: Definitions = {
         checked: false,
         activeText: null,
         inactiveText: null,
+        fieldType: null,
     },
 } as const;
 
