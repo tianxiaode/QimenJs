@@ -40,8 +40,11 @@ class InputFieldComponent extends Component {
     }
 
     _onPlaceholderOptionChange(value: string | null): void {
-        if (value) this.el?.setAttribute('placeholder', value);
-        else this.el?.removeAttribute('placeholder');
+        if (value) this.setNodeAttr('placeholder', value);
+        else {
+            this.removeAttributes(['placeholder']);
+            this._unregisterI18nNode('root', 'placeholder');
+        }
     }
 
     _onReadonlyOptionChange(value: boolean): void {
