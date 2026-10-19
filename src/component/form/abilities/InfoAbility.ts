@@ -1,8 +1,7 @@
 import type { AbilityDefinition } from '@/composable';
-import type { FormFieldAbilityHost } from './types';
 
 export const InfoAbility = {
-    _onErrorOptionChange(this: FormFieldAbilityHost, value: string): void {
+    _onErrorOptionChange(value: string): void {
         if (value) {
             this.addError(value);
             this.addCls('q-formfield--error');
@@ -12,7 +11,7 @@ export const InfoAbility = {
         }
     },
 
-    _onHelpOptionChange(this: FormFieldAbilityHost, value: string): void {
+    _onHelpOptionChange(value: string): void {
         if (value) {
             this.addHelp(value);
         } else {
@@ -20,7 +19,7 @@ export const InfoAbility = {
         }
     },
 
-    _onInfoOptionChange(this: FormFieldAbilityHost, value: any): void {
+    _onInfoOptionChange(value: any): void {
         if (this._infoItem) {
             const infoGroup = this.getComponent('infoGroup') as any;
             if (infoGroup) {
@@ -37,32 +36,32 @@ export const InfoAbility = {
         }
     },
 
-    addError(this: FormFieldAbilityHost, text: string): any {
+    addError(text: string): any {
         const infoGroup = this.getComponent('infoGroup') as any;
         return infoGroup?.addError(text);
     },
 
-    removeError(this: FormFieldAbilityHost): void {
+    removeError(): void {
         const infoGroup = this.getComponent('infoGroup') as any;
         infoGroup?.removeError();
     },
 
-    addHelp(this: FormFieldAbilityHost, text: string): any {
+    addHelp(text: string): any {
         const infoGroup = this.getComponent('infoGroup') as any;
         return infoGroup?.addHelp(text);
     },
 
-    removeHelp(this: FormFieldAbilityHost): void {
+    removeHelp(): void {
         const infoGroup = this.getComponent('infoGroup') as any;
         infoGroup?.removeHelp();
     },
 
-    addInfo(this: FormFieldAbilityHost, data: Record<string, any>): any {
+    addInfo(data: Record<string, any>): any {
         const infoGroup = this.getComponent('infoGroup') as any;
         return infoGroup?.addInfo(data);
     },
 
-    removeInfo(this: FormFieldAbilityHost, index: number): any {
+    removeInfo(index: number): any {
         const infoGroup = this.getComponent('infoGroup') as any;
         return infoGroup?.removeInfo(index);
     },

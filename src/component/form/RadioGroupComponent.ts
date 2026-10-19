@@ -29,7 +29,7 @@ class RadioGroupComponent extends FormFieldComponent {
 
     _radioItems: any[] = [];
 
-    _onValueOptionChange(value: string | number | null): void {
+    _onValueOptionChange(_value: string | number | null): void {
         this._updateCheckedState();
     }
 
@@ -40,7 +40,7 @@ class RadioGroupComponent extends FormFieldComponent {
         }
     }
 
-    _onItemsOptionChange(value: RadioOption[]): void {
+    _onItemsOptionChange(_value: RadioOption[]): void {
         this._renderOptions();
     }
 

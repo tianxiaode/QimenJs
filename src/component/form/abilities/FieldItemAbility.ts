@@ -1,29 +1,23 @@
 import type { AbilityDefinition } from '@/composable';
-import type { FormFieldAbilityHost } from './types';
 import type { PrefixSuffixDef, FieldType } from '../types';
 import { InputFieldComponent } from '../InputFieldComponent';
 import { TextareaFieldComponent } from '../TextareaFieldComponent';
 import { IconComponent } from '../../icon/IconComponent';
 import { TextComponent } from '../../text/TextComponent';
-import {
-    PREFIX_ORDER,
-    FIELD_ITEM_ORDER,
-    SUFFIX_ORDER,
-    CLEAR_BTN_ORDER,
-} from '../constants';
+import { PREFIX_ORDER, FIELD_ITEM_ORDER, SUFFIX_ORDER, CLEAR_BTN_ORDER } from '../constants';
 
 export const FieldItemAbility = {
-    _onPrefixOptionChange(this: FormFieldAbilityHost, value: PrefixSuffixDef | null): void {
+    _onPrefixOptionChange(value: PrefixSuffixDef | null): void {
         this._unmountPrefix();
         if (value) this._mountPrefix(value);
     },
 
-    _onSuffixOptionChange(this: FormFieldAbilityHost, value: PrefixSuffixDef | null): void {
+    _onSuffixOptionChange(value: PrefixSuffixDef | null): void {
         this._unmountSuffix();
         if (value) this._mountSuffix(value);
     },
 
-    _onClearableOptionChange(this: FormFieldAbilityHost, value: boolean): void {
+    _onClearableOptionChange(value: boolean): void {
         if (value) {
             this._initClearBtn();
             this._toggleClearBtn();
@@ -32,7 +26,7 @@ export const FieldItemAbility = {
         }
     },
 
-    _initFieldItem(this: FormFieldAbilityHost): void {
+    _initFieldItem(): void {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp || this._fieldItem) return;
 
@@ -52,15 +46,15 @@ export const FieldItemAbility = {
         }
     },
 
-    _getFieldBody(this: FormFieldAbilityHost): any {
+    _getFieldBody(): any {
         return this.getComponent('fieldBody') as any;
     },
 
-    _getFieldEl(this: FormFieldAbilityHost): HTMLElement | undefined {
+    _getFieldEl(): HTMLElement | undefined {
         return this._fieldItem?.el as HTMLElement | undefined;
     },
 
-    _mountPrefix(this: FormFieldAbilityHost, value: PrefixSuffixDef): void {
+    _mountPrefix(value: PrefixSuffixDef): void {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
         const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
@@ -75,7 +69,7 @@ export const FieldItemAbility = {
         this._prefixItem = item;
     },
 
-    _unmountPrefix(this: FormFieldAbilityHost): void {
+    _unmountPrefix(): void {
         if (!this._prefixItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp) {
@@ -85,7 +79,7 @@ export const FieldItemAbility = {
         this._prefixItem = null;
     },
 
-    _mountSuffix(this: FormFieldAbilityHost, value: PrefixSuffixDef): void {
+    _mountSuffix(value: PrefixSuffixDef): void {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
         const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
@@ -100,7 +94,7 @@ export const FieldItemAbility = {
         this._suffixItem = item;
     },
 
-    _unmountSuffix(this: FormFieldAbilityHost): void {
+    _unmountSuffix(): void {
         if (!this._suffixItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp) {
@@ -110,7 +104,7 @@ export const FieldItemAbility = {
         this._suffixItem = null;
     },
 
-    _initClearBtn(this: FormFieldAbilityHost): void {
+    _initClearBtn(): void {
         if (this._clearBtnItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
@@ -129,7 +123,7 @@ export const FieldItemAbility = {
         this._clearBtnItem = item;
     },
 
-    _removeClearBtn(this: FormFieldAbilityHost): void {
+    _removeClearBtn(): void {
         if (!this._clearBtnItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp) {
@@ -139,12 +133,12 @@ export const FieldItemAbility = {
         this._clearBtnItem = null;
     },
 
-    onClearBtnClick(this: FormFieldAbilityHost): void {
+    onClearBtnClick(): void {
         this._toggleClearBtn();
         this._fieldItem?.focus();
     },
 
-    _toggleClearBtn(this: FormFieldAbilityHost): void {
+    _toggleClearBtn(): void {
         if (!this._clearBtnItem) return;
         const hasValue = !!this._fieldItem?.value;
         this._clearBtnItem.el.classList.toggle('hidden', !hasValue);

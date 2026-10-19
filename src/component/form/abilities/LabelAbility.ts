@@ -1,9 +1,8 @@
 import type { AbilityDefinition } from '@/composable';
-import type { FormFieldAbilityHost } from './types';
 import { LABEL_POSITION_MAP } from '../constants';
 
 export const LabelAbility = {
-    _onLabelOptionChange(this: FormFieldAbilityHost, value: string): void {
+    _onLabelOptionChange(value: string): void {
         if (value) {
             this.setNodeText(value, 'label');
             this.setNodeHidden(false, 'labelGroup');
@@ -11,7 +10,7 @@ export const LabelAbility = {
         }
     },
 
-    _onLabelPositionOptionChange(this: FormFieldAbilityHost, value: string): void {
+    _onLabelPositionOptionChange(value: string): void {
         for (const cls of Object.values(LABEL_POSITION_MAP)) {
             this.removeCls(cls);
         }
@@ -19,13 +18,13 @@ export const LabelAbility = {
         if (cls) this.addCls(cls);
     },
 
-    _onLabelWidthOptionChange(this: FormFieldAbilityHost, value: string): void {
+    _onLabelWidthOptionChange(value: string): void {
         if (value) {
             this.el.style.setProperty('--q-formfield-label-width', value);
         }
     },
 
-    _onRequiredOptionChange(this: FormFieldAbilityHost, value: boolean): void {
+    _onRequiredOptionChange(value: boolean): void {
         if (value && this.getData('label')) {
             this._applyRequiredConfig();
             this.setNodeHidden(false, 'requiredMark');
@@ -34,18 +33,19 @@ export const LabelAbility = {
         }
     },
 
-    _onRequiredMarkOptionChange(this: FormFieldAbilityHost, _value: string): void {
+    _onRequiredMarkOptionChange(_value: string): void {
         this._applyRequiredConfig();
     },
 
-    _onRequiredMarkPositionOptionChange(this: FormFieldAbilityHost, _value: string): void {
+    _onRequiredMarkPositionOptionChange(_value: string): void {
         this._applyRequiredConfig();
     },
 
-    _applyRequiredConfig(this: FormFieldAbilityHost): void {
+    _applyRequiredConfig(): void {
         const ui = this.i18nConfig?.()?.ui;
         const mark = this.getData('requiredMark') ?? ui?.requiredMark ?? '*';
-        const position = this.getData('requiredMarkPosition') ?? ui?.requiredMarkPosition ?? 'after';
+        const position =
+            this.getData('requiredMarkPosition') ?? ui?.requiredMarkPosition ?? 'after';
 
         const markEl = this.getNodeEl('requiredMark');
         if (markEl) {
@@ -60,7 +60,7 @@ export const LabelAbility = {
         }
     },
 
-    onLocaleChange(this: FormFieldAbilityHost): void {
+    onLocaleChange(): void {
         this._applyRequiredConfig();
     },
 } satisfies AbilityDefinition;

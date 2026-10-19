@@ -1,16 +1,15 @@
 import type { AbilityDefinition } from '@/composable';
-import type { FormFieldAbilityHost } from './types';
 import { validate as doValidate } from '@qimenjs/validation';
 
 export const ValidationAbility = {
-    _shouldValidate(this: FormFieldAbilityHost, eventName: string): boolean {
+    _shouldValidate(eventName: string): boolean {
         if (!this.getData('validation')) return false;
         if (eventName === this.getData('validateTrigger')) return true;
         if (this.getData('validateTrigger') === 'blur' && eventName === 'change') return false;
         return false;
     },
 
-    async _doValidate(this: FormFieldAbilityHost): Promise<void> {
+    async _doValidate(): Promise<void> {
         if (!this.getData('validation')) return;
 
         const rules = this.getData('validation');
@@ -23,6 +22,9 @@ export const ValidationAbility = {
             if (errors) allErrors.push(...errors);
         }
 
-        this.setData('error', allErrors.length > 0 ? allErrors[0].message || String(allErrors[0]) : '');
+        this.setData(
+            'error',
+            allErrors.length > 0 ? allErrors[0].message || String(allErrors[0]) : ''
+        );
     },
 } satisfies AbilityDefinition;
