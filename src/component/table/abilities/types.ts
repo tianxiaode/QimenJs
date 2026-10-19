@@ -41,6 +41,8 @@ export interface TableAbilityHost {
     setData(key: string, value: any, raw?: boolean): void;
     getNodeEl(name: string): HTMLElement | undefined;
     emit(event: string, data?: any): void;
+    logger: { warn: (...args: any[]) => void };
+    resolveComponent: (type: string) => any;
     componentEmit(event: string, data?: any): void;
     componentOn(sourceId: string, eventName: string, handler: (data: any) => void): () => void;
     entityEmit(event: string, data?: any, opts?: Record<string, any>): void;
@@ -115,6 +117,7 @@ export interface TableAbilityHost {
     _ensureExpandColumn(columns: ColumnDefOrGroup[]): ColumnDefOrGroup[];
     _onRowExpand(data: any): void;
     _onRowCollapse(data: any): void;
+    _resolveRowBodyContent(rowBody: RowBodyConfig, rowData: any): any;
     _renderRowBody(row: any, rowData: any): any;
     _renderRowBodyWithLoader(row: any, rowData: any, rowKey: string): void;
     _renderRowBodyWithEntity(row: any, rowData: any, rowKey: string, rowBody: RowBodyConfig): void;

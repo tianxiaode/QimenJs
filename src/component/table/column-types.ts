@@ -979,17 +979,15 @@ export interface ColumnCompileResult {
 // ══════════════════════════════════════════════════════════════
 
 /**
- * Row Body 内容类型 — 决定展开行 body 区域的渲染方式
+ * Row Body 内容定义 — 与 Container 四路一致的统一内容语义
  *
- * | type           | 配置字段                         | 说明                     |
- * |----------------|----------------------------------|--------------------------|
- * | property-grid  | fields, cols                    | PropertyGrid 展示行数据  |
- * | table          | dataField, tableOptions         | 主从嵌套子表格           |
- * | template       | template                        | 自定义 TemplateDecl      |
- * | component      | component                       | 自定义组件类             |
- * | html           | html                            | HTML 字符串或函数        |
+ * - string：HTML（@ 前缀 i18n 求值）
+ * - (rowData) => string：HTML 求值函数（每行展开时求值）
+ * - TplDecl：模板（纯 DOM 同步编译，含嵌套组件时请用组件配置）
+ * - { type: 类|注册名, ...props }：组件配置对象
+ *   （内置 type：'property-grid' | 'table'，其余按注册名解析）
  */
-export type RowBodyType = 'property-grid' | 'table' | 'template' | 'component' | 'html';
+export type RowBodyContent = string | ((data: any) => string) | TplDecl | Record<string, any>;
 
 /**
  * Row Body 配置 — TableComponent 的 rowBody option
@@ -1001,35 +999,27 @@ export type RowBodyType = 'property-grid' | 'table' | 'template' | 'component' |
  * ```ts
  * // property-grid + loader
  * rowBody: {
- *     type: 'property-grid',
- *     fields: [{ key: 'name' }, { key: 'email' }],
- *     cols: 2,
+ *     content: { type: 'property-grid', fields: [{ key: 'name' }], cols: 2 },
  *     loader: async (rowId, rowData) => fetchDetail(rowId),
  *     loadingText: '加载中...',
  * }
  *
- * // html
+ * // html 求值函数
  * rowBody: {
- *     type: 'html',
- *     html: (data) => `<div>${data.description}</div>`,
+ *     content: (data) => `<div>${data.description}</div>`,
+ * }
+ *
+ * // 嵌套子表格（dataField 从行数据提取数组字段）
+ * rowBody: {
+ *     content: { type: 'table', dataField: 'products', columns: [...] },
  * }
  * ```
  */
 export interface RowBodyConfig {
-    type: RowBodyType;
-    fields?: any[];
-    cols?: number;
-    dataField?: string;
-    tableOptions?: Record<string, any>;
-    template?: TplDecl;
-    component?: any;
-    html?: string | ((data: any) => string);
+    /** 内容定义（Container 四路 + html 求值函数） */
+    content: RowBodyContent;
     loader?: (rowId: string, rowData: any) => Promise<any>;
     loadingText?: string;
-    /** 自动排除已在表格列中显示的字段（仅 property-grid 类型，fields 为空时生效） */
-    excludeColumns?: boolean;
-    /** i18n 路径前缀，label 自动在此 scope 下查找（如 'employee' → '@employee.email'） */
-    i18nScope?: string;
     /** 实体命令（如 'get'），展开时发送命令获取行详情 */
     entityAction?: string;
     /** 实体命令参数提取的字段名（默认用 idField），从 rowData 中提取作为命令参数 */

@@ -1,13 +1,8 @@
 import type { AbilityDefinition } from '@/composable';
-import type { TemplateDecl } from '@qimenjs/component-core';
 import type { TableAbilityHost } from './types';
 import type { ColumnDefOrGroup, ColumnMeta, RowBodyConfig } from '../column-types';
-import { ComponentRegistrar } from '@/component-core/ComponentRegistrar';
+import { createItemFromDef } from '../../container/resolve';
 import { ENTITY_LIST_EVENTS } from '@/events';
-
-function isTemplateDecl(value: any): value is TemplateDecl {
-    return !!value && typeof value === 'object' && ('tag' in value || 'children' in value);
-}
 
 export const RowBodyAbility = {
     _onRowBodyOptionChange(this: TableAbilityHost, _value: any): void {
@@ -171,8 +166,9 @@ export const RowBodyAbility = {
         mergedData: any,
         rowBody: RowBodyConfig
     ): void {
-        if (rowBody.type === 'table' && rowBody.dataField) {
-            const subData = mergedData[rowBody.dataField];
+        const content = rowBody.content as Record<string, any> | null | undefined;
+        if (typeof content === 'object' && content?.type === 'table' && content?.dataField) {
+            const subData = mergedData[content.dataField];
             if (inst && typeof inst.setData === 'function') {
                 inst.setData('data', Array.isArray(subData) ? subData : []);
             } else if (row.bodyEl) {
@@ -183,8 +179,8 @@ export const RowBodyAbility = {
         if (inst && typeof inst.setData === 'function') {
             inst.setData('data', mergedData);
         } else {
-            const content = this._renderRowBody(row, mergedData);
-            if (content) row.setBodyContent(content);
+            const item = this._renderRowBody(row, mergedData);
+            if (item) row.setBodyContent(item);
         }
     },
 
@@ -202,82 +198,56 @@ export const RowBodyAbility = {
         return loadingEl;
     },
 
+    /**
+     * 行 body 内容渲染 — 统一走 Container 四路解析
+     *
+     * content 求值（rowData 上下文）在 _resolveRowBodyContent 完成，
+     * 产物（wrapper 或组件实例）交由 row.setBodyContent 挂载。
+     */
     _renderRowBody(this: TableAbilityHost, row: any, rowData: any): any {
         const rowBody: RowBodyConfig = this.getData('rowBody');
         if (!rowBody || !row?.bodyEl) return null;
 
-        const bodyEl = row.bodyEl;
+        const def = this._resolveRowBodyContent(rowBody, rowData);
+        if (def == null) return null;
+        return createItemFromDef(this, def);
+    },
 
-        switch (rowBody.type) {
-            case 'html': {
-                const htmlContent =
-                    typeof rowBody.html === 'function' ? rowBody.html(rowData) : rowBody.html;
-                if (typeof htmlContent === 'string') {
-                    bodyEl.innerHTML = htmlContent;
-                }
-                return {
-                    el: bodyEl,
-                    dispose: () => {
-                        bodyEl.innerHTML = '';
-                    },
-                };
-            }
+    /**
+     * 求值 rowBody.content 为 Container 四路 def：
+     * - 函数：html 求值（(rowData) => string）
+     * - property-grid 配置：excludeColumns 派生 fields
+     * - table 配置：dataField 从 rowData 提取初始 data
+     * - 其余原样透传
+     */
+    _resolveRowBodyContent(this: TableAbilityHost, rowBody: RowBodyConfig, rowData: any): any {
+        const c = rowBody.content;
+        if (c == null) return null;
 
-            case 'template': {
-                const tpl = rowBody.template;
-                if (!isTemplateDecl(tpl)) return null;
-                const BaseCtor = ComponentRegistrar.getInstance().get('component') as any;
-                const SlotCls = BaseCtor.extend({ type: 'row-body-slot', tpl });
-                const inst = new SlotCls({ container: bodyEl });
-                return inst;
-            }
-
-            case 'property-grid': {
-                const PropertyGridCtor = ComponentRegistrar.getInstance().get(
-                    'property-grid'
-                ) as any;
-                if (!PropertyGridCtor) return null;
-                let fields = rowBody.fields;
-                if (!fields && rowBody.excludeColumns) {
+        if (typeof c === 'function') {
+            const html = (c as (data: any) => string)(rowData);
+            return typeof html === 'string' ? html : null;
+        }
+        if (typeof c === 'object' && !Array.isArray(c)) {
+            const def = { ...(c as Record<string, any>) };
+            if (def.type === 'property-grid') {
+                if (!def.fields && def.excludeColumns) {
                     const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-                    const shownFields = new Set(columns.map((c: ColumnMeta) => c.field));
-                    fields = Object.keys(rowData)
+                    const shownFields = new Set(columns.map((col: ColumnMeta) => col.field));
+                    def.fields = Object.keys(rowData)
                         .filter(k => !k.startsWith('_') && !shownFields.has(k))
                         .map(k => ({ key: k }));
                 }
-                const inst = new PropertyGridCtor({
-                    fields,
-                    data: rowData,
-                    cols: rowBody.cols ?? 2,
-                    i18nScope: rowBody.i18nScope ?? '',
-                });
-                return inst;
+                delete def.excludeColumns;
+                return def;
             }
-
-            case 'table': {
-                const TableCtor = ComponentRegistrar.getInstance().get('table') as any;
-                if (!TableCtor) return null;
-                const subData = rowBody.dataField ? rowData[rowBody.dataField] : rowData;
-                const options: Record<string, any> = {
-                    data: Array.isArray(subData) ? subData : [],
-                    ...(rowBody.tableOptions ?? {}),
-                };
-                const inst = new TableCtor(options);
-                return inst;
+            if (def.type === 'table') {
+                const subData = def.dataField ? rowData[def.dataField] : rowData;
+                def.data = Array.isArray(subData) ? subData : [];
+                delete def.dataField;
+                return def;
             }
-
-            case 'component': {
-                const ComponentCtor = rowBody.component;
-                if (typeof ComponentCtor !== 'function') return null;
-                const inst = new ComponentCtor({ container: bodyEl });
-                if (typeof inst.update === 'function') {
-                    inst.update({ data: rowData });
-                }
-                return inst;
-            }
-
-            default:
-                return null;
         }
+        return c;
     },
 } satisfies AbilityDefinition;

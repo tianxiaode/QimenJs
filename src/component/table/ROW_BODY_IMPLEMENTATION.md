@@ -9,30 +9,32 @@
 | 嵌套表格递归 | **允许递归** — 子表格也可配置 rowBody，支持无限层级 |
 | 虚拟滚动兼容 | **禁用 row body** — 虚拟滚动模式下不支持 row body |
 
-## 内容类型
+## 内容类型（Container 四路统一，2026-10-19 迁移）
 
-| type | 配置 | 说明 |
-|---|---|---|
-| `property-grid` | `fields`, `cols` | PropertyGridComponent 展示行数据/详细数据 |
-| `table` | `dataField`, `tableOptions` | 主从嵌套子表格 |
-| `template` | `template` | 自定义 TemplateDecl |
-| `component` | `component` | 自定义组件类 |
-| `html` | `html` | HTML 字符串或函数 |
+`rowBody.content` 与 Container 四路语义一致：
+
+| content 形态 | 说明 |
+|---|---|
+| `string` | HTML（@ 前缀 i18n 求值） |
+| `(rowData) => string` | HTML 求值函数 |
+| `TemplateDecl` | 模板（纯 DOM 同步编译，嵌套组件请用组件配置） |
+| `{ type: 'property-grid', fields, cols, excludeColumns, i18nScope }` | PropertyGrid 展示行数据/详细数据 |
+| `{ type: 'table', dataField, ...tableOptions }` | 主从嵌套子表格 |
+| `{ type: 任意组件类或注册名, ...props }` | 任意组件配置 |
+
+解析统一由 `container/resolve.ts` 的 `createItemFromDef` 完成；
+`excludeColumns`（fields 派生）与 `dataField`（行数据提取）由 RowBodyAbility 求值。
 
 ## 配置结构
 
 ```typescript
 interface RowBodyConfig {
-    type: 'property-grid' | 'table' | 'template' | 'component' | 'html';
-    fields?: PropertyField[];        // property-grid
-    cols?: number;                   // property-grid
-    dataField?: string;              // table
-    tableOptions?: Record<string, any>; // table
-    template?: TemplateDecl;         // template
-    component?: ComponentClass;      // component
-    html?: string | ((data: any) => string); // html
+    content: string | ((data: any) => string) | TemplateDecl | Record<string, any>;
     loader?: (rowId: string, rowData: any) => Promise<any>;
     loadingText?: string;
+    entityAction?: string;
+    entityParamField?: string;
+    entityKey?: string;
 }
 ```
 

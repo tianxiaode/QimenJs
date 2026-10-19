@@ -19,10 +19,9 @@
 
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
-import { TemplateManager } from '../../component-core/engine';
-import { resolveI18nValue } from '@qimenjs/i18n';
 import { Definitions } from '@/composable';
 import { CONTAINER_TPL } from './container-tpl';
+import { createItemFromDef } from './resolve';
 import type { ContainerItemDef, ContainerItemWrapper } from './types';
 import './container.css';
 
@@ -37,14 +36,6 @@ const ContainerComponentDefs: Definitions = {
         _actionMap: undefined,
     },
 } as const;
-
-function isTemplateDecl(value: any): value is TemplateDecl {
-    return (
-        typeof value === 'object' &&
-        value !== null &&
-        (typeof value.tag === 'string' || Array.isArray(value.children))
-    );
-}
 
 class ContainerComponent extends Component {
     static type = 'container';
@@ -77,65 +68,11 @@ class ContainerComponent extends Component {
     }
 
     _createItem(def: ContainerItemDef): any {
-        if (typeof def === 'string') {
-            return this._createHtmlItem(def);
+        const item = createItemFromDef(this, def);
+        if (item && typeof item.dispose === 'function' && item.el) {
+            this.childComponentList.push(item);
         }
-        if (isTemplateDecl(def)) {
-            return this._createTemplateItem(def);
-        }
-        if (typeof def === 'function') {
-            return this._createComponentItem(new (def as any)({}));
-        }
-        if (typeof def === 'object' && def !== null) {
-            const itemType = def.type;
-            if (!itemType) {
-                this.logger.warn('[Container._createItem] 对象 item 缺少 type，忽略', def);
-                return null;
-            }
-            const ItemClass =
-                typeof itemType === 'function' ? itemType : this.resolveComponent(itemType);
-            if (!ItemClass) {
-                this.logger.warn(`[Container._createItem] 组件类型 "${itemType}" 未注册`);
-                return null;
-            }
-            const instance = new (ItemClass as any)(def);
-            return this._createComponentItem(instance);
-        }
-        this.logger.warn('[Container._createItem] 无效 item 定义，忽略', def);
-        return null;
-    }
-
-    _createHtmlItem(html: string): ContainerItemWrapper {
-        const el = document.createElement('div');
-        el.classList.add('q-container__html');
-        el.innerHTML = resolveI18nValue(html);
-        return { el, order: 0, type: 'html' };
-    }
-
-    _createTemplateItem(decl: TemplateDecl): any {
-        const cache = TemplateManager.get(decl);
-        const hasChildComponents = (cache.childComponents || []).length > 0;
-        if (hasChildComponents) {
-            this.logger.warn(
-                '[Container._createTemplateItem] 模板含嵌套组件，暂不支持；请使用组件 item 或纯 DOM 模板'
-            );
-        }
-        const frag = cache.templateCache!.content.cloneNode(true) as DocumentFragment;
-        const el = (frag.firstElementChild as HTMLElement) ?? document.createElement('div');
-        return {
-            el,
-            order: 0,
-            name: decl.name,
-            action: (decl as any).action,
-            type: 'template',
-        };
-    }
-
-    _createComponentItem(instance: any): any {
-        if (instance?.el) {
-            this.childComponentList.push(instance);
-        }
-        return instance;
+        return item;
     }
 
     _ensureItems(): any[] {

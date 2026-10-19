@@ -17,47 +17,52 @@ const ROW_BODY_COLUMNS: ColumnDefOrGroup[] = [
 ];
 
 const propertyGridRowBody: RowBodyConfig = {
-    type: 'property-grid',
-    i18nScope: 'employee',
-    fields: [
-        { key: 'name', labelKey: 'name' },
-        { key: 'age', labelKey: 'age', type: 'number' },
-        { key: 'dept', labelKey: 'dept' },
-        { key: 'salary', labelKey: 'salary', type: 'number', format: '#,##0' },
-        { key: 'email', labelKey: 'email', span: 2 },
-        { key: 'phone', labelKey: 'phone' },
-        { key: 'address', labelKey: 'address', span: 2 },
-    ],
-    cols: 2,
+    content: {
+        type: 'property-grid',
+        i18nScope: 'employee',
+        fields: [
+            { key: 'name', labelKey: 'name' },
+            { key: 'age', labelKey: 'age', type: 'number' },
+            { key: 'dept', labelKey: 'dept' },
+            { key: 'salary', labelKey: 'salary', type: 'number', format: '#,##0' },
+            { key: 'email', labelKey: 'email', span: 2 },
+            { key: 'phone', labelKey: 'phone' },
+            { key: 'address', labelKey: 'address', span: 2 },
+        ],
+        cols: 2,
+    },
 };
 
 const longLabelRowBody: RowBodyConfig = {
-    type: 'property-grid',
-    fields: [
-        { key: 'name', labelKey: '姓名' },
-        { key: 'status', labelKey: '在职状态' },
-        { key: 'joinDate', labelKey: '入职日期' },
-        { key: 'level', labelKey: '职级等级' },
-        { key: 'manager', labelKey: '直属上级负责人' },
-        { key: 'projectCount', labelKey: '负责项目数量', type: 'number' },
-        { key: 'lastReview', labelKey: '最近一次绩效评审结果' },
-        { key: 'remote', labelKey: '是否远程办公', type: 'boolean' },
-        { key: 'skills', labelKey: '专业技能标签', type: 'array', span: 2 },
-        { key: 'address', labelKey: '居住地址详细信息', span: 2 },
-    ],
-    cols: 2,
+    content: {
+        type: 'property-grid',
+        fields: [
+            { key: 'name', labelKey: '姓名' },
+            { key: 'status', labelKey: '在职状态' },
+            { key: 'joinDate', labelKey: '入职日期' },
+            { key: 'level', labelKey: '职级等级' },
+            { key: 'manager', labelKey: '直属上级负责人' },
+            { key: 'projectCount', labelKey: '负责项目数量', type: 'number' },
+            { key: 'lastReview', labelKey: '最近一次绩效评审结果' },
+            { key: 'remote', labelKey: '是否远程办公', type: 'boolean' },
+            { key: 'skills', labelKey: '专业技能标签', type: 'array', span: 2 },
+            { key: 'address', labelKey: '居住地址详细信息', span: 2 },
+        ],
+        cols: 2,
+    },
 };
 
 const excludeColumnsRowBody: RowBodyConfig = {
-    type: 'property-grid',
-    excludeColumns: true,
-    cols: 2,
-    i18nScope: 'employee',
+    content: {
+        type: 'property-grid',
+        excludeColumns: true,
+        cols: 2,
+        i18nScope: 'employee',
+    },
 };
 
 const htmlRowBody: RowBodyConfig = {
-    type: 'html',
-    html: (data: any) => `
+    content: (data: any) => `
         <div style="padding:8px;">
             <h4 style="margin:0 0 6px;">${data.name} 的详细信息</h4>
             <p style="margin:0;color:#666;">部门: ${data.dept} | 年龄: ${data.age} | 薪资: ¥${data.salary}</p>
@@ -68,16 +73,18 @@ const htmlRowBody: RowBodyConfig = {
 };
 
 const loaderRowBody: RowBodyConfig = {
-    type: 'property-grid',
-    fields: [
-        { key: 'name', labelKey: '姓名' },
-        { key: 'dept', labelKey: '部门' },
-        { key: 'performance', labelKey: '绩效评分', type: 'number', format: '#,##0' },
-        { key: 'projectCount', labelKey: '项目数', type: 'number' },
-        { key: 'lastReview', labelKey: '最近评审' },
-        { key: 'level', labelKey: '职级' },
-    ],
-    cols: 2,
+    content: {
+        type: 'property-grid',
+        fields: [
+            { key: 'name', labelKey: '姓名' },
+            { key: 'dept', labelKey: '部门' },
+            { key: 'performance', labelKey: '绩效评分', type: 'number', format: '#,##0' },
+            { key: 'projectCount', labelKey: '项目数', type: 'number' },
+            { key: 'lastReview', labelKey: '最近评审' },
+            { key: 'level', labelKey: '职级' },
+        ],
+        cols: 2,
+    },
     loader: async (_rowId: string) => {
         await new Promise(resolve => setTimeout(resolve, 500));
         return {
@@ -91,10 +98,12 @@ const loaderRowBody: RowBodyConfig = {
 };
 
 const entityRowBody: RowBodyConfig = {
-    type: 'property-grid',
-    i18nScope: 'employee',
-    excludeColumns: true,
-    cols: 2,
+    content: {
+        type: 'property-grid',
+        i18nScope: 'employee',
+        excludeColumns: true,
+        cols: 2,
+    },
     entityAction: 'get',
     entityParamField: 'id',
     loadingText: '加载详细数据...',
@@ -148,9 +157,9 @@ const NESTED_TABLE_DATA = [
 ];
 
 const nestedTableRowBody: RowBodyConfig = {
-    type: 'table',
-    dataField: 'products',
-    tableOptions: {
+    content: {
+        type: 'table',
+        dataField: 'products',
         columns: [
             { name: 'sku', field: 'sku', title: 'SKU', width: 100 },
             { name: 'name', field: 'name', title: '商品名称', width: 150 },
@@ -158,9 +167,9 @@ const nestedTableRowBody: RowBodyConfig = {
             { name: 'price', field: 'price', title: '单价', width: 100, align: 'right', format: 'currency' },
         ],
         rowBody: {
-            type: 'table',
-            dataField: 'batches',
-            tableOptions: {
+            content: {
+                type: 'table',
+                dataField: 'batches',
                 columns: [
                     { name: 'batch', field: 'batch', title: '批次号', width: 110 },
                     { name: 'warehouse', field: 'warehouse', title: '仓库', width: 100 },
@@ -208,12 +217,9 @@ class MockNestedProductEntityManager extends LocalReadonlyEntityManager {
 }
 
 const nestedEntityRowBody: RowBodyConfig = {
-    type: 'table',
-    dataField: 'products',
-    entityAction: 'get',
-    entityParamField: 'orderNo',
-    loadingText: '加载订单商品...',
-    tableOptions: {
+    content: {
+        type: 'table',
+        dataField: 'products',
         columns: [
             { name: 'sku', field: 'sku', title: 'SKU', width: 100 },
             { name: 'name', field: 'name', title: '商品名称', width: 150 },
@@ -221,13 +227,9 @@ const nestedEntityRowBody: RowBodyConfig = {
             { name: 'price', field: 'price', title: '单价', width: 100, align: 'right', format: 'currency' },
         ],
         rowBody: {
-            type: 'table',
-            dataField: 'batches',
-            entityAction: 'get',
-            entityKey: NESTED_PRODUCT_ENTITY_KEY,
-            entityParamField: 'sku',
-            loadingText: '加载批次信息...',
-            tableOptions: {
+            content: {
+                type: 'table',
+                dataField: 'batches',
                 columns: [
                     { name: 'batch', field: 'batch', title: '批次号', width: 110 },
                     { name: 'warehouse', field: 'warehouse', title: '仓库', width: 100 },
@@ -235,8 +237,15 @@ const nestedEntityRowBody: RowBodyConfig = {
                     { name: 'shelf', field: 'shelf', title: '货位', width: 100 },
                 ],
             },
+            entityAction: 'get',
+            entityKey: NESTED_PRODUCT_ENTITY_KEY,
+            entityParamField: 'sku',
+            loadingText: '加载批次信息...',
         },
     },
+    entityAction: 'get',
+    entityParamField: 'orderNo',
+    loadingText: '加载订单商品...',
 };
 
 class NestedEntityRowBodyDemo extends Component {
@@ -421,8 +430,7 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
     columns: [...],
     data: [...],
     rowBody: {
-        type: 'html',
-        html: (data) => \`<div>...</div>\`,
+        content: (data) => \`<div>...</div>\`,
     }
 } }`,
             template: {
@@ -446,9 +454,7 @@ export const TABLE_ROW_BODY_DEMO: DemoConfig = {
     columns: [...],
     data: [...],
     rowBody: {
-        type: 'property-grid',
-        fields: [...],
-        cols: 2,
+        content: { type: 'property-grid', fields: [...], cols: 2 },
         loader: async (rowId, rowData) => fetchDetail(rowId),
         loadingText: '加载详细数据...',
     }
@@ -478,9 +484,11 @@ new TableComponent({
     entityKey: 'demo-row-body',
     entityType: 'mock-row-body',
     rowBody: {
-        type: 'property-grid',
-        excludeColumns: true,
-        i18nScope: 'employee',
+        content: {
+            type: 'property-grid',
+            excludeColumns: true,
+            i18nScope: 'employee',
+        },
         entityAction: 'get',
         entityParamField: 'id',
     }
@@ -489,16 +497,18 @@ new TableComponent({
         },
         {
             label: '行展开 — Table 嵌套（多层子表，3 层递归展开）',
-            code: `// rowBody type 为 'table' 时嵌套子表，子表自身也可配置 rowBody 继续嵌套
+            code: `// rowBody content 为 table 配置时嵌套子表，子表自身也可配置 rowBody 继续嵌套
 const nestedRowBody: RowBodyConfig = {
-    type: 'table',
-    dataField: 'products',        // 从订单数据中取商品数组渲染第 2 层子表
-    tableOptions: {
+    content: {
+        type: 'table',
+        dataField: 'products',      // 从订单数据中取商品数组渲染第 2 层子表
         columns: [...],
-        rowBody: {                 // 第 2 层子表继续嵌套第 3 层
-            type: 'table',
-            dataField: 'batches',  // 从商品数据中取批次数组
-            tableOptions: { columns: [...] },
+        rowBody: {                  // 第 2 层子表继续嵌套第 3 层
+            content: {
+                type: 'table',
+                dataField: 'batches',  // 从商品数据中取批次数组
+                columns: [...],
+            },
         },
     },
 }
@@ -529,23 +539,22 @@ const nestedRowBody: RowBodyConfig = {
 // L1 订单表：父表 entityKey → 订单 EM，get(orderNo) 详情中 products 渲染子表
 // L2 商品子表：rowBody.entityKey → 商品 EM，get(sku) 详情中 batches 渲染孙表
 const nestedEntityRowBody: RowBodyConfig = {
-    type: 'table',
-    dataField: 'products',
+    content: {
+        type: 'table',
+        dataField: 'products',
+        columns: [...],
+    },
     entityAction: 'get',
     entityParamField: 'orderNo',   // 默认用父表自己的 entityKey
     loadingText: '加载订单商品...',
-    tableOptions: {
-        columns: [...],
-        rowBody: {                  // L2 子表（自身不配 entityKey，数据由 GOT 注入）
-            type: 'table',
-            dataField: 'batches',
-            entityAction: 'get',
-            entityKey: 'demo-nested-product-ent',  // 指向商品 EM
-            entityParamField: 'sku',
-            loadingText: '加载批次信息...',
-            tableOptions: { columns: [...] },
-        },
-    },
+    // L2 子表（content.rowBody，自身不配 entityKey，数据由 GOT 注入）
+    // rowBody: {
+    //     content: { type: 'table', dataField: 'batches', columns: [...] },
+    //     entityAction: 'get',
+    //     entityKey: 'demo-nested-product-ent',  // 指向商品 EM
+    //     entityParamField: 'sku',
+    //     loadingText: '加载批次信息...',
+    // },
 }`,
             component: NestedEntityRowBodyDemo,
         },
