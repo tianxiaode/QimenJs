@@ -1,7 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
-import { RADIO_GROUP_TPL } from './radio-group-tpl';
+import { FORMFIELD_TPL } from './formfield-tpl';
 import './radiogroup.css';
 import './selection-group.css';
 
@@ -24,7 +24,7 @@ class RadioGroupComponent extends FormFieldComponent {
     static type = 'radio-group';
 
     get tpl(): TemplateDecl {
-        return RADIO_GROUP_TPL;
+        return FORMFIELD_TPL;
     }
 
     _radioItems: any[] = [];
@@ -53,6 +53,12 @@ class RadioGroupComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-radio-group');
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.addCls('q-radio-group__wrapper');
+            fieldBodyCmp.direction = this.direction;
+            fieldBodyCmp.gap = '8px';
+        }
         this._renderOptions();
     }
 

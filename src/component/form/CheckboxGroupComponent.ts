@@ -2,7 +2,7 @@ import { TextComponent } from '../text/TextComponent';
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
-import { CHECKBOX_GROUP_TPL } from './checkbox-group-tpl';
+import { FORMFIELD_TPL } from './formfield-tpl';
 import './checkboxgroup.css';
 import './selection-group.css';
 
@@ -25,7 +25,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
     static type = 'checkbox-group';
 
     get tpl(): TemplateDecl {
-        return CHECKBOX_GROUP_TPL;
+        return FORMFIELD_TPL;
     }
 
     _checkboxItems: any[] = [];
@@ -54,6 +54,12 @@ class CheckboxGroupComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-checkbox-group');
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp) {
+            fieldBodyCmp.addCls('q-checkbox-group__wrapper');
+            fieldBodyCmp.direction = this.direction;
+            fieldBodyCmp.gap = '8px';
+        }
         this._renderOptions();
     }
 

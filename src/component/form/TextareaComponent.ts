@@ -1,7 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
-import { TEXTAREA_TPL } from './textarea-tpl';
+import { FORMFIELD_TPL } from './formfield-tpl';
 import './textarea.css';
 
 const TextareaComponentDefs: Definitions = {
@@ -21,7 +21,7 @@ class TextareaComponent extends FormFieldComponent {
     static type = 'textarea';
 
     get tpl(): TemplateDecl {
-        return TEXTAREA_TPL;
+        return FORMFIELD_TPL;
     }
 
     domEvents: DomEventsMap = {
