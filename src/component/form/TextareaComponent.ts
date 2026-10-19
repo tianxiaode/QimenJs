@@ -3,6 +3,7 @@ import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
 import { TextareaFieldComponent } from './TextareaFieldComponent';
 import { TEXTAREA_TPL } from './textarea-tpl';
+import { FIELD_ITEM_ORDER } from './constants';
 import './textarea.css';
 
 const TextareaComponentDefs: Definitions = {
@@ -44,7 +45,7 @@ class TextareaComponent extends FormFieldComponent {
             fieldBodyCmp.addCls('q-textarea__wrapper');
             this._fieldItem = fieldBodyCmp.add({
                 type: TextareaFieldComponent,
-                order: 0,
+                order: FIELD_ITEM_ORDER,
             });
         }
     }

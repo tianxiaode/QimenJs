@@ -2,6 +2,7 @@ import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
 import { PasswordStrengthComponent } from './PasswordStrengthComponent';
+import { EYE_BTN_ORDER } from './constants';
 import './passwordinput.css';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
@@ -29,7 +30,6 @@ function calculateStrength(password: string): PasswordStrength {
     return Math.min(score, 4) as PasswordStrength;
 }
 
-const EYE_BTN_ORDER = 10;
 const STRENGTH_ORDER = 5;
 
 const PasswordInputComponentDefs: Definitions = {

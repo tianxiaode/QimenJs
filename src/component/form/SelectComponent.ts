@@ -30,6 +30,7 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
+import { DROPDOWN_ICON_ORDER } from './constants';
 import './select.css';
 
 export interface SelectOption {
@@ -38,8 +39,6 @@ export interface SelectOption {
     disabled?: boolean;
     group?: string;
 }
-
-const DROPDOWN_ICON_ORDER = 30;
 
 const SelectComponentDefs: Definitions = {
     options: {

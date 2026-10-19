@@ -3,14 +3,19 @@ import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
 import type { ValidationRule } from '@qimenjs/schema';
 import { IconComponent } from '../icon/IconComponent';
+import { TextComponent } from '../text/TextComponent';
 import { InputFieldComponent } from './InputFieldComponent';
 import { FORMFIELD_TPL } from './formfield-tpl';
+import type { PrefixSuffixDef } from './types';
+import {
+    PREFIX_ORDER,
+    FIELD_ITEM_ORDER,
+    SUFFIX_ORDER,
+    CLEAR_BTN_ORDER,
+} from './constants';
 import './input.css';
 
 export type InputType = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url';
-
-const FIELD_ITEM_ORDER = 0;
-const CLEAR_BTN_ORDER = 10;
 
 const InputComponentDefs: Definitions = {
     options: {
@@ -20,6 +25,8 @@ const InputComponentDefs: Definitions = {
         readonly: false,
         maxLength: null,
         clearable: false,
+        prefix: null,
+        suffix: null,
     },
 } as const;
 
@@ -41,6 +48,8 @@ class InputComponent extends FormFieldComponent {
     _clearable: boolean = false;
     _fieldItem: any = null;
     _clearBtnItem: any = null;
+    _prefixItem: any = null;
+    _suffixItem: any = null;
 
     createChildren(childReady?: () => void): void {
         super.createChildren(childReady);
@@ -102,6 +111,16 @@ class InputComponent extends FormFieldComponent {
         }
     }
 
+    _onPrefixOptionChange(value: PrefixSuffixDef | null): void {
+        this._unmountPrefix();
+        if (value) this._mountPrefix(value);
+    }
+
+    _onSuffixOptionChange(value: PrefixSuffixDef | null): void {
+        this._unmountSuffix();
+        if (value) this._mountSuffix(value);
+    }
+
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
@@ -112,6 +131,56 @@ class InputComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input');
+    }
+
+    _mountPrefix(value: PrefixSuffixDef): void {
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
+        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
+        const item = fieldBodyCmp.add({
+            type: isIcon ? IconComponent : TextComponent,
+            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
+            order: PREFIX_ORDER,
+        });
+        if (item?.el) {
+            item.el.classList.add('q-input__prefix');
+        }
+        this._prefixItem = item;
+    }
+
+    _unmountPrefix(): void {
+        if (!this._prefixItem) return;
+        const fieldBodyCmp = this._getFieldBody();
+        if (fieldBodyCmp) {
+            const idx = fieldBodyCmp.items?.indexOf(this._prefixItem) ?? -1;
+            if (idx >= 0) fieldBodyCmp.removeAt(idx);
+        }
+        this._prefixItem = null;
+    }
+
+    _mountSuffix(value: PrefixSuffixDef): void {
+        const fieldBodyCmp = this._getFieldBody();
+        if (!fieldBodyCmp) return;
+        const isIcon = typeof value === 'object' && value !== null && 'iconCls' in value;
+        const item = fieldBodyCmp.add({
+            type: isIcon ? IconComponent : TextComponent,
+            ...(isIcon ? { iconCls: value.iconCls } : { text: value as string }),
+            order: SUFFIX_ORDER,
+        });
+        if (item?.el) {
+            item.el.classList.add('q-input__suffix');
+        }
+        this._suffixItem = item;
+    }
+
+    _unmountSuffix(): void {
+        if (!this._suffixItem) return;
+        const fieldBodyCmp = this._getFieldBody();
+        if (fieldBodyCmp) {
+            const idx = fieldBodyCmp.items?.indexOf(this._suffixItem) ?? -1;
+            if (idx >= 0) fieldBodyCmp.removeAt(idx);
+        }
+        this._suffixItem = null;
     }
 
     _initClearBtn(): void {

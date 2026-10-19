@@ -1,10 +1,9 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
+import { STEP_UP_ORDER, STEP_DOWN_ORDER } from './constants';
 import './numberinput.css';
 
-const STEP_UP_ORDER = 20;
-const STEP_DOWN_ORDER = 21;
 function clamp(v: number, min?: number, max?: number): number {
     if (min !== undefined && v < min) return min;
     if (max !== undefined && v > max) return max;

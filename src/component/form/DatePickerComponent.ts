@@ -29,6 +29,7 @@ import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
+import { DROPDOWN_ICON_ORDER } from './constants';
 import './datepicker.css';
 import {
     createDateTimeValue,
@@ -43,7 +44,6 @@ import {
 import type { PanelPreviewData } from '../date/panel-preview';
 
 const FIELD_ORDER: DateTimeField[] = ['year', 'month', 'day', 'hour', 'minute', 'second'];
-const DROPDOWN_ICON_ORDER = 30;
 
 const DatePickerComponentDefs: Definitions = {
     options: {
