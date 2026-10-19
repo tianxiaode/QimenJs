@@ -1,9 +1,6 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
-import { SLIDER_TPL } from './slider-tpl';
 import './slider.css';
-
 
 const SliderComponentDefs: Definitions = {
     options: {
@@ -12,57 +9,57 @@ const SliderComponentDefs: Definitions = {
         max: 100,
         step: 1,
         showValue: true,
-        fieldType: null,
+        fieldType: 'slider',
     },
 } as const;
 
 class SliderComponent extends FormFieldComponent {
     static type = 'slider';
 
-    get tpl(): TemplateDecl {
-        return SLIDER_TPL;
+    _getBodyItem(): any {
+        return this._fieldItem;
     }
 
     _onValueOptionChange(value: number): void {
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.value = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.value = value;
     }
 
     _onMinOptionChange(value: number): void {
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.min = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.min = value;
     }
 
     _onMaxOptionChange(value: number): void {
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.max = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.max = value;
     }
 
     _onStepOptionChange(value: number): void {
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.step = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.step = value;
     }
 
     _onShowValueOptionChange(value: boolean): void {
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.showValue = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.showValue = value;
     }
 
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const bodyCmp = this.getComponent('fieldBody') as any;
-        if (bodyCmp) bodyCmp.disable = value;
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) bodyItem.disable = value;
     }
 
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-slider');
-        const fieldBodyCmp = this.getComponent('fieldBody') as any;
-        if (fieldBodyCmp) {
-            fieldBodyCmp.on('sliderChange', (data: any) => {
-                this.value = data.value;
-                this.emit('slider:change', { value: data.value });
+        const bodyItem = this._getBodyItem();
+        if (bodyItem) {
+            bodyItem.on('sliderChange', (ctx: any) => {
+                this.value = ctx?.data?.value ?? ctx;
+                this.emit('slider:change', { value: this.value });
                 if (this._shouldValidate('change')) this._doValidate();
             });
         }

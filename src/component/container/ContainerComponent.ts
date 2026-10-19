@@ -46,8 +46,12 @@ class ContainerComponent extends Component {
 
     _nameMap: Map<string, any> = new Map();
     _actionMap: Map<string, any> = new Map();
+    /** 内部方法（add/setItems/clear）已直接管理 items，initOptions 重放时跳过 */
+    _itemsApplied: boolean = false;
 
     _onItemsOptionChange(value: ContainerItemDef[] | null): void {
+        // add() 等内部方法 push 后引用未变，initOptions 的重放会 clear 已挂载子项，需跳过
+        if (Array.isArray(value) && this._itemsApplied && value === this.items) return;
         if (Array.isArray(value)) this.setItems([...value]);
     }
 
@@ -148,6 +152,7 @@ class ContainerComponent extends Component {
             this.emit('itemadd', { index: this.items.length - 1, component: item });
         }
         this._sortByOrder();
+        this._itemsApplied = true;
         this.emit('itemchange', { type: 'set', count: this.count });
     }
 
@@ -162,6 +167,7 @@ class ContainerComponent extends Component {
         this._registerMaps(item, item.name ?? name, item.action);
         this._appendChild(item);
         this._sortByOrder();
+        this._itemsApplied = true;
         this.emit('itemadd', { index: this.items.length - 1, component: item });
         return item;
     }

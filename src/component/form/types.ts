@@ -1,1 +1,1 @@
-export type FieldType = 'input' | 'textarea' | null;
+export type FieldType = 'input' | 'textarea' | 'switch' | 'slider' | null;

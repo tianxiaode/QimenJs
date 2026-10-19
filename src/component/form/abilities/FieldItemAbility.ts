@@ -3,6 +3,8 @@ import type { ContainerItemDef } from '../../container/types';
 import type { FieldType } from '../types';
 import { InputFieldComponent } from '../InputFieldComponent';
 import { TextareaFieldComponent } from '../TextareaFieldComponent';
+import { SwitchFieldBodyComponent } from '../SwitchFieldBodyComponent';
+import { SliderFieldBodyComponent } from '../SliderFieldBodyComponent';
 import { IconComponent } from '../../icon/IconComponent';
 import { PREFIX_ORDER, FIELD_ITEM_ORDER, SUFFIX_ORDER, CLEAR_BTN_ORDER } from '../constants';
 
@@ -41,6 +43,16 @@ export const FieldItemAbility = {
             fieldBodyCmp.addCls('q-textarea__wrapper');
             this._fieldItem = fieldBodyCmp.add({
                 type: TextareaFieldComponent,
+                order: FIELD_ITEM_ORDER,
+            });
+        } else if (fieldType === 'switch') {
+            this._fieldItem = fieldBodyCmp.add({
+                type: SwitchFieldBodyComponent,
+                order: FIELD_ITEM_ORDER,
+            });
+        } else if (fieldType === 'slider') {
+            this._fieldItem = fieldBodyCmp.add({
+                type: SliderFieldBodyComponent,
                 order: FIELD_ITEM_ORDER,
             });
         }

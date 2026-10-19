@@ -1,7 +1,6 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl } from '@/component-core';
+
 import { Definitions } from '@/composable';
-import { SWITCH_TPL } from './switch-tpl';
 import './switch.css';
 
 const SwitchComponentDefs: Definitions = {
@@ -9,19 +8,15 @@ const SwitchComponentDefs: Definitions = {
         checked: false,
         activeText: null,
         inactiveText: null,
-        fieldType: null,
+        fieldType: 'switch',
     },
 } as const;
 
 class SwitchComponent extends FormFieldComponent {
     static type = 'switch';
 
-    get tpl(): TemplateDecl {
-        return SWITCH_TPL;
-    }
-
     _getTrackEl(): HTMLElement | undefined {
-        return this.getComponent('fieldBody')?.getNodeEl('track');
+        return this._fieldItem?.getNodeEl?.('track');
     }
 
     _onCheckedOptionChange(value: boolean): void {
@@ -56,9 +51,11 @@ class SwitchComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-switch');
-        const fieldBodyCmp = this.getComponent('fieldBody') as any;
-        if (fieldBodyCmp) {
-            fieldBodyCmp.on('switchToggle', () => this.onTrackClick());
+        const fieldBodyEl = this.getComponent('fieldBody')?.el as HTMLElement | undefined;
+        if (fieldBodyEl) {
+            const onClick = () => this.onTrackClick();
+            fieldBodyEl.addEventListener('click', onClick);
+            this.onCleanup(() => fieldBodyEl.removeEventListener('click', onClick));
         }
     }
 

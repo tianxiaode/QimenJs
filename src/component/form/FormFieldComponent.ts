@@ -41,12 +41,14 @@ class FormFieldComponent extends Component {
         return FORMFIELD_TPL;
     }
 
-    _initialValue: any = undefined;
-    _infoItem: any = null;
-    _fieldItem: any = null;
-    _prefixItem: any = null;
-    _suffixItem: any = null;
-    _clearBtnItem: any = null;
+    // declare 声明：初始化流程（createChildren → _initFieldItem 等）在基类构造链内
+    // 同步执行，若用类字段初始化会在 super() 返回后覆盖已赋值（类字段时序陷阱）
+    declare _initialValue: any;
+    declare _infoItem: any;
+    declare _fieldItem: any;
+    declare _prefixItem: any;
+    declare _suffixItem: any;
+    declare _clearBtnItem: any;
 
     createChildren(childReady?: () => void): void {
         super.createChildren(childReady);
