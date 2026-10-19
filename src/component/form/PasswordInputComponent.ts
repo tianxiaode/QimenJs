@@ -46,10 +46,8 @@ class PasswordInputComponent extends InputComponent {
     _strengthItem: any = null;
 
     _onVisibleOptionChange(value: boolean): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            fieldEl.setAttribute('type', value ? 'text' : 'password');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.inputType = value ? 'text' : 'password';
         const eyeCmp = this._eyeBtnItem;
         if (eyeCmp && typeof eyeCmp.update === 'function') {
             eyeCmp.update({ iconCls: value ? 'eye-off' : 'eye' });
@@ -60,9 +58,9 @@ class PasswordInputComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-input--password');
 
-        const fieldEl = this._getFieldEl();
-        if (fieldEl && this.type === 'text') {
-            fieldEl.setAttribute('type', this.visible ? 'text' : 'password');
+        const fieldItem = this._fieldItem;
+        if (fieldItem && this.type === 'text') {
+            fieldItem.inputType = this.visible ? 'text' : 'password';
         }
 
         this._mountEyeToggle();

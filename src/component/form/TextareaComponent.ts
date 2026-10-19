@@ -1,5 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl } from '@/component-core';
+import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
 import { TextareaFieldComponent } from './TextareaFieldComponent';
 import { TEXTAREA_TPL } from './textarea-tpl';
@@ -24,6 +24,13 @@ class TextareaComponent extends FormFieldComponent {
         return TEXTAREA_TPL;
     }
 
+    domEvents: DomEventsMap = {
+        input: [{ path: '{textarea-field}', handler: 'onFieldInput' }],
+        focus: [{ path: '{textarea-field}', handler: 'onFieldFocus' }],
+        blur: [{ path: '{textarea-field}', handler: 'onFieldBlur' }],
+        change: [{ path: '{textarea-field}', handler: 'onFieldChange' }],
+    };
+
     _focused: boolean = false;
     _autoSize: boolean | { minRows?: number; maxRows?: number } = false;
     _minRows: number = 1;
@@ -47,48 +54,35 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     _onValueOptionChange(value: string): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl && fieldEl.value !== value) {
-            fieldEl.value = value;
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.value = value;
         if (this._autoSize) this._autoResize();
     }
 
-    _onPlaceholderOptionChange(value: string): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value) fieldEl.setAttribute('placeholder', value);
-        else fieldEl.removeAttribute('placeholder');
+    _onPlaceholderOptionChange(value: string | null): void {
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.placeholder = value;
     }
 
     _onReadonlyOptionChange(value: boolean): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            if (value) fieldEl.setAttribute('readonly', 'true');
-            else fieldEl.removeAttribute('readonly');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.readonly = value;
         this.toggleCls('q-textarea--readonly', value);
     }
 
     _onRowsOptionChange(value: number | null): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value != null) fieldEl.setAttribute('rows', String(value));
-        else fieldEl.removeAttribute('rows');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.rows = value;
     }
 
     _onMaxLengthOptionChange(value: number | null): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value != null) fieldEl.setAttribute('maxlength', String(value));
-        else fieldEl.removeAttribute('maxlength');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.maxLength = value;
     }
 
     _onResizeOptionChange(value: string | null): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            (fieldEl as HTMLElement).style.resize = value ?? 'vertical';
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.resize = value;
     }
 
     _onAutoSizeOptionChange(value: boolean | { minRows?: number; maxRows?: number }): void {
@@ -106,23 +100,13 @@ class TextareaComponent extends FormFieldComponent {
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            if (value) fieldEl.setAttribute('disabled', 'true');
-            else fieldEl.removeAttribute('disabled');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.disabled = value;
     }
 
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-textarea');
-        const fieldItem = this._fieldItem;
-        if (fieldItem) {
-            fieldItem.on('input', () => this.onFieldInput());
-            fieldItem.on('focus', () => this.onFieldFocus());
-            fieldItem.on('blur', () => this.onFieldBlur());
-            fieldItem.on('change', () => this.onFieldChange());
-        }
     }
 
     onFieldInput(): void {
@@ -175,13 +159,11 @@ class TextareaComponent extends FormFieldComponent {
     }
 
     focus(): void {
-        const fieldEl = this._getFieldEl();
-        fieldEl?.focus();
+        this._fieldItem?.focus();
     }
 
     blur(): void {
-        const fieldEl = this._getFieldEl();
-        fieldEl?.blur();
+        this._fieldItem?.blur();
     }
 
     _applyState(): void {

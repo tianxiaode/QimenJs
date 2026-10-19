@@ -67,11 +67,10 @@ class DatePickerComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-datepicker');
 
-        const fieldEl = this.field;
-
-        if (fieldEl) {
-            fieldEl.setAttribute('readonly', 'true');
-            fieldEl.removeAttribute('type');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) {
+            fieldItem.readonly = true;
+            fieldItem.inputType = null;
         }
 
         const date = this.value ? new Date(this.value) : new Date();
@@ -309,10 +308,10 @@ class DatePickerComponent extends InputComponent {
     }
 
     _syncDisplayValue(): void {
-        const fieldEl = this.field;
-        if (!fieldEl) return;
+        const fieldItem = this._fieldItem;
+        if (!fieldItem) return;
         const text = formatPreview(this._dateValue!, this.showSeconds);
-        fieldEl.value = text;
+        fieldItem.value = text;
         this._value = text;
     }
 

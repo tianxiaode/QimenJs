@@ -1,5 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl } from '@/component-core';
+import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
 import type { ValidationRule } from '@qimenjs/schema';
 import { IconComponent } from '../icon/IconComponent';
@@ -30,6 +30,13 @@ class InputComponent extends FormFieldComponent {
         return FORMFIELD_TPL;
     }
 
+    domEvents: DomEventsMap = {
+        input: [{ path: '{input-field}', handler: 'onFieldInput' }],
+        focus: [{ path: '{input-field}', handler: 'onFieldFocus' }],
+        blur: [{ path: '{input-field}', handler: 'onFieldBlur' }],
+        change: [{ path: '{input-field}', handler: 'onFieldChange' }],
+    };
+
     _focused: boolean = false;
     _clearable: boolean = false;
     _fieldItem: any = null;
@@ -59,39 +66,30 @@ class InputComponent extends FormFieldComponent {
     }
 
     _onValueOptionChange(value: string): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl && fieldEl.value !== value) {
-            fieldEl.value = value;
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.value = value;
         this._toggleClearBtn();
     }
 
-    _onPlaceholderOptionChange(value: string): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value) fieldEl.setAttribute('placeholder', value);
-        else fieldEl.removeAttribute('placeholder');
+    _onPlaceholderOptionChange(value: string | null): void {
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.placeholder = value;
     }
 
     _onTypeOptionChange(value: string): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) fieldEl.setAttribute('type', value);
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.inputType = value;
     }
 
     _onReadonlyOptionChange(value: boolean): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            if (value) fieldEl.setAttribute('readonly', 'true');
-            else fieldEl.removeAttribute('readonly');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.readonly = value;
         this.toggleCls('q-input--readonly', value);
     }
 
     _onMaxLengthOptionChange(value: number | null): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value != null) fieldEl.setAttribute('maxlength', String(value));
-        else fieldEl.removeAttribute('maxlength');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.maxLength = value;
     }
 
     _onClearableOptionChange(value: boolean): void {
@@ -107,23 +105,13 @@ class InputComponent extends FormFieldComponent {
     _onDisableOptionChange(value: boolean): void {
         const cls = `${this._cssPrefix}--disabled`;
         value ? this.addCls(cls) : this.removeCls(cls);
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            if (value) fieldEl.setAttribute('disabled', 'true');
-            else fieldEl.removeAttribute('disabled');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.disabled = value;
     }
 
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input');
-        const fieldItem = this._fieldItem;
-        if (fieldItem) {
-            fieldItem.on('input', () => this.onFieldInput());
-            fieldItem.on('focus', () => this.onFieldFocus());
-            fieldItem.on('blur', () => this.onFieldBlur());
-            fieldItem.on('change', () => this.onFieldChange());
-        }
     }
 
     _initClearBtn(): void {
@@ -159,8 +147,7 @@ class InputComponent extends FormFieldComponent {
         this.value = '';
         this.emit('input', { value: '' });
         this._toggleClearBtn();
-        const fieldEl = this._getFieldEl();
-        fieldEl?.focus();
+        this._fieldItem?.focus();
     }
 
     _toggleClearBtn(): void {
@@ -217,18 +204,15 @@ class InputComponent extends FormFieldComponent {
     }
 
     focus(): void {
-        const fieldEl = this._getFieldEl();
-        fieldEl?.focus();
+        this._fieldItem?.focus();
     }
 
     blur(): void {
-        const fieldEl = this._getFieldEl();
-        fieldEl?.blur();
+        this._fieldItem?.blur();
     }
 
     select(): void {
-        const fieldEl = this._getFieldEl();
-        fieldEl?.select();
+        this._fieldItem?.select();
     }
 
     _applyState(): void {

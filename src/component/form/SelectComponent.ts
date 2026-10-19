@@ -61,15 +61,12 @@ class SelectComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-select');
 
-        const fieldEl = this.field;
+        const fieldItem = this._fieldItem;
 
-        if (fieldEl) {
-            fieldEl.setAttribute('readonly', 'true');
-            fieldEl.removeAttribute('type');
-        }
-
-        if (this.filterable && fieldEl) {
-            fieldEl.removeAttribute('readonly');
+        if (fieldItem) {
+            fieldItem.readonly = true;
+            fieldItem.inputType = null;
+            if (this.filterable) fieldItem.readonly = false;
         }
 
         this._mountDropdownIcon();
@@ -82,14 +79,8 @@ class SelectComponent extends InputComponent {
     }
 
     _onFilterableOptionChange(value: boolean): void {
-        const fieldEl = this.field;
-        if (fieldEl) {
-            if (value) {
-                fieldEl.removeAttribute('readonly');
-            } else {
-                fieldEl.setAttribute('readonly', 'true');
-            }
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.readonly = !value;
     }
 
     onBeforeDispose(): void {
@@ -240,8 +231,8 @@ class SelectComponent extends InputComponent {
     }
 
     _syncDisplayValue(): void {
-        const fieldEl = this.field;
-        if (!fieldEl) return;
+        const fieldItem = this._fieldItem;
+        if (!fieldItem) return;
 
         if (this.multiple && Array.isArray(this._selectedValue)) {
             const labels = (this._selectedValue as (string | number)[]).map(
@@ -252,16 +243,16 @@ class SelectComponent extends InputComponent {
                     return opt?.label ?? String(v);
                 }
             );
-            fieldEl.value = labels.join(', ');
+            fieldItem.value = labels.join(', ');
         } else if (this._selectedValue !== undefined) {
             const opt = (this.options as SelectOption[]).find(
                 (o: SelectOption) => o.value === this._selectedValue
             );
-            fieldEl.value = opt?.label ?? String(this._selectedValue);
+            fieldItem.value = opt?.label ?? String(this._selectedValue);
         } else {
-            fieldEl.value = '';
+            fieldItem.value = '';
         }
-        this._value = fieldEl.value;
+        this._value = fieldItem.value;
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {

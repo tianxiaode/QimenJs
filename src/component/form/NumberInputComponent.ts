@@ -36,22 +36,18 @@ class NumberInputComponent extends InputComponent {
     _stepDownItem: any = null;
 
     _onMinOptionChange(value: number | null): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value != null) fieldEl.setAttribute('min', String(value));
-        else fieldEl.removeAttribute('min');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.min = value;
     }
 
     _onMaxOptionChange(value: number | null): void {
-        const fieldEl = this._getFieldEl();
-        if (!fieldEl) return;
-        if (value != null) fieldEl.setAttribute('max', String(value));
-        else fieldEl.removeAttribute('max');
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.max = value;
     }
 
     _onStepOptionChange(value: number): void {
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) fieldEl.setAttribute('step', String(value));
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.step = value;
     }
 
     _onControlsOptionChange(value: boolean): void {
@@ -66,10 +62,8 @@ class NumberInputComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-input--number');
 
-        const fieldEl = this._getFieldEl();
-        if (fieldEl) {
-            fieldEl.setAttribute('inputmode', 'numeric');
-        }
+        const fieldItem = this._fieldItem;
+        if (fieldItem) fieldItem.inputMode = 'numeric';
     }
 
     _mountStepButtons(): void {

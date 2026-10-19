@@ -210,7 +210,9 @@ class FormFieldComponent extends Component {
     }
 
     get field(): HTMLInputElement | undefined {
-        return this.getComponent('fieldBody')?.getNodeEl('field') as HTMLInputElement | undefined;
+        const fieldBody = this.getComponent('fieldBody') as any;
+        const first = fieldBody?.items?.[0];
+        return first?.el as HTMLInputElement | undefined;
     }
 
     getFormValue(): any {
