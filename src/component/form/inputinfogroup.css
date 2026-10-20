@@ -1,4 +1,13 @@
 /* InputInfoGroup */
 .q-input__info {
-    /* TODO: 添加样式 */
+    font-size: var(--q-formfield-info-font-size, 12px);
+    line-height: 1.5;
+}
+
+.q-input__error {
+    color: var(--q-color-error);
+}
+
+.q-input__help {
+    color: var(--q-color-text-secondary);
 }

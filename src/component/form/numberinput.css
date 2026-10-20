@@ -21,6 +21,7 @@
 
 .q-number-input__step-up {
     top: 0;
+    border-bottom: 1px solid var(--q-color-border);
 }
 
 .q-number-input__step-down {
