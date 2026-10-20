@@ -34,6 +34,11 @@
     color: var(--q-color-text-placeholder);
 }
 
+/* wrapper 已承担焦点变色指示，覆盖主题全局 :focus-visible 的 outline，避免框中框 */
+.q-textarea .q-textarea__field:focus-visible {
+    outline: none;
+}
+
 .q-textarea__wrapper:has(.q-input__clear-btn:not(.hidden)) .q-textarea__field {
     padding-right: 36px;
 }

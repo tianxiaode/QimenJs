@@ -34,6 +34,11 @@
     color: var(--q-color-text-placeholder);
 }
 
+/* wrapper 已承担焦点变色指示，覆盖主题全局 :focus-visible 的 outline，避免框中框 */
+.q-input .q-input__field:focus-visible {
+    outline: none;
+}
+
 /* 有图标时为文字预留右侧空间 */
 .q-input__wrapper:has(.q-input__clear-btn:not(.hidden)) .q-input__field,
 .q-input__wrapper:has(.q-input__dropdown-icon) .q-input__field,
