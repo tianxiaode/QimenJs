@@ -46,11 +46,11 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
         }
         const component = this.add({
             type: TextComponent,
-            cls: 'q-input__error',
             text,
             role: 'alert',
             order: ERROR_ORDER,
         });
+        component?.addCls?.('q-input__error');
         this._errorItem = this.items[this.items.length - 1] ?? null;
         return component;
     }
@@ -73,10 +73,10 @@ class InputInfoGroupComponent extends ItemGroupStaticComponent {
         }
         const component = this.add({
             type: TextComponent,
-            cls: 'q-input__help',
             text,
             order: HELP_ORDER,
         });
+        component?.addCls?.('q-input__help');
         this._helpItem = this.items[this.items.length - 1] ?? null;
         return component;
     }

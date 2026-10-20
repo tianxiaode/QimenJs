@@ -19,24 +19,7 @@
     transition: color var(--q-transition-fast);
 }
 
-/* 箭头用 CSS border 旋转绘制（同 q-caret），与字体 codepoint 解耦，方向确定 */
-.q-number-input__step::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    box-sizing: border-box;
-}
-
-.q-number-input__step-up::before {
-    transform: rotate(-135deg) translate(1px, -1px);
-}
-
-.q-number-input__step-down::before {
-    transform: rotate(45deg) translate(1px, 1px);
-}
-
+/* 箭头走 q-icon-chevron-up/down 字体图标（q-icon.css 权威映射，与 Button 箭头同体系） */
 .q-number-input__step-up {
     top: 0;
     border-bottom: 1px solid var(--q-color-border);
