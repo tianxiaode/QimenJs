@@ -40,7 +40,6 @@
 
 .q-textarea--focused .q-textarea__wrapper {
     border-color: var(--q-color-primary);
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
 .q-textarea--disabled .q-textarea__wrapper {
@@ -72,10 +71,6 @@
 
 .q-textarea--error .q-textarea__wrapper {
     border-color: var(--q-color-error);
-}
-
-.q-textarea--error.q-textarea--focused .q-textarea__wrapper {
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
 .q-size--sm.q-textarea {

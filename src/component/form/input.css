@@ -94,7 +94,6 @@
 
 .q-input--focused .q-input__wrapper {
     border-color: var(--q-color-primary);
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
 .q-input--disabled .q-input__wrapper {
@@ -130,10 +129,6 @@
 
 .q-input--error .q-input__wrapper {
     border-color: var(--q-color-error);
-}
-
-.q-input--error.q-input--focused .q-input__wrapper {
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
 .q-size--sm.q-input {
