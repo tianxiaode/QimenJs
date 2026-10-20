@@ -20,3 +20,12 @@ export const REQUIRED_ERROR_MESSAGE = '此字段为必填项';
 export const NUMERIC_CHAR_PATTERN = /^[\d.+-]$/;
 /** number-input value 中非法字符的清理正则（兜底粘贴/输入法） */
 export const NUMERIC_VALUE_CLEAN_PATTERN = /[^\d.+-]/g;
+
+/** fieldBody 内部控件 item 的 action 标识（domEvents click 委托经 fieldBody.[items] 分发） */
+export const FIELD_ACTION = {
+    SWITCH_TOGGLE: 'toggle',
+    CLEAR: 'clear',
+    EYE_TOGGLE: 'eye-toggle',
+    STEP: 'step',
+    SELECT_PANEL: 'panel',
+} as const;

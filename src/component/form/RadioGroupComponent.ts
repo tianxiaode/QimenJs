@@ -1,5 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl, DomEventsMap } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './radiogroup.css';
@@ -26,10 +26,6 @@ class RadioGroupComponent extends FormFieldComponent {
     get tpl(): TemplateDecl {
         return FORMFIELD_TPL;
     }
-
-    domEvents: DomEventsMap = {
-        click: [{ path: 'fieldBody', handler: '_onGroupAreaClick' }],
-    };
 
     _radioItems: any[] = [];
 
@@ -109,8 +105,8 @@ class RadioGroupComponent extends FormFieldComponent {
         }
     }
 
-    /** fieldBody 区域 click 统一分发：按 items 反查命中项，替代逐项 addEventListener */
-    _onGroupAreaClick(domEvt?: any): void {
+    /** 覆写基类统一监听：按 items 反查命中项 */
+    onFieldItemClick(domEvt?: any): void {
         const target = domEvt?.data?.originalEvent?.target as Element | undefined;
         if (!target) return;
         const entry = this._radioItems.find((e: any) => e.item?.el?.contains(target));

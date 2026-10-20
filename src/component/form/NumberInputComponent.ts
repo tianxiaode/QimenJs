@@ -1,8 +1,11 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { DomEventsEngine } from '@/component-core/engine';
-import type { DelegatedEventRuleInput } from '@/component-core';
-import { STEPS_ORDER, NUMERIC_CHAR_PATTERN, NUMERIC_VALUE_CLEAN_PATTERN } from './constants';
+import {
+    STEPS_ORDER,
+    FIELD_ACTION,
+    NUMERIC_CHAR_PATTERN,
+    NUMERIC_VALUE_CLEAN_PATTERN,
+} from './constants';
 import './numberinput.css';
 
 function clamp(v: number, min?: number | null, max?: number | null): number {
@@ -38,14 +41,6 @@ class NumberInputComponent extends InputComponent {
     _stepsItem: any = null;
     _upBtn: HTMLElement | null = null;
     _downBtn: HTMLElement | null = null;
-    _stepRule: DelegatedEventRuleInput | null = null;
-
-    /** 与基类 domEvents（input/focus/blur/change 委托）合并的动态规则 */
-    buildDomEvents() {
-        return {
-            keydown: [{ path: '{input-field}', handler: '_onFieldKeydown' }],
-        };
-    }
 
     _onMinOptionChange(value: number | null): void {
         const fieldItem = this._fieldItem;
@@ -84,7 +79,7 @@ class NumberInputComponent extends InputComponent {
     }
 
     /** 非法字符在 keydown 阶段阻止，字符根本不进 value，无清理闪烁 */
-    _onFieldKeydown(domEvt?: any): void {
+    onFieldKeydown(domEvt?: any): void {
         const e = domEvt?.data?.originalEvent as KeyboardEvent | undefined;
         if (!e) return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -104,6 +99,7 @@ class NumberInputComponent extends InputComponent {
 
         const stepsItem = fieldBodyCmp.add({
             tag: 'div',
+            action: FIELD_ACTION.STEP,
             classes: 'q-number-input__steps',
             children: [
                 {
@@ -127,19 +123,16 @@ class NumberInputComponent extends InputComponent {
         }
 
         const stepsEl: HTMLElement | null = stepsItem?.el ?? null;
-        const upBtn = stepsEl?.querySelector('.q-number-input__step-up') as HTMLElement | null;
-        const downBtn = stepsEl?.querySelector('.q-number-input__step-down') as HTMLElement | null;
-        if (stepsEl) {
-            this._stepRule = { event: 'click', path: stepsEl, handler: '_onStepAreaClick' };
-            DomEventsEngine.addEventRule(this, this._stepRule);
-        }
-        this._upBtn = upBtn;
-        this._downBtn = downBtn;
+        this._upBtn =
+            (stepsEl?.querySelector('.q-number-input__step-up') as HTMLElement | null) ?? null;
+        this._downBtn =
+            (stepsEl?.querySelector('.q-number-input__step-down') as HTMLElement | null) ?? null;
     }
 
-    /** steps 容器内 click 分发（DomEventsEngine isDirect 规则），按按钮类名走 up/down */
-    _onStepAreaClick(domEvt?: any): void {
-        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
+    /** fieldBody item 点击分发：步进按钮（super 保持 clear 分发） */
+    onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
+        if (domEvt?.action !== FIELD_ACTION.STEP) return;
         const target = domEvt?.data?.originalEvent?.target as Element | undefined;
         if (!target) return;
         if (target.closest('.q-number-input__step-up')) this.stepUp();
@@ -147,10 +140,6 @@ class NumberInputComponent extends InputComponent {
     }
 
     _unmountStepButtons(): void {
-        if (this._stepRule) {
-            DomEventsEngine.removeEventRule(this, this._stepRule);
-            this._stepRule = null;
-        }
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp && this._stepsItem) {
             const idx = fieldBodyCmp.items?.indexOf(this._stepsItem) ?? -1;

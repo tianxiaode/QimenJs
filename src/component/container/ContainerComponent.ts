@@ -22,7 +22,7 @@ import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { CONTAINER_TPL } from './container-tpl';
 import { createItemFromDef } from './resolve';
-import type { ContainerItemDef, ContainerItemWrapper } from './types';
+import type { ContainerItemDef } from './types';
 import './container.css';
 
 const ContainerComponentDefs: Definitions = {

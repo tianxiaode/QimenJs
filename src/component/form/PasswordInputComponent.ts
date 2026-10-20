@@ -1,9 +1,8 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { DomEventsEngine } from '@/component-core/engine';
 import { IconComponent } from '../icon/IconComponent';
 import { PasswordStrengthComponent } from './PasswordStrengthComponent';
-import { EYE_BTN_ORDER } from './constants';
+import { EYE_BTN_ORDER, FIELD_ACTION } from './constants';
 import './passwordinput.css';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
@@ -88,23 +87,16 @@ class PasswordInputComponent extends InputComponent {
         const item = fieldBodyCmp.add({
             type: IconComponent,
             iconCls: this.visible ? 'eye-off' : 'eye',
+            action: FIELD_ACTION.EYE_TOGGLE,
             order: EYE_BTN_ORDER,
         });
-        if (item?.el) {
-            item.el.classList.add('q-password-toggle');
-            DomEventsEngine.addEventRule(this, {
-                event: 'click',
-                path: item.el,
-                handler: '_onEyeToggleClick',
-            });
-        }
         this._eyeBtnItem = item;
     }
 
-    /** eye 按钮点击（DomEventsEngine isDirect 规则分发） */
-    _onEyeToggleClick(domEvt?: any): void {
-        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
-        this.toggleVisibility();
+    /** fieldBody item 点击分发：eye 切换（super 保持 clear 分发） */
+    onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
+        if (domEvt?.action === FIELD_ACTION.EYE_TOGGLE) this.toggleVisibility();
     }
 
     _mountStrengthIndicator(): void {

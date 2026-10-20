@@ -18,7 +18,7 @@
  * 解绑通过 instance.onCleanup() 自动完成，dispose 时 LIFO 执行。
  */
 
-import type { DelegatedEventRule, DelegatedEventRuleInput, DomEventRule } from '../types/events';
+import type { DelegatedEventRule, DomEventRule } from '../types/events';
 import type { DomEventsMap } from '../types/events';
 import { DOM_EVENT_PREFIX } from '@qimenjs/event-dom';
 import { debounce, throttle } from '@qimenjs/async';
@@ -388,7 +388,7 @@ export class DomEventsEngine {
      *
      * handler 本地调用 + EventForwarder 统一转发
      */
-    static _dispatchRule(instance: any, rule: DelegatedEventRuleInput, domEvt: any): void {
+    static _dispatchRule(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         if (rule.handler) {
             DomEventsEngine._invokeHandler(instance, rule, domEvt);
         }
@@ -403,7 +403,7 @@ export class DomEventsEngine {
         EventForwarder.forward(instance, rule, extraData, domEvt, domEvt?.action, rule.condition);
     }
 
-    private static _invokeHandler(instance: any, rule: DelegatedEventRuleInput, domEvt: any): void {
+    private static _invokeHandler(instance: any, rule: DelegatedEventRule, domEvt: any): void {
         let methodName: string;
 
         if (typeof rule.handler === 'object' && rule.handler !== null) {
@@ -429,7 +429,7 @@ export class DomEventsEngine {
         }
     }
 
-    private static _buildPayload(instance: any, rule: DelegatedEventRuleInput): any {
+    private static _buildPayload(instance: any, rule: DelegatedEventRule): any {
         if (rule.data) {
             const fields = Array.isArray(rule.data) ? rule.data : rule.data;
             if (Array.isArray(fields)) {
@@ -456,7 +456,7 @@ export class DomEventsEngine {
         return result;
     }
 
-    static addEventRule(instance: any, rule: DelegatedEventRuleInput): void {
+    static addEventRule(instance: any, rule: DelegatedEventRule): void {
         if (!instance._eventRules) instance._eventRules = [];
         instance._eventRules.push(rule);
 
@@ -499,7 +499,7 @@ export class DomEventsEngine {
         }
     }
 
-    static removeEventRule(instance: any, rule: DelegatedEventRuleInput): void {
+    static removeEventRule(instance: any, rule: DelegatedEventRule): void {
         if (!instance._eventRules) return;
 
         const idx = instance._eventRules.indexOf(rule);

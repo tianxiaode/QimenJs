@@ -70,25 +70,26 @@ describe('Switch/Slider fieldBody 迁移', () => {
             expect(instance['_fieldItem']).toBeInstanceOf(SwitchFieldBodyComponent);
         });
 
-        it('点击 fieldBody 应切换 checked 并派发 switch:change', () => {
+        it('点击 track 应切换 checked 并派发 switch:change', () => {
             const events: any[] = [];
             instance.on('switch:change', (ctx: any) => events.push(ctx?.data?.checked ?? ctx));
 
-            const fieldBody = instance.getComponent('fieldBody') as ContainerComponent;
-            gestureClick(fieldBody.el!);
+            // [items] 委托按 contains 匹配，点击目标须在 fieldBody item 内部（容器自身不命中）
+            const trackEl = (instance as any)._getTrackEl() as HTMLElement;
+            gestureClick(trackEl);
 
             expect(instance.checked).toBe(true);
             expect(events).toContain(true);
 
-            gestureClick(fieldBody.el!);
+            gestureClick(trackEl);
             expect(instance.checked).toBe(false);
         });
 
         it('disable 状态下点击不应切换', () => {
             instance.disable = true;
 
-            const fieldBody = instance.getComponent('fieldBody') as ContainerComponent;
-            gestureClick(fieldBody.el!);
+            const trackEl = (instance as any)._getTrackEl() as HTMLElement;
+            gestureClick(trackEl);
 
             expect(instance.checked).toBe(false);
         });

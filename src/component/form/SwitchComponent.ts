@@ -1,5 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { DomEventsMap } from '@/component-core';
+import { FIELD_ACTION } from './constants';
 
 import { Definitions } from '@/composable';
 import './switch.css';
@@ -15,10 +15,6 @@ const SwitchComponentDefs: Definitions = {
 
 class SwitchComponent extends FormFieldComponent {
     static type = 'switch';
-
-    domEvents: DomEventsMap = {
-        click: [{ path: 'fieldBody', handler: 'onTrackClick' }],
-    };
 
     _getTrackEl(): HTMLElement | undefined {
         return this._fieldItem?.getNodeEl?.('track');
@@ -58,8 +54,9 @@ class SwitchComponent extends FormFieldComponent {
         this.addCls('q-switch');
     }
 
-    onTrackClick(): void {
-        if (this.disable) return;
+    /** 覆写基类统一监听：track item action=toggle 时切换（disable 已由引擎委托入口检查） */
+    onFieldItemClick(domEvt?: any): void {
+        if (domEvt?.action !== FIELD_ACTION.SWITCH_TOGGLE) return;
         this.checked = !this.checked;
         this.emit('switch:change', { checked: this.checked });
         if (this._shouldValidate('change')) this._doValidate();

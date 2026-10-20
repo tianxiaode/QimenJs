@@ -6,8 +6,13 @@ import { TextareaFieldComponent } from '../TextareaFieldComponent';
 import { SwitchFieldBodyComponent } from '../SwitchFieldBodyComponent';
 import { SliderFieldBodyComponent } from '../SliderFieldBodyComponent';
 import { IconComponent } from '../../icon/IconComponent';
-import { DomEventsEngine } from '@/component-core/engine';
-import { PREFIX_ORDER, FIELD_ITEM_ORDER, SUFFIX_ORDER, CLEAR_BTN_ORDER } from '../constants';
+import {
+    PREFIX_ORDER,
+    FIELD_ITEM_ORDER,
+    SUFFIX_ORDER,
+    CLEAR_BTN_ORDER,
+    FIELD_ACTION,
+} from '../constants';
 
 export const FieldItemAbility = {
     _onPrefixOptionChange(value: ContainerItemDef | null): void {
@@ -49,6 +54,7 @@ export const FieldItemAbility = {
         } else if (fieldType === 'switch') {
             this._fieldItem = fieldBodyCmp.add({
                 type: SwitchFieldBodyComponent,
+                action: FIELD_ACTION.SWITCH_TOGGLE,
                 order: FIELD_ITEM_ORDER,
             });
         } else if (fieldType === 'slider') {
@@ -110,34 +116,19 @@ export const FieldItemAbility = {
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
         this._clearBtnItem = fieldBodyCmp.add(
-            { type: IconComponent, iconCls: 'q-close' },
+            { type: IconComponent, iconCls: 'q-close', action: FIELD_ACTION.CLEAR },
             { order: CLEAR_BTN_ORDER, cls: 'q-input__clear-btn' }
         );
-        const item = this._clearBtnItem;
-        if (item?.el) {
-            this._clearBtnRule = { event: 'click', path: item.el, handler: '_onClearBtnClick' };
-            DomEventsEngine.addEventRule(this, this._clearBtnRule);
-        }
     },
 
     _removeClearBtn(): void {
         if (!this._clearBtnItem) return;
-        if (this._clearBtnRule) {
-            DomEventsEngine.removeEventRule(this, this._clearBtnRule);
-            this._clearBtnRule = null;
-        }
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp) {
             const idx = fieldBodyCmp.items?.indexOf(this._clearBtnItem) ?? -1;
             if (idx >= 0) fieldBodyCmp.removeAt(idx);
         }
         this._clearBtnItem = null;
-    },
-
-    /** clear 按钮点击（DomEventsEngine isDirect 规则分发），阻止冒泡后走 onClearBtnClick 覆盖链 */
-    _onClearBtnClick(domEvt?: any): void {
-        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
-        this.onClearBtnClick();
     },
 
     onClearBtnClick(): void {

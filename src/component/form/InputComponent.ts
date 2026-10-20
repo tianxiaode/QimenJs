@@ -1,6 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl, DomEventsMap } from '@/component-core';
+import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
+import { FIELD_ACTION } from './constants';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './input.css';
 
@@ -22,13 +23,6 @@ class InputComponent extends FormFieldComponent {
     get tpl(): TemplateDecl {
         return FORMFIELD_TPL;
     }
-
-    domEvents: DomEventsMap = {
-        input: [{ path: '{input-field}', handler: 'onFieldInput' }],
-        focus: [{ path: '{input-field}', handler: 'onFieldFocus' }],
-        blur: [{ path: '{input-field}', handler: 'onFieldBlur' }],
-        change: [{ path: '{input-field}', handler: 'onFieldChange' }],
-    };
 
     _focused: boolean = false;
 
@@ -69,6 +63,11 @@ class InputComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-input');
+    }
+
+    /** fieldBody item 点击分发：clear 按钮（子类覆写需调 super 保持 clear） */
+    onFieldItemClick(domEvt?: any): void {
+        if (domEvt?.action === FIELD_ACTION.CLEAR) this.onClearBtnClick();
     }
 
     onClearBtnClick(): void {

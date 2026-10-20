@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { SizeAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { FORMFIELD_TPL } from './formfield-tpl';
@@ -36,6 +36,38 @@ const FormFieldComponentDefs: Definitions = {
 
 class FormFieldComponent extends Component {
     static type = 'formfield';
+
+    /**
+     * 全部 DOM 事件委托规则集中于此（子组件不再各自定义，子类不得再声明 domEvents 覆盖）：
+     * 子类按需覆写 handler 方法（onFieldItemClick/onFieldKeydown 等），
+     * 未实现的 handler 引擎静默跳过；每条规则同时转发对应组件事件。
+     *
+     * path 说明：
+     *   fieldBody.[items] = fieldBody 内逐 item contains 匹配，item.action 经
+     *     [action] 占位符转发（业务在 listens 监听对应 action 事件，或 handler 内分发）
+     *   fieldBody.{input-field} = 输入框子组件 type 查找（无输入框的组件自动不匹配）
+     */
+    domEvents: DomEventsMap = {
+        click: [
+            {
+                path: 'fieldBody.[items]',
+                handler: 'onFieldItemClick',
+                emits: ['[action]'],
+                bridges: ['[action]'],
+            },
+        ],
+        keydown: [{ path: 'fieldBody.{input-field}', handler: 'onFieldKeydown', emits: ['keydown'] }],
+        input: [{ path: 'fieldBody.{input-field}', handler: 'onFieldInput', emits: ['input'] }],
+        focus: [{ path: 'fieldBody.{input-field}', handler: 'onFieldFocus', emits: ['focus'] }],
+        blur: [{ path: 'fieldBody.{input-field}', handler: 'onFieldBlur', emits: ['blur'] }],
+        change: [{ path: 'fieldBody.{input-field}', handler: 'onFieldChange', emits: ['change'] }],
+    };
+
+    /** fieldBody 内 item 点击（子类覆写，按 domEvt.action 分发内部控件） */
+    onFieldItemClick(_domEvt?: any): void {}
+
+    /** 输入框 keydown（子类覆写） */
+    onFieldKeydown(_domEvt?: any): void {}
 
     get tpl(): TemplateDecl {
         return FORMFIELD_TPL;

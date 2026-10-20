@@ -30,7 +30,7 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
-import { DROPDOWN_ICON_ORDER } from './constants';
+import { DROPDOWN_ICON_ORDER, FIELD_ACTION } from './constants';
 import './select.css';
 
 export interface SelectOption {
@@ -55,15 +55,8 @@ class SelectComponent extends InputComponent {
     _selectedValue: string | number | (string | number)[] | undefined = undefined;
     _dropdownOpen: boolean = false;
     _dropdownIconItem: any = null;
-    _panelEl: HTMLElement | null = null;
+    _panelItem: any = null;
     _offOverlay: (() => void) | null = null;
-
-    /** 与基类 domEvents（input/focus/blur/change 委托）合并的动态规则 */
-    buildDomEvents() {
-        return {
-            click: [{ path: 'fieldBody', handler: '_onPanelAreaClick' }],
-        };
-    }
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -148,49 +141,51 @@ class SelectComponent extends InputComponent {
         this._dropdownOpen = false;
         this.toggleCls('q-select--open', false);
 
-        if (this._panelEl) {
-            this._panelEl.remove();
-            this._panelEl = null;
-        }
+        this._removePanel();
 
         this.emit('select:close', {});
     }
 
+    /** 下拉面板作为 fieldBody item（action=panel），option 挂 children，经 fieldBody.[items] 委托分发 */
     _renderPanel(): void {
-        if (this._panelEl) this._panelEl.remove();
+        this._removePanel();
 
-        const panel = document.createElement('div');
-        panel.className = 'q-select__panel';
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (!fieldBodyCmp) return;
 
         const filteredOptions = this._getFilteredOptions();
-
-        for (const opt of filteredOptions) {
-            const item = document.createElement('div');
-            item.className = 'q-select__option';
-            if (this._isSelected(opt.value)) {
-                item.classList.add('q-select__option--selected');
-            }
-            if (opt.disabled) {
-                item.classList.add('q-select__option--disabled');
-            }
-            item.textContent = opt.label;
-            item.dataset.value = String(opt.value);
-
-            panel.appendChild(item);
+        const children: any[] = filteredOptions.map((opt: SelectOption) => {
+            const selected = this._isSelected(opt.value);
+            const cls = ['q-select__option'];
+            if (selected) cls.push('q-select__option--selected');
+            if (opt.disabled) cls.push('q-select__option--disabled');
+            return {
+                tag: 'div',
+                classes: cls.join(' '),
+                text: opt.label,
+                attributes: { 'data-value': String(opt.value) },
+            };
+        });
+        if (children.length === 0) {
+            children.push({ tag: 'div', classes: 'q-select__empty', text: '无匹配项' });
         }
 
-        if (filteredOptions.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'q-select__empty';
-            empty.textContent = '无匹配项';
-            panel.appendChild(empty);
-        }
+        this._panelItem = fieldBodyCmp.add({
+            tag: 'div',
+            classes: 'q-select__panel',
+            action: FIELD_ACTION.SELECT_PANEL,
+            children,
+        });
+    }
 
-        const wrapperEl = this.getNodeEl('fieldBody');
-        if (wrapperEl) {
-            wrapperEl.appendChild(panel);
-            this._panelEl = panel;
+    _removePanel(): void {
+        if (!this._panelItem) return;
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (fieldBodyCmp) {
+            const idx = fieldBodyCmp.items?.indexOf(this._panelItem) ?? -1;
+            if (idx >= 0) fieldBodyCmp.removeAt(idx);
         }
+        this._panelItem = null;
     }
 
     _getFilteredOptions(): SelectOption[] {
@@ -208,12 +203,14 @@ class SelectComponent extends InputComponent {
         return this._selectedValue === value;
     }
 
-    /** 下拉面板 option click 统一分发（委托 fieldBody，替代逐项 addEventListener） */
-    _onPanelAreaClick(domEvt?: any): void {
+    /** 下拉面板 option 点击分发（super 保持 clear 分发） */
+    onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
+        if (domEvt?.action !== FIELD_ACTION.SELECT_PANEL) return;
         const target = domEvt?.data?.originalEvent?.target as Element | undefined;
         if (!target) return;
         const optionEl = target.closest('.q-select__option') as HTMLElement | null;
-        if (!optionEl || !this._panelEl?.contains(optionEl)) return;
+        if (!optionEl || !this._panelItem?.el?.contains(optionEl)) return;
         if (optionEl.classList.contains('q-select__option--disabled')) return;
         const value = optionEl.dataset.value;
         const opt = (this.options as SelectOption[]).find(o => String(o.value) === value);
