@@ -19,8 +19,8 @@ const NumberInputComponentDefs: Definitions = {
     options: {
         placeholder: null,
         clearable: false,
-        // 不用 type=number：原生 spinner 与自定义步进按钮重复，且样式不可控
-        type: 'text',
+        // type=number 原生禁止文本字符输入；原生 spinner 由 CSS 隐藏（见 numberinput.css）
+        type: 'number',
         min: null,
         max: null,
         step: 1,
@@ -128,10 +128,9 @@ class NumberInputComponent extends InputComponent {
     }
 
     stepUp(): void {
-        const current = isNaN(this._numValue) ? (this.min ?? 0) : this._numValue;
-        let next = current + this.step;
-        next = toPrecision(next, this.precision);
-        next = clamp(next, this.min, this.max);
+        const base = Number.isFinite(this._numValue) ? this._numValue : (this.min ?? 0);
+        const next = clamp(toPrecision(base + this.step, this.precision), this.min, this.max);
+        if (!Number.isFinite(next)) return;
         this._numValue = next;
         this.value = String(next);
         this._dispatchFieldEvents();
@@ -139,10 +138,9 @@ class NumberInputComponent extends InputComponent {
     }
 
     stepDown(): void {
-        const current = isNaN(this._numValue) ? (this.min ?? 0) : this._numValue;
-        let next = current - this.step;
-        next = toPrecision(next, this.precision);
-        next = clamp(next, this.min, this.max);
+        const base = Number.isFinite(this._numValue) ? this._numValue : (this.min ?? 0);
+        const next = clamp(toPrecision(base - this.step, this.precision), this.min, this.max);
+        if (!Number.isFinite(next)) return;
         this._numValue = next;
         this.value = String(next);
         this._dispatchFieldEvents();
@@ -175,7 +173,8 @@ class NumberInputComponent extends InputComponent {
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
-        return { value: this._numValue, rawValue: this.value };
+        // NaN 显式转 null，避免 JSON 序列化歧义
+        return { value: Number.isFinite(this._numValue) ? this._numValue : null, rawValue: this.value };
     }
 
     get numValue(): number {

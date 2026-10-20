@@ -31,7 +31,16 @@
     color: var(--q-color-text);
 }
 
+/* 隐藏 type=number 的原生 spinner（步进用自定义按钮），保留原生字符过滤 */
+.q-input--number .q-input__field::-webkit-outer-spin-button,
+.q-input--number .q-input__field::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .q-input--number .q-input__field {
+    -moz-appearance: textfield;
+    appearance: textfield;
     padding-right: 44px;
 }
 
