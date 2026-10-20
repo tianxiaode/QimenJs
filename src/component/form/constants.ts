@@ -5,6 +5,7 @@ export const CLEAR_BTN_ORDER = 300;
 export const EYE_BTN_ORDER = 400;
 export const STEP_UP_ORDER = 500;
 export const STEP_DOWN_ORDER = 501;
+export const STEPS_ORDER = 600;
 export const DROPDOWN_ICON_ORDER = 600;
 
 export const LABEL_POSITION_MAP: Record<string, string> = {

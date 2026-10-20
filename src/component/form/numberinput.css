@@ -1,6 +1,8 @@
-/* steps 容器：普通 flex item 垂直排列两个步进按钮，上下顺序由 DOM 顺序决定 */
+/* steps 容器：普通 flex item 垂直排列两个步进按钮，上下顺序由 DOM 顺序决定；
+   CSS order 兜底保证排在 field 右侧（模板 item 的 JS order 可能被重排写死 0） */
 .q-number-input__steps {
     flex-shrink: 0;
+    order: 600;
     display: flex;
     flex-direction: column;
     align-self: stretch;
@@ -23,10 +25,6 @@
 
 .q-number-input__step i {
     pointer-events: none;
-}
-
-.q-number-input__step-up {
-    border-bottom: 1px solid var(--q-color-border);
 }
 
 .q-number-input__step:hover {

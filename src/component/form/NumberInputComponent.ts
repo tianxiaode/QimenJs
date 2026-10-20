@@ -1,6 +1,6 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { STEP_UP_ORDER, STEP_DOWN_ORDER } from './constants';
+import { STEPS_ORDER } from './constants';
 import './numberinput.css';
 
 function clamp(v: number, min?: number, max?: number): number {
@@ -98,8 +98,7 @@ class NumberInputComponent extends InputComponent {
         this._stepsItem = stepsItem;
 
         if (stepsItem) {
-            stepsItem.order = STEP_DOWN_ORDER;
-            fieldBodyCmp.sort?.();
+            stepsItem.order = STEPS_ORDER;
         }
 
         const stepsEl: HTMLElement | null = stepsItem?.el ?? null;
