@@ -20,7 +20,8 @@ const NumberInputComponentDefs: Definitions = {
     options: {
         placeholder: null,
         clearable: false,
-        type: 'number',
+        // 不用 type=number：原生 spinner 与自定义步进按钮重复，且样式不可控
+        type: 'text',
         min: null,
         max: null,
         step: 1,
@@ -64,7 +65,7 @@ class NumberInputComponent extends InputComponent {
         this.addCls('q-input--number');
 
         const fieldItem = this._fieldItem;
-        if (fieldItem) fieldItem.inputMode = 'numeric';
+        if (fieldItem) fieldItem.inputMode = this.precision != null ? 'decimal' : 'numeric';
     }
 
     _mountStepButtons(): void {

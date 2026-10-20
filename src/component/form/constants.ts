@@ -12,3 +12,5 @@ export const LABEL_POSITION_MAP: Record<string, string> = {
     left: 'q-formfield--left',
     right: 'q-formfield--right',
 };
+
+export const REQUIRED_ERROR_MESSAGE = '此字段为必填项';

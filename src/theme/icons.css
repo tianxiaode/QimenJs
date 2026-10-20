@@ -107,6 +107,25 @@
     content: "\e90d";
 }
 
+/* -------- 上箭头 (chevron-up) → 字体图标 -------- */
+.q-chevron-up {
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-chevron-up::before {
+    content: "\e910";
+}
+
 /* -------- 菱形 (diamond) — CSS 绘制（无字体对应） -------- */
 .q-diamond {
     display: inline-block;
