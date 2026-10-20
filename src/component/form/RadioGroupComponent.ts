@@ -11,6 +11,14 @@ export interface RadioOption {
     disabled?: boolean;
 }
 
+/** 纯 DOM 选项 item（同步渲染不走组件链，避免组件 option 同步冲掉手工节点；dot 位置由 CSS order 调整） */
+const radioItemTpl = (label: string): any => ({
+    tag: 'span',
+    classes: 'q-radio-group__item',
+    options: { text: label },
+    children: [{ tag: 'span', classes: 'q-radio' }],
+});
+
 const RadioGroupComponentDefs: Definitions = {
     options: {
         value: null,
@@ -72,41 +80,25 @@ class RadioGroupComponent extends FormFieldComponent {
         const items = this.items ?? [];
         for (const opt of items) {
             const checked = this.value === opt.value;
-            fieldBodyCmp.add({
-                type: 'Text',
-                cls: 'q-radio-group__item',
-                text: opt.label,
-                order: 0,
-            });
-            const itemObj = fieldBodyCmp.items[fieldBodyCmp.items.length - 1];
-            if (itemObj) {
-                const el = itemObj.el as HTMLElement;
-                if (el) {
-                    el.classList.toggle('q-radio-group__item--checked', checked);
-                    el.classList.toggle(
-                        'q-radio-group__item--disabled',
-                        !!opt.disabled || this.disable
-                    );
+            const itemObj = fieldBodyCmp.add(radioItemTpl(opt.label));
+            if (!itemObj) continue;
 
-                    const dot = document.createElement('span');
-                    dot.className = 'q-radio';
-                    if (checked) dot.classList.add('q-radio--checked');
-                    el.insertBefore(dot, el.firstChild);
+            const el = itemObj.el as HTMLElement;
+            el.classList.toggle('q-radio-group__item--checked', checked);
+            el.classList.toggle(
+                'q-radio-group__item--disabled',
+                !!opt.disabled || this.disable
+            );
+            el.setAttribute('role', 'radio');
+            el.setAttribute('aria-checked', String(checked));
 
-                    el.setAttribute('role', 'radio');
-                    el.setAttribute('aria-checked', String(checked));
-
-                    if (!opt.disabled && !this.disable) {
-                        itemObj.cursor = 'pointer';
-                    }
-                }
-                this._radioItems.push({ item: itemObj, option: opt });
-            }
+            this._radioItems.push({ item: itemObj, option: opt });
         }
     }
 
     /** 覆写基类统一监听：按 items 反查命中项 */
     onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
         const target = domEvt?.data?.originalEvent?.target as Element | undefined;
         if (!target) return;
         const entry = this._radioItems.find((e: any) => e.item?.el?.contains(target));
@@ -116,9 +108,9 @@ class RadioGroupComponent extends FormFieldComponent {
         this._onRadioClick(opt.value);
     }
 
+    /** 点击已选项 = 取消全部选择（value 置 null） */
     _onRadioClick(value: string | number): void {
-        if (this.value === value) return;
-        this.value = value;
+        this.value = this.value === value ? null : value;
         this.emit('radio:change', { value: this.value });
         if (this._shouldValidate('change')) this._doValidate();
     }

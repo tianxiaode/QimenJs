@@ -28,4 +28,5 @@ export const FIELD_ACTION = {
     EYE_TOGGLE: 'eye-toggle',
     STEP: 'step',
     SELECT_PANEL: 'panel',
+    SELECT_ALL: 'select-all',
 } as const;

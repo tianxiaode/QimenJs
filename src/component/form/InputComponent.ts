@@ -1,7 +1,6 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
-import { FIELD_ACTION } from './constants';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './input.css';
 
@@ -65,11 +64,7 @@ class InputComponent extends FormFieldComponent {
         this.addCls('q-input');
     }
 
-    /** fieldBody item 点击分发：clear 按钮（子类覆写需调 super 保持 clear） */
-    onFieldItemClick(domEvt?: any): void {
-        if (domEvt?.action === FIELD_ACTION.CLEAR) this.onClearBtnClick();
-    }
-
+    /** 清空按钮点击（分发由基类完成，此处定制文本类清空行为） */
     onClearBtnClick(): void {
         this.value = '';
         this.emit('input', { value: '' });

@@ -56,6 +56,7 @@ class SwitchComponent extends FormFieldComponent {
 
     /** 覆写基类统一监听：track item action=toggle 时切换（disable 已由引擎委托入口检查） */
     onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
         if (domEvt?.action !== FIELD_ACTION.SWITCH_TOGGLE) return;
         this.checked = !this.checked;
         this.emit('switch:change', { checked: this.checked });

@@ -4,6 +4,7 @@ import { SizeAbility } from '@qimenjs/component-abilities';
 import { Definitions } from '@/composable';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import { FORMFIELD_ABILITIES } from './abilities';
+import { FIELD_ACTION } from './constants';
 import './formfield.css';
 
 export type LabelPosition = 'top' | 'left' | 'right';
@@ -63,8 +64,13 @@ class FormFieldComponent extends Component {
         change: [{ path: 'fieldBody.{input-field}', handler: 'onFieldChange', emits: ['change'] }],
     };
 
-    /** fieldBody 内 item 点击（子类覆写，按 domEvt.action 分发内部控件） */
-    onFieldItemClick(_domEvt?: any): void {}
+    /** fieldBody 内 item 点击（子类覆写需调 super 保持 clear 分发） */
+    onFieldItemClick(domEvt?: any): void {
+        if (domEvt?.action === FIELD_ACTION.CLEAR) this.onClearBtnClick();
+    }
+
+    /** 清空按钮点击（clearable 时由基类分发，子类覆写定制清空行为） */
+    onClearBtnClick(): void {}
 
     /** 输入框 keydown（子类覆写） */
     onFieldKeydown(_domEvt?: any): void {}

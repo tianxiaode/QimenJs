@@ -21,6 +21,11 @@
     color: var(--q-color-primary);
 }
 
+/* 模板编译时文本在 children 之前，flex order 把勾选框排到文本前 */
+.q-checkbox-group__item .q-checkbox {
+    order: -1;
+}
+
 .q-checkbox-group__item--disabled {
     color: var(--q-color-text-disabled);
     cursor: var(--q-cursor-not-allowed);
@@ -66,6 +71,11 @@
 
 .q-radio-group__item--checked {
     color: var(--q-color-primary);
+}
+
+/* 模板编译时文本在 children 之前，flex order 把圆点排到文本前 */
+.q-radio-group__item .q-radio {
+    order: -1;
 }
 
 .q-radio-group__item--disabled {
