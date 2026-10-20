@@ -75,7 +75,6 @@ class NumberInputComponent extends InputComponent {
 
         const upItem = fieldBodyCmp.add({
             type: IconComponent,
-            iconCls: 'q-chevron-up',
             order: STEP_UP_ORDER,
         });
         if (upItem?.el) {
@@ -89,7 +88,6 @@ class NumberInputComponent extends InputComponent {
 
         const downItem = fieldBodyCmp.add({
             type: IconComponent,
-            iconCls: 'q-chevron-down',
             order: STEP_DOWN_ORDER,
         });
         if (downItem?.el) {
