@@ -1,4 +1,5 @@
 import { ItemGroupStaticComponent } from '../itemgroup/ItemGroupStaticComponent';
+import { HtmlComponent } from '../html/HtmlComponent';
 import { SpacerComponent } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './header.css';
@@ -21,7 +22,7 @@ const HeaderComponentDefs: Definitions = {
         expandable: false,
     },
     fields: {
-        _titleEl: null,
+        _titleComp: undefined,
         _leftSpacers: [],
         _rightSpacers: [],
         _expandState: false,
@@ -50,20 +51,18 @@ class HeaderComponent extends ItemGroupStaticComponent {
         if (!container) return;
 
         const title = this.getData('title');
-        if (title && !this._titleEl) {
-            const el = document.createElement('div');
-            el.className = 'q-header__title';
+        if (title && !this._titleComp) {
+            this._titleComp = new HtmlComponent({ content: this._buildTitleContent() });
+            this._titleComp.addCls('q-header__title');
             const titleCls = this.getData('titleCls');
-            if (titleCls) el.classList.add(titleCls);
+            if (titleCls) this._titleComp.addCls(titleCls);
             const titleStyle = this.getData('titleStyle');
-            if (titleStyle) Object.assign(el.style, titleStyle);
-            el.style.order = String(TITLE_ORDER);
-            el.innerHTML = this._buildTitleContent();
-            container.appendChild(el);
-            this._titleEl = el;
-        } else if (!title && this._titleEl) {
-            this._titleEl.remove();
-            this._titleEl = null;
+            if (titleStyle) this._titleComp.setStyles(titleStyle);
+            this._titleComp.order = TITLE_ORDER;
+            container.appendChild(this._titleComp.el);
+        } else if (!title && this._titleComp) {
+            this._titleComp.dispose();
+            this._titleComp = undefined;
         }
 
         this._rebalanceSpacers();
@@ -169,27 +168,27 @@ class HeaderComponent extends ItemGroupStaticComponent {
     }
 
     _onTitleOptionChange(): void {
-        if (this._titleEl) {
-            this._titleEl.innerHTML = this._buildTitleContent();
+        if (this._titleComp) {
+            this._titleComp.setData('content', this._buildTitleContent());
         }
     }
 
     _onSubtitleOptionChange(): void {
-        if (this._titleEl) {
-            this._titleEl.innerHTML = this._buildTitleContent();
+        if (this._titleComp) {
+            this._titleComp.setData('content', this._buildTitleContent());
         }
     }
 
     _onTitleClsOptionChange(value: string, old: string): void {
-        if (this._titleEl) {
-            if (old) this._titleEl.classList.remove(old);
-            if (value) this._titleEl.classList.add(value);
+        if (this._titleComp) {
+            if (old) this._titleComp.removeCls(old);
+            if (value) this._titleComp.addCls(value);
         }
     }
 
     _onTitleStyleOptionChange(value: Record<string, string>): void {
-        if (this._titleEl) {
-            Object.assign(this._titleEl.style, value);
+        if (this._titleComp) {
+            this._titleComp.setStyles(value);
         }
     }
 
@@ -267,7 +266,7 @@ class HeaderComponent extends ItemGroupStaticComponent {
     }
 
     onBeforeDispose(): void {
-        this._titleEl?.remove();
+        this._titleComp?.dispose();
         for (const s of this._leftSpacers) s.dispose();
         for (const s of this._rightSpacers) s.dispose();
         this._leftSpacers = [];
