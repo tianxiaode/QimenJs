@@ -1,5 +1,6 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
+import { DomEventsEngine } from '@/component-core/engine';
 import { IconComponent } from '../icon/IconComponent';
 import { PasswordStrengthComponent } from './PasswordStrengthComponent';
 import { EYE_BTN_ORDER } from './constants';
@@ -91,12 +92,19 @@ class PasswordInputComponent extends InputComponent {
         });
         if (item?.el) {
             item.el.classList.add('q-password-toggle');
-            item.el.addEventListener('click', (e: Event) => {
-                e.stopPropagation();
-                this.toggleVisibility();
+            DomEventsEngine.addEventRule(this, {
+                event: 'click',
+                path: item.el,
+                handler: '_onEyeToggleClick',
             });
         }
         this._eyeBtnItem = item;
+    }
+
+    /** eye 按钮点击（DomEventsEngine isDirect 规则分发） */
+    _onEyeToggleClick(domEvt?: any): void {
+        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
+        this.toggleVisibility();
     }
 
     _mountStrengthIndicator(): void {

@@ -1,5 +1,7 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
+import { DomEventsEngine } from '@/component-core/engine';
+import type { DelegatedEventRuleInput } from '@/component-core';
 import { STEPS_ORDER, NUMERIC_CHAR_PATTERN, NUMERIC_VALUE_CLEAN_PATTERN } from './constants';
 import './numberinput.css';
 
@@ -36,6 +38,14 @@ class NumberInputComponent extends InputComponent {
     _stepsItem: any = null;
     _upBtn: HTMLElement | null = null;
     _downBtn: HTMLElement | null = null;
+    _stepRule: DelegatedEventRuleInput | null = null;
+
+    /** 与基类 domEvents（input/focus/blur/change 委托）合并的动态规则 */
+    buildDomEvents() {
+        return {
+            keydown: [{ path: '{input-field}', handler: '_onFieldKeydown' }],
+        };
+    }
 
     _onMinOptionChange(value: number | null): void {
         const fieldItem = this._fieldItem;
@@ -70,19 +80,18 @@ class NumberInputComponent extends InputComponent {
         if (fieldEl) {
             fieldEl.setAttribute('type', 'number');
             fieldEl.setAttribute('inputmode', this.precision != null ? 'decimal' : 'numeric');
-            // JS 层拦截非法字符：keydown 直接阻止（type=number 在部分环境不生效时的兜底）
-            fieldEl.addEventListener('keydown', this._onFieldKeydown);
-            this.onCleanup(() => fieldEl.removeEventListener('keydown', this._onFieldKeydown));
         }
     }
 
     /** 非法字符在 keydown 阶段阻止，字符根本不进 value，无清理闪烁 */
-    _onFieldKeydown = (e: KeyboardEvent): void => {
+    _onFieldKeydown(domEvt?: any): void {
+        const e = domEvt?.data?.originalEvent as KeyboardEvent | undefined;
+        if (!e) return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key.length > 1) return;
         if (NUMERIC_CHAR_PATTERN.test(e.key)) return;
         e.preventDefault();
-    };
+    }
 
     /**
      * steps 容器走模板 item（零组件实例）：一个 div 垂直排两个 button>i 图标，
@@ -120,19 +129,28 @@ class NumberInputComponent extends InputComponent {
         const stepsEl: HTMLElement | null = stepsItem?.el ?? null;
         const upBtn = stepsEl?.querySelector('.q-number-input__step-up') as HTMLElement | null;
         const downBtn = stepsEl?.querySelector('.q-number-input__step-down') as HTMLElement | null;
-        upBtn?.addEventListener('click', (e: Event) => {
-            e.stopPropagation();
-            this.stepUp();
-        });
-        downBtn?.addEventListener('click', (e: Event) => {
-            e.stopPropagation();
-            this.stepDown();
-        });
+        if (stepsEl) {
+            this._stepRule = { event: 'click', path: stepsEl, handler: '_onStepAreaClick' };
+            DomEventsEngine.addEventRule(this, this._stepRule);
+        }
         this._upBtn = upBtn;
         this._downBtn = downBtn;
     }
 
+    /** steps 容器内 click 分发（DomEventsEngine isDirect 规则），按按钮类名走 up/down */
+    _onStepAreaClick(domEvt?: any): void {
+        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
+        const target = domEvt?.data?.originalEvent?.target as Element | undefined;
+        if (!target) return;
+        if (target.closest('.q-number-input__step-up')) this.stepUp();
+        else if (target.closest('.q-number-input__step-down')) this.stepDown();
+    }
+
     _unmountStepButtons(): void {
+        if (this._stepRule) {
+            DomEventsEngine.removeEventRule(this, this._stepRule);
+            this._stepRule = null;
+        }
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp && this._stepsItem) {
             const idx = fieldBodyCmp.items?.indexOf(this._stepsItem) ?? -1;

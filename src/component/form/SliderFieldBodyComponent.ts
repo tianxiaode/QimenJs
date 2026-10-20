@@ -1,5 +1,5 @@
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { SLIDER_BODY_TPL } from './slider-body-tpl';
 
@@ -30,6 +30,10 @@ class SliderFieldBodyComponent extends Component {
         return SLIDER_BODY_TPL;
     }
 
+    domEvents: DomEventsMap = {
+        pointerdown: [{ path: 'track', handler: '_onTrackPointerDown' }],
+    };
+
     _dragging: boolean = false;
 
     _onValueOptionChange(_value: number): void {
@@ -57,7 +61,6 @@ class SliderFieldBodyComponent extends Component {
 
     onAfterInit(): void {
         this._applyState();
-        this._bindDrag();
     }
 
     _applyState(): void {
@@ -89,34 +92,33 @@ class SliderFieldBodyComponent extends Component {
         this.toggleCls('q-slider--dragging', this._dragging);
     }
 
-    _bindDrag(): void {
-        const trackEl = this.getNodeEl('track');
-        if (!trackEl) return;
+    /**
+     * 拖拽起点（DomEventsEngine 委托 track 节点）。
+     * pointermove/pointerup 绑 document——引擎不支持 document 级委托，
+     * 保留 addEventListener，随 pointerup 自移除。
+     */
+    _onTrackPointerDown(domEvt?: any): void {
+        const e = domEvt?.data?.originalEvent as PointerEvent | undefined;
+        if (!e || this.disable) return;
+        e.preventDefault();
+        this._dragging = true;
+        this._updateFromPointer(e);
+        this._applyState();
 
-        const onPointerDown = (e: PointerEvent) => {
-            if (this.disable) return;
-            e.preventDefault();
-            this._dragging = true;
-            this._updateFromPointer(e);
+        const onPointerMove = (ev: PointerEvent) => {
+            this._updateFromPointer(ev);
             this._applyState();
-
-            const onPointerMove = (ev: PointerEvent) => {
-                this._updateFromPointer(ev);
-                this._applyState();
-            };
-
-            const onPointerUp = () => {
-                this._dragging = false;
-                this._applyState();
-                document.removeEventListener('pointermove', onPointerMove);
-                document.removeEventListener('pointerup', onPointerUp);
-            };
-
-            document.addEventListener('pointermove', onPointerMove);
-            document.addEventListener('pointerup', onPointerUp);
         };
 
-        (trackEl as HTMLElement).addEventListener('pointerdown', onPointerDown);
+        const onPointerUp = () => {
+            this._dragging = false;
+            this._applyState();
+            document.removeEventListener('pointermove', onPointerMove);
+            document.removeEventListener('pointerup', onPointerUp);
+        };
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
     }
 
     _updateFromPointer(e: PointerEvent): void {

@@ -1,6 +1,6 @@
 import { TextComponent } from '../text/TextComponent';
 import { FormFieldComponent } from './FormFieldComponent';
-import type { TemplateDecl } from '@/component-core';
+import type { TemplateDecl, DomEventsMap } from '@/component-core';
 import { Definitions } from '@/composable';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import './checkboxgroup.css';
@@ -27,6 +27,10 @@ class CheckboxGroupComponent extends FormFieldComponent {
     get tpl(): TemplateDecl {
         return FORMFIELD_TPL;
     }
+
+    domEvents: DomEventsMap = {
+        click: [{ path: 'fieldBody', handler: '_onGroupAreaClick' }],
+    };
 
     _checkboxItems: any[] = [];
 
@@ -100,14 +104,22 @@ class CheckboxGroupComponent extends FormFieldComponent {
 
                     if (!opt.disabled && !this.disable) {
                         itemObj.cursor = 'pointer';
-                        el.addEventListener('click', () => {
-                            this._onCheckboxClick(opt.value);
-                        });
                     }
                 }
                 this._checkboxItems.push({ item: itemObj, option: opt });
             }
         }
+    }
+
+    /** fieldBody 区域 click 统一分发：按 items 反查命中项，替代逐项 addEventListener */
+    _onGroupAreaClick(domEvt?: any): void {
+        const target = domEvt?.data?.originalEvent?.target as Element | undefined;
+        if (!target) return;
+        const entry = this._checkboxItems.find((e: any) => e.item?.el?.contains(target));
+        if (!entry) return;
+        const opt = entry.option;
+        if (opt.disabled || this.disable) return;
+        this._onCheckboxClick(opt.value);
     }
 
     _onCheckboxClick(value: string | number): void {

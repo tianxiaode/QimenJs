@@ -58,6 +58,13 @@ class SelectComponent extends InputComponent {
     _panelEl: HTMLElement | null = null;
     _offOverlay: (() => void) | null = null;
 
+    /** 与基类 domEvents（input/focus/blur/change 委托）合并的动态规则 */
+    buildDomEvents() {
+        return {
+            click: [{ path: 'fieldBody', handler: '_onPanelAreaClick' }],
+        };
+    }
+
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-select');
@@ -169,12 +176,6 @@ class SelectComponent extends InputComponent {
             item.textContent = opt.label;
             item.dataset.value = String(opt.value);
 
-            if (!opt.disabled) {
-                item.addEventListener('click', () => {
-                    this._onOptionClick(opt);
-                });
-            }
-
             panel.appendChild(item);
         }
 
@@ -205,6 +206,18 @@ class SelectComponent extends InputComponent {
             return this._selectedValue.includes(value);
         }
         return this._selectedValue === value;
+    }
+
+    /** 下拉面板 option click 统一分发（委托 fieldBody，替代逐项 addEventListener） */
+    _onPanelAreaClick(domEvt?: any): void {
+        const target = domEvt?.data?.originalEvent?.target as Element | undefined;
+        if (!target) return;
+        const optionEl = target.closest('.q-select__option') as HTMLElement | null;
+        if (!optionEl || !this._panelEl?.contains(optionEl)) return;
+        if (optionEl.classList.contains('q-select__option--disabled')) return;
+        const value = optionEl.dataset.value;
+        const opt = (this.options as SelectOption[]).find(o => String(o.value) === value);
+        if (opt) this._onOptionClick(opt);
     }
 
     _onOptionClick(opt: SelectOption): void {

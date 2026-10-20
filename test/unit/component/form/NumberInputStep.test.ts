@@ -29,6 +29,7 @@ jest.mock('@qimenjs/task', () => ({
 }));
 
 import { NumberInputComponent } from '@/component/form/NumberInputComponent';
+import { gestureClick } from '../../helpers/gesture';
 
 describe('NumberInputComponent 步进', () => {
     beforeEach(() => {
@@ -67,12 +68,12 @@ describe('NumberInputComponent 步进', () => {
         expect(fieldEl.type).toBe('number');
         expect(fieldEl.value).toBe('3.14');
 
-        getUpBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getUpBtn(inst));
         expect(inst.numValue).toBe(3.15);
         expect(fieldEl.value).toBe('3.15');
 
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getDownBtn(inst));
+        gestureClick(getDownBtn(inst));
         expect(inst.numValue).toBe(3.13);
         expect(fieldEl.value).toBe('3.13');
     });
@@ -82,24 +83,24 @@ describe('NumberInputComponent 步进', () => {
 
         expect(inst.numValue).toBeNaN();
 
-        getUpBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getUpBtn(inst));
         expect(inst.numValue).toBe(1);
 
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getDownBtn(inst));
+        gestureClick(getDownBtn(inst));
         expect(inst.numValue).toBe(0);
     });
 
     it('有 min/max 时按边界收敛', async () => {
         const inst = await mount({ value: 99, min: 0, max: 100, step: 10 });
 
-        getUpBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        getUpBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getUpBtn(inst));
+        gestureClick(getUpBtn(inst));
         expect(inst.numValue).toBe(100);
 
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        getDownBtn(inst).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        gestureClick(getDownBtn(inst));
+        gestureClick(getDownBtn(inst));
+        gestureClick(getDownBtn(inst));
         expect(inst.numValue).toBe(70);
     });
 

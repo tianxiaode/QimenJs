@@ -6,6 +6,7 @@ import { TextareaFieldComponent } from '../TextareaFieldComponent';
 import { SwitchFieldBodyComponent } from '../SwitchFieldBodyComponent';
 import { SliderFieldBodyComponent } from '../SliderFieldBodyComponent';
 import { IconComponent } from '../../icon/IconComponent';
+import { DomEventsEngine } from '@/component-core/engine';
 import { PREFIX_ORDER, FIELD_ITEM_ORDER, SUFFIX_ORDER, CLEAR_BTN_ORDER } from '../constants';
 
 export const FieldItemAbility = {
@@ -114,21 +115,29 @@ export const FieldItemAbility = {
         );
         const item = this._clearBtnItem;
         if (item?.el) {
-            item.el.addEventListener('click', (e: Event) => {
-                e.stopPropagation();
-                this.onClearBtnClick();
-            });
+            this._clearBtnRule = { event: 'click', path: item.el, handler: '_onClearBtnClick' };
+            DomEventsEngine.addEventRule(this, this._clearBtnRule);
         }
     },
 
     _removeClearBtn(): void {
         if (!this._clearBtnItem) return;
+        if (this._clearBtnRule) {
+            DomEventsEngine.removeEventRule(this, this._clearBtnRule);
+            this._clearBtnRule = null;
+        }
         const fieldBodyCmp = this._getFieldBody();
         if (fieldBodyCmp) {
             const idx = fieldBodyCmp.items?.indexOf(this._clearBtnItem) ?? -1;
             if (idx >= 0) fieldBodyCmp.removeAt(idx);
         }
         this._clearBtnItem = null;
+    },
+
+    /** clear 按钮点击（DomEventsEngine isDirect 规则分发），阻止冒泡后走 onClearBtnClick 覆盖链 */
+    _onClearBtnClick(domEvt?: any): void {
+        (domEvt?.data?.originalEvent as Event | undefined)?.stopPropagation();
+        this.onClearBtnClick();
     },
 
     onClearBtnClick(): void {

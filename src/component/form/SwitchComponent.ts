@@ -1,4 +1,5 @@
 import { FormFieldComponent } from './FormFieldComponent';
+import type { DomEventsMap } from '@/component-core';
 
 import { Definitions } from '@/composable';
 import './switch.css';
@@ -14,6 +15,10 @@ const SwitchComponentDefs: Definitions = {
 
 class SwitchComponent extends FormFieldComponent {
     static type = 'switch';
+
+    domEvents: DomEventsMap = {
+        click: [{ path: 'fieldBody', handler: 'onTrackClick' }],
+    };
 
     _getTrackEl(): HTMLElement | undefined {
         return this._fieldItem?.getNodeEl?.('track');
@@ -51,12 +56,6 @@ class SwitchComponent extends FormFieldComponent {
     onAfterInit(): void {
         super.onAfterInit();
         this.addCls('q-switch');
-        const fieldBodyEl = this.getComponent('fieldBody')?.el as HTMLElement | undefined;
-        if (fieldBodyEl) {
-            const onClick = () => this.onTrackClick();
-            fieldBodyEl.addEventListener('click', onClick);
-            this.onCleanup(() => fieldBodyEl.removeEventListener('click', onClick));
-        }
     }
 
     onTrackClick(): void {

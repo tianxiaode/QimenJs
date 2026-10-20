@@ -106,6 +106,13 @@ export interface DelegatedEventRule {
 }
 
 /**
+ * 命令式 addEventRule 的输入类型
+ *
+ * needsBinding 由声明式编译流程（_buildRule）自动设置，命令式调用无需关心
+ */
+export type DelegatedEventRuleInput = Omit<DelegatedEventRule, 'needsBinding'>;
+
+/**
  * domEvents 单条规则配置（两层扁平结构中的 value）
  *
  * path 段语法：

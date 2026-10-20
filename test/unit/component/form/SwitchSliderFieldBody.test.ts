@@ -33,6 +33,7 @@ import { SliderComponent } from '@/component/form/SliderComponent';
 import { ContainerComponent } from '@/component/container/ContainerComponent';
 import { SwitchFieldBodyComponent } from '@/component/form/SwitchFieldBodyComponent';
 import { SliderFieldBodyComponent } from '@/component/form/SliderFieldBodyComponent';
+import { gestureClick } from '../../helpers/gesture';
 
 describe('Switch/Slider fieldBody 迁移', () => {
     beforeEach(() => {
@@ -74,12 +75,12 @@ describe('Switch/Slider fieldBody 迁移', () => {
             instance.on('switch:change', (ctx: any) => events.push(ctx?.data?.checked ?? ctx));
 
             const fieldBody = instance.getComponent('fieldBody') as ContainerComponent;
-            fieldBody.el!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            gestureClick(fieldBody.el!);
 
             expect(instance.checked).toBe(true);
             expect(events).toContain(true);
 
-            fieldBody.el!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            gestureClick(fieldBody.el!);
             expect(instance.checked).toBe(false);
         });
 
@@ -87,7 +88,7 @@ describe('Switch/Slider fieldBody 迁移', () => {
             instance.disable = true;
 
             const fieldBody = instance.getComponent('fieldBody') as ContainerComponent;
-            fieldBody.el!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            gestureClick(fieldBody.el!);
 
             expect(instance.checked).toBe(false);
         });
