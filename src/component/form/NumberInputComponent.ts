@@ -3,9 +3,9 @@ import { Definitions } from '@/composable';
 import { STEPS_ORDER } from './constants';
 import './numberinput.css';
 
-function clamp(v: number, min?: number, max?: number): number {
-    if (min !== undefined && v < min) return min;
-    if (max !== undefined && v > max) return max;
+function clamp(v: number, min?: number | null, max?: number | null): number {
+    if (min != null && v < min) return min;
+    if (max != null && v > max) return max;
     return v;
 }
 
