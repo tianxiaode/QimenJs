@@ -78,4 +78,23 @@ export const baseMap: InputEventMap = {
     keyup: {
         keyboard: ['keyup'], // 键盘按键释放事件，当被按下的键被释放时触发
     },
+    /**
+     * 表单/焦点信号组 - DOM 原生事件，与输入设备形态无关
+     * input/change/submit 由表单控件触发，focus/blur 由焦点管理触发
+     */
+    input: {
+        other: ['input'], // 输入框内容变化事件（每次键入触发）
+    },
+    change: {
+        other: ['change'], // 值变更提交事件（失焦或选择后触发）
+    },
+    focus: {
+        other: ['focus'], // 元素获得焦点事件
+    },
+    blur: {
+        other: ['blur'], // 元素失去焦点事件
+    },
+    submit: {
+        other: ['submit'], // 表单提交事件
+    },
 };

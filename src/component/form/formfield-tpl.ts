@@ -24,6 +24,7 @@ export const FORMFIELD_TPL: TemplateDecl = {
             name: 'fieldBody',
             type: ContainerComponent,
             classes: 'q-formfield__wrapper',
+            options: { direction: 'horizontal' },
         },
         { name: 'infoGroup', type: InputInfoGroupComponent },
     ],
