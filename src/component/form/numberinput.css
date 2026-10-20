@@ -1,36 +1,40 @@
-.q-input--number {
-    /* TODO: 添加样式 */
+/* steps 容器：普通 flex item 垂直排列两个步进按钮，上下顺序由 DOM 顺序决定 */
+.q-number-input__steps {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    margin-left: var(--q-space-xs, 4px);
 }
 
-/* step 按钮绝对定位堆叠在框内右缘（上下各半格），脱离 flex 流避免与 field 横排 */
 .q-number-input__step {
-    position: absolute;
-    right: var(--q-space-xs, 4px);
-    z-index: 1;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 20px;
-    height: 50%;
+    padding: 0;
+    border: none;
+    background: transparent;
     cursor: var(--q-cursor-pointer);
     color: var(--q-color-text-secondary);
     font-size: 10px;
-    user-select: none;
-    transition: color var(--q-transition-fast);
 }
 
-/* 箭头走 q-icon-chevron-up/down 字体图标（q-icon.css 权威映射，与 Button 箭头同体系） */
+.q-number-input__step i {
+    pointer-events: none;
+}
+
 .q-number-input__step-up {
-    top: 0;
     border-bottom: 1px solid var(--q-color-border);
-}
-
-.q-number-input__step-down {
-    bottom: 0;
 }
 
 .q-number-input__step:hover {
     color: var(--q-color-text);
+}
+
+.q-input--number .q-input__field {
+    padding-right: 44px;
 }
 
 .q-input--disabled .q-number-input__step {

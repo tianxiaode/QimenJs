@@ -1,6 +1,5 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { IconComponent } from '../icon/IconComponent';
 import { STEP_UP_ORDER, STEP_DOWN_ORDER } from './constants';
 import './numberinput.css';
 
@@ -34,8 +33,9 @@ class NumberInputComponent extends InputComponent {
     static type = 'number-input';
 
     _numValue: number = NaN;
-    _stepUpItem: any = null;
-    _stepDownItem: any = null;
+    _stepsItem: any = null;
+    _upBtn: HTMLElement | null = null;
+    _downBtn: HTMLElement | null = null;
 
     _onMinOptionChange(value: number | null): void {
         const fieldItem = this._fieldItem;
@@ -68,50 +68,64 @@ class NumberInputComponent extends InputComponent {
         if (fieldItem) fieldItem.inputMode = this.precision != null ? 'decimal' : 'numeric';
     }
 
+    /**
+     * steps 容器走模板 item（零组件实例）：一个 div 垂直排两个 button>i 图标，
+     * 上下顺序由 DOM 顺序天然决定，不依赖 absolute/order。
+     */
     _mountStepButtons(): void {
-        if (this._stepUpItem) return;
+        if (this._stepsItem) return;
         const fieldBodyCmp = this._getFieldBody();
         if (!fieldBodyCmp) return;
 
-        const upItem = fieldBodyCmp.add({
-            type: IconComponent,
-            iconCls: 'q-icon-chevron-up',
-            order: STEP_UP_ORDER,
-        });
-        if (upItem?.el) {
-            upItem.el.classList.add('q-number-input__step', 'q-number-input__step-up');
-            upItem.el.addEventListener('click', (e: Event) => {
-                e.stopPropagation();
-                this.stepUp();
-            });
-        }
-        this._stepUpItem = upItem;
+        const stepsItem = fieldBodyCmp.add({
+            tag: 'div',
+            classes: 'q-number-input__steps',
+            children: [
+                {
+                    tag: 'button',
+                    classes: 'q-number-input__step q-number-input__step-up',
+                    attributes: { type: 'button' },
+                    children: [{ tag: 'i', classes: 'q-icon q-icon-chevron-up' }],
+                },
+                {
+                    tag: 'button',
+                    classes: 'q-number-input__step q-number-input__step-down',
+                    attributes: { type: 'button' },
+                    children: [{ tag: 'i', classes: 'q-icon q-icon-chevron-down' }],
+                },
+            ],
+        } as any);
+        this._stepsItem = stepsItem;
 
-        const downItem = fieldBodyCmp.add({
-            type: IconComponent,
-            iconCls: 'q-icon-chevron-down',
-            order: STEP_DOWN_ORDER,
-        });
-        if (downItem?.el) {
-            downItem.el.classList.add('q-number-input__step', 'q-number-input__step-down');
-            downItem.el.addEventListener('click', (e: Event) => {
-                e.stopPropagation();
-                this.stepDown();
-            });
+        if (stepsItem) {
+            stepsItem.order = STEP_DOWN_ORDER;
+            fieldBodyCmp.sort?.();
         }
-        this._stepDownItem = downItem;
+
+        const stepsEl: HTMLElement | null = stepsItem?.el ?? null;
+        const upBtn = stepsEl?.querySelector('.q-number-input__step-up') as HTMLElement | null;
+        const downBtn = stepsEl?.querySelector('.q-number-input__step-down') as HTMLElement | null;
+        upBtn?.addEventListener('click', (e: Event) => {
+            e.stopPropagation();
+            this.stepUp();
+        });
+        downBtn?.addEventListener('click', (e: Event) => {
+            e.stopPropagation();
+            this.stepDown();
+        });
+        this._upBtn = upBtn;
+        this._downBtn = downBtn;
     }
 
     _unmountStepButtons(): void {
         const fieldBodyCmp = this._getFieldBody();
-        if (!fieldBodyCmp) return;
-        for (const ref of [this._stepUpItem, this._stepDownItem]) {
-            if (!ref) continue;
-            const idx = fieldBodyCmp.items?.indexOf(ref) ?? -1;
+        if (fieldBodyCmp && this._stepsItem) {
+            const idx = fieldBodyCmp.items?.indexOf(this._stepsItem) ?? -1;
             if (idx >= 0) fieldBodyCmp.removeAt(idx);
         }
-        this._stepUpItem = null;
-        this._stepDownItem = null;
+        this._stepsItem = null;
+        this._upBtn = null;
+        this._downBtn = null;
     }
 
     stepUp(): void {
