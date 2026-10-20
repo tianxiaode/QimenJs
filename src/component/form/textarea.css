@@ -34,6 +34,12 @@
     color: var(--q-color-text-placeholder);
 }
 
+/* 选区：淡色背景+原文字色（组件级显式规则，避免嵌套全局规则在 textarea 选区上的渲染异常） */
+.q-textarea__field::selection {
+    background: var(--q-color-primary-light);
+    color: var(--q-color-text);
+}
+
 /* wrapper 已承担焦点变色指示，覆盖主题全局 :focus-visible 的 outline，避免框中框 */
 .q-textarea .q-textarea__field:focus-visible {
     outline: none;

@@ -446,10 +446,10 @@
     scrollbar-color: var(--q-color-border) var(--q-color-bg-secondary);
     scrollbar-width: thin;
 
-    /* 选中文本 */
+    /* 选中文本：淡色背景+原文字色 */
     ::selection {
-        background: var(--q-color-primary);
-        color: var(--q-color-on-primary);
+        background: var(--q-color-primary-light);
+        color: var(--q-color-text);
     }
 
     /* 焦点可见性 */
