@@ -64,8 +64,13 @@ class NumberInputComponent extends InputComponent {
         super.onAfterInit();
         this.addCls('q-input--number');
 
-        const fieldItem = this._fieldItem;
-        if (fieldItem) fieldItem.inputMode = this.precision != null ? 'decimal' : 'numeric';
+        // 直接写 field 元素：defs 默认值的 handler 触发时 fieldItem 可能尚未创建，
+        // 走 option 传导链会静默丢失 type/inputmode
+        const fieldEl = this._getFieldEl() as HTMLInputElement | null;
+        if (fieldEl) {
+            fieldEl.setAttribute('type', 'number');
+            fieldEl.setAttribute('inputmode', this.precision != null ? 'decimal' : 'numeric');
+        }
     }
 
     /**
@@ -132,8 +137,7 @@ class NumberInputComponent extends InputComponent {
         const next = clamp(toPrecision(base + this.step, this.precision), this.min, this.max);
         if (!Number.isFinite(next)) return;
         this._numValue = next;
-        this.value = String(next);
-        this._dispatchFieldEvents();
+        this._writeValue(next);
         this.emit('stepUp', { value: next });
     }
 
@@ -142,17 +146,21 @@ class NumberInputComponent extends InputComponent {
         const next = clamp(toPrecision(base - this.step, this.precision), this.min, this.max);
         if (!Number.isFinite(next)) return;
         this._numValue = next;
-        this.value = String(next);
-        this._dispatchFieldEvents();
+        this._writeValue(next);
         this.emit('stepDown', { value: next });
     }
 
-    /** 步进是编程赋值，不触发原生事件；手动派发让 listens/domEvents 的 input/change 联动 */
-    _dispatchFieldEvents(): void {
-        const el = this._getFieldEl();
-        if (!el) return;
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
+    /** 直写 field 元素 + 同步 option 状态 + 派发原生事件，三步都显式执行不依赖传导链 */
+    _writeValue(next: number): void {
+        const display = String(next);
+        const el = this._getFieldEl() as HTMLInputElement | null;
+        if (el) el.value = display;
+        this.value = display;
+        const fieldEl = this._getFieldEl();
+        if (fieldEl) {
+            fieldEl.dispatchEvent(new Event('input', { bubbles: true }));
+            fieldEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     }
 
     /** value option 直设 el.value，同步解析到 _numValue，避免步进从 min 起算 */
