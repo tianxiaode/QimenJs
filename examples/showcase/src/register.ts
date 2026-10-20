@@ -32,7 +32,6 @@ import {
     ToggleComponent,
     RouteContainerComponent,
     DividerComponent,
-    HtmlComponent,
     IconComponent,
     LabelComponent,
     FieldsetComponent,
@@ -90,13 +89,11 @@ MenuComponent.register();
 MenuItemComponent.register();
 MultiMenuComponent.register();
 ToggleComponent.register();
-RouteContainerComponent.register();
-DividerComponent.register();
-HtmlComponent.register();
-IconComponent.register();
-LabelComponent.register();
-TextComponent.register();
-FieldsetComponent.register();
+    RouteContainerComponent.register();
+    DividerComponent.register();
+    IconComponent.register();
+    LabelComponent.register();
+    FieldsetComponent.register();
 HeaderComponent.register();
 PanelComponent.register();
 TabComponent.register();

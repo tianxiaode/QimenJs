@@ -28,7 +28,6 @@ export { HeroComponent } from './hero/HeroComponent';
 export { ProgressComponent } from './progress/ProgressComponent';
 export { StatisticComponent } from './statistic/StatisticComponent';
 export * from './tag';
-export * from './html';
 
 // 表单组件
 export { InputComponent } from './form/InputComponent';
