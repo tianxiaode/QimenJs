@@ -121,6 +121,7 @@ class NumberInputComponent extends InputComponent {
         next = clamp(next, this.min, this.max);
         this._numValue = next;
         this.value = String(next);
+        this._dispatchFieldEvents();
         this.emit('stepUp', { value: next });
     }
 
@@ -131,7 +132,23 @@ class NumberInputComponent extends InputComponent {
         next = clamp(next, this.min, this.max);
         this._numValue = next;
         this.value = String(next);
+        this._dispatchFieldEvents();
         this.emit('stepDown', { value: next });
+    }
+
+    /** 步进是编程赋值，不触发原生事件；手动派发让 listens/domEvents 的 input/change 联动 */
+    _dispatchFieldEvents(): void {
+        const el = this._getFieldEl();
+        if (!el) return;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    /** value option 直设 el.value，同步解析到 _numValue，避免步进从 min 起算 */
+    _onValueOptionChange(value: string): void {
+        super._onValueOptionChange(value);
+        const num = parseFloat(String(value ?? ''));
+        this._numValue = isNaN(num) ? NaN : num;
     }
 
     onFieldInput(): void {
