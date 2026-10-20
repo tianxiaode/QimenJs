@@ -47,7 +47,7 @@
     color: var(--q-icon-color);
 }
 .q-close::before {
-    content: "\e910";
+    content: "\e911";
 }
 
 /* -------- 星星 (star) → 字体图标 -------- */
@@ -66,7 +66,7 @@
     color: currentColor;
 }
 .q-star::before {
-    content: "\e926";
+    content: "\e929";
 }
 
 /* -------- 右箭头 (chevron-right) → 字体图标 -------- */
@@ -85,7 +85,7 @@
     color: var(--q-icon-color);
 }
 .q-chevron-right::before {
-    content: "\e90e";
+    content: "\e90f";
 }
 
 /* -------- 下箭头 (chevron-down) → 字体图标 -------- */
@@ -104,7 +104,7 @@
     color: var(--q-icon-color);
 }
 .q-chevron-down::before {
-    content: "\e90c";
+    content: "\e90d";
 }
 
 /* -------- 菱形 (diamond) — CSS 绘制（无字体对应） -------- */
