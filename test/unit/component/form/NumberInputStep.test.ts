@@ -108,4 +108,38 @@ describe('NumberInputComponent 步进', () => {
 
         expect(inst.el!.querySelector('.q-number-input__steps')).toBeNull();
     });
+
+    it('keydown 拦截非法字符，数字/符号放行', async () => {
+        const inst = await mount({ value: 3.14, precision: 2, step: 0.01 });
+        const fieldEl = getFieldEl(inst);
+
+        const letter = new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true });
+        fieldEl.dispatchEvent(letter);
+        expect(letter.defaultPrevented).toBe(true);
+
+        const digit = new KeyboardEvent('keydown', { key: '7', bubbles: true, cancelable: true });
+        fieldEl.dispatchEvent(digit);
+        expect(digit.defaultPrevented).toBe(false);
+
+        const dot = new KeyboardEvent('keydown', { key: '.', bubbles: true, cancelable: true });
+        fieldEl.dispatchEvent(dot);
+        expect(dot.defaultPrevented).toBe(false);
+
+        const backspace = new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true });
+        fieldEl.dispatchEvent(backspace);
+        expect(backspace.defaultPrevented).toBe(false);
+    });
+
+    it('input 兜底清理非法字符（粘贴/输入法）并保留数字', async () => {
+        const inst = await mount({ value: 3.14, precision: 2, step: 0.01 });
+        const fieldEl = getFieldEl(inst);
+
+        // type=number 下浏览器/jsdom 直接吞非法值（原生防线），改 type=text 模拟未生效环境测兜底
+        fieldEl.setAttribute('type', 'text');
+        fieldEl.value = '12ab34';
+        fieldEl.dispatchEvent(new Event('input', { bubbles: true }));
+        expect(fieldEl.value).toBe('1234');
+        expect(inst.numValue).toBe(1234);
+        expect(inst.value).toBe('1234');
+    });
 });

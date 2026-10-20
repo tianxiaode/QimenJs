@@ -15,3 +15,8 @@ export const LABEL_POSITION_MAP: Record<string, string> = {
 };
 
 export const REQUIRED_ERROR_MESSAGE = '此字段为必填项';
+
+/** number-input 允许输入的单字符（数字/小数点/正负号），keydown 拦截与 input 清理共用 */
+export const NUMERIC_CHAR_PATTERN = /^[\d.+-]$/;
+/** number-input value 中非法字符的清理正则（兜底粘贴/输入法） */
+export const NUMERIC_VALUE_CLEAN_PATTERN = /[^\d.+-]/g;

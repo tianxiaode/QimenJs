@@ -1,6 +1,6 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
-import { STEPS_ORDER } from './constants';
+import { STEPS_ORDER, NUMERIC_CHAR_PATTERN, NUMERIC_VALUE_CLEAN_PATTERN } from './constants';
 import './numberinput.css';
 
 function clamp(v: number, min?: number | null, max?: number | null): number {
@@ -70,8 +70,19 @@ class NumberInputComponent extends InputComponent {
         if (fieldEl) {
             fieldEl.setAttribute('type', 'number');
             fieldEl.setAttribute('inputmode', this.precision != null ? 'decimal' : 'numeric');
+            // JS 层拦截非法字符：keydown 直接阻止（type=number 在部分环境不生效时的兜底）
+            fieldEl.addEventListener('keydown', this._onFieldKeydown);
+            this.onCleanup(() => fieldEl.removeEventListener('keydown', this._onFieldKeydown));
         }
     }
+
+    /** 非法字符在 keydown 阶段阻止，字符根本不进 value，无清理闪烁 */
+    _onFieldKeydown = (e: KeyboardEvent): void => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.key.length > 1) return;
+        if (NUMERIC_CHAR_PATTERN.test(e.key)) return;
+        e.preventDefault();
+    };
 
     /**
      * steps 容器走模板 item（零组件实例）：一个 div 垂直排两个 button>i 图标，
@@ -171,8 +182,22 @@ class NumberInputComponent extends InputComponent {
     }
 
     onFieldInput(): void {
-        const fieldEl = this._getFieldEl();
-        const raw = fieldEl?.value ?? '';
+        const fieldEl = this._getFieldEl() as HTMLInputElement | null;
+        let raw = fieldEl?.value ?? '';
+        // 兜底清理（粘贴/输入法绕过 keydown 时）：剔除非法字符并保护光标位置
+        const cleaned = raw.replace(NUMERIC_VALUE_CLEAN_PATTERN, '');
+        if (cleaned !== raw && fieldEl) {
+            const pos = fieldEl.selectionStart ?? cleaned.length;
+            const removedBefore = raw.slice(0, pos).replace(NUMERIC_VALUE_CLEAN_PATTERN, '').length;
+            fieldEl.value = cleaned;
+            try {
+                const newPos = Math.max(0, pos - removedBefore);
+                fieldEl.setSelectionRange(newPos, newPos);
+            } catch {
+                // type=number 下 setSelectionRange 抛 InvalidStateError，忽略
+            }
+            raw = cleaned;
+        }
         this.value = raw;
         const num = parseFloat(raw);
         this._numValue = isNaN(num) ? NaN : num;
