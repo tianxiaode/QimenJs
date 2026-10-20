@@ -4,33 +4,45 @@
     --q-input-field-font-size: var(--q-font-size-md);
 }
 
+/* wrapper 即可见的框：边框/背景/高度在容器上，field 裸填，图标作为 flex item 自然落在框内右侧 */
 .q-input__wrapper {
     position: relative;
+    align-items: center;
+    height: var(--q-input-field-height);
+    border: var(--q-border);
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-bg);
+    box-sizing: border-box;
+    transition: border-color var(--q-transition-fast), box-shadow var(--q-transition-fast);
 }
 
 .q-input__field {
     flex: 1;
     min-width: 0;
-    height: var(--q-input-field-height);
+    height: 100%;
     padding: var(--q-input-field-padding);
-    border: var(--q-border);
-    border-radius: var(--q-radius-md);
+    border: none;
     font-size: var(--q-input-field-font-size);
     line-height: var(--q-line-height-normal);
     color: var(--q-color-text);
-    background: var(--q-color-bg);
+    background: transparent;
     box-sizing: border-box;
     outline: none;
-    transition: border-color var(--q-transition-fast), box-shadow var(--q-transition-fast);
 }
 
 .q-input__field::placeholder {
     color: var(--q-color-text-placeholder);
 }
 
-.q-input__field:focus {
-    border-color: var(--q-color-primary);
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
+/* 有图标时为文字预留右侧空间 */
+.q-input__wrapper:has(.q-input__clear-btn:not(.hidden)) .q-input__field,
+.q-input__wrapper:has(.q-input__dropdown-icon) .q-input__field,
+.q-input__wrapper:has(.q-password-toggle) .q-input__field {
+    padding-right: 36px;
+}
+
+.q-input__wrapper:has(.q-number-input__step) .q-input__field {
+    padding-right: 34px;
 }
 
 .q-input__prefix {
@@ -38,7 +50,7 @@
     display: inline-flex;
     align-items: center;
     padding: 0 var(--q-space-sm);
-    height: var(--q-input-field-height);
+    height: 100%;
     font-size: var(--q-input-field-font-size);
     color: var(--q-color-text-secondary);
     white-space: nowrap;
@@ -58,6 +70,7 @@
     justify-content: center;
     width: 24px;
     height: 24px;
+    margin-right: var(--q-space-xs, 4px);
     cursor: var(--q-cursor-pointer);
     color: var(--q-color-text-placeholder);
     transition: color var(--q-transition-fast);
@@ -74,18 +87,23 @@
     justify-content: center;
     width: 24px;
     height: 24px;
+    margin-right: var(--q-space-xs, 4px);
     cursor: var(--q-cursor-pointer);
     transition: transform var(--q-transition-fast);
 }
 
-.q-input--focused .q-input__field {
+.q-input--focused .q-input__wrapper {
     border-color: var(--q-color-primary);
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
-.q-input--disabled .q-input__field {
+.q-input--disabled .q-input__wrapper {
     background: var(--q-color-bg-tertiary);
     border-color: var(--q-color-border);
+    cursor: var(--q-cursor-not-allowed);
+}
+
+.q-input--disabled .q-input__field {
     color: var(--q-color-text-disabled);
     cursor: var(--q-cursor-not-allowed);
 }
@@ -100,18 +118,21 @@
     opacity: var(--q-opacity-disabled);
 }
 
-.q-input--readonly .q-input__field {
+.q-input--readonly .q-input__wrapper {
     background: var(--q-color-bg-secondary);
     border-color: var(--q-color-border);
+}
+
+.q-input--readonly .q-input__field {
     color: var(--q-color-text);
     cursor: default;
 }
 
-.q-input--error .q-input__field {
+.q-input--error .q-input__wrapper {
     border-color: var(--q-color-error);
 }
 
-.q-input--error.q-input--focused .q-input__field {
+.q-input--error.q-input--focused .q-input__wrapper {
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 

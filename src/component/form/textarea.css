@@ -5,44 +5,51 @@
     --q-textarea-field-line-height: var(--q-line-height-normal);
 }
 
+/* wrapper 即可见的框：field 裸填，clear 图标自然落在框内右侧 */
 .q-textarea__wrapper {
     position: relative;
+    min-height: var(--q-textarea-field-min-height);
+    border: var(--q-border);
+    border-radius: var(--q-radius-md);
+    background: var(--q-color-bg);
+    box-sizing: border-box;
+    transition: border-color var(--q-transition-fast), box-shadow var(--q-transition-fast);
 }
 
 .q-textarea__field {
     flex: 1;
     min-width: 0;
-    min-height: var(--q-textarea-field-min-height);
     padding: var(--q-textarea-field-padding);
-    border: var(--q-border);
-    border-radius: var(--q-radius-md);
+    border: none;
     font-size: var(--q-textarea-field-font-size);
     line-height: var(--q-textarea-field-line-height);
     color: var(--q-color-text);
-    background: var(--q-color-bg);
+    background: transparent;
     box-sizing: border-box;
     outline: none;
     resize: vertical;
-    transition: border-color var(--q-transition-fast), box-shadow var(--q-transition-fast);
 }
 
 .q-textarea__field::placeholder {
     color: var(--q-color-text-placeholder);
 }
 
-.q-textarea__field:focus {
+.q-textarea__wrapper:has(.q-input__clear-btn:not(.hidden)) .q-textarea__field {
+    padding-right: 36px;
+}
+
+.q-textarea--focused .q-textarea__wrapper {
     border-color: var(--q-color-primary);
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 
-.q-textarea--focused .q-textarea__field {
-    border-color: var(--q-color-primary);
-    box-shadow: 0 0 0 2px var(--q-overlay-focus);
+.q-textarea--disabled .q-textarea__wrapper {
+    background: var(--q-color-bg-tertiary);
+    border-color: var(--q-color-border);
+    cursor: var(--q-cursor-not-allowed);
 }
 
 .q-textarea--disabled .q-textarea__field {
-    background: var(--q-color-bg-tertiary);
-    border-color: var(--q-color-border);
     color: var(--q-color-text-disabled);
     cursor: var(--q-cursor-not-allowed);
     resize: none;
@@ -53,18 +60,21 @@
     cursor: var(--q-cursor-not-allowed);
 }
 
-.q-textarea--readonly .q-textarea__field {
+.q-textarea--readonly .q-textarea__wrapper {
     background: var(--q-color-bg-secondary);
     border-color: var(--q-color-border);
+}
+
+.q-textarea--readonly .q-textarea__field {
     color: var(--q-color-text);
     cursor: default;
 }
 
-.q-textarea--error .q-textarea__field {
+.q-textarea--error .q-textarea__wrapper {
     border-color: var(--q-color-error);
 }
 
-.q-textarea--error.q-textarea--focused .q-textarea__field {
+.q-textarea--error.q-textarea--focused .q-textarea__wrapper {
     box-shadow: 0 0 0 2px var(--q-overlay-focus);
 }
 

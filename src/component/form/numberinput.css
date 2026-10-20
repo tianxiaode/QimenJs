@@ -2,18 +2,29 @@
     /* TODO: 添加样式 */
 }
 
+/* step 按钮绝对定位堆叠在框内右缘（上下各半格），脱离 flex 流避免与 field 横排 */
 .q-number-input__step {
-    flex-shrink: 0;
+    position: absolute;
+    right: var(--q-space-xs, 4px);
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 50%;
     cursor: var(--q-cursor-pointer);
     color: var(--q-color-text-secondary);
     font-size: 10px;
     user-select: none;
     transition: color var(--q-transition-fast);
+}
+
+.q-number-input__step-up {
+    top: 0;
+}
+
+.q-number-input__step-down {
+    bottom: 0;
 }
 
 .q-number-input__step:hover {
