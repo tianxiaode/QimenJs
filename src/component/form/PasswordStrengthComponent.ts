@@ -6,6 +6,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './password-strength.css';
 
@@ -29,6 +30,25 @@ const PasswordStrengthComponentDefs: Definitions = {
 } as const;
 
 class PasswordStrengthComponent extends Component {
+    static type = 'password-strength';
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            classes: 'q-password-strength',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-password-strength__bar',
+                    children: [
+                        { tag: 'div', classes: 'q-password-strength__fill q-password-strength__fill--0' },
+                    ],
+                },
+                { tag: 'div', classes: 'q-password-strength__label' },
+            ],
+        };
+    }
+
     onAfterInit(): void {
         this._updateUI();
     }

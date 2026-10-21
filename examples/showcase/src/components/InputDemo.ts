@@ -73,15 +73,13 @@ export const INPUT_DEMO: DemoConfig = {
         },
         {
             label: '密码输入（PasswordInput）',
-            code: `{ type: 'password-input', options: { placeholder: '请输入密码' } }
-{ type: 'password-input', options: { value: 'secret', visible: true, label: '明文显示' } }
+            code: `{ type: 'password-input', options: { value: 'secret', label: '密码' } }
 { type: 'password-input', options: { placeholder: '密码强度检测', label: '密码' } }`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'password-input', options: { placeholder: '请输入密码' } },
-                    { type: 'password-input', options: { value: 'secret', visible: true, label: '明文显示' } },
+                    { type: 'password-input', options: { value: 'secret', label: '密码' } },
                     { type: 'password-input', options: { placeholder: '密码强度检测', label: '密码' } },
                 ],
             },
