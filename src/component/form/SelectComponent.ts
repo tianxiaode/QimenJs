@@ -2,12 +2,13 @@
  * SelectComponent 下拉选择组件
  *
  * 从 InputComponent 派生，共享统一模板。
- * 下拉弹出复用 PopoverAbility（popover option → SelectPanelComponent 浮层），
- * 选项渲染用 TemplateDecl（data-action/data-value 传递点击信息）。
+ * 下拉弹出复用 PopoverAbility（popover option → ListComponent 浮层），
+ * 选项渲染用 ListItemComponent（label/status/markForm），
+ * 选中值通过 action/actionData 传递（ComponentDefs 通用 option）。
  *
  * 特有功能：
  * - options 选项列表（静态 / 动态加载）
- * - 下拉面板（PopoverAbility + SelectPanelComponent）
+ * - 下拉面板（PopoverAbility + ListComponent）
  * - 多选（multiple）
  * - 分组（opt.group 视觉分组标题）
  * - 选中值显示
@@ -18,9 +19,7 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
-import { SelectPanelComponent } from './SelectPanelComponent';
 import { DROPDOWN_ICON_ORDER, FIELD_ACTION } from './constants';
-import type { TemplateDecl } from '@qimenjs/component-core';
 import './select.css';
 
 export interface SelectOption {
@@ -62,7 +61,7 @@ class SelectComponent extends InputComponent {
 
     _onValueOptionChange(value: any): void {
         if (this.multiple) {
-            this._selectedValue = Array.isArray(value) ? value : (value ? [value] : undefined);
+            this._selectedValue = Array.isArray(value) ? value : value ? [value] : undefined;
         } else {
             this._selectedValue = value || undefined;
         }
@@ -101,47 +100,37 @@ class SelectComponent extends InputComponent {
 
     _buildPopover(): void {
         this.setData('popover', {
-            type: 'select-panel',
+            type: 'list',
             trigger: 'manual',
-            anchor: 'fieldBody',
+            anchor: 'root',
             placement: 'bottom',
-            options: { items: this._buildPanelItems() },
+            options: { items: this._buildListItems() },
         });
     }
 
-    _buildPanelItems(): TemplateDecl[] {
+    _buildListItems(): any[] {
         const opts = this.options as SelectOption[];
         if (!opts || !opts.length) return [];
 
-        const items: TemplateDecl[] = [];
+        const items: any[] = [];
         const seenGroups = new Set<string>();
 
         for (const opt of opts) {
             if (opt.group && !seenGroups.has(opt.group)) {
                 seenGroups.add(opt.group);
                 items.push({
-                    tag: 'div',
-                    classes: ['q-select-panel__group-title'],
-                    options: { text: opt.group },
+                    label: opt.group,
+                    disable: true,
+                    classes: 'q-list__group-title',
                 });
             }
 
-            const classes = ['q-select-panel__option'];
-            if (this._isSelected(opt.value)) {
-                classes.push('q-select-panel__option--selected');
-            }
-            if (opt.disabled) {
-                classes.push('q-select-panel__option--disabled');
-            }
-
             items.push({
-                tag: 'div',
-                classes,
-                attributes: {
-                    'data-action': 'select-option',
-                    'data-value': String(opt.value),
-                },
-                options: { text: opt.label },
+                label: opt.label,
+                action: 'select-option',
+                actionData: opt.value,
+                status: this._isSelected(opt.value) ? 'primary' : 'default',
+                disable: opt.disabled,
             });
         }
         return items;
@@ -150,12 +139,9 @@ class SelectComponent extends InputComponent {
     _updatePopoverItems(): void {
         const inst = this._getPopoverInstance();
         if (inst) {
-            inst.clear(true);
-            for (const def of this._buildPanelItems()) {
-                inst.add(def);
-            }
+            inst.setItems(this._buildListItems());
         } else {
-            this.updatePopover({ items: this._buildPanelItems() });
+            this.updatePopover({ items: this._buildListItems() });
         }
     }
 
@@ -164,8 +150,8 @@ class SelectComponent extends InputComponent {
         const inst = this._getPopoverInstance();
         if (inst && !this._selectBound) {
             this._selectBound = true;
-            inst.on('select', (data: any) => {
-                this._onPanelSelect(data);
+            inst.on('select', (ctx: any) => {
+                this._onListSelect(ctx);
             });
         }
         this.emit('select:open', {});
@@ -176,10 +162,12 @@ class SelectComponent extends InputComponent {
         this.emit('select:close', {});
     }
 
-    _onPanelSelect(data: any): void {
-        if (data?.action !== 'select-option') return;
+    _onListSelect(ctx: any): void {
+        const domEvt = ctx?.domEvent ?? ctx;
+        const action = domEvt?.action;
+        if (action !== 'select-option') return;
 
-        const value = this._parseValue(data.value);
+        const value = this._parseValue(domEvt.actionData);
         if (this.multiple) {
             const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];
             const idx = arr.indexOf(value);
@@ -201,7 +189,8 @@ class SelectComponent extends InputComponent {
         if (this._shouldValidate('change')) this._doValidate();
     }
 
-    _parseValue(raw: string): string | number {
+    _parseValue(raw: any): string | number {
+        if (typeof raw === 'number') return raw;
         const num = Number(raw);
         return Number.isNaN(num) ? raw : num;
     }

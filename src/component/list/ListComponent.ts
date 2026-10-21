@@ -5,6 +5,11 @@
  * 子项默认类型：ListItem（label/description/status/markForm）。
  * 方向默认纵向。
  *
+ * 双用途：内嵌列表 + 浮层面板。
+ * 作为浮层时（如 Select 下拉面板），通过 PopoverAbility 实例化，
+ * show()/hide() 调用 OverlayAbility 定位/显隐。
+ * domEvents click 委托 [items]，emits select 自动转发点击事件。
+ *
  * @example
  * ```ts
  * new ListComponent({
@@ -18,6 +23,7 @@
  */
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
+import type { DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import './list.css';
 
@@ -35,6 +41,14 @@ class ListComponent extends ItemGroupPooledComponent {
     static type = 'list';
     defaultItemType = 'list-item';
 
+    domEvents?: DomEventsMap | undefined = {
+        click: {
+            path: '[items]',
+            handler: '_onItemClick',
+            emits: ['select'],
+        },
+    };
+
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical' };
     }
@@ -45,6 +59,27 @@ class ListComponent extends ItemGroupPooledComponent {
         (this as any).itemContainer?.el?.classList.add('q-list__items');
 
         super.onAfterInit();
+    }
+
+    show(): void {
+        const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
+        const placement = this.placement ?? this.rawOptions?.placement;
+        this._showOverlay({ anchor, placement });
+    }
+
+    hide(): void {
+        this._hideOverlay();
+    }
+
+    _onItemClick(domEvt: any): void {
+        const item = domEvt?.targetComponent;
+        if (!item) return;
+        const action = item.action;
+        if (action) domEvt.action = action;
+        const actionData = item.actionData;
+        if (actionData !== undefined && actionData !== null) {
+            domEvt.actionData = actionData;
+        }
     }
 
     _onSizeOptionChange(value: string, old: string): void {
