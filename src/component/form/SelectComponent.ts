@@ -67,12 +67,21 @@ class SelectComponent extends InputComponent {
         if (fieldItem) {
             fieldItem.readonly = true;
             fieldItem.inputType = null;
-            if (this.filterable) fieldItem.readonly = false;
+            if (this.filterable) {
+                fieldItem.readonly = false;
+                if (!this.placeholder) fieldItem.placeholder = '搜索...';
+            }
         }
 
         this._mountDropdownIcon();
 
         this._applyState();
+    }
+
+    _onValueOptionChange(value: any): void {
+        this._selectedValue = value;
+        this._syncDisplayValue();
+        this._toggleClearBtn();
     }
 
     _onOptionsOptionChange(_value: SelectOption[]): void {
@@ -155,18 +164,36 @@ class SelectComponent extends InputComponent {
         if (!fieldBodyCmp) return;
 
         const filteredOptions = this._getFilteredOptions();
-        const children: any[] = filteredOptions.map((opt: SelectOption) => {
-            const selected = this._isSelected(opt.value);
-            const cls = ['q-select__option'];
-            if (selected) cls.push('q-select__option--selected');
-            if (opt.disabled) cls.push('q-select__option--disabled');
-            return {
-                tag: 'div',
-                classes: cls.join(' '),
-                options: { text: opt.label },
-                attributes: { 'data-value': String(opt.value) },
-            };
-        });
+        const children: any[] = [];
+
+        const hasGroups = filteredOptions.some((opt: SelectOption) => opt.group);
+        if (hasGroups) {
+            const groupOrder: string[] = [];
+            const groups = new Map<string, SelectOption[]>();
+            for (const opt of filteredOptions) {
+                const g = opt.group ?? '';
+                if (!groups.has(g)) {
+                    groups.set(g, []);
+                    groupOrder.push(g);
+                }
+                groups.get(g)!.push(opt);
+            }
+            for (const groupName of groupOrder) {
+                children.push({
+                    tag: 'div',
+                    classes: 'q-select__group-title',
+                    options: { text: groupName },
+                });
+                for (const opt of groups.get(groupName)!) {
+                    children.push(this._renderOptionDef(opt));
+                }
+            }
+        } else {
+            for (const opt of filteredOptions) {
+                children.push(this._renderOptionDef(opt));
+            }
+        }
+
         if (children.length === 0) {
             children.push({ tag: 'div', classes: 'q-select__empty', options: { text: '无匹配项' } });
         }
@@ -177,6 +204,19 @@ class SelectComponent extends InputComponent {
             action: FIELD_ACTION.SELECT_PANEL,
             children,
         });
+    }
+
+    _renderOptionDef(opt: SelectOption): any {
+        const selected = this._isSelected(opt.value);
+        const cls = ['q-select__option'];
+        if (selected) cls.push('q-select__option--selected');
+        if (opt.disabled) cls.push('q-select__option--disabled');
+        return {
+            tag: 'div',
+            classes: cls.join(' '),
+            options: { text: opt.label },
+            attributes: { 'data-value': String(opt.value) },
+        };
     }
 
     _removePanel(): void {

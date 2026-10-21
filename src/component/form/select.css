@@ -44,6 +44,17 @@
     user-select: none;
 }
 
+/* 分组标题 */
+.q-select__group-title {
+    padding: 6px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--q-color-text-secondary, #666);
+    font-weight: 600;
+    user-select: none;
+    background: var(--q-color-bg-alt, #fafafa);
+}
+
 .q-select__option:hover {
     background: var(--q-color-bg-hover, #f0f0f0);
 }
