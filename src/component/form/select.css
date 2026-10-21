@@ -52,7 +52,8 @@
     color: var(--q-color-text-secondary, #666);
     font-weight: 600;
     user-select: none;
-    background: var(--q-color-bg-alt, #fafafa);
+    background: var(--q-color-bg-secondary, #f0eadc);
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
 }
 
 /* 分组内选项缩进 */

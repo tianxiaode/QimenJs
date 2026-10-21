@@ -57,6 +57,7 @@ class SelectComponent extends InputComponent {
     _dropdownIconItem: any = null;
     _panelItem: any = null;
     _offOverlay: (() => void) | null = null;
+    _outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -99,6 +100,10 @@ class SelectComponent extends InputComponent {
 
     onBeforeDispose(): void {
         this._closeDropdown();
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler, true);
+            this._outsideClickHandler = null;
+        }
         if (this._offOverlay) {
             this._offOverlay();
             this._offOverlay = null;
@@ -135,7 +140,7 @@ class SelectComponent extends InputComponent {
     }
 
     onFieldInput(): void {
-        if (!this._filterable) return;
+        if (!this.filterable) return;
         this._value = this.field?.value ?? '';
         if (this._dropdownOpen) this._renderPanel();
         this.emit('select:search', { query: this._value });
@@ -148,6 +153,13 @@ class SelectComponent extends InputComponent {
 
         this._renderPanel();
 
+        this._outsideClickHandler = (e: MouseEvent) => {
+            if (!this.el?.contains(e.target as Node)) {
+                this._closeDropdown();
+            }
+        };
+        document.addEventListener('click', this._outsideClickHandler, true);
+
         this.emit('select:open', {});
     }
 
@@ -157,6 +169,11 @@ class SelectComponent extends InputComponent {
         this.toggleCls('q-select--open', false);
 
         this._removePanel();
+
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler, true);
+            this._outsideClickHandler = null;
+        }
 
         this.emit('select:close', {});
     }
