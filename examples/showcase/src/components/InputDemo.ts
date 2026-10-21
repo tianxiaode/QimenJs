@@ -73,18 +73,18 @@ export const INPUT_DEMO: DemoConfig = {
         },
         {
             label: '前缀/后缀（prefix/suffix）',
-            code: `{ type: 'input', options: { prefix: { type: 'icon', options: { iconCls: 'q-search' } }, placeholder: '搜索...' } }
-{ type: 'input', options: { suffix: { type: 'icon', options: { iconCls: 'q-info' } }, placeholder: '带后缀图标' } }
-{ type: 'input', options: { prefix: { type: 'label', options: { text: '¥' } }, placeholder: '金额' } }
-{ type: 'input', options: { prefix: { type: 'icon', options: { iconCls: 'q-user' } }, suffix: { type: 'icon', options: { iconCls: 'q-close' } }, placeholder: '前后缀' } }`,
+            code: `{ type: 'input', options: { prefix: { type: 'icon', iconCls: 'q-search' }, placeholder: '搜索...' } }
+{ type: 'input', options: { suffix: { type: 'icon', iconCls: 'q-info' }, placeholder: '带后缀图标' } }
+{ type: 'input', options: { prefix: { type: 'label', text: '¥' }, placeholder: '金额' } }
+{ type: 'input', options: { prefix: { type: 'icon', iconCls: 'q-user' }, suffix: { type: 'icon', iconCls: 'q-close' }, placeholder: '前后缀' } }`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'input', options: { prefix: { type: 'icon', options: { iconCls: 'q-search' } }, placeholder: '搜索...' } },
-                    { type: 'input', options: { suffix: { type: 'icon', options: { iconCls: 'q-info' } }, placeholder: '带后缀图标' } },
-                    { type: 'input', options: { prefix: { type: 'label', options: { text: '¥' } }, placeholder: '金额' } },
-                    { type: 'input', options: { prefix: { type: 'icon', options: { iconCls: 'q-user' } }, suffix: { type: 'icon', options: { iconCls: 'q-close' } }, placeholder: '前后缀' } },
+                    { type: 'input', options: { prefix: { type: 'icon', iconCls: 'q-search' }, placeholder: '搜索...' } },
+                    { type: 'input', options: { suffix: { type: 'icon', iconCls: 'q-info' }, placeholder: '带后缀图标' } },
+                    { type: 'input', options: { prefix: { type: 'label', text: '¥' }, placeholder: '金额' } },
+                    { type: 'input', options: { prefix: { type: 'icon', iconCls: 'q-user' }, suffix: { type: 'icon', iconCls: 'q-close' }, placeholder: '前后缀' } },
                 ],
             },
         },
