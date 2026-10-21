@@ -4,6 +4,7 @@ import { IconComponent } from '../icon/IconComponent';
 import { EYE_BTN_ORDER, FIELD_ACTION } from './constants';
 import { PasswordStrengthAbility, type PasswordStrength } from './abilities/PasswordStrengthAbility';
 import './passwordinput.css';
+import './password-strength.css';
 
 const PasswordInputComponentDefs: Definitions = {
     options: {
