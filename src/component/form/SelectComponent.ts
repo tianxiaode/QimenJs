@@ -102,11 +102,12 @@ class SelectComponent extends InputComponent {
         this.setData('popover', {
             type: 'list',
             trigger: 'manual',
-            anchor: 'root',
+            anchor: 'fieldBody',
             placement: 'bottom',
             options: {
                 items: this._buildListItems(),
                 classes: 'q-select-panel',
+                offset: 0,
             },
         });
     }
