@@ -45,7 +45,8 @@ class ListComponent extends ItemGroupPooledComponent {
         click: {
             path: '[items]',
             handler: '_onItemClick',
-            emits: ['select'],
+            emits: ['select', '[action]'],
+            bridges: ['select', '[action]'],
         },
     };
 

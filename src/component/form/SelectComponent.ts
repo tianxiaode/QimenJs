@@ -6,6 +6,11 @@
  * 选项渲染用 ListItemComponent（label/status/markForm），
  * 选中值通过 action/actionData 传递（ComponentDefs 通用 option）。
  *
+ * 事件链路（参考 Table header 菜单模式）：
+ * - popover options 携带 eventKey → 浮层 ListComponent 共享 eventKey
+ * - ListComponent domEvents bridges 将 select 事件桥接到组件总线
+ * - SelectComponent listens source='self' 监听同一 eventKey 上的 select 事件
+ *
  * 特有功能：
  * - options 选项列表（静态 / 动态加载）
  * - 下拉面板（PopoverAbility + ListComponent）
@@ -20,6 +25,7 @@ import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
 import { DROPDOWN_ICON_ORDER, FIELD_ACTION } from './constants';
+import type { ListenItem } from '@qimenjs/component-core';
 import './select.css';
 
 export interface SelectOption {
@@ -35,6 +41,7 @@ const SelectComponentDefs: Definitions = {
         clearable: false,
         options: [],
         multiple: false,
+        autoEventKey: true,
     },
 } as const;
 
@@ -42,7 +49,15 @@ class SelectComponent extends InputComponent {
     static type = 'select';
     _selectedValue: string | number | (string | number)[] | undefined = undefined;
     _dropdownIconItem: any = null;
-    _selectBound: boolean = false;
+
+    listens: ListenItem[] = [
+        {
+            source: 'self',
+            events: {
+                select: '_onListSelect',
+            },
+        },
+    ];
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -109,6 +124,7 @@ class SelectComponent extends InputComponent {
                 classes: 'q-select-panel',
                 offset: 0,
                 align: 'start',
+                eventKey: this.eventKey,
             },
         });
     }
@@ -161,12 +177,6 @@ class SelectComponent extends InputComponent {
                     inst.el?.style.setProperty('min-width', `${fieldBody.offsetWidth}px`);
                 });
             }
-            if (!this._selectBound) {
-                this._selectBound = true;
-                inst.on('select', (ctx: any) => {
-                    this._onListSelect(ctx);
-                });
-            }
         }
         this.emit('select:open', {});
     }
@@ -176,12 +186,12 @@ class SelectComponent extends InputComponent {
         this.emit('select:close', {});
     }
 
-    _onListSelect(ctx: any): void {
-        const domEvt = ctx?.domEvent ?? ctx;
-        const action = domEvt?.action;
+    _onListSelect(data: any): void {
+        const action = data?.action ?? data?.domEvent?.action;
         if (action !== 'select-option') return;
 
-        const value = this._parseValue(domEvt.actionData);
+        const rawValue = data?.actionData ?? data?.domEvent?.actionData;
+        const value = this._parseValue(rawValue);
         if (this.multiple) {
             const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];
             const idx = arr.indexOf(value);
