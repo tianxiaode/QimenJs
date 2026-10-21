@@ -260,19 +260,76 @@
     content: "\e918";
 }
 
+/* -------- 搜索 (search) → 字体图标 -------- */
+.q-search {
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-search::before {
+    content: "\e929";
+}
+
+/* -------- 信息 (info) → 字体图标 -------- */
+.q-info {
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-info::before {
+    content: "\e91f";
+}
+
+/* -------- 用户 (user) → 字体图标 -------- */
+.q-user {
+    font-family: 'QIcon';
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--q-icon-size);
+    color: var(--q-icon-color);
+}
+.q-user::before {
+    content: "\e92d";
+}
+
 /* -------- 尺寸跟随 -------- */
-.q-size--xs :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off) {
+.q-size--xs :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off, .q-search, .q-info, .q-user) {
     --q-icon-size: 10px;
 }
 
-.q-size--sm :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off) {
+.q-size--sm :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off, .q-search, .q-info, .q-user) {
     --q-icon-size: 12px;
 }
 
-.q-size--lg :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off) {
+.q-size--lg :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off, .q-search, .q-info, .q-user) {
     --q-icon-size: 18px;
 }
 
-.q-size--xl :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off) {
+.q-size--xl :where(.q-check, .q-close, .q-chevron-right, .q-chevron-down, .q-diamond, .q-radio, .q-checkbox, .q-eye, .q-eye-off, .q-search, .q-info, .q-user) {
     --q-icon-size: 20px;
 }
