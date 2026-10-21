@@ -131,11 +131,6 @@ export const FieldItemAbility = {
         this._clearBtnItem = null;
     },
 
-    onClearBtnClick(): void {
-        this._toggleClearBtn();
-        this._fieldItem?.focus();
-    },
-
     _toggleClearBtn(): void {
         if (!this._clearBtnItem) return;
         const hasValue = !!this._fieldItem?.value;
