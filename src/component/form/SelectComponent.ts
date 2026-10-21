@@ -2,12 +2,12 @@
  * SelectComponent 下拉选择组件
  *
  * 从 InputComponent 派生，共享统一模板。
- * 下拉弹出复用 PopoverAbility（popover option → MenuComponent 浮层），
- * 选项渲染复用 MenuItemComponent（group/groupMode/checked 选中态管理）。
+ * 下拉弹出复用 PopoverAbility（popover option → SelectPanelComponent 浮层），
+ * 选项渲染用 TemplateDecl（data-action/data-value 传递点击信息）。
  *
  * 特有功能：
  * - options 选项列表（静态 / 动态加载）
- * - 下拉面板（PopoverAbility + MenuComponent）
+ * - 下拉面板（PopoverAbility + SelectPanelComponent）
  * - 多选（multiple）
  * - 分组（opt.group 视觉分组标题）
  * - 选中值显示
@@ -18,7 +18,9 @@
 import { InputComponent } from './InputComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
+import { SelectPanelComponent } from './SelectPanelComponent';
 import { DROPDOWN_ICON_ORDER, FIELD_ACTION } from './constants';
+import type { TemplateDecl } from '@qimenjs/component-core';
 import './select.css';
 
 export interface SelectOption {
@@ -66,7 +68,7 @@ class SelectComponent extends InputComponent {
         }
         this._syncDisplayValue();
         this._toggleClearBtn();
-        this._updatePopoverChecked();
+        this._updatePopoverItems();
     }
 
     _onOptionsOptionChange(_value: SelectOption[]): void {
@@ -99,41 +101,47 @@ class SelectComponent extends InputComponent {
 
     _buildPopover(): void {
         this.setData('popover', {
-            type: 'menu',
+            type: 'select-panel',
             trigger: 'manual',
             anchor: 'fieldBody',
             placement: 'bottom',
-            options: { items: this._buildMenuItems() },
+            options: { items: this._buildPanelItems() },
         });
     }
 
-    _buildMenuItems(): any[] {
+    _buildPanelItems(): TemplateDecl[] {
         const opts = this.options as SelectOption[];
         if (!opts || !opts.length) return [];
 
-        const groupMode = this.multiple ? 'checkbox' : 'radio';
-        const items: any[] = [];
+        const items: TemplateDecl[] = [];
         const seenGroups = new Set<string>();
 
         for (const opt of opts) {
             if (opt.group && !seenGroups.has(opt.group)) {
                 seenGroups.add(opt.group);
                 items.push({
-                    type: 'menu-item',
-                    text: opt.group,
-                    disabled: true,
-                    action: 'select-group-title',
+                    tag: 'div',
+                    classes: ['q-select-panel__group-title'],
+                    options: { text: opt.group },
                 });
             }
+
+            const classes = ['q-select-panel__option'];
+            if (this._isSelected(opt.value)) {
+                classes.push('q-select-panel__option--selected');
+            }
+            if (opt.disabled) {
+                classes.push('q-select-panel__option--disabled');
+            }
+
             items.push({
-                type: 'menu-item',
-                text: opt.label,
-                group: 'select',
-                groupMode,
-                checked: this._isSelected(opt.value),
-                action: 'select-option',
-                actionData: opt.value,
-                disabled: opt.disabled,
+                tag: 'div',
+                classes,
+                attributes: {
+                    'data-action': 'select-option',
+                    'data-value': String(opt.value),
+                },
+                options: { text: opt.label },
             });
         }
         return items;
@@ -142,20 +150,12 @@ class SelectComponent extends InputComponent {
     _updatePopoverItems(): void {
         const inst = this._getPopoverInstance();
         if (inst) {
-            inst.setItems(this._buildMenuItems());
-        } else {
-            this.updatePopover({ items: this._buildMenuItems() });
-        }
-    }
-
-    _updatePopoverChecked(): void {
-        const inst = this._getPopoverInstance();
-        if (!inst) return;
-        for (const item of inst.items ?? []) {
-            const value = item.getData?.('actionData');
-            if (value !== undefined) {
-                item.checked = this._isSelected(value);
+            inst.clear(true);
+            for (const def of this._buildPanelItems()) {
+                inst.add(def);
             }
+        } else {
+            this.updatePopover({ items: this._buildPanelItems() });
         }
     }
 
@@ -165,7 +165,7 @@ class SelectComponent extends InputComponent {
         if (inst && !this._selectBound) {
             this._selectBound = true;
             inst.on('select', (data: any) => {
-                this._onMenuSelect(data);
+                this._onPanelSelect(data);
             });
         }
         this.emit('select:open', {});
@@ -176,26 +176,34 @@ class SelectComponent extends InputComponent {
         this.emit('select:close', {});
     }
 
-    _onMenuSelect(data: any): void {
-        const inst = this._getPopoverInstance();
-        if (!inst) return;
+    _onPanelSelect(data: any): void {
+        if (data?.action !== 'select-option') return;
 
-        const checkedItems = (inst.items ?? []).filter((item: any) => item.checked);
+        const value = this._parseValue(data.value);
         if (this.multiple) {
-            this._selectedValue = checkedItems
-                .map((item: any) => item.getData?.('actionData'))
-                .filter((v: any) => v !== undefined);
+            const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];
+            const idx = arr.indexOf(value);
+            if (idx >= 0) {
+                arr.splice(idx, 1);
+            } else {
+                arr.push(value);
+            }
+            this._selectedValue = arr.length ? arr : undefined;
             this._syncDisplayValue();
-            this.showPopover();
+            this._updatePopoverItems();
         } else {
-            const checkedItem = checkedItems[0];
-            this._selectedValue = checkedItem?.getData?.('actionData');
+            this._selectedValue = value;
             this._syncDisplayValue();
             this.hidePopover();
         }
 
         this.emit('select:change', { value: this._selectedValue });
         if (this._shouldValidate('change')) this._doValidate();
+    }
+
+    _parseValue(raw: string): string | number {
+        const num = Number(raw);
+        return Number.isNaN(num) ? raw : num;
     }
 
     onFieldFocus(): void {
@@ -223,7 +231,7 @@ class SelectComponent extends InputComponent {
     onClearBtnClick(): void {
         this._selectedValue = undefined;
         this._syncDisplayValue();
-        this._updatePopoverChecked();
+        this._updatePopoverItems();
         this.emit('select:change', { value: undefined });
         this._toggleClearBtn();
         this._fieldItem?.focus();
@@ -271,7 +279,7 @@ class SelectComponent extends InputComponent {
     set selectedValue(v: string | number | (string | number)[] | undefined) {
         this._selectedValue = v;
         this._syncDisplayValue();
-        this._updatePopoverChecked();
+        this._updatePopoverItems();
     }
 
     getFormValue(): any {
@@ -281,13 +289,13 @@ class SelectComponent extends InputComponent {
     setFormValue(v: any): void {
         this._selectedValue = v;
         this._syncDisplayValue();
-        this._updatePopoverChecked();
+        this._updatePopoverItems();
     }
 
     formReset(defaultValue?: any): void {
         this._selectedValue = defaultValue ?? undefined;
         this._syncDisplayValue();
-        this._updatePopoverChecked();
+        this._updatePopoverItems();
         this.error = '';
     }
 

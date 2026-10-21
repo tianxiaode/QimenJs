@@ -23,7 +23,9 @@ export { TextareaComponent } from './TextareaComponent';
 export { NumberInputComponent } from './NumberInputComponent';
 export { numberInputCSS } from './number-input.css';
 export { SelectComponent, type SelectOption } from './SelectComponent';
+export { SelectPanelComponent } from './SelectPanelComponent';
 export { selectCSS } from './select.css';
+export { selectPanelCSS } from './select-panel.css';
 export { SwitchFieldBodyComponent } from './SwitchFieldBodyComponent';
 export { SwitchComponent } from './SwitchComponent';
 export {
