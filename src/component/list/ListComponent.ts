@@ -72,6 +72,16 @@ class ListComponent extends ItemGroupPooledComponent {
         super.onAfterInit();
         console.log('[List.onAfterInit] after super, items count:', this.count);
         console.log('[List.onAfterInit] itemContainer:', (this as any).itemContainer?.el);
+        console.log('[List.onAfterInit] items[0].el:', this.items?.[0]?.el);
+
+        if (this.el) {
+            this.el.addEventListener('pointerdown', (e) => {
+                console.log('[List.native pointerdown]', e.target);
+            });
+            this.el.addEventListener('click', (e) => {
+                console.log('[List.native click]', e.target);
+            });
+        }
     }
 
     show(): void {
