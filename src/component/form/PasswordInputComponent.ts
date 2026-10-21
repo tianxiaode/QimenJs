@@ -24,7 +24,7 @@ class PasswordInputComponent extends InputComponent {
         if (fieldItem) fieldItem.inputType = value ? 'text' : 'password';
         const eyeCmp = this._eyeBtnItem;
         if (eyeCmp && typeof eyeCmp.update === 'function') {
-            eyeCmp.update({ iconCls: value ? 'eye-off' : 'eye' });
+            eyeCmp.update({ iconCls: value ? 'q-eye-off' : 'q-eye' });
         }
     }
 
@@ -57,7 +57,7 @@ class PasswordInputComponent extends InputComponent {
         if (!fieldBodyCmp || this._eyeBtnItem) return;
         const item = fieldBodyCmp.add({
             type: IconComponent,
-            iconCls: this.visible ? 'eye-off' : 'eye',
+            iconCls: this.visible ? 'q-eye-off' : 'q-eye',
             action: FIELD_ACTION.EYE_TOGGLE,
             order: EYE_BTN_ORDER,
         });

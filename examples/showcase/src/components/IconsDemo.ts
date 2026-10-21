@@ -69,5 +69,9 @@ export const ICONS_DEMO: DemoConfig = {
             label: '天体/外观',
             template: gallery(['sun', 'moon', 'dark', 'globe']),
         },
+        {
+            label: '密码可见性',
+            template: gallery(['eye', 'eye-off']),
+        },
     ],
 };
