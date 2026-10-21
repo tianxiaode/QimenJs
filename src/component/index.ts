@@ -42,7 +42,6 @@ export { DatePickerComponent } from './form/DatePickerComponent';
 export { SliderComponent } from './form/SliderComponent';
 export { TextareaComponent } from './form/TextareaComponent';
 export { PasswordInputComponent } from './form/PasswordInputComponent';
-export { PasswordStrengthComponent } from './form/PasswordStrengthComponent';
 export { FormComponent } from './form/FormComponent';
 export { FormFieldComponent } from './form/FormFieldComponent';
 export { InputInfoGroupComponent } from './form/InputInfoGroupComponent';
