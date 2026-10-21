@@ -76,10 +76,19 @@ class ListComponent extends ItemGroupPooledComponent {
 
         if (this.el) {
             this.el.addEventListener('pointerdown', (e) => {
-                console.log('[List.native pointerdown]', e.target);
+               >('[List.native pointerdown]', e.target, 'x:', e.clientX, 'y:', e.clientY);
+            });
+            this.el.addEventListener('pointerup', (e) => {
+                console.log('[List.native pointerup]', e.target, 'x:', e.clientX, 'y:', e.clientY);
             });
             this.el.addEventListener('click', (e) => {
                 console.log('[List.native click]', e.target);
+            });
+            this.el.addEventListener('mousedown', (e) => {
+                console.log('[List.native mousedown]', e.target);
+            });
+            this.el.addEventListener('mouseup', (e) => {
+                console.log('[List.native mouseup]', e.target);
             });
         }
     }
