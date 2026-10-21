@@ -30,6 +30,7 @@ export const FIELD_ACTION = {
     STEP: 'step',
     SELECT_PANEL: 'panel',
     SELECT_ALL: 'select-all',
+    DROPDOWN_TOGGLE: 'dropdown-toggle',
 } as const;
 
 /** 密码强度标签文本（0-4 级） */

@@ -99,6 +99,7 @@ class SelectComponent extends InputComponent {
         const item = fieldBodyCmp.add({
             type: IconComponent,
             iconCls: 'q-chevron-down',
+            action: FIELD_ACTION.DROPDOWN_TOGGLE,
             order: DROPDOWN_ICON_ORDER,
         });
         if (item?.el) {
@@ -162,12 +163,12 @@ class SelectComponent extends InputComponent {
             return {
                 tag: 'div',
                 classes: cls.join(' '),
-                text: opt.label,
+                options: { text: opt.label },
                 attributes: { 'data-value': String(opt.value) },
             };
         });
         if (children.length === 0) {
-            children.push({ tag: 'div', classes: 'q-select__empty', text: '无匹配项' });
+            children.push({ tag: 'div', classes: 'q-select__empty', options: { text: '无匹配项' } });
         }
 
         this._panelItem = fieldBodyCmp.add({
@@ -206,6 +207,14 @@ class SelectComponent extends InputComponent {
     /** 下拉面板 option 点击分发（super 保持 clear 分发） */
     onFieldItemClick(domEvt?: any): void {
         super.onFieldItemClick(domEvt);
+        if (domEvt?.action === FIELD_ACTION.DROPDOWN_TOGGLE) {
+            if (this._dropdownOpen) {
+                this._closeDropdown();
+            } else {
+                this._openDropdown();
+            }
+            return;
+        }
         if (domEvt?.action !== FIELD_ACTION.SELECT_PANEL) return;
         const target = domEvt?.data?.originalEvent?.target as Element | undefined;
         if (!target) return;
