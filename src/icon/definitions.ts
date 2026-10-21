@@ -374,6 +374,24 @@ export const icons: IconDef[] = [
             { d: P.polyline([256, 64], [341, 256], [256, 448]) },
         ],
     },
+
+    // ---- 密码可见性 ----
+    {
+        name: 'eye',
+        paths: [
+            { d: P.qcurve(86, 256, 256, 100, 426, 256) },
+            { d: P.qcurve(426, 256, 256, 412, 86, 256) },
+            { d: P.circle(256, 256, 64), fill: 'currentColor' },
+        ],
+    },
+    {
+        name: 'eye-off',
+        paths: [
+            { d: P.qcurve(86, 256, 256, 100, 426, 256) },
+            { d: P.qcurve(426, 256, 256, 412, 86, 256) },
+            { d: P.line(110, 110, 402, 402) },
+        ],
+    },
 ];
 
 /** 按 name 索引 */

@@ -7,6 +7,7 @@ export const STEP_UP_ORDER = 500;
 export const STEP_DOWN_ORDER = 501;
 export const STEPS_ORDER = 600;
 export const DROPDOWN_ICON_ORDER = 600;
+export const STRENGTH_ORDER = 5;
 
 export const LABEL_POSITION_MAP: Record<string, string> = {
     top: 'q-formfield--top',
@@ -30,3 +31,12 @@ export const FIELD_ACTION = {
     SELECT_PANEL: 'panel',
     SELECT_ALL: 'select-all',
 } as const;
+
+/** 密码强度标签文本（0-4 级） */
+export const PASSWORD_STRENGTH_LABELS: Record<number, string> = {
+    0: '',
+    1: '弱',
+    2: '中',
+    3: '强',
+    4: '极强',
+};

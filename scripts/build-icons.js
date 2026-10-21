@@ -140,6 +140,9 @@ const icons = [
     { name: 'dark', paths: [{ d: 'M171 150 A171 171 0 1 0 342 363 A149 149 0 0 1 171 150 Z', fill: 'currentColor' }], strokeWidth: 0 },
     { name: 'palette', paths: [{ d: 'M256 448 A192 192 0 1 1 443 300 C424 352 359 308 314 339 C269 370 311 448 256 448 Z' }, { d: P.circle(348, 179, 32), fill: 'currentColor' }, { d: P.circle(256, 136, 32), fill: 'currentColor' }, { d: P.circle(164, 179, 32), fill: 'currentColor' }, { d: P.circle(138, 277, 32), fill: 'currentColor' }] },
     { name: 'globe', paths: [{ d: P.circle(256, 256, 192) }, { d: P.line(64, 256, 448, 256) }, { d: P.polyline([256, 64], [171, 256], [256, 448]) }, { d: P.polyline([256, 64], [341, 256], [256, 448]) }] },
+    // 密码可见性
+    { name: 'eye', paths: [{ d: P.qcurve(86, 256, 256, 100, 426, 256) }, { d: P.qcurve(426, 256, 256, 412, 86, 256) }, { d: P.circle(256, 256, 64), fill: 'currentColor' }] },
+    { name: 'eye-off', paths: [{ d: P.qcurve(86, 256, 256, 100, 426, 256) }, { d: P.qcurve(426, 256, 256, 412, 86, 256) }, { d: P.line(110, 110, 402, 402) }] },
 ];
 
 // ---- Unicode 映射（私用区 E900-E9FF） ----

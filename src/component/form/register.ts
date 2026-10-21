@@ -1,7 +1,6 @@
 import { InputComponent } from './InputComponent';
 import { InputFieldComponent } from './InputFieldComponent';
 import { PasswordInputComponent } from './PasswordInputComponent';
-import { PasswordStrengthComponent } from './PasswordStrengthComponent';
 import { InputInfoGroupComponent } from './InputInfoGroupComponent';
 import { FormFieldComponent } from './FormFieldComponent';
 import { FormComponent } from './FormComponent';
@@ -18,7 +17,6 @@ import { DatePickerComponent } from './DatePickerComponent';
 InputComponent.register();
 InputFieldComponent.register();
 PasswordInputComponent.register();
-PasswordStrengthComponent.register();
 InputInfoGroupComponent.register();
 FormFieldComponent.register();
 FormComponent.register();
