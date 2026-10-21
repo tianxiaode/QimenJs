@@ -55,6 +55,11 @@
     background: var(--q-color-bg-alt, #fafafa);
 }
 
+/* 分组内选项缩进 */
+.q-select__group-title + .q-select__option {
+    padding-left: 24px;
+}
+
 .q-select__option:hover {
     background: var(--q-color-bg-hover, #f0f0f0);
 }

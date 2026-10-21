@@ -79,7 +79,11 @@ class SelectComponent extends InputComponent {
     }
 
     _onValueOptionChange(value: any): void {
-        this._selectedValue = value;
+        if (this.multiple) {
+            this._selectedValue = Array.isArray(value) ? value : (value ? [value] : undefined);
+        } else {
+            this._selectedValue = value || undefined;
+        }
         this._syncDisplayValue();
         this._toggleClearBtn();
     }
@@ -133,6 +137,7 @@ class SelectComponent extends InputComponent {
     onFieldInput(): void {
         if (!this._filterable) return;
         this._value = this.field?.value ?? '';
+        if (this._dropdownOpen) this._renderPanel();
         this.emit('select:search', { query: this._value });
     }
 
@@ -286,6 +291,7 @@ class SelectComponent extends InputComponent {
         }
 
         this._syncDisplayValue();
+        if (this.multiple && this._dropdownOpen) this._renderPanel();
         this.emit('select:change', { value: this._selectedValue, option: opt });
         if (this._shouldValidate('change')) this._doValidate();
     }
