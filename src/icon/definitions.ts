@@ -379,17 +379,17 @@ export const icons: IconDef[] = [
     {
         name: 'eye',
         paths: [
-            { d: P.qcurve(86, 256, 256, 100, 426, 256) },
-            { d: P.qcurve(426, 256, 256, 412, 86, 256) },
-            { d: P.circle(256, 256, 64), fill: 'currentColor' },
+            { d: P.qcurve(64, 256, 256, 70, 448, 256) },
+            { d: P.qcurve(448, 256, 256, 442, 64, 256) },
+            { d: P.circle(256, 256, 75), fill: 'currentColor' },
         ],
     },
     {
         name: 'eye-off',
         paths: [
-            { d: P.qcurve(86, 256, 256, 100, 426, 256) },
-            { d: P.qcurve(426, 256, 256, 412, 86, 256) },
-            { d: P.line(110, 110, 402, 402) },
+            { d: P.qcurve(64, 256, 256, 70, 448, 256) },
+            { d: P.qcurve(448, 256, 256, 442, 64, 256) },
+            { d: P.line(80, 80, 432, 432) },
         ],
     },
 ];

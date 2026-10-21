@@ -2,11 +2,12 @@
  * PasswordStrengthAbility 密码强度能力
  *
  * 计算密码强度（0-4 级）并在 infoGroup 中渲染强度条 + 标签。
- * 纯 DOM 模板 item（不走组件链），避免组件注册/option 同步问题。
+ * 直接手工创建 DOM 并 appendChild 到 infoGroup.el（infoGroup.add 只支持组件 item，
+ * 不支持纯 DOM 模板；手工 DOM 不走组件链，避免注册/option 同步问题）。
  */
 
 import type { AbilityDefinition } from '@/composable';
-import { PASSWORD_STRENGTH_LABELS, STRENGTH_ORDER } from '../constants';
+import { PASSWORD_STRENGTH_LABELS } from '../constants';
 
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
 
@@ -35,35 +36,35 @@ export function calculateStrength(password: string): PasswordStrength {
 
 export const PasswordStrengthAbility = {
     _strength: 0 as PasswordStrength,
-    _strengthItem: null as any,
+    _strengthBarEl: null as HTMLElement | null,
     _strengthFillEl: null as HTMLElement | null,
     _strengthLabelEl: null as HTMLElement | null,
 
     _mountStrengthBar(): void {
         const infoCmp = this.getComponent('infoGroup') as any;
-        if (!infoCmp || this._strengthItem) return;
+        if (!infoCmp || this._strengthBarEl) return;
 
-        this._strengthItem = infoCmp.add({
-            tag: 'div',
-            classes: 'q-password-strength',
-            options: { text: '' },
-            children: [
-                {
-                    tag: 'div',
-                    classes: 'q-password-strength__bar',
-                    children: [
-                        { tag: 'div', classes: 'q-password-strength__fill q-password-strength__fill--0' },
-                    ],
-                },
-                { tag: 'div', classes: 'q-password-strength__label' },
-            ],
-        });
+        const container = document.createElement('div');
+        container.className = 'q-password-strength';
 
-        const el = this._strengthItem?.el as HTMLElement | undefined;
-        if (el) {
-            this._strengthFillEl = el.querySelector('.q-password-strength__fill');
-            this._strengthLabelEl = el.querySelector('.q-password-strength__label');
-        }
+        const bar = document.createElement('div');
+        bar.className = 'q-password-strength__bar';
+
+        const fill = document.createElement('div');
+        fill.className = 'q-password-strength__fill q-password-strength__fill--0';
+        bar.appendChild(fill);
+
+        const label = document.createElement('div');
+        label.className = 'q-password-strength__label';
+
+        container.appendChild(bar);
+        container.appendChild(label);
+
+        infoCmp.el.appendChild(container);
+
+        this._strengthBarEl = container;
+        this._strengthFillEl = fill;
+        this._strengthLabelEl = label;
     },
 
     _updateStrength(): void {
