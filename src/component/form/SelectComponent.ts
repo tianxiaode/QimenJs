@@ -114,6 +114,7 @@ class SelectComponent extends InputComponent {
     }
 
     _buildPopover(): void {
+        console.log('[Select._buildPopover] eventKey:', this.eventKey);
         this.setData('popover', {
             type: 'list',
             trigger: 'manual',
@@ -169,6 +170,7 @@ class SelectComponent extends InputComponent {
     showPopover(): void {
         super.showPopover();
         const inst = this._getPopoverInstance();
+        console.log('[Select.showPopover] inst:', inst, 'eventKey:', inst?.eventKey);
         if (inst) {
             inst.addCls('q-select-panel');
             const fieldBody = this.getNodeEl('fieldBody');
@@ -187,10 +189,13 @@ class SelectComponent extends InputComponent {
     }
 
     _onListSelect(data: any): void {
+        console.log('[Select._onListSelect] data:', data);
         const action = data?.action ?? data?.domEvent?.action;
+        console.log('[Select._onListSelect] action:', action);
         if (action !== 'select-option') return;
 
         const rawValue = data?.actionData ?? data?.domEvent?.actionData;
+        console.log('[Select._onListSelect] rawValue:', rawValue);
         const value = this._parseValue(rawValue);
         if (this.multiple) {
             const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];

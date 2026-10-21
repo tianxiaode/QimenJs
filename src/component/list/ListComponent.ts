@@ -73,7 +73,9 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 
     _onItemClick(domEvt: any): void {
+        console.log('[List._onItemClick] domEvt:', domEvt);
         const item = domEvt?.targetComponent;
+        console.log('[List._onItemClick] item:', item, 'action:', item?.action, 'actionData:', item?.actionData);
         if (!item) return;
         const action = item.action;
         if (action) domEvt.action = action;
@@ -81,6 +83,7 @@ class ListComponent extends ItemGroupPooledComponent {
         if (actionData !== undefined && actionData !== null) {
             domEvt.actionData = actionData;
         }
+        console.log('[List._onItemClick] after set: action:', domEvt.action, 'actionData:', domEvt.actionData);
     }
 
     _onSizeOptionChange(value: string, old: string): void {
