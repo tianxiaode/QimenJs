@@ -8,7 +8,7 @@
  * 双用途：内嵌列表 + 浮层面板。
  * 作为浮层时（如 Select 下拉面板），通过 PopoverAbility 实例化，
  * show()/hide() 调用 OverlayAbility 定位/显隐。
- * domEvents click 委托 [items]，emits select 自动转发点击事件。
+ * domEvents click 委托 [items]，emits/bridges select 自动转发点击事件。
  *
  * @example
  * ```ts
@@ -50,47 +50,18 @@ class ListComponent extends ItemGroupPooledComponent {
         },
     };
 
+    _clickedAction: any = null;
+    _clickedActionData: any = null;
+
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical' };
     }
 
-    _initDomEvents(): void {
-        console.log('[List._initDomEvents] domEvents:', this.domEvents);
-        console.log('[List._initDomEvents] el:', this.el);
-        console.log('[List._initDomEvents] items count:', this.count);
-        super._initDomEvents();
-        console.log('[List._initDomEvents] after super, _eventRules:', (this as any)._eventRules?.length);
-        console.log('[List._initDomEvents] _domEventDispatchers:', (this as any)._domEventDispatchers?.size);
-    }
-
     onAfterInit(): void {
-        console.log('[List.onAfterInit] domEvents:', this.domEvents);
-        console.log('[List.onAfterInit] el:', this.el);
         this.addCls('q-list');
         this.addCls(`q-list--${this.getData('size')}`);
         (this as any).itemContainer?.el?.classList.add('q-list__items');
         super.onAfterInit();
-        console.log('[List.onAfterInit] after super, items count:', this.count);
-        console.log('[List.onAfterInit] itemContainer:', (this as any).itemContainer?.el);
-        console.log('[List.onAfterInit] items[0].el:', this.items?.[0]?.el);
-
-        if (this.el) {
-            this.el.addEventListener('pointerdown', (e) => {
-               >('[List.native pointerdown]', e.target, 'x:', e.clientX, 'y:', e.clientY);
-            });
-            this.el.addEventListener('pointerup', (e) => {
-                console.log('[List.native pointerup]', e.target, 'x:', e.clientX, 'y:', e.clientY);
-            });
-            this.el.addEventListener('click', (e) => {
-                console.log('[List.native click]', e.target);
-            });
-            this.el.addEventListener('mousedown', (e) => {
-                console.log('[List.native mousedown]', e.target);
-            });
-            this.el.addEventListener('mouseup', (e) => {
-                console.log('[List.native mouseup]', e.target);
-            });
-        }
     }
 
     show(): void {
@@ -104,17 +75,10 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 
     _onItemClick(domEvt: any): void {
-        console.log('[List._onItemClick] domEvt:', domEvt);
         const item = domEvt?.targetComponent;
-        console.log('[List._onItemClick] item:', item, 'action:', item?.action, 'actionData:', item?.actionData);
         if (!item) return;
-        const action = item.action;
-        if (action) domEvt.action = action;
-        const actionData = item.actionData;
-        if (actionData !== undefined && actionData !== null) {
-            domEvt.actionData = actionData;
-        }
-        console.log('[List._onItemClick] after set: action:', domEvt.action, 'actionData:', domEvt.actionData);
+        this._clickedAction = item.action ?? null;
+        this._clickedActionData = item.actionData ?? null;
     }
 
     _onSizeOptionChange(value: string, old: string): void {
@@ -125,6 +89,8 @@ class ListComponent extends ItemGroupPooledComponent {
         return {
             ...super.defaultEventData,
             itemCount: this.count,
+            action: this._clickedAction,
+            actionData: this._clickedActionData,
         };
     }
 
