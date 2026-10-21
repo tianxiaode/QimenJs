@@ -104,7 +104,10 @@ class SelectComponent extends InputComponent {
             trigger: 'manual',
             anchor: 'root',
             placement: 'bottom',
-            options: { items: this._buildListItems() },
+            options: {
+                items: this._buildListItems(),
+                classes: 'q-select-panel',
+            },
         });
     }
 
@@ -148,11 +151,14 @@ class SelectComponent extends InputComponent {
     showPopover(): void {
         super.showPopover();
         const inst = this._getPopoverInstance();
-        if (inst && !this._selectBound) {
-            this._selectBound = true;
-            inst.on('select', (ctx: any) => {
-                this._onListSelect(ctx);
-            });
+        if (inst) {
+            inst.addCls('q-select-panel');
+            if (!this._selectBound) {
+                this._selectBound = true;
+                inst.on('select', (ctx: any) => {
+                    this._onListSelect(ctx);
+                });
+            }
         }
         this.emit('select:open', {});
     }

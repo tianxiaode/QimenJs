@@ -26,9 +26,9 @@
     cursor: not-allowed;
 }
 
-/* ─── 下拉面板（ListComponent 浮层） ─── */
+/* ─── 下拉面板（ListComponent 浮层，挂载在 OverlayRoot） ─── */
 
-.q-select .q-list {
+.q-select-panel {
     min-width: 120px;
     max-height: 240px;
     overflow-y: auto;
@@ -40,50 +40,49 @@
 }
 
 /* 隐藏 mark 图标，Select 选项纯文字 */
-.q-select .q-list__mark {
-    display: none;
+.q-select-panel .q-list__mark {
+    display: none !important;
 }
 
-.q-select .q-list__content {
+.q-select-panel .q-list__content {
     padding-left: 12px;
 }
 
 /* 选项 */
-.q-select .q-list__item {
+.q-select-panel .q-list__item {
     padding: 6px 12px;
     cursor: pointer;
     user-select: none;
+    text-align: left;
 }
 
-.q-select .q-list__item:hover {
+.q-select-panel .q-list__item:hover {
     background: var(--q-color-hover, #f5f5f5);
 }
 
 /* 选中态：文字高亮 */
-.q-select .q-list__item--primary .q-list__label {
+.q-select-panel .q-list__item--primary .q-list__label {
     color: var(--q-color-primary, #0078d4);
     font-weight: 600;
 }
 
-.q-select .q-list__item--primary:hover {
+.q-select-panel .q-list__item--primary:hover {
     background: var(--q-color-primary-light, #e6f2ff);
 }
 
 /* 禁用选项 */
-.q-select .q-list__item.q-input--disabled,
-.q-select .q-list__item[disabled] {
+.q-select-panel .q-list__item.q-input--disabled {
     color: var(--q-color-text-disabled, #999);
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-.q-select .q-list__item.q-input--disabled:hover,
-.q-select .q-list__item[disabled]:hover {
+.q-select-panel .q-list__item.q-input--disabled:hover {
     background: transparent;
 }
 
 /* 分组标题 */
-.q-select .q-list__group-title {
+.q-select-panel .q-list__group-title {
     padding: 4px 12px;
     font-size: var(--q-font-size-xs, 12px);
     color: var(--q-color-text-secondary, #666);
@@ -92,11 +91,11 @@
     pointer-events: none;
 }
 
-.q-select .q-list__group-title:hover {
+.q-select-panel .q-list__group-title:hover {
     background: transparent;
 }
 
-.q-select .q-list__group-title:not(:first-child) {
+.q-select-panel .q-list__group-title:not(:first-child) {
     margin-top: 4px;
     border-top: 1px solid var(--q-color-border-light, #eee);
     padding-top: 8px;
