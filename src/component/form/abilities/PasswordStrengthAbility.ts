@@ -13,13 +13,7 @@ export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
 
 export function calculateStrength(password: string): PasswordStrength {
     if (!password) return 0;
-    let score = 0;
     const len = password.length;
-
-    if (len >= 6) score++;
-    if (len >= 8) score++;
-    if (len >= 10) score++;
-    if (len >= 12) score++;
 
     const hasLower = /[a-z]/.test(password);
     const hasUpper = /[A-Z]/.test(password);
@@ -27,11 +21,18 @@ export function calculateStrength(password: string): PasswordStrength {
     const hasSpecial = /[^a-zA-Z0-9]/.test(password);
 
     const typeCount = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
-    if (typeCount >= 2 && score < 2) score = 2;
-    if (typeCount >= 3 && score < 3) score = 3;
-    if (typeCount >= 4 && score < 4) score = 4;
 
-    return Math.min(score, 4) as PasswordStrength;
+    let strength: PasswordStrength;
+    if (typeCount >= 4 && len >= 8) strength = 4;
+    else if (typeCount >= 3 && len >= 12) strength = 4;
+    else if (typeCount >= 3 && len >= 8) strength = 3;
+    else if (typeCount >= 2 && len >= 6) strength = 2;
+    else strength = 1;
+
+    if (len < 6) strength = Math.min(strength, 2) as PasswordStrength;
+    if (len < 4) strength = Math.min(strength, 1) as PasswordStrength;
+
+    return strength;
 }
 
 export const PasswordStrengthAbility = {
