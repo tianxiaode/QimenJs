@@ -37,6 +37,7 @@ export function calculateStrength(password: string): PasswordStrength {
 
 export const PasswordStrengthAbility = {
     _strength: 0 as PasswordStrength,
+    _strengthContainerEl: null as HTMLElement | null,
     _strengthBarEl: null as HTMLElement | null,
     _strengthSegEls: [] as HTMLElement[],
     _strengthLabelEl: null as HTMLElement | null,
@@ -47,6 +48,7 @@ export const PasswordStrengthAbility = {
 
         const container = document.createElement('div');
         container.className = 'q-password-strength';
+        container.style.display = 'none';
 
         const bar = document.createElement('div');
         bar.className = 'q-password-strength__bar q-password-strength__bar--0';
@@ -67,6 +69,7 @@ export const PasswordStrengthAbility = {
 
         infoCmp.el.appendChild(container);
 
+        this._strengthContainerEl = container;
         this._strengthBarEl = bar;
         this._strengthSegEls = segs;
         this._strengthLabelEl = label;
@@ -78,6 +81,9 @@ export const PasswordStrengthAbility = {
         const changed = strength !== this._strength;
         this._strength = strength;
 
+        if (this._strengthContainerEl) {
+            this._strengthContainerEl.style.display = strength === 0 ? 'none' : '';
+        }
         if (this._strengthBarEl) {
             this._strengthBarEl.className =
                 `q-password-strength__bar q-password-strength__bar--${strength}`;
