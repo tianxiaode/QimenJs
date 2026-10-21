@@ -37,7 +37,7 @@ export function calculateStrength(password: string): PasswordStrength {
 export const PasswordStrengthAbility = {
     _strength: 0 as PasswordStrength,
     _strengthBarEl: null as HTMLElement | null,
-    _strengthFillEl: null as HTMLElement | null,
+    _strengthSegEls: [] as HTMLElement[],
     _strengthLabelEl: null as HTMLElement | null,
 
     _mountStrengthBar(): void {
@@ -48,11 +48,15 @@ export const PasswordStrengthAbility = {
         container.className = 'q-password-strength';
 
         const bar = document.createElement('div');
-        bar.className = 'q-password-strength__bar';
+        bar.className = 'q-password-strength__bar q-password-strength__bar--0';
 
-        const fill = document.createElement('div');
-        fill.className = 'q-password-strength__fill q-password-strength__fill--0';
-        bar.appendChild(fill);
+        const segs: HTMLElement[] = [];
+        for (let i = 0; i < 5; i++) {
+            const seg = document.createElement('div');
+            seg.className = 'q-password-strength__seg';
+            bar.appendChild(seg);
+            segs.push(seg);
+        }
 
         const label = document.createElement('div');
         label.className = 'q-password-strength__label';
@@ -62,8 +66,8 @@ export const PasswordStrengthAbility = {
 
         infoCmp.el.appendChild(container);
 
-        this._strengthBarEl = container;
-        this._strengthFillEl = fill;
+        this._strengthBarEl = bar;
+        this._strengthSegEls = segs;
         this._strengthLabelEl = label;
     },
 
@@ -73,9 +77,9 @@ export const PasswordStrengthAbility = {
         const changed = strength !== this._strength;
         this._strength = strength;
 
-        if (this._strengthFillEl) {
-            this._strengthFillEl.className =
-                `q-password-strength__fill q-password-strength__fill--${strength}`;
+        if (this._strengthBarEl) {
+            this._strengthBarEl.className =
+                `q-password-strength__bar q-password-strength__bar--${strength}`;
         }
         if (this._strengthLabelEl) {
             this._strengthLabelEl.textContent = PASSWORD_STRENGTH_LABELS[strength] ?? '';
