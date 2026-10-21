@@ -54,12 +54,24 @@ class ListComponent extends ItemGroupPooledComponent {
         return { direction: 'vertical' };
     }
 
+    _initDomEvents(): void {
+        console.log('[List._initDomEvents] domEvents:', this.domEvents);
+        console.log('[List._initDomEvents] el:', this.el);
+        console.log('[List._initDomEvents] items count:', this.count);
+        super._initDomEvents();
+        console.log('[List._initDomEvents] after super, _eventRules:', (this as any)._eventRules?.length);
+        console.log('[List._initDomEvents] _domEventDispatchers:', (this as any)._domEventDispatchers?.size);
+    }
+
     onAfterInit(): void {
+        console.log('[List.onAfterInit] domEvents:', this.domEvents);
+        console.log('[List.onAfterInit] el:', this.el);
         this.addCls('q-list');
         this.addCls(`q-list--${this.getData('size')}`);
         (this as any).itemContainer?.el?.classList.add('q-list__items');
-
         super.onAfterInit();
+        console.log('[List.onAfterInit] after super, items count:', this.count);
+        console.log('[List.onAfterInit] itemContainer:', (this as any).itemContainer?.el);
     }
 
     show(): void {
