@@ -22,7 +22,7 @@ const GROUP_OPTIONS = [
 
 export const SELECT_DEMO: DemoConfig = {
     title: 'Select',
-    description: '下拉选择组件，支持单选/多选/搜索过滤/分组/禁用选项',
+    description: '下拉选择组件，支持单选/多选/分组/禁用选项',
     sections: [
         {
             label: '基础单选',
@@ -79,21 +79,6 @@ export const SELECT_DEMO: DemoConfig = {
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
                     { type: 'select', options: { options: BASIC_OPTIONS, multiple: true, placeholder: '多选部门' } },
-                ],
-            },
-        },
-        {
-            label: '可搜索（filterable）',
-            code: `{ type: 'select', options: {
-    options: [{ label: '技术部', value: 'tech' }, ...],
-    filterable: true,
-    placeholder: '搜索选择',
-} }`,
-            template: {
-                tag: 'div',
-                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
-                children: [
-                    { type: 'select', options: { options: BASIC_OPTIONS, filterable: true, placeholder: '搜索选择' } },
                 ],
             },
         },
