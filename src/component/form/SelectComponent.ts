@@ -108,6 +108,7 @@ class SelectComponent extends InputComponent {
                 items: this._buildListItems(),
                 classes: 'q-select-panel',
                 offset: 0,
+                align: 'start',
             },
         });
     }
@@ -154,6 +155,12 @@ class SelectComponent extends InputComponent {
         const inst = this._getPopoverInstance();
         if (inst) {
             inst.addCls('q-select-panel');
+            const fieldBody = this.getNodeEl('fieldBody');
+            if (fieldBody) {
+                inst.ready.then(() => {
+                    inst.el?.style.setProperty('min-width', `${fieldBody.offsetWidth}px`);
+                });
+            }
             if (!this._selectBound) {
                 this._selectBound = true;
                 inst.on('select', (ctx: any) => {
