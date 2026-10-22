@@ -28,8 +28,9 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
-import { DomEventsEngine } from '@/component-core/engine';
+import { DomEventsEngine, TemplateManager } from '@/component-core/engine';
 import { Definitions } from '@/composable';
+import { SEARCH_BAR_TPL } from './search-bar-tpl';
 import './list.css';
 
 export type { ListStatus, MarkForm } from './ListItemComponent';
@@ -80,21 +81,18 @@ class ListComponent extends ItemGroupPooledComponent {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'q-list__search-input';
-        input.placeholder = '搜索...';
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'q-list__search';
-        wrapper.appendChild(input);
+        const cache = TemplateManager.get(SEARCH_BAR_TPL);
+        const fragment = cache.templateCache!.content.cloneNode(true) as DocumentFragment;
+        const wrapper = fragment.firstElementChild as HTMLElement;
 
         container.insertBefore(wrapper, container.firstChild);
-        this._searchInputEl = input;
+
+        const inputEl = wrapper.querySelector('input') as HTMLInputElement;
+        this._searchInputEl = inputEl;
 
         DomEventsEngine.addEventRule(this, {
             event: 'input',
-            path: input,
+            path: inputEl,
             handler: '_onSearchInput',
         });
     }
