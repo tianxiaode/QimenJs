@@ -193,6 +193,7 @@ class SelectComponent extends InputComponent {
         const rawValue = data?.actionData ?? data?.domEvent?.actionData;
         const value = this._parseValue(rawValue);
         if (this.multiple) {
+            this._focused = true;
             const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];
             const idx = arr.indexOf(value);
             if (idx >= 0) {
@@ -230,7 +231,11 @@ class SelectComponent extends InputComponent {
     onFieldBlur(): void {
         this._focused = false;
         this._applyState();
-        this.hidePopover();
+        setTimeout(() => {
+            if (!this._focused && this._getPopoverInstance()?.isOpen) {
+                this.hidePopover();
+            }
+        }, 150);
         if (this._shouldValidate('blur')) this._doValidate();
     }
 
