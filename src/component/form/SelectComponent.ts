@@ -190,8 +190,7 @@ class SelectComponent extends InputComponent {
         const action = data?.action ?? data?.domEvent?.action;
         if (action !== 'select-option') return;
 
-        const rawValue = data?.actionData ?? data?.domEvent?.actionData;
-        const value = this._parseValue(rawValue);
+        const value = data?.actionData ?? data?.domEvent?.actionData;
         if (this.multiple) {
             this._focused = true;
             const arr = Array.isArray(this._selectedValue) ? [...this._selectedValue] : [];
@@ -212,12 +211,6 @@ class SelectComponent extends InputComponent {
 
         this.emit('select:change', { value: this._selectedValue });
         if (this._shouldValidate('change')) this._doValidate();
-    }
-
-    _parseValue(raw: any): string | number {
-        if (typeof raw === 'number') return raw;
-        const num = Number(raw);
-        return Number.isNaN(num) ? raw : num;
     }
 
     onFieldFocus(): void {
