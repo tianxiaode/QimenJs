@@ -10,6 +10,10 @@
  * show()/hide() 调用 OverlayAbility 定位/显隐。
  * domEvents click 委托 [items]，emits/bridges select 自动转发点击事件。
  *
+ * searchable option 开启搜索过滤：
+ * - 在列表顶部插入搜索输入框
+ * - 输入关键词时按 label 过滤列表项（保留分组标题）
+ *
  * @example
  * ```ts
  * new ListComponent({
@@ -34,6 +38,7 @@ export type ListItem = Record<string, any>;
 const ListComponentDefs: Definitions = {
     options: {
         size: 'md',
+        searchable: false,
     },
 } as const;
 
@@ -52,6 +57,9 @@ class ListComponent extends ItemGroupPooledComponent {
 
     _clickedAction: any = null;
     _clickedActionData: any = null;
+    _searchKeyword: string = '';
+    _allItemsData: any[] = [];
+    _searchInputEl: HTMLInputElement | null = null;
 
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical' };
@@ -62,6 +70,53 @@ class ListComponent extends ItemGroupPooledComponent {
         this.addCls(`q-list--${this.getData('size')}`);
         (this as any).itemContainer?.el?.classList.add('q-list__items');
         super.onAfterInit();
+        if (this.getData('searchable')) {
+            this._initSearchInput();
+        }
+    }
+
+    _initSearchInput(): void {
+        const container = (this as any).itemContainer?.el as HTMLElement;
+        if (!container || !this.el) return;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'q-list__search-input';
+        input.placeholder = '搜索...';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'q-list__search';
+        wrapper.appendChild(input);
+
+        this.el.insertBefore(wrapper, container);
+        this._searchInputEl = input;
+
+        input.addEventListener('input', () => {
+            this._searchKeyword = input.value.trim().toLowerCase();
+            this._filterItems();
+        });
+    }
+
+    _filterItems(): void {
+        if (!this._searchKeyword) {
+            super.setItems(this._allItemsData);
+            return;
+        }
+        const filtered = this._allItemsData.filter((item: any) => {
+            if (item.classes === 'q-list__group-title') return true;
+            const label = String(item.label ?? '').toLowerCase();
+            return label.includes(this._searchKeyword);
+        });
+        super.setItems(filtered);
+    }
+
+    setItems(items: any[]): void {
+        this._allItemsData = items;
+        if (this._searchKeyword) {
+            this._filterItems();
+        } else {
+            super.setItems(items);
+        }
     }
 
     show(): void {

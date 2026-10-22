@@ -20,9 +20,22 @@ const GROUP_OPTIONS = [
     { label: '深圳', value: 'sz', group: '华南' },
 ];
 
+const SEARCH_OPTIONS = [
+    { label: 'JavaScript', value: 'js' },
+    { label: 'TypeScript', value: 'ts' },
+    { label: 'Python', value: 'py' },
+    { label: 'Java', value: 'java' },
+    { label: 'Go', value: 'go' },
+    { label: 'Rust', value: 'rust' },
+    { label: 'C++', value: 'cpp' },
+    { label: 'Ruby', value: 'rb' },
+    { label: 'Swift', value: 'swift' },
+    { label: 'Kotlin', value: 'kotlin' },
+];
+
 export const SELECT_DEMO: DemoConfig = {
     title: 'Select',
-    description: '下拉选择组件，支持单选/多选/分组/禁用选项',
+    description: '下拉选择组件，支持单选/多选/分组/禁用/搜索',
     sections: [
         {
             label: '基础单选',
@@ -79,6 +92,21 @@ export const SELECT_DEMO: DemoConfig = {
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
                     { type: 'select', options: { options: BASIC_OPTIONS, multiple: true, placeholder: '多选部门' } },
+                ],
+            },
+        },
+        {
+            label: '搜索过滤（searchable）',
+            code: `{ type: 'select', options: {
+    options: [{ label: 'JavaScript', value: 'js' }, ...],
+    searchable: true,
+    placeholder: '搜索选择语言',
+} }`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'select', options: { options: SEARCH_OPTIONS, searchable: true, placeholder: '搜索选择语言' } },
                 ],
             },
         },

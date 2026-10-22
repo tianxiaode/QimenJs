@@ -45,6 +45,7 @@ const SelectComponentDefs: Definitions = {
         clearable: false,
         options: [],
         multiple: false,
+        searchable: false,
         autoEventKey: true,
     },
 } as const;
@@ -129,6 +130,7 @@ class SelectComponent extends InputComponent {
                 offset: 0,
                 align: 'start',
                 eventKey: this.eventKey,
+                searchable: this.searchable,
             },
         });
     }
