@@ -88,7 +88,7 @@ class ListComponent extends ItemGroupPooledComponent {
         wrapper.className = 'q-list__search';
         wrapper.appendChild(input);
 
-        this.el.insertBefore(wrapper, container);
+        container.insertBefore(wrapper, container.firstChild);
         this._searchInputEl = input;
 
         input.addEventListener('input', () => {

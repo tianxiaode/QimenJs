@@ -245,9 +245,12 @@ class SelectComponent extends InputComponent {
         this._focused = false;
         this._applyState();
         setTimeout(() => {
-            if (!this._focused && this._getPopoverInstance()?.isOpen) {
-                this.hidePopover();
-            }
+            if (this._focused) return;
+            const popover = this._getPopoverInstance();
+            if (!popover?.isOpen) return;
+            const activeEl = document.activeElement;
+            if (activeEl && popover.el?.contains(activeEl)) return;
+            this.hidePopover();
         }, 150);
         if (this._shouldValidate('blur')) this._doValidate();
     }

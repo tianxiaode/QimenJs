@@ -28,9 +28,6 @@
 .q-list__search {
     padding: 8px 12px 4px;
     box-sizing: border-box;
-    position: sticky;
-    top: 0;
-    z-index: 1;
     background: var(--q-color-bg, #fff);
 }
 
