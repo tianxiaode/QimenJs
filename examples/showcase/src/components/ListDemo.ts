@@ -2,7 +2,7 @@ import type { DemoConfig } from './types';
 
 export const LIST_DEMO: DemoConfig = {
     title: 'List',
-    description: '列表组件，支持尺寸（sm/md/lg）、状态色继承、6种标记形态（dot/dash/ring/square/check/cross）、描述文本',
+    description: '列表组件，支持尺寸（sm/md/lg）、状态色继承、6种标记形态（dot/dash/ring/square/check/cross）、描述文本、搜索过滤',
     sections: [
         {
             label: '基础列表',
@@ -200,6 +200,34 @@ export const LIST_DEMO: DemoConfig = {
                                     status: 'default',
                                     markForm: 'square',
                                 },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            label: '搜索过滤 (searchable)',
+            code: `{ type: 'list', options: { searchable: true, items: [...] } }`,
+            template: {
+                tag: 'div',
+                classes: 'q-demo__row',
+                children: [
+                    {
+                        type: 'list',
+                        options: {
+                            searchable: true,
+                            items: [
+                                { label: 'JavaScript' },
+                                { label: 'TypeScript' },
+                                { label: 'Python' },
+                                { label: 'Java' },
+                                { label: 'Go' },
+                                { label: 'Rust' },
+                                { label: 'C++' },
+                                { label: 'Ruby' },
+                                { label: 'Swift' },
+                                { label: 'Kotlin' },
                             ],
                         },
                     },
