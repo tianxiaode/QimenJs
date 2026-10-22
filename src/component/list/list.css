@@ -59,6 +59,14 @@
     color: var(--q-color-text-placeholder, #999);
 }
 
+.q-list__search-input:focus-visible {
+    outline: none;
+}
+
+.q-list__search:focus-within {
+    border-color: var(--q-color-primary, #0078d4);
+}
+
 .q-list__search-input::placeholder {
     color: var(--q-color-text-secondary, #999);
 }
