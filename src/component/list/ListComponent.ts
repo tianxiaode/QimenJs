@@ -28,6 +28,7 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
+import { DomEventsEngine } from '@/component-core/engine';
 import { Definitions } from '@/composable';
 import './list.css';
 
@@ -77,7 +78,7 @@ class ListComponent extends ItemGroupPooledComponent {
 
     _initSearchInput(): void {
         const container = this.getNodeEl('itemContainer');
-        if (!container || !this.el) return;
+        if (!container) return;
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -91,10 +92,17 @@ class ListComponent extends ItemGroupPooledComponent {
         container.insertBefore(wrapper, container.firstChild);
         this._searchInputEl = input;
 
-        input.addEventListener('input', () => {
-            this._searchKeyword = input.value.trim().toLowerCase();
-            this._filterItems();
+        DomEventsEngine.addEventRule(this, {
+            event: 'input',
+            path: input,
+            handler: '_onSearchInput',
         });
+    }
+
+    _onSearchInput(): void {
+        if (!this._searchInputEl) return;
+        this._searchKeyword = this._searchInputEl.value.trim().toLowerCase();
+        this._filterItems();
     }
 
     _filterItems(): void {
