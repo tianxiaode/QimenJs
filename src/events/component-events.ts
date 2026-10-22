@@ -5,7 +5,6 @@
  * 与 entity-events.ts 同级，保持事件定义的集中管理。
  *
  * 分类：
- * - 组件生命周期事件：TemplateComponent 发射
  * - 分页事件：PaginationAbility 发射
  * - CRUD 事件：CrudAbility 发射
  * - 选择事件：SelectableAbility / SelectionAbility 发射
@@ -15,26 +14,6 @@
  * - 工具栏事件：ToolbarAbility 发射
  * - 实体事件：见 entity-events.ts（EntityManager 直发，不再桥接）
  */
-
-// ============================================
-// 组件生命周期事件（TemplateComponent 发射）
-// ============================================
-export const COMPONENT_LIFECYCLE_EVENTS = {
-    /** 组件初始化完成（onAfterInit 之后） */
-    INIT: 'init',
-    /** 组件挂载完成，DOM 已渲染（onMounted 之后） */
-    MOUNTED: 'mounted',
-    /** 组件即将卸载（onBeforeUnmount 时） */
-    BEFORE_UNMOUNT: 'beforeunmount',
-    /** 组件已销毁（dispose 完成后） */
-    DISPOSE: 'dispose',
-    /** 组件属性/内容更新后（onUpdated 之后） */
-    UPDATED: 'updated',
-    /** 组件尺寸变化（onResize 时） */
-    RESIZE: 'resize',
-    /** 组件 hidden 状态变化 */
-    HIDDEN_CHANGE: 'hiddenchange',
-} as const;
 
 // ============================================
 // 分页事件（PaginationAbility 发射）

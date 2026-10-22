@@ -215,9 +215,12 @@ class NavComponent extends ItemGroupPooledComponent {
         }
     }
 
-    onUpdated(props?: Record<string, any>): void {
-        if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
-        if (props?.mode !== undefined) this.setMode(props.mode);
+    _onActiveIndexOptionChange(value: any): void {
+        if (value !== undefined && value >= 0) this.selectAt(value);
+    }
+
+    _onModeOptionChange(value: any): void {
+        if (value !== undefined) this.setMode(value);
     }
 }
 

@@ -18,7 +18,6 @@ import {
     LoadingAbility,
     DragAbility,
     DropAbility,
-    LifecycleAbility,
     InitAbility,
     NodeAbility,
     PermissionAbility,
@@ -41,7 +40,6 @@ export const COMPONENT_ABILITIES = [
     RAFAbility,
 
     InitAbility,
-    LifecycleAbility,
     NodeAbility,
     AttributeAbility,
     OptionAbility,

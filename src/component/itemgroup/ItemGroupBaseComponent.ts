@@ -207,9 +207,6 @@ class ItemGroupBaseComponent extends Component {
 
     update(props?: Record<string, any>): void {
         this._applyOptions(props);
-        if (typeof (this as any).onUpdated === 'function') {
-            (this as any).onUpdated(props);
-        }
     }
 
     onBeforeDispose(): void {

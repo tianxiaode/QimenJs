@@ -129,7 +129,6 @@ export const InitAbility = {
             this.childComponentList.push(child);
             this._onChildMounted(name || '', child);
         }
-        this._emitMounted();
 
         setTimeout(() => {
             this._continueInit(childReady);
@@ -166,7 +165,6 @@ export const InitAbility = {
         if (!this.isFloat) {
             this.playEnter();
         }
-        this._emitMounted();
 
         if (childReady) {
             childReady();

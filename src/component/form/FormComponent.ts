@@ -347,9 +347,12 @@ class FormComponent extends ItemGroupStaticComponent {
         }
     }
 
-    onUpdated(props?: Record<string, any>): void {
-        if (props?.action !== undefined) this._action = props.action;
-        if (props?.editId !== undefined) this._editId = props.editId;
+    _onActionOptionChange(value: any): void {
+        this._action = value;
+    }
+
+    _onEditIdOptionChange(value: any): void {
+        this._editId = value;
     }
 }
 

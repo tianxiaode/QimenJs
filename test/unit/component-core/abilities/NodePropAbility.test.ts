@@ -1,18 +1,11 @@
 jest.mock('@/events', () => ({
-    COMPONENT_LIFECYCLE_EVENTS: {
-        INIT: 'init',
-        MOUNTED: 'mounted',
-        BEFORE_UNMOUNT: 'beforeunmount',
-        DISPOSE: 'dispose',
-        UPDATED: 'updated',
-        RESIZE: 'resize',
-        HIDDEN_CHANGE: 'hiddenchange',
+    globalEventBus: {
+        getBusId: jest.fn(() => 'test-bus-id'),
     },
 }));
 
 import { NodePropAbility } from '@/component-core/abilities/NodeAbility';
 import { NodeQueryAbility } from '@/component-core/abilities/NodeAbility';
-import { LifecycleAbility } from '@/component-core/abilities/LifecycleAbility';
 
 describe('NodePropAbility', () => {
     describe('核心方法存在性', () => {
@@ -220,7 +213,7 @@ describe('NodePropAbility', () => {
                 _resolveNodeTarget: () => ({ el, component: undefined }),
                 nodeMap: { root: node },
                 emit: emitSpy,
-                _emitLifecycleEvent: LifecycleAbility._emitLifecycleEvent,
+                _emitLifecycleEvent: jest.fn(),
             };
             NodePropAbility._updateNode.call(instance, 'root', { hidden: true });
             expect(emitSpy).toHaveBeenCalledWith(

@@ -23,8 +23,6 @@
 import { ComposableBase } from '@/composable';
 import { COMPONENT_ABILITIES, IComponent } from './Component-abilities';
 
-import { COMPONENT_LIFECYCLE_EVENTS } from '@/events';
-
 import { ComponentClass, ComponentCoreOptions, TemplateDecl } from './types';
 import { ComponentDefs } from './ComponentDefs';
 import { ComponentRegistrar } from './ComponentRegistrar';
@@ -119,8 +117,6 @@ export class Component extends ComposableBase implements IComponent {
             this.onBeforeUnmount();
         }
 
-        this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.BEFORE_UNMOUNT);
-
         if (this.parent && this.slotName && !this.parent._disposing && !this.isItemContainer) {
             const parentNodeMapMgr = this.parent.nodeMapMgr;
             if (parentNodeMapMgr) {
@@ -147,7 +143,6 @@ export class Component extends ComposableBase implements IComponent {
     }
 
     override onDisposed(): void {
-        this._emitLifecycleEvent(COMPONENT_LIFECYCLE_EVENTS.DISPOSE);
     }
 }
 

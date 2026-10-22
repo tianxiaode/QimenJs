@@ -223,11 +223,12 @@ class TabBarComponent extends ItemGroupPooledComponent {
         };
     }
 
-    onUpdated(props?: Record<string, any>): void {
-        if (props?.selectedIndex !== undefined) this.selectAt(props.selectedIndex);
-        if (props?.position !== undefined) {
-            this.position = props.position;
-        }
+    _onSelectedIndexOptionChange(value: any): void {
+        if (value !== undefined && value >= 0) this.selectAt(value);
+    }
+
+    _onPositionOptionChange(value: any): void {
+        if (value !== undefined) this.position = value;
     }
 }
 

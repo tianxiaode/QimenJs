@@ -173,13 +173,14 @@ class AccordionComponent extends ItemGroupPooledComponent {
         return panel ? !panel.containsCls('q-panel--collapsed') : false;
     }
 
-    onUpdated(props?: Record<string, any>): void {
+    _onModeOptionChange(value: any): void {
         const self = this as any;
-        if (props?.mode !== undefined) {
-            self._mode = props.mode;
-            this.toggleCls('q-accordion--multiple', self._mode === 'multiple');
-        }
-        if (props?.expandedIndex !== undefined) self.expandAt(props.expandedIndex);
+        self._mode = value;
+        this.toggleCls('q-accordion--multiple', value === 'multiple');
+    }
+
+    _onExpandedIndexOptionChange(value: any): void {
+        if (value !== undefined && value >= 0) (this as any).expandAt(value);
     }
 }
 

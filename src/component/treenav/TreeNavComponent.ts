@@ -247,8 +247,8 @@ class TreeNavComponent extends ItemGroupPooledComponent {
         this.activeIndex = -1;
     }
 
-    onUpdated(props?: Record<string, any>): void {
-        if (props?.activeIndex !== undefined) this.selectAt(props.activeIndex);
+    _onActiveIndexOptionChange(value: any): void {
+        if (value !== undefined && value >= 0) this.selectAt(value);
     }
 }
 
