@@ -13,6 +13,7 @@ import { SwitchComponent } from './SwitchComponent';
 import { CheckboxGroupComponent } from './CheckboxGroupComponent';
 import { RadioGroupComponent } from './RadioGroupComponent';
 import { DatePickerComponent } from './DatePickerComponent';
+import { SearchBarComponent } from './SearchBarComponent';
 
 InputComponent.register();
 InputFieldComponent.register();
@@ -29,3 +30,4 @@ SwitchComponent.register();
 CheckboxGroupComponent.register();
 RadioGroupComponent.register();
 DatePickerComponent.register();
+SearchBarComponent.register();

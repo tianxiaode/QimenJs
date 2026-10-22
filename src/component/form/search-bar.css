@@ -1,0 +1,29 @@
+.q-search-bar {
+    --q-input-field-height: 32px;
+    --q-input-field-font-size: var(--q-font-size-sm, 13px);
+    --q-input-field-padding: 0 8px;
+}
+
+.q-search-bar .q-formfield__label-group,
+.q-search-bar .q-formfield__info {
+    display: none;
+}
+
+.q-search-bar .q-input__prefix {
+    padding: 0 6px;
+    font-size: var(--q-font-size-sm, 13px);
+    color: var(--q-color-text-secondary, #666);
+}
+
+.q-list .q-search-bar {
+    margin: 4px 8px;
+}
+
+.q-size--sm.q-search-bar {
+    --q-input-field-height: 28px;
+}
+
+.q-size--lg.q-search-bar {
+    --q-input-field-height: 40px;
+    --q-input-field-font-size: var(--q-font-size-md, 14px);
+}

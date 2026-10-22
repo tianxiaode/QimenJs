@@ -28,9 +28,8 @@
 
 import { ItemGroupPooledComponent } from '../itemgroup/ItemGroupPooledComponent';
 import type { DomEventsMap } from '@qimenjs/component-core';
-import { DomEventsEngine, TemplateManager } from '@/component-core/engine';
 import { Definitions } from '@/composable';
-import { SEARCH_BAR_TPL } from './search-bar-tpl';
+import { SearchBarComponent } from '../form/SearchBarComponent';
 import './list.css';
 
 export type { ListStatus, MarkForm } from './ListItemComponent';
@@ -61,7 +60,7 @@ class ListComponent extends ItemGroupPooledComponent {
     _clickedActionData: any = null;
     _searchKeyword: string = '';
     _allItemsData: any[] = [];
-    _searchInputEl: HTMLInputElement | null = null;
+    _searchBar: SearchBarComponent | null = null;
 
     get defaultOptions(): Record<string, any> {
         return { direction: 'vertical' };
@@ -81,25 +80,22 @@ class ListComponent extends ItemGroupPooledComponent {
         const container = this.getNodeEl('itemContainer');
         if (!container) return;
 
-        const cache = TemplateManager.get(SEARCH_BAR_TPL);
-        const fragment = cache.templateCache!.content.cloneNode(true) as DocumentFragment;
-        const wrapper = fragment.firstElementChild as HTMLElement;
-
-        container.insertBefore(wrapper, container.firstChild);
-
-        const inputEl = wrapper.querySelector('input') as HTMLInputElement;
-        this._searchInputEl = inputEl;
-
-        DomEventsEngine.addEventRule(this, {
-            event: 'input',
-            path: inputEl,
-            handler: '_onSearchInput',
+        const searchBar = new SearchBarComponent({
+            hasParent: true,
+            placeholder: '搜索...',
+            clearable: false,
         });
+
+        container.insertBefore(searchBar.el!, container.firstChild);
+        searchBar.createChildren();
+
+        this._searchBar = searchBar;
+        searchBar.on('input', () => this._onSearchInput());
     }
 
     _onSearchInput(): void {
-        if (!this._searchInputEl) return;
-        this._searchKeyword = this._searchInputEl.value.trim().toLowerCase();
+        if (!this._searchBar) return;
+        this._searchKeyword = this._searchBar.value.trim().toLowerCase();
         this._filterItems();
     }
 
@@ -130,7 +126,7 @@ class ListComponent extends ItemGroupPooledComponent {
         const placement = this.placement ?? this.rawOptions?.placement;
         if (this._searchKeyword) {
             this._searchKeyword = '';
-            if (this._searchInputEl) this._searchInputEl.value = '';
+            if (this._searchBar) this._searchBar.value = '';
             super.setItems(this._allItemsData);
         }
         this._showOverlay({ anchor, placement });

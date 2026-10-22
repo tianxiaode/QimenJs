@@ -33,6 +33,7 @@ export {
 export { RadioGroupComponent, type RadioOption } from './RadioGroupComponent';
 export { DatePickerComponent } from './DatePickerComponent';
 export { datepickerCSS } from './datepicker.css';
+export { SearchBarComponent, type SearchBarComponentInstance } from './SearchBarComponent';
 export {
     MarkdownEditorComponent,
     type MarkdownEditMode,
