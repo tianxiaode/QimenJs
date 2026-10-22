@@ -11,6 +11,10 @@
  * - ListComponent domEvents bridges 将 select 事件桥接到组件总线
  * - SelectComponent listens source='self' 监听同一 eventKey 上的 select 事件
  *
+ * 选中态管理：
+ * - 初始选中通过 _buildListItems 中 status:'primary' 设置（创建时传入）
+ * - 点击切换通过 _syncItemStatus 直接修改列表项 status option（无需重建列表）
+ *
  * 特有功能：
  * - options 选项列表（静态 / 动态加载）
  * - 下拉面板（PopoverAbility + ListComponent）
@@ -82,7 +86,7 @@ class SelectComponent extends InputComponent {
         }
         this._syncDisplayValue();
         this._toggleClearBtn();
-        this._updatePopoverItems();
+        this._syncItemStatus();
     }
 
     _onOptionsOptionChange(_value: SelectOption[]): void {
@@ -135,10 +139,12 @@ class SelectComponent extends InputComponent {
 
         const items: any[] = [];
         const seenGroups = new Set<string>();
+        let inGroup = false;
 
         for (const opt of opts) {
             if (opt.group && !seenGroups.has(opt.group)) {
                 seenGroups.add(opt.group);
+                inGroup = true;
                 items.push({
                     label: opt.group,
                     disable: true,
@@ -152,6 +158,7 @@ class SelectComponent extends InputComponent {
                 actionData: opt.value,
                 status: this._isSelected(opt.value) ? 'primary' : 'default',
                 disable: opt.disabled,
+                classes: inGroup ? 'q-list__item--grouped' : undefined,
             });
         }
         return items;
@@ -166,6 +173,18 @@ class SelectComponent extends InputComponent {
         }
     }
 
+    _syncItemStatus(): void {
+        const inst = this._getPopoverInstance();
+        if (!inst?.items) return;
+        for (const item of inst.items) {
+            if (item.disable || item.actionData === undefined) continue;
+            const newStatus = this._isSelected(item.actionData) ? 'primary' : 'default';
+            if (item.status !== newStatus) {
+                item.status = newStatus;
+            }
+        }
+    }
+
     showPopover(): void {
         super.showPopover();
         const inst = this._getPopoverInstance();
@@ -177,6 +196,7 @@ class SelectComponent extends InputComponent {
                     inst.el?.style.setProperty('min-width', `${fieldBody.offsetWidth}px`);
                 });
             }
+            this._syncItemStatus();
         }
         this.emit('select:open', {});
     }
@@ -202,10 +222,11 @@ class SelectComponent extends InputComponent {
             }
             this._selectedValue = arr.length ? arr : undefined;
             this._syncDisplayValue();
-            this._updatePopoverItems();
+            this._syncItemStatus();
         } else {
             this._selectedValue = value;
             this._syncDisplayValue();
+            this._syncItemStatus();
             this.hidePopover();
         }
 
@@ -242,7 +263,7 @@ class SelectComponent extends InputComponent {
     onClearBtnClick(): void {
         this._selectedValue = undefined;
         this._syncDisplayValue();
-        this._updatePopoverItems();
+        this._syncItemStatus();
         this.emit('select:change', { value: undefined });
         this._toggleClearBtn();
         this._fieldItem?.focus();
@@ -290,7 +311,7 @@ class SelectComponent extends InputComponent {
     set selectedValue(v: string | number | (string | number)[] | undefined) {
         this._selectedValue = v;
         this._syncDisplayValue();
-        this._updatePopoverItems();
+        this._syncItemStatus();
     }
 
     getFormValue(): any {
@@ -300,13 +321,13 @@ class SelectComponent extends InputComponent {
     setFormValue(v: any): void {
         this._selectedValue = v;
         this._syncDisplayValue();
-        this._updatePopoverItems();
+        this._syncItemStatus();
     }
 
     formReset(defaultValue?: any): void {
         this._selectedValue = defaultValue ?? undefined;
         this._syncDisplayValue();
-        this._updatePopoverItems();
+        this._syncItemStatus();
         this.error = '';
     }
 
