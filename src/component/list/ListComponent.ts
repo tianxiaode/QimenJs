@@ -76,7 +76,7 @@ class ListComponent extends ItemGroupPooledComponent {
     }
 
     _initSearchInput(): void {
-        const container = (this as any).itemContainer?.el as HTMLElement;
+        const container = this.getNodeEl('itemContainer');
         if (!container || !this.el) return;
 
         const input = document.createElement('input');
