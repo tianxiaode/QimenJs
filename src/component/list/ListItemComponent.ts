@@ -39,6 +39,10 @@ class ListItemComponent extends Component {
         if (el) el.textContent = value ?? '';
         value ? this.removeCls('hidden', 'desc') : this.addCls('hidden', 'desc');
     }
+
+    _onClassesOptionChange(value: string | string[]): void {
+        if (value) this.addCls(value);
+    }
 }
 
 ListItemComponent.define(ListItemComponentDefs);

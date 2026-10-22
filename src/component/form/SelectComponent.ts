@@ -145,7 +145,6 @@ class SelectComponent extends InputComponent {
                 seenGroups.add(opt.group);
                 items.push({
                     label: opt.group,
-                    disable: true,
                     classes: 'q-list__group-title',
                 });
             }
