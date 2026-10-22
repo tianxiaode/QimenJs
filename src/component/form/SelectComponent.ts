@@ -176,7 +176,7 @@ class SelectComponent extends InputComponent {
         const inst = this._getPopoverInstance();
         if (!inst?.items) return;
         for (const item of inst.items) {
-            if (item.disable || item.actionData === undefined) continue;
+            if (!item || item.disable || item.actionData === undefined) continue;
             const newStatus = this._isSelected(item.actionData) ? 'primary' : 'default';
             if (item.status !== newStatus) {
                 item.status = newStatus;
@@ -195,7 +195,7 @@ class SelectComponent extends InputComponent {
                     inst.el?.style.setProperty('min-width', `${fieldBody.offsetWidth}px`);
                 });
             }
-            this._syncItemStatus();
+            inst.ready.then(() => this._syncItemStatus());
         }
         this.emit('select:open', {});
     }

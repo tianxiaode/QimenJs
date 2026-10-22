@@ -214,7 +214,10 @@ class NumberInputComponent extends InputComponent {
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
         // NaN 显式转 null，避免 JSON 序列化歧义
-        return { value: Number.isFinite(this._numValue) ? this._numValue : null, rawValue: this.value };
+        return {
+            value: Number.isFinite(this._numValue) ? this._numValue : null,
+            rawValue: this.value,
+        };
     }
 
     get numValue(): number {
