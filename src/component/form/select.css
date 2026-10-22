@@ -31,12 +31,19 @@
 .q-select-panel {
     min-width: 120px;
     max-height: 240px;
-    overflow-y: auto;
     padding: 4px 0;
     background: var(--q-color-bg, #fff);
     border: var(--q-border);
     border-radius: var(--q-radius-md, 4px);
     box-shadow: var(--q-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.12));
+    display: flex;
+    flex-direction: column;
+}
+
+/* 列表项区域滚动（搜索框固定顶部不滚动） */
+.q-select-panel .q-list__items {
+    overflow-y: auto;
+    flex: 1;
 }
 
 /* 隐藏 mark 图标，Select 选项纯文字 */

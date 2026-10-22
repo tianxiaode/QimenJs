@@ -122,6 +122,11 @@ class ListComponent extends ItemGroupPooledComponent {
     show(): void {
         const anchor = this.anchor ?? this.rawOptions?.anchor ?? this.el!;
         const placement = this.placement ?? this.rawOptions?.placement;
+        if (this._searchKeyword) {
+            this._searchKeyword = '';
+            if (this._searchInputEl) this._searchInputEl.value = '';
+            super.setItems(this._allItemsData);
+        }
         this._showOverlay({ anchor, placement });
     }
 
