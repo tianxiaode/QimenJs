@@ -85,7 +85,7 @@
     background: transparent;
 }
 
-/* 分组标题 */
+/* 分组标题 — 参考 table 分组头：--q-color-bg-secondary + font-weight:600 + border-bottom */
 .q-select-panel .q-list__group-title {
     padding: 6px 12px;
     font-size: var(--q-font-size-xs, 12px);
@@ -93,15 +93,16 @@
     font-weight: 600;
     cursor: default;
     pointer-events: none;
-    background: var(--q-color-bg-secondary, #fafafa);
+    background: var(--q-color-bg-secondary);
+    border-bottom: 1px solid var(--q-color-border, #e0e0e0);
 }
 
 .q-select-panel .q-list__group-title:hover {
-    background: var(--q-color-bg-secondary, #fafafa);
+    background: var(--q-color-bg-secondary);
 }
 
 .q-select-panel .q-list__group-title:not(:first-child) {
     margin-top: 4px;
-    border-top: 1px solid var(--q-color-border-light, #eee);
+    border-top: 1px solid var(--q-color-border, #e0e0e0);
     padding-top: 8px;
 }

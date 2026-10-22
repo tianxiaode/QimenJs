@@ -139,12 +139,10 @@ class SelectComponent extends InputComponent {
 
         const items: any[] = [];
         const seenGroups = new Set<string>();
-        let inGroup = false;
 
         for (const opt of opts) {
             if (opt.group && !seenGroups.has(opt.group)) {
                 seenGroups.add(opt.group);
-                inGroup = true;
                 items.push({
                     label: opt.group,
                     disable: true,
@@ -158,7 +156,7 @@ class SelectComponent extends InputComponent {
                 actionData: opt.value,
                 status: this._isSelected(opt.value) ? 'primary' : 'default',
                 disable: opt.disabled,
-                classes: inGroup ? 'q-list__item--grouped' : undefined,
+                classes: opt.group ? 'q-list__item--grouped' : undefined,
             });
         }
         return items;
