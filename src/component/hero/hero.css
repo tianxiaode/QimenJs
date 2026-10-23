@@ -72,7 +72,7 @@
     gap: 12px;
 }
 
-.q-hero__action-btn {
+.q-hero .q-hero__action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -90,12 +90,12 @@
     text-decoration: none;
 }
 
-.q-hero__action-btn:hover {
+.q-hero .q-hero__action-btn:hover {
     background: var(--q-color-primary-hover, #106ebe);
     border-color: var(--q-color-primary-hover, #106ebe);
 }
 
-.q-hero__action-btn:active {
+.q-hero .q-hero__action-btn:active {
     background: var(--q-color-primary-active, #005a9e);
     border-color: var(--q-color-primary-active, #005a9e);
 }
