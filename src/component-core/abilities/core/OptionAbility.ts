@@ -231,6 +231,8 @@ export const OptionAbility: AbilityDefinition = {
         const el = this.getNodeEl(nodeName);
         if (!el) return;
 
+        if (value == null) return;
+
         let inst: any;
         if (typeof value === 'string') {
             this.setNodeHtml(value, nodeName);
