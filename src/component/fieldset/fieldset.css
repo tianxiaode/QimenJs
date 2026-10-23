@@ -60,6 +60,10 @@
     padding-top: var(--q-space-xs, 8px);
 }
 
+.q-fieldset--collapsed {
+    min-width: var(--q-fieldset-collapsed-min-width, 200px);
+}
+
 .q-fieldset--collapsible .q-fieldset__legend {
     cursor: var(--q-cursor-pointer, pointer);
 }
