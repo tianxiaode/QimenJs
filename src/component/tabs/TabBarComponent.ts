@@ -40,11 +40,14 @@ const TabBarComponentDefs: Definitions = {
 } as const;
 
 class TabBarComponent extends ItemGroupPooledComponent {
-    static type = 'tab-bar'; // 组件类型
-    defaultItemType = 'tab';
+    static type = 'tab-bar';
     _selectedIndex: number = -1;
     _position: TabBarPosition = 'top';
     _lastToggleIndex: number = -1;
+
+    get defaultOptions(): Record<string, any> {
+        return { defaultItemType: 'tab' };
+    }
 
     _onOverflowSelect(data: any): void {
         const index = parseInt(data?.action ?? '-1', 10);

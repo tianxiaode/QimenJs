@@ -16,7 +16,6 @@ const AccordionComponentDefs: Definitions = {
 
 class AccordionComponent extends ItemGroupPooledComponent {
     static type = 'accordion';
-    defaultItemType = 'panel';
     _mode: AccordionMode = 'single';
     _expandedIndex: number = -1;
 
@@ -64,7 +63,7 @@ class AccordionComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical', gap: '0', defaultItemOption: { expandable: true } };
+        return { direction: 'vertical', gap: '0', defaultItemType: 'panel', defaultItemOption: { expandable: true } };
     }
 
     onAfterInit(): void {

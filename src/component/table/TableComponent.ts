@@ -23,7 +23,6 @@ import './table.css';
  */
 class TableComponent extends ItemGroupPooledComponent {
     static type = 'table';
-    defaultItemType = 'table-row';
     _isAfterInit = false;
     _columnMetaManager: ColumnMetaManager | null = null;
     _header: TableHeaderComponent | null = null;
@@ -46,6 +45,7 @@ class TableComponent extends ItemGroupPooledComponent {
     get defaultOptions(): Record<string, any> {
         return {
             direction: 'vertical',
+            defaultItemType: 'table-row',
             autoEventKey: true,
             autoEntityKey: true,
         };

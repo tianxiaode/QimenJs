@@ -16,7 +16,6 @@ const ButtonGroupComponentDefs: Definitions = {
 
 class ButtonGroupComponent extends ItemGroupPooledComponent {
     static type = 'button-group';
-    defaultItemType = 'button';
     _lastToggleIndex: number = -1;
 
     domEvents: DomEventsMap | undefined = {
@@ -58,7 +57,7 @@ class ButtonGroupComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'horizontal', gap: '2px' };
+        return { direction: 'horizontal', gap: '2px', defaultItemType: 'button' };
     }
 
     onAfterInit(): void {

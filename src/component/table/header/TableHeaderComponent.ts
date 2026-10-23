@@ -10,7 +10,10 @@ import './header.css';
 
 class TableHeaderComponent extends ItemGroupPooledComponent {
     static type = 'table-header';
-    defaultItemType = 'header-cell';
+
+    get defaultOptions(): Record<string, any> {
+        return { defaultItemType: 'header-cell' };
+    }
 
     get tpl(): TemplateDecl {
         return {

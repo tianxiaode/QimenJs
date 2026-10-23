@@ -76,7 +76,9 @@ const EntityToolbarComponentDefs: Definitions = {
 // ══════════════════════════════════════════════════════════════
 
 class EntityToolbarComponent extends ToolbarComponent {
-    defaultItemType = 'Button';
+    get defaultOptions(): Record<string, any> {
+        return { ...super.defaultOptions, defaultItemType: 'Button' };
+    }
 
     _currentPage: number = 1;
     _totalPages: number = 0;

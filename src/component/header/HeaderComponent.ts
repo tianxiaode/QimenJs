@@ -31,11 +31,11 @@ const HeaderComponentDefs: Definitions = {
 
 class HeaderComponent extends ItemGroupStaticComponent {
     static type = 'header';
-    defaultItemType = 'icon';
 
     get defaultOptions(): Record<string, any> {
         return {
             ...super.defaultOptions,
+            defaultItemType: 'icon',
             defaultItemOption: { clickable: true },
         };
     }

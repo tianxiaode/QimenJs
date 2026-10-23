@@ -13,7 +13,6 @@ const BreadcrumbComponentDefs: Definitions = {
 
 class BreadcrumbComponent extends ItemGroupStaticComponent {
     static type = 'breadcrumb';
-    defaultItemType = 'href';
 
     get tpl(): TemplateDecl {
         return BREADCRUMB_TPL;
@@ -22,6 +21,7 @@ class BreadcrumbComponent extends ItemGroupStaticComponent {
     get defaultOptions(): Record<string, any> {
         return {
             ...super.defaultOptions,
+            defaultItemType: 'href',
             direction: 'horizontal',
         };
     }

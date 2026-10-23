@@ -44,10 +44,13 @@ const NavComponentDefs: Definitions = {
 
 class NavComponent extends ItemGroupPooledComponent {
     static type = 'nav';
-    defaultItemType = 'nav-item';
 
     get tpl(): TemplateDecl {
         return NAV_TPL;
+    }
+
+    get defaultOptions(): Record<string, any> {
+        return { defaultItemType: 'nav-item' };
     }
 
     _lastNavigatedPath: string | null = null;

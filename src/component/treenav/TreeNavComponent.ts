@@ -15,7 +15,6 @@ const TreeNavComponentDefs: Definitions = {
 
 class TreeNavComponent extends ItemGroupPooledComponent {
     static type = 'tree-nav';
-    defaultItemType = 'tree-nav-item';
 
     _treeData: any[] = [];
     _expandedPaths: Set<string> = new Set();
@@ -65,7 +64,7 @@ class TreeNavComponent extends ItemGroupPooledComponent {
     }
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical' };
+        return { direction: 'vertical', defaultItemType: 'tree-nav-item' };
     }
 
     onAfterInit(): void {
