@@ -8,6 +8,10 @@
     background: transparent;
 }
 
+.q-button-group .q-button:not(.q-button--pressed):hover {
+    background: var(--q-overlay-hover, rgba(128, 128, 128, 0.1));
+}
+
 .q-button-group .q-button--color-primary:not(.q-button--pressed) {
     color: var(--q-color-primary, #0078d4);
 }
