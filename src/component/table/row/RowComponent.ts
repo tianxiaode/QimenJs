@@ -24,10 +24,10 @@ const CELL_CLASS_MAP: Record<CellType, any> = {
 class RowComponent extends Component {
     static type = 'table-row';
 
-    _cells: Map<string, any> = new Map();
-    _bodyEl: HTMLElement | null = null;
-    _bodyExpanded: boolean = false;
-    _bodyContent: any = null;
+    _cells: Map<string, any> | null;
+    _bodyEl: HTMLElement | null;
+    _bodyExpanded: boolean;
+    _bodyContent: any;
 
     listens: ListenItem[] = [
         {
@@ -60,6 +60,7 @@ class RowComponent extends Component {
     }
 
     _createCells(): void {
+        if (!this._cells) this._cells = new Map();
         if (this._cells.size > 0) return;
 
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
@@ -113,7 +114,7 @@ class RowComponent extends Component {
 
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         for (const meta of columns) {
-            const cell = this._cells.get(meta.name);
+            const cell = this._cells?.get(meta.name);
             if (cell && typeof cell.update === 'function') {
                 cell.update(this._getCellData(meta, data));
             }
@@ -122,7 +123,7 @@ class RowComponent extends Component {
 
     _rebuildCellsIfChanged(): void {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
-        const cellKeys = Array.from(this._cells.keys());
+        const cellKeys = Array.from(this._cells?.keys() ?? []);
 
         if (cellKeys.length !== columns.length) {
             this._rebuildCells(columns);
@@ -139,6 +140,7 @@ class RowComponent extends Component {
     }
 
     _rebuildCells(columns: ColumnMeta[]): void {
+        if (!this._cells) this._cells = new Map();
         for (const cell of this._cells.values()) {
             cell.el?.remove?.();
         }
@@ -190,12 +192,12 @@ class RowComponent extends Component {
     }
 
     hideColumn(name: string): void {
-        const cell = this._cells.get(name);
+        const cell = this._cells?.get(name);
         if (cell) cell.hidden = true;
     }
 
     showColumn(name: string): void {
-        const cell = this._cells.get(name);
+        const cell = this._cells?.get(name);
         if (cell) cell.hidden = false;
     }
 
@@ -235,7 +237,7 @@ class RowComponent extends Component {
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         for (const meta of columns) {
             if (meta.cellType !== 'expand') continue;
-            const cell = this._cells.get(meta.name);
+            const cell = this._cells?.get(meta.name);
             if (cell) {
                 Promise.resolve(cell.ready).then(() => {
                     cell.update({ expanded: this._bodyExpanded });
@@ -300,6 +302,7 @@ class RowComponent extends Component {
     }
 
     _syncSelectCellChecked(): void {
+        if (!this._cells) return;
         const columns: ColumnMeta[] = this.getData('columnMetas') || [];
         const data = this.getData('data');
         for (const meta of columns) {
