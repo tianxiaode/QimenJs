@@ -96,7 +96,7 @@ export const InitAbility = {
         const components = this._getCache().childComponents || [];
         if (components.length === 0) {
             this.logger.debug(`[createChildren][${this.id}]`, '没有子组件');
-            this._continueInit(childReady);
+            setTimeout(() => this._continueInit(childReady), 0);
             return;
         }
         for (const entry of components) {
