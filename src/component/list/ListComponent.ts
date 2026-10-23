@@ -41,12 +41,15 @@ const ListComponentDefs: Definitions = {
         size: 'md',
         searchable: false,
     },
+    fields: {
+        _searchKeyword: '',
+        _allItemsData: [],
+        _searchBar: null,
+    },
 } as const;
 
 class ListComponent extends ItemGroupPooledComponent {
     static type = 'list';
-    defaultItemType = 'list-item';
-
     domEvents?: DomEventsMap | undefined = {
         click: {
             path: '[items]',
@@ -58,12 +61,9 @@ class ListComponent extends ItemGroupPooledComponent {
 
     _clickedAction: any = null;
     _clickedActionData: any = null;
-    _searchKeyword: string = '';
-    _allItemsData: any[] = [];
-    _searchBar: SearchBarComponent | null = null;
 
     get defaultOptions(): Record<string, any> {
-        return { direction: 'vertical' };
+        return { direction: 'vertical', defaultItemType: 'list-item' };
     }
 
     onAfterInit(): void {

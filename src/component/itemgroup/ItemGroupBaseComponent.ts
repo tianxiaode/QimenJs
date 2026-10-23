@@ -17,6 +17,7 @@ const ItemGroupBaseComponentDefs: Definitions = {
         overflowMode: 'none',
         step: 100,
         items: null,
+        defaultItemType: '',
         /** 全部 items 的默认属性 — items 自身属性优先 */
         defaultItemOption: null,
         entityKey: null,
@@ -24,7 +25,6 @@ const ItemGroupBaseComponentDefs: Definitions = {
         data: null,
     },
     fields: {
-        defaultItemType: '',
         indicator: undefined,
         isItemContainer: true,
         _entityItems: [],
