@@ -35,6 +35,8 @@ const DatePanelComponentDefs: Definitions = {
 } as const;
 
 class DatePanelComponent extends Component {
+    static type = 'date-panel';
+
     get tpl(): TemplateDecl {
         return DATE_PANEL_TPL;
     }

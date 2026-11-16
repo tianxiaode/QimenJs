@@ -47,6 +47,7 @@ import { SELECT_DEMO } from '../components/SelectDemo';
 import { SWITCH_DEMO } from '../components/SwitchDemo';
 import { CHECKBOX_DEMO, RADIO_DEMO } from '../components/CheckboxRadioDemo';
 import { DATEPICKER_DEMO } from '../components/DatePickerDemo';
+import { DATEPANEL_DEMO } from '../components/DatePanelDemo';
 import { SLIDER_DEMO, TEXTAREA_DEMO } from '../components/SliderTextareaDemo';
 import { FORM_DEMO } from '../components/FormDemo';
 
@@ -85,7 +86,7 @@ const COMPONENT_CATEGORIES = [
     },
     {
         label: '表单',
-        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'DatePicker', 'Slider', 'Textarea', 'Form'],
+        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'DatePicker', 'DatePanel', 'Slider', 'Textarea', 'Form'],
     },
     {
         label: '交互工具',
@@ -140,6 +141,7 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Checkbox: CHECKBOX_DEMO,
     Radio: RADIO_DEMO,
     DatePicker: DATEPICKER_DEMO,
+    DatePanel: DATEPANEL_DEMO,
     Slider: SLIDER_DEMO,
     Textarea: TEXTAREA_DEMO,
     Form: FORM_DEMO,

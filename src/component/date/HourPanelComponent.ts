@@ -28,6 +28,8 @@ const HourPanelComponentDefs: Definitions = {
 } as const;
 
 class HourPanelComponent extends Component {
+    static type = 'hour-panel';
+
     get tpl(): TemplateDecl {
         return HOUR_PANEL_TPL;
     }

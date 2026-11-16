@@ -31,6 +31,8 @@ const MonthPanelComponentDefs: Definitions = {
 } as const;
 
 class MonthPanelComponent extends Component {
+    static type = 'month-panel';
+
     get tpl(): TplNode {
         return MONTH_PANEL_TPL;
     }

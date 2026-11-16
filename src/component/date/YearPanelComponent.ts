@@ -40,6 +40,8 @@ const YearPanelComponentDefs: Definitions = {
 } as const;
 
 class YearPanelComponent extends Component {
+    static type = 'year-panel';
+
     get tpl(): TplNode {
         return YEAR_PANEL_TPL;
     }

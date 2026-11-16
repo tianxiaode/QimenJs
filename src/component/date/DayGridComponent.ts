@@ -32,6 +32,8 @@ const DayGridComponentDefs: Definitions = {
 } as const;
 
 class DayGridComponent extends Component {
+    static type = 'day-grid';
+
     get tpl(): TemplateDecl {
         return DAY_GRID_TPL;
     }

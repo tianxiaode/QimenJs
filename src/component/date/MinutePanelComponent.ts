@@ -32,6 +32,8 @@ const MinutePanelComponentDefs: Definitions = {
 type DigitPart = 'tens' | 'ones';
 
 class MinutePanelComponent extends Component {
+    static type = 'minute-panel';
+
     get tpl(): TplNode {
         return MINUTE_PANEL_TPL;
     }

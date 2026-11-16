@@ -33,6 +33,8 @@ const SecondPanelComponentDefs: Definitions = {
 type DigitPart = 'tens' | 'ones';
 
 class SecondPanelComponent extends Component {
+    static type = 'second-panel';
+
     get tpl(): TplNode {
         return SECOND_PANEL_TPL;
     }
