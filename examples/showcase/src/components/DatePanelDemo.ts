@@ -266,10 +266,12 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用（已注册组件）',
-            code: `{ type: 'date-panel', options: { value: new Date() } }
+            code: `{ type: 'date-panel', options: {} }
 { type: 'year-panel', options: { showPrevField: false, showNextField: false } }
 { type: 'month-panel', options: { showPrevField: false, showNextField: false } }
-{ type: 'hour-panel', options: { showPrevField: false, showNextField: false } }`,
+{ type: 'hour-panel', options: { showPrevField: false, showNextField: false } }
+{ type: 'minute-panel', options: { showPrevField: false, showNextField: false } }
+{ type: 'second-panel', options: { showPrevField: false, showNextField: false } }`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '16px' },
@@ -279,6 +281,43 @@ container.appendChild(panel.el);`,
                         style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', maxWidth: '400px' },
                         children: [
                             { type: 'date-panel', options: {} },
+                        ],
+                    },
+                    {
+                        tag: 'div',
+                        style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
+                        children: [
+                            {
+                                tag: 'div',
+                                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
+                                children: [{ type: 'year-panel', options: { showPrevField: false, showNextField: false } }],
+                            },
+                            {
+                                tag: 'div',
+                                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
+                                children: [{ type: 'month-panel', options: { showPrevField: false, showNextField: false } }],
+                            },
+                        ],
+                    },
+                    {
+                        tag: 'div',
+                        style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' },
+                        children: [
+                            {
+                                tag: 'div',
+                                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
+                                children: [{ type: 'hour-panel', options: { showPrevField: false, showNextField: false } }],
+                            },
+                            {
+                                tag: 'div',
+                                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
+                                children: [{ type: 'minute-panel', options: { showPrevField: false, showNextField: false } }],
+                            },
+                            {
+                                tag: 'div',
+                                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
+                                children: [{ type: 'second-panel', options: { showPrevField: false, showNextField: false } }],
+                            },
                         ],
                     },
                 ],

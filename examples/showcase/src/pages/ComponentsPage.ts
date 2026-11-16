@@ -85,8 +85,12 @@ const COMPONENT_CATEGORIES = [
         components: ['Basic', 'Selection', 'FixedColumn', 'VirtualScroll', 'RowBody', 'Edit'],
     },
     {
+        label: '日期',
+        components: ['DatePicker', 'DatePanel'],
+    },
+    {
         label: '表单',
-        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'DatePicker', 'DatePanel', 'Slider', 'Textarea', 'Form'],
+        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'Slider', 'Textarea', 'Form'],
     },
     {
         label: '交互工具',
