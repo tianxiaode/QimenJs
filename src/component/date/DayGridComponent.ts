@@ -21,7 +21,7 @@ import { generateCalendarView, type CalendarDay } from '@/utils/date';
 
 const TOTAL_WEEKDAYS = 7;
 const TOTAL_DAY_CELLS = 42;
-const DEFAULT_WEEKDAYS_SHORT = ['日', '一', '二', '三', '四', '五', '六'];
+const DEFAULT_WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
 const DayGridComponentDefs: Definitions = {
     options: {
@@ -93,8 +93,8 @@ class DayGridComponent extends Component {
         return this.i18nConfig()?.weekStart ?? 0;
     }
 
-    _getWeekdaysShort(): string[] {
-        return this.i18nConfig()?.weekdaysShort ?? DEFAULT_WEEKDAYS_SHORT;
+    _getWeekdays(): string[] {
+        return this.i18nConfig()?.weekdays ?? DEFAULT_WEEKDAYS;
     }
 
     _createCells(): void {
@@ -120,7 +120,7 @@ class DayGridComponent extends Component {
     }
 
     _applyWeekdays(): void {
-        const labels = this._getWeekdaysShort();
+        const labels = this._getWeekdays();
         for (let i = 0; i < TOTAL_WEEKDAYS; i++) {
             const idx = (this._startDayOfWeek + i) % 7;
             this._weekdayCells[i].textContent = labels[idx] ?? '';
@@ -144,7 +144,7 @@ class DayGridComponent extends Component {
                 continue;
             }
 
-            cell.textContent = String(day.date.getDate());
+            cell.textContent = day.isCurrentMonth ? String(day.date.getDate()) : '';
             cell.className = 'q-dtpanel__day-cell';
 
             if (!day.isCurrentMonth) {

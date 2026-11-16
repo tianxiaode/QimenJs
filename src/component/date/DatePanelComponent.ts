@@ -87,6 +87,7 @@ class DatePanelComponent extends Component {
 
         this._updateLabel();
         this._updateDayGrid();
+        this._updateQuickBtns();
 
         const dayGridCmp = this.getComponent('dayGrid');
         if (dayGridCmp) {
@@ -199,6 +200,13 @@ class DatePanelComponent extends Component {
                 ? `${this._viewYear} ${months[this._viewMonth - 1]}`
                 : `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
         this.setNodeText(text, 'dateLabel');
+    }
+
+    _updateQuickBtns(): void {
+        this.setNodeText('昨天', 'yesterdayBtn');
+        this.setNodeText('今天', 'todayBtn');
+        this.setNodeText('明天', 'tomorrowBtn');
+        this.addCls('q-dtpanel__quick-btn--today', 'todayBtn');
     }
 
     _updateDayGrid(): void {

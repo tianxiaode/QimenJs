@@ -72,8 +72,10 @@
 }
 
 .q-dtpanel__date-nav {
+    flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 2px;
 }
 
@@ -102,17 +104,30 @@
 
 .q-dtpanel__quick-btn {
     flex: 1;
-    height: 24px;
+    height: 28px;
+    padding: 0 8px;
     border: 1px solid var(--q-color-border, #e2e8f0);
-    border-radius: 2px;
+    border-radius: 4px;
     background: var(--q-color-bg, #fff);
     cursor: pointer;
     font-size: 12px;
     color: var(--q-color-text, #333);
+    transition: all 0.15s;
 }
 
 .q-dtpanel__quick-btn:hover {
     background: var(--q-color-bg-hover, #f7fafc);
+    border-color: var(--q-color-primary, #3b82f6);
+}
+
+.q-dtpanel__quick-btn--today {
+    background: var(--q-color-primary, #3b82f6);
+    color: #fff;
+    border-color: var(--q-color-primary, #3b82f6);
+}
+
+.q-dtpanel__quick-btn--today:hover {
+    opacity: 0.9;
 }
 
 .q-dtpanel__day-container {
