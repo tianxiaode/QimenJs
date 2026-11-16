@@ -127,18 +127,24 @@ export const CHECKBOX_DEMO: DemoConfig = {
             },
         },
         {
-            label: '多行多列（horizontal + wrap）',
+            label: '多行多列（cols）',
             code: `{ type: 'checkbox-group', options: {
     items: [...8项],
     direction: 'horizontal',
-    label: '多行多列',
+    cols: 3,
+    label: '3列布局',
 } }
-// 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
+{ type: 'checkbox-group', options: {
+    items: [...8项],
+    cols: 4,
+    label: '4列布局',
+} }`,
             template: {
                 tag: 'div',
-                style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '360px', '--q-itemgroup-wrap': 'wrap' },
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'checkbox-group', options: { items: MANY_CHECKBOX_ITEMS, direction: 'horizontal', label: '多行多列' } },
+                    { type: 'checkbox-group', options: { items: MANY_CHECKBOX_ITEMS, direction: 'horizontal', cols: 3, label: '3列布局' } },
+                    { type: 'checkbox-group', options: { items: MANY_CHECKBOX_ITEMS, cols: 4, label: '4列布局' } },
                 ],
             },
         },
@@ -209,18 +215,24 @@ export const RADIO_DEMO: DemoConfig = {
             },
         },
         {
-            label: '多行多列（horizontal + wrap）',
+            label: '多行多列（cols）',
             code: `{ type: 'radio-group', options: {
     items: [...6项],
     direction: 'horizontal',
-    label: '多行多列',
+    cols: 3,
+    label: '3列布局',
 } }
-// 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
+{ type: 'radio-group', options: {
+    items: [...6项],
+    cols: 2,
+    label: '2列布局',
+} }`,
             template: {
                 tag: 'div',
-                style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '360px', '--q-itemgroup-wrap': 'wrap' },
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'radio-group', options: { items: CITY_ITEMS, direction: 'horizontal', label: '多行多列' } },
+                    { type: 'radio-group', options: { items: CITY_ITEMS, direction: 'horizontal', cols: 3, label: '3列布局' } },
+                    { type: 'radio-group', options: { items: CITY_ITEMS, cols: 2, label: '2列布局' } },
                 ],
             },
         },

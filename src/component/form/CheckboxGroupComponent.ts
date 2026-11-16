@@ -28,6 +28,7 @@ const CheckboxGroupComponentDefs: Definitions = {
         items: [],
         fieldType: null,
         selectAll: false,
+        cols: 0,
     },
 } as const;
 
@@ -56,6 +57,24 @@ class CheckboxGroupComponent extends FormFieldComponent {
         }
     }
 
+    _onColsOptionChange(value: number): void {
+        this._applyCols();
+    }
+
+    _applyCols(): void {
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (!fieldBodyCmp) return;
+        const el = fieldBodyCmp.el as HTMLElement;
+        if (!el) return;
+        if (this.cols > 1) {
+            el.style.setProperty('--q-itemgroup-cols', String(this.cols));
+            el.classList.add('q-itemgroup__items--cols');
+        } else {
+            el.style.removeProperty('--q-itemgroup-cols');
+            el.classList.remove('q-itemgroup__items--cols');
+        }
+    }
+
     _onItemsOptionChange(_value: CheckboxOption[]): void {
         this._renderOptions();
     }
@@ -75,6 +94,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
             fieldBodyCmp.direction = this.direction;
             fieldBodyCmp.gap = '8px';
         }
+        this._applyCols();
         this._renderOptions();
     }
 

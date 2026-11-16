@@ -25,6 +25,7 @@ const RadioGroupComponentDefs: Definitions = {
         direction: 'vertical',
         items: [],
         fieldType: null,
+        cols: 0,
     },
 } as const;
 
@@ -48,6 +49,24 @@ class RadioGroupComponent extends FormFieldComponent {
         }
     }
 
+    _onColsOptionChange(value: number): void {
+        this._applyCols();
+    }
+
+    _applyCols(): void {
+        const fieldBodyCmp = this.getComponent('fieldBody') as any;
+        if (!fieldBodyCmp) return;
+        const el = fieldBodyCmp.el as HTMLElement;
+        if (!el) return;
+        if (this.cols > 1) {
+            el.style.setProperty('--q-itemgroup-cols', String(this.cols));
+            el.classList.add('q-itemgroup__items--cols');
+        } else {
+            el.style.removeProperty('--q-itemgroup-cols');
+            el.classList.remove('q-itemgroup__items--cols');
+        }
+    }
+
     _onItemsOptionChange(_value: RadioOption[]): void {
         this._renderOptions();
     }
@@ -67,6 +86,7 @@ class RadioGroupComponent extends FormFieldComponent {
             fieldBodyCmp.direction = this.direction;
             fieldBodyCmp.gap = '8px';
         }
+        this._applyCols();
         this._renderOptions();
     }
 
