@@ -64,6 +64,9 @@ __qimen_i18n_register__('en-US', {
         ok: 'OK',
         all: 'All',
         selected: '{count} item(s) selected',
+        yesterday: 'Yesterday',
+        today: 'Today',
+        tomorrow: 'Tomorrow',
         greeting: 'Hello, {name}',
     },
     validation: {

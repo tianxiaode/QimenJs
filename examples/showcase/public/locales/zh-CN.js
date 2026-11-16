@@ -65,6 +65,9 @@ __qimen_i18n_register__('zh-CN', {
         all: '全部',
         selectAll: '全选',
         selected: '已选择 {count} 项',
+        yesterday: '昨天',
+        today: '今天',
+        tomorrow: '明天',
         greeting: '你好, {name}',
     },
     validation: {

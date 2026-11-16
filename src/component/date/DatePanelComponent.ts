@@ -203,9 +203,9 @@ class DatePanelComponent extends Component {
     }
 
     _updateQuickBtns(): void {
-        this.setNodeText('昨天', 'yesterdayBtn');
-        this.setNodeText('今天', 'todayBtn');
-        this.setNodeText('明天', 'tomorrowBtn');
+        this.setNodeText('@common.yesterday', 'yesterdayBtn');
+        this.setNodeText('@common.today', 'todayBtn');
+        this.setNodeText('@common.tomorrow', 'tomorrowBtn');
         this.addCls('q-dtpanel__quick-btn--today', 'todayBtn');
     }
 
