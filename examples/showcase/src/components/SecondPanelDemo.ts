@@ -36,12 +36,12 @@ class SecondPanelDemoComponent extends Component {
             showPrevField: false,
             showNextField: false,
         });
-        cmp.on('secondSelect', (data: any) => {
-            this._value = { ...this._value, second: data.value.second };
+        cmp.on('secondSelect', (ctx: any) => {
+            this._value = { ...this._value, second: ctx.data.value.second };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);

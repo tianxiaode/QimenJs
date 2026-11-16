@@ -36,12 +36,12 @@ class MonthPanelDemoComponent extends Component {
             showPrevField: false,
             showNextField: false,
         });
-        cmp.on('monthSelect', (data: any) => {
-            this._value = { ...this._value, month: data.value.month };
+        cmp.on('monthSelect', (ctx: any) => {
+            this._value = { ...this._value, month: ctx.data.value.month };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);

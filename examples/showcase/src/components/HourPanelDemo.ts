@@ -36,12 +36,12 @@ class HourPanelDemoComponent extends Component {
             showPrevField: false,
             showNextField: false,
         });
-        cmp.on('hourSelect', (data: any) => {
-            this._value = { ...this._value, hour: data.value.hour };
+        cmp.on('hourSelect', (ctx: any) => {
+            this._value = { ...this._value, hour: ctx.data.value.hour };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);

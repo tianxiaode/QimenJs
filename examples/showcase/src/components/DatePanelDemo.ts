@@ -32,12 +32,12 @@ class DatePanelDemoComponent extends Component {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
         const cmp = new DatePanelComponent({ value: this._value });
-        cmp.on('daySelect', (data: any) => {
-            this._value = { ...this._value, year: data.value.year, month: data.value.month, day: data.value.day };
+        cmp.on('daySelect', (ctx: any) => {
+            this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);

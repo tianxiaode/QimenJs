@@ -36,12 +36,12 @@ class MinutePanelDemoComponent extends Component {
             showPrevField: false,
             showNextField: false,
         });
-        cmp.on('minuteSelect', (data: any) => {
-            this._value = { ...this._value, minute: data.value.minute };
+        cmp.on('minuteSelect', (ctx: any) => {
+            this._value = { ...this._value, minute: ctx.data.value.minute };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);

@@ -36,12 +36,12 @@ class YearPanelDemoComponent extends Component {
             showPrevField: false,
             showNextField: false,
         });
-        cmp.on('yearSelect', (data: any) => {
-            this._value = { ...this._value, year: data.value.year };
+        cmp.on('yearSelect', (ctx: any) => {
+            this._value = { ...this._value, year: ctx.data.value.year };
             this._updateValue();
         });
-        cmp.on('confirm', (data: any) => {
-            this._value = { ...this._value, ...data.value };
+        cmp.on('confirm', (ctx: any) => {
+            this._value = { ...this._value, ...ctx.data.value };
             this._updateValue();
         });
         container.appendChild(cmp.el);
