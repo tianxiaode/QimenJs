@@ -71,14 +71,14 @@ class DatePanelComponent extends Component {
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
 
-        if (!this.getData('showPrevField')) {
-            this.addCls('hidden', 'prevFieldBtn');
+        if (this.getData('showPrevField')) {
+            this.removeCls('hidden', 'prevFieldBtn');
         }
-        if (!this.getData('showConfirm')) {
-            this.addCls('hidden', 'confirmBtn');
+        if (this.getData('showConfirm')) {
+            this.removeCls('hidden', 'confirmBtn');
         }
-        if (!this.getData('showCancel')) {
-            this.addCls('hidden', 'cancelBtn');
+        if (this.getData('showCancel')) {
+            this.removeCls('hidden', 'cancelBtn');
         }
 
         this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this.onLocaleChange());
