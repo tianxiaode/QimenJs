@@ -316,7 +316,7 @@ body {
 }
 
 .q-demo__time-btn {
-    padding: 2px 8px;
+    padding: 2px 6px;
     border: 1px solid var(--q-sc-border, #e2e8f0);
     border-radius: 4px;
     background: var(--q-sc-bg, #fff);
@@ -324,9 +324,55 @@ body {
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    min-width: 36px;
+    min-width: 32px;
     text-align: center;
     transition: all 0.15s;
+}
+
+.q-demo__time-btn:hover {
+    border-color: var(--q-sc-primary, #6366f1);
+    background: var(--q-sc-bg-secondary, #f8fafc);
+}
+
+.q-demo__time-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 0;
+    border-top: 1px solid var(--q-color-border, #e2e8f0);
+}
+
+.q-demo__time-group {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.q-demo__time-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--q-color-text-secondary, #666);
+    cursor: pointer;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.q-demo__time-arrow:hover {
+    color: var(--q-color-primary, #3b82f6);
+}
+
+.q-demo__time-sep {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--q-color-text, #333);
+    padding: 0 2px;
 }
 
 .q-demo__time-btn:hover {

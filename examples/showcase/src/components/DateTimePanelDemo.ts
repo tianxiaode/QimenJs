@@ -22,21 +22,48 @@ class DateTimePanelDemoComponent extends Component {
             children: [
                 {
                     tag: 'div',
-                    name: 'panelContainer',
+                    name: 'outerBox',
+                    cls: 'q-demo__datetime-box',
                     style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', width: '280px' },
-                },
-                {
-                    tag: 'div',
-                    name: 'timeBar',
-                    cls: 'q-demo__time-bar',
-                    style: { display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', width: '280px', padding: '4px 0' },
                     children: [
-                        { tag: 'button', name: 'hourBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
-                        { tag: 'span', options: { text: ':' } },
-                        { tag: 'button', name: 'minuteBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
-                        { tag: 'span', options: { text: ':' } },
-                        { tag: 'button', name: 'secondBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
-                   5],
+                        { tag: 'div', name: 'panelContainer' },
+                        {
+                            tag: 'div',
+                            name: 'timeBar',
+                            cls: 'q-demo__time-bar',
+                            children: [
+                                {
+                                    tag: 'div',
+                                    cls: 'q-demo__time-group',
+                                    children: [
+                                        { tag: 'button', name: 'hourUp', cls: 'q-demo__time-arrow' },
+                                        { tag: 'button', name: 'hourBtn', cls: 'q-demo__time-btn' },
+                                        { tag: 'button', name: 'hourDown', cls: 'q-demo__time-arrow' },
+                                    ],
+                                },
+                                { tag: 'span', cls: 'q-demo__time-sep', options: { text: ':' } },
+                                {
+                                    tag: 'div',
+                                    cls: 'q-demo__time-group',
+                                    children: [
+                                        { tag: 'button', name: 'minuteUp', cls: 'q-demo__time-arrow' },
+                                        { tag: 'button', name: 'minuteBtn', cls: 'q-demo__time-btn' },
+                                        { tag: 'button', name: 'minuteDown', cls: 'q-demo__time-arrow' },
+                                    ],
+                                },
+                                { tag: 'span', cls: 'q-demo__time-sep', options: { text: ':' } },
+                                {
+                                    tag: 'div',
+                                    cls: 'q-demo__time-group',
+                                    children: [
+                                        { tag: 'button', name: 'secondUp', cls: 'q-demo__time-arrow' },
+                                        { tag: 'button', name: 'secondBtn', cls: 'q-demo__time-btn' },
+                                        { tag: 'button', name: 'secondDown', cls: 'q-demo__time-arrow' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         };
@@ -47,10 +74,22 @@ class DateTimePanelDemoComponent extends Component {
             { path: 'hourBtn', handler: 'onHourBtnClick' },
             { path: 'minuteBtn', handler: 'onMinuteBtnClick' },
             { path: 'secondBtn', handler: 'onSecondBtnClick' },
+            { path: 'hourUp', handler: 'onHourUpClick' },
+            { path: 'hourDown', handler: 'onHourDownClick' },
+            { path: 'minuteUp', handler: 'onMinuteUpClick' },
+            { path: 'minuteDown', handler: 'onMinuteDownClick' },
+            { path: 'secondUp', handler: 'onSecondUpClick' },
+            { path: 'secondDown', handler: 'onSecondDownClick' },
         ],
     };
 
     onAfterInit(): void {
+        this.setNodeText('▲', 'hourUp');
+        this.setNodeText('▼', 'hourDown');
+        this.setNodeText('▲', 'minuteUp');
+        this.setNodeText('▼', 'minuteDown');
+        this.setNodeText('▲', 'secondUp');
+        this.setNodeText('▼', 'secondDown');
         this._renderPanel('date');
         this._updateTimeBar();
     }
@@ -62,6 +101,31 @@ class DateTimePanelDemoComponent extends Component {
     onHourBtnClick(): void { this._renderPanel('hour'); }
     onMinuteBtnClick(): void { this._renderPanel('minute'); }
     onSecondBtnClick(): void { this._renderPanel('second'); }
+
+    onHourUpClick(): void {
+        this._value = { ...this._value, hour: (this._value.hour + 1) % 24 };
+        this._updateTimeBar();
+    }
+    onHourDownClick(): void {
+        this._value = { ...this._value, hour: (this._value.hour + 23) % 24 };
+        this._updateTimeBar();
+    }
+    onMinuteUpClick(): void {
+        this._value = { ...this._value, minute: (this._value.minute + 1) % 60 };
+        this._updateTimeBar();
+    }
+    onMinuteDownClick(): void {
+        this._value = { ...this._value, minute: (this._value.minute + 59) % 60 };
+        this._updateTimeBar();
+    }
+    onSecondUpClick(): void {
+        this._value = { ...this._value, second: ((this._value.second ?? 0) + 1) % 60 };
+        this._updateTimeBar();
+    }
+    onSecondDownClick(): void {
+        this._value = { ...this._value, second: ((this._value.second ?? 0) + 59) % 60 };
+        this._updateTimeBar();
+    }
 
     _updateTimeBar(): void {
         this.setNodeText(String(this._value.hour).padStart(2, '0'), 'hourBtn');
@@ -177,13 +241,14 @@ class DateTimePanelDemoComponent extends Component {
 
 export const DATETIMEPANEL_DEMO: DemoConfig = {
     title: 'DateTimePanel',
-    description: '日期时间组合面板 — 以日期面板为主，底部显示时间（HH:mm:ss），点击时分秒切换到对应面板，面板间通过导航按钮切换',
+    description: '日期时间组合面板 — 以日期面板为主，底部时间栏（HH:mm:ss 带上下箭头）可点击切换面板或直接微调',
     sections: [
         {
             label: '组合面板',
-            code: `// 日期面板为主，底部时间栏可点击切换到时/分/秒面板
-// 时间面板之间通过 ← → 导航按钮切换
-// 确认/取消按钮返回日期面板`,
+            code: `// 日期面板为主，底部时间栏在面板 border 内
+// 时间数字可点击切换到对应选择面板
+// 上下箭头可直接微调时/分/秒值
+// 时间面板之间通过导航按钮串联`,
             component: DateTimePanelDemoComponent,
         },
     ],
