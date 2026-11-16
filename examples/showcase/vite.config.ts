@@ -47,6 +47,7 @@ export default defineConfig({
         }),
     ],
     resolve: {
+        extensions: ['.mjs', '.ts', '.js', '.jsx', '.tsx', '.json'],
         alias: [
             { find: /^@\/(.+)/, replacement: resolve(__dirname, '../../src/$1') },
             { find: '@qimenjs/async', replacement: resolve(__dirname, '../../src/async') },
