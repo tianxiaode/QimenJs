@@ -85,6 +85,9 @@ class RowComponent extends Component {
             options.width = `var(--q-table-col-${meta.name}-width)`;
             options.minWidth = '0';
         }
+        if (meta.enumMap) {
+            options.enumMap = meta.enumMap;
+        }
         const cell = new CellClass(options);
         cell.el!.dataset.colName = meta.name;
 
