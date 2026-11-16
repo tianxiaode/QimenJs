@@ -33,7 +33,7 @@ function getCurrentLang(): string {
 }
 
 function getCurrentPreset(): string {
-    return document.documentElement.getAttribute('data-theme-preset') || 'qinghua';
+    return document.documentElement.getAttribute('data-theme-preset') || '';
 }
 
 class ShowcaseNavbar extends NavbarComponent {
