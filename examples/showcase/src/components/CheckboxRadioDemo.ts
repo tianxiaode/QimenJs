@@ -136,7 +136,7 @@ export const CHECKBOX_DEMO: DemoConfig = {
 // 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
             template: {
                 tag: 'div',
-                style: { display: 'flex', flexDirection: 'column', gap: '12px', '--q-itemgroup-wrap': 'wrap' },
+                style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '360px', '--q-itemgroup-wrap': 'wrap' },
                 children: [
                     { type: 'checkbox-group', options: { items: MANY_CHECKBOX_ITEMS, direction: 'horizontal', label: '多行多列' } },
                 ],
@@ -218,7 +218,7 @@ export const RADIO_DEMO: DemoConfig = {
 // 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
             template: {
                 tag: 'div',
-                style: { display: 'flex', flexDirection: 'column', gap: '12px', '--q-itemgroup-wrap': 'wrap' },
+                style: { display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '360px', '--q-itemgroup-wrap': 'wrap' },
                 children: [
                     { type: 'radio-group', options: { items: CITY_ITEMS, direction: 'horizontal', label: '多行多列' } },
                 ],
