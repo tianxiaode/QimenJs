@@ -163,6 +163,12 @@ class DayGridComponent extends Component {
     }
 
     update(props?: Record<string, any>): void {
+        if (this._dayCells.length === 0) {
+            this._startDayOfWeek = props?.startDayOfWeek ?? this._startDayOfWeek;
+            this._createCells();
+            this._applyWeekdays();
+        }
+
         let needWeekdayRefresh = false;
 
         if (props?.startDayOfWeek !== undefined && props.startDayOfWeek !== this._startDayOfWeek) {
