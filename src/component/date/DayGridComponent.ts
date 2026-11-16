@@ -68,11 +68,8 @@ class DayGridComponent extends Component {
     }
 
     onLocaleChange(): void {
-        const newStart = this._getWeekStart();
-        if (newStart !== this._startDayOfWeek) {
-            this._startDayOfWeek = newStart;
-            this._applyWeekdays();
-        }
+        this._startDayOfWeek = this._getWeekStart();
+        this._applyWeekdays();
         this._applyGrid();
     }
 
@@ -95,7 +92,14 @@ class DayGridComponent extends Component {
 
     _getWeekdays(): string[] {
         const config = this.i18nConfig();
-        return config?.weekdaysShort ?? config?.weekdays ?? DEFAULT_WEEKDAYS;
+        const short = config?.weekdaysShort;
+        const full = config?.weekdays;
+        if (short && full) {
+            const shortMaxLen = Math.max(...short.map(s => s.length));
+            const fullMaxLen = Math.max(...full.map(s => s.length));
+            return shortMaxLen <= fullMaxLen ? short : full;
+        }
+        return short ?? full ?? DEFAULT_WEEKDAYS;
     }
 
     _createCells(): void {
