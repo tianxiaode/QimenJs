@@ -22,11 +22,6 @@ export const DATE_PANEL_TPL: TemplateDecl = {
                     classes: 'q-dtpanel__date-nav',
                     children: [
                         {
-                            tag: 'button',
-                            name: 'prev10y',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
-                        },
-                        {
                             tag: 'div',
                             name: 'yearGroup',
                             classes: 'q-dtpanel__field-group',
@@ -75,11 +70,6 @@ export const DATE_PANEL_TPL: TemplateDecl = {
                                     ],
                                 },
                             ],
-                        },
-                        {
-                            tag: 'button',
-                            name: 'next10y',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next',
                         },
                     ],
                 },

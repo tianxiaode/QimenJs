@@ -46,12 +46,10 @@ class DatePanelComponent extends Component {
             { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
             { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
             { path: 'cancelBtn', handler: 'onCancelBtnClick' },
-            { path: 'prev10y', handler: 'onPrev10yClick' },
             { path: 'prev1y', handler: 'onPrev1yClick' },
             { path: 'prev1m', handler: 'onPrev1mClick' },
             { path: 'next1m', handler: 'onNext1mClick' },
             { path: 'next1y', handler: 'onNext1yClick' },
-            { path: 'next10y', handler: 'onNext10yClick' },
             { path: 'yesterdayBtn', handler: 'onYesterdayBtnClick' },
             { path: 'todayBtn', handler: 'onTodayBtnClick' },
             { path: 'tomorrowBtn', handler: 'onTomorrowBtnClick' },
@@ -112,10 +110,6 @@ class DatePanelComponent extends Component {
         this.emit('cancel', {});
     }
 
-    onPrev10yClick(): void {
-        this._navigate(-10, 0);
-    }
-
     onPrev1yClick(): void {
         this._navigate(-1, 0);
     }
@@ -130,10 +124,6 @@ class DatePanelComponent extends Component {
 
     onNext1yClick(): void {
         this._navigate(1, 0);
-    }
-
-    onNext10yClick(): void {
-        this._navigate(10, 0);
     }
 
     onYesterdayBtnClick(): void {
