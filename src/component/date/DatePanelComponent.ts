@@ -71,14 +71,6 @@ class DatePanelComponent extends Component {
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
 
-        this.setNodeText('←', 'prevFieldBtn');
-        this.setNodeText('✓', 'confirmBtn');
-        this.setNodeText('✕', 'cancelBtn');
-        this.setNodeText('▲', 'prev1y');
-        this.setNodeText('▼', 'next1y');
-        this.setNodeText('▲', 'prev1m');
-        this.setNodeText('▼', 'next1m');
-
         if (!this.getData('showPrevField')) {
             this.addCls('hidden', 'prevFieldBtn');
         }

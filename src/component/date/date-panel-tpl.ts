@@ -77,7 +77,13 @@ export const DATE_PANEL_TPL: TemplateDecl = {
                     tag: 'button',
                     name: 'confirmBtn',
                     classes:
-                        'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm',
+                        'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm q-check',
+                },
+                {
+                    tag: 'button',
+                    name: 'cancelBtn',
+                    classes:
+                        'q-dtpanel__nav-btn q-dtpanel__nav-btn--cancel q-dtpanel__nav-cancel q-close',
                 },
                 {
                     tag: 'button',

@@ -53,11 +53,6 @@ class HourPanelComponent extends Component {
         this._value = this.getData('value') ?? createDateTimeValue();
         this._previewData = this.getData('previewData') ?? null;
 
-        this.setNodeText('←', 'prevFieldBtn');
-        this.setNodeText('→', 'nextFieldBtn');
-        this.setNodeText('✓', 'confirmBtn');
-        this.setNodeText('✕', 'cancelBtn');
-
         if (!this.getData('showPrevField')) {
             this.addCls('hidden', 'prevFieldBtn');
         }

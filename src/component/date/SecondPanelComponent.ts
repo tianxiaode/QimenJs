@@ -62,11 +62,6 @@ class SecondPanelComponent extends Component {
         this._tensSelected = Math.floor(this._value.second / 10);
         this._onesSelected = this._value.second % 10;
 
-        this.setNodeText('←', 'prevFieldBtn');
-        this.setNodeText('→', 'nextFieldBtn');
-        this.setNodeText('✓', 'confirmBtn');
-        this.setNodeText('✕', 'cancelBtn');
-
         if (!this.getData('showPrevField')) {
             this.addCls('hidden', 'prevFieldBtn');
         }
