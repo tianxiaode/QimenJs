@@ -13,6 +13,7 @@ const InputComponentDefs: Definitions = {
         type: 'text',
         readonly: false,
         maxLength: null,
+        selectOnFocus: false,
     },
 } as const;
 
@@ -82,6 +83,7 @@ class InputComponent extends FormFieldComponent {
     onFieldFocus(): void {
         this._focused = true;
         this._applyState();
+        if (this.selectOnFocus) this._fieldItem?.select();
     }
 
     onFieldBlur(): void {
