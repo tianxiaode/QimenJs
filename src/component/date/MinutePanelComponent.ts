@@ -189,6 +189,7 @@ class MinutePanelComponent extends Component {
         this._tensSelected = tens;
         this._selectingTens = false;
         this._renderColumns();
+        this._renderPreview();
     }
 
     _onOnesSelect(ones: number): void {
@@ -196,6 +197,7 @@ class MinutePanelComponent extends Component {
         const minute = this._tensSelected * 10 + ones;
         this._value = { ...this._value, minute };
         this._renderColumns();
+        this._renderPreview();
         this.emit('minuteSelect', { value: this._value });
     }
 

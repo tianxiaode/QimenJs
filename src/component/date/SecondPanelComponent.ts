@@ -187,6 +187,7 @@ class SecondPanelComponent extends Component {
     _onTensSelect(tens: number): void {
         this._tensSelected = tens;
         this._renderColumns();
+        this._renderPreview();
     }
 
     _onOnesSelect(ones: number): void {
@@ -194,6 +195,7 @@ class SecondPanelComponent extends Component {
         const second = this._tensSelected * 10 + ones;
         this._value = { ...this._value, second };
         this._renderColumns();
+        this._renderPreview();
         this.emit('secondSelect', { value: this._value });
     }
 

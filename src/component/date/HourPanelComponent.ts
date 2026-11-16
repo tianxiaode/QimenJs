@@ -94,6 +94,7 @@ class HourPanelComponent extends Component {
         const hour = parseInt(value);
         this._value = { ...this._value, hour };
         this._renderGrid();
+        this._renderPreview();
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {

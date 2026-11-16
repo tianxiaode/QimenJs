@@ -80,6 +80,7 @@ class MonthPanelComponent extends Component {
     }
 
     onLocaleChange(): void {
+        this._renderPreview();
         this._applyCells();
     }
 
@@ -107,6 +108,7 @@ class MonthPanelComponent extends Component {
         const month = parseInt(value);
         this._value = { ...this._value, month };
         this._applyCells();
+        this._renderPreview();
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
