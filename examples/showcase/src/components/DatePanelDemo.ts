@@ -71,25 +71,19 @@ class DatePanelDemoComponent extends Component {
             container.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'year') {
-            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
+            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
             cmp.on('yearSelect', (ctx: any) => {
                 this._value = { ...this._value, year: ctx.data.value.year };
                 this._updateValue();
                 this._renderPanel('date');
             });
-            cmp.on('cancel', () => {
-                this._renderPanel('date');
-            });
             container.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'month') {
-            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
+            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
             cmp.on('monthSelect', (ctx: any) => {
                 this._value = { ...this._value, month: ctx.data.value.month };
                 this._updateValue();
-                this._renderPanel('date');
-            });
-            cmp.on('cancel', () => {
                 this._renderPanel('date');
             });
             container.appendChild(cmp.el);
