@@ -88,7 +88,7 @@ class DatePanelComponent extends Component {
         this._updateLabel();
         this._updateDayGrid();
 
-        const dayGridCmp = this.getNode('dayGrid');
+        const dayGridCmp = this.getComponent('dayGrid');
         if (dayGridCmp) {
             dayGridCmp.on('daySelect', (ctx: any) => this._onDaySelect(ctx.data.day));
         }
@@ -202,7 +202,7 @@ class DatePanelComponent extends Component {
     }
 
     _updateDayGrid(): void {
-        const dayGridCmp = this.getNode('dayGrid');
+        const dayGridCmp = this.getComponent('dayGrid');
         if (dayGridCmp) {
             dayGridCmp.update({
                 year: this._viewYear,
