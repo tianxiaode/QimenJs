@@ -84,7 +84,11 @@ class DatePanelDemoComponent extends Component {
             cmp.on('nextField', () => {
                 this._renderPanel('month');
             });
-            cmp.on('confirm', () => {
+            cmp.on('confirm', (ctx: any) => {
+                if (ctx.data?.value) {
+                    this._value = { ...this._value, ...ctx.data.value };
+                    this._updateValue();
+                }
                 this._renderPanel('date');
             });
             cmp.on('cancel', () => {
@@ -102,7 +106,11 @@ class DatePanelDemoComponent extends Component {
             cmp.on('prevField', () => {
                 this._renderPanel('year');
             });
-            cmp.on('confirm', () => {
+            cmp.on('confirm', (ctx: any) => {
+                if (ctx.data?.value) {
+                    this._value = { ...this._value, ...ctx.data.value };
+                    this._updateValue();
+                }
                 this._renderPanel('date');
             });
             cmp.on('cancel', () => {
