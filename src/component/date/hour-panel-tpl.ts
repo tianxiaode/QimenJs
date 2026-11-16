@@ -17,7 +17,7 @@ export const HOUR_PANEL_TPL: TemplateDecl = {
             name: 'grid',
             classes: 'q-dtpanel__grid',
             style: {
-                'grid-template-columns': 'repeat(4, 1fr);',
+                gridTemplateColumns: 'repeat(4, 1fr)',
             },
         },
     ],

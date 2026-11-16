@@ -16,6 +16,7 @@ import { Definitions } from '@/composable';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 import { renderPreview, type PanelPreviewData } from './panel-preview';
+import { SYSTEM_EVENTS } from '@/events';
 import './monthpanel.css';
 import './date-panel.css';
 
@@ -69,6 +70,9 @@ class MonthPanelComponent extends Component {
         if (!this.getData('showCancel')) {
             this.addCls('hidden', 'cancelBtn');
         }
+
+        this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this.onLocaleChange());
+        this.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, () => this.onLocaleChange());
 
         this._renderPreview();
         this._createCells();

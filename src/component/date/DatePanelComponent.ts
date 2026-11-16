@@ -17,6 +17,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { SYSTEM_EVENTS } from '@/events';
 import { DATE_PANEL_TPL } from './date-panel-tpl';
 import {
     addDays,
@@ -80,6 +81,9 @@ class DatePanelComponent extends Component {
         if (!this.getData('showCancel')) {
             this.addCls('hidden', 'cancelBtn');
         }
+
+        this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this.onLocaleChange());
+        this.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, () => this.onLocaleChange());
 
         this._updateLabel();
         this._updateDayGrid();

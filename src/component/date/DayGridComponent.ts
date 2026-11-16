@@ -14,6 +14,7 @@
 import { Component } from '@qimenjs/component-core';
 import type { TemplateDecl } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
+import { SYSTEM_EVENTS } from '@/events';
 import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
 //import './date-panel.css';
@@ -51,6 +52,10 @@ class DayGridComponent extends Component {
         this._month = this.getData('month') ?? 1;
         this._selectedDay = this.getData('selectedDay') ?? undefined;
         this._startDayOfWeek = this.getData('startDayOfWeek') ?? this._getWeekStart();
+
+        this.systemOn(SYSTEM_EVENTS.I18N_MESSAGES_UPDATE, () => this.onLocaleChange());
+        this.systemOn(SYSTEM_EVENTS.I18N_LOCALE_CHANGE, () => this.onLocaleChange());
+
         this._createCells();
         this._applyWeekdays();
         this._applyGrid();
