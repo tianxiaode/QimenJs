@@ -1,4 +1,98 @@
 /* YearPanel */
+
+.q-dtpanel__digit-columns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.q-dtpanel__digit-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.q-dtpanel__digit-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 28px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--q-color-primary, #3b82f6);
+    border-bottom: 1px solid var(--q-color-border, #e2e8f0);
+    margin-bottom: 2px;
+}
+
+.q-dtpanel__digit-split {
+    display: flex;
+    gap: 2px;
+    width: 100%;
+}
+
+.q-dtpanel__digit-subcol {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.q-dtpanel__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--q-color-text, #333);
+}
+
+.q-dtpanel__cell:hover {
+    background: var(--q-color-bg-hover, #f7fafc);
+}
+
+.q-dtpanel__cell--active {
+    background: var(--q-color-primary, #3b82f6);
+    color: #fff;
+}
+
+.q-dtpanel__high-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--q-color-text, #333);
+}
+
+.q-dtpanel__high-btn:hover {
+    background: var(--q-color-bg-hover, #f7fafc);
+}
+
+.q-dtpanel__high-btn--active {
+    background: var(--q-color-primary, #3b82f6);
+    color: #fff;
+}
+
+.q-dtpanel__nav-preview {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--q-color-text, #333);
+    min-width: 60px;
+}
+
 .q-dtpanel__nav-btn--disabled {
-    /* TODO: 添加样式 */
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }

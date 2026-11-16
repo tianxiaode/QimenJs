@@ -103,9 +103,13 @@ class YearPanelComponent extends Component {
     }
 
     _renderPreview(): void {
-        if (!this._previewData) return;
         const previewEl = this.getNodeEl('preview');
-        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        if (!previewEl) return;
+        if (this._previewData) {
+            renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        } else {
+            previewEl.textContent = String(this._value.year);
+        }
     }
 
     _renderColumns(): void {
@@ -187,6 +191,7 @@ class YearPanelComponent extends Component {
 
         this._value = { ...this._value, year };
         this._renderColumns();
+        this._renderPreview();
 
         const posIdx = POSITION_ORDER.indexOf(position);
         const nextPos = POSITION_ORDER[posIdx + 1];
