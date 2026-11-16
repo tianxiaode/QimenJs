@@ -84,6 +84,28 @@ export const CHECKBOX_DEMO: DemoConfig = {
                 ],
             },
         },
+        {
+            label: '全选（selectAll）',
+            code: `{ type: 'checkbox-group', options: {
+    items: [...],
+    selectAll: true,
+    label: '带全选',
+} }
+{ type: 'checkbox-group', options: {
+    items: [...],
+    selectAll: true,
+    value: ['reading', 'music'],
+    label: '部分选中',
+} }`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'checkbox-group', options: { items: HOBBY_ITEMS, selectAll: true, label: '带全选' } },
+                    { type: 'checkbox-group', options: { items: HOBBY_ITEMS, selectAll: true, value: ['reading', 'music'], label: '部分选中' } },
+                ],
+            },
+        },
     ],
 };
 

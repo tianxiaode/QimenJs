@@ -115,7 +115,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
     /** 组头全选框（selectAll=true 时渲染，action=select-all 经基类统一监听分发） */
     _renderSelectAll(fieldBodyCmp: any): void {
         fieldBodyCmp.add({
-            ...checkboxItemTpl('全选'),
+            ...checkboxItemTpl('@common.selectAll'),
             classes: 'q-checkbox-group__item q-checkbox-group__select-all',
             action: FIELD_ACTION.SELECT_ALL,
         });

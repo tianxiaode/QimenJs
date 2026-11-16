@@ -21,6 +21,12 @@
     color: var(--q-color-primary);
 }
 
+.q-checkbox-group__select-all {
+    padding-bottom: var(--q-space-sm);
+    border-bottom: 1px solid var(--q-color-border-light);
+    margin-bottom: var(--q-space-sm);
+}
+
 /* 模板编译时文本在 children 之前，flex order 把勾选框排到文本前 */
 .q-checkbox-group__item .q-checkbox {
     order: -1;
