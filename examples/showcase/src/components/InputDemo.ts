@@ -25,6 +25,21 @@ export const INPUT_DEMO: DemoConfig = {
             },
         },
         {
+            label: '聚焦全选（selectOnFocus）',
+            code: `{ type: 'input', options: { value: '聚焦时光标定位到末尾', label: '默认' } }
+{ type: 'input', options: { value: '聚焦时自动全选文本', selectOnFocus: true, label: '全选' } }
+{ type: 'number-input', options: { value: 100, selectOnFocus: true, label: '数字全选' } }`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'input', options: { value: '聚焦时光标定位到末尾', label: '默认' } },
+                    { type: 'input', options: { value: '聚焦时自动全选文本', selectOnFocus: true, label: '全选' } },
+                    { type: 'number-input', options: { value: 100, selectOnFocus: true, label: '数字全选' } },
+                ],
+            },
+        },
+        {
             label: '标签位置（labelPosition: top/left/right）',
             code: `{ type: 'input', options: { label: '顶部标签', labelPosition: 'top', placeholder: 'top' } }
 { type: 'input', options: { label: '左侧', labelPosition: 'left', placeholder: 'left' } }
