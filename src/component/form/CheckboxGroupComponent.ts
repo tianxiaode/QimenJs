@@ -103,6 +103,11 @@ class CheckboxGroupComponent extends FormFieldComponent {
             el.setAttribute('role', 'checkbox');
             el.setAttribute('aria-checked', String(checked));
 
+            const box = el.querySelector('.q-checkbox') as HTMLElement | null;
+            if (box) {
+                box.classList.toggle('q-checkbox--checked', checked);
+            }
+
             this._checkboxItems.push({ item: itemObj, option: opt });
         }
     }
