@@ -1,11 +1,14 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
 import { DatePanelComponent } from '@/component/date/DatePanelComponent';
+import { YearPanelComponent } from '@/component/date/YearPanelComponent';
+import { MonthPanelComponent } from '@/component/date/MonthPanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
 class DatePanelDemoComponent extends Component {
     _panel: any = null;
     _value: DateTimeValue = createDateTimeValue();
+    _currentPanelType: 'date' | 'year' | 'month' = 'date';
 
     get tpl(): TemplateDecl {
         return {
@@ -29,19 +32,7 @@ class DatePanelDemoComponent extends Component {
     }
 
     onAfterInit(): void {
-        const container = this.getNodeEl('panelContainer');
-        if (!container) return;
-        const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
-        cmp.on('daySelect', (ctx: any) => {
-            this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
-            this._updateValue();
-        });
-        cmp.on('confirm', (ctx: any) => {
-            this._value = { ...this._value, ...ctx.data.value };
-            this._updateValue();
-        });
-        container.appendChild(cmp.el);
-        this._panel = cmp;
+        this._renderPanel('date');
         this._updateValue();
     }
 
@@ -50,6 +41,59 @@ class DatePanelDemoComponent extends Component {
             this._panel?.dispose();
         } catch (e) {
             // ignore
+        }
+    }
+
+    _renderPanel(type: 'date' | 'year' | 'month'): void {
+        const container = this.getNodeEl('panelContainer');
+        if (!container) return;
+
+        if (this._panel) {
+            try { this._panel.dispose(); } catch (e) { /* ignore */ }
+            this._panel = null;
+        }
+        container.innerHTML = '';
+
+        this._currentPanelType = type;
+
+        if (type === 'date') {
+            const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
+            cmp.on('daySelect', (ctx: any) => {
+                this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
+                this._updateValue();
+            });
+            cmp.on('navigate', (ctx: any) => {
+                const target = ctx.data?.target;
+                if (target === 'year' || target === 'month') {
+                    this._renderPanel(target);
+                }
+            });
+            container.appendChild(cmp.el);
+            this._panel = cmp;
+        } else if (type === 'year') {
+            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
+            cmp.on('yearSelect', (ctx: any) => {
+                this._value = { ...this._value, year: ctx.data.value.year };
+                this._updateValue();
+                this._renderPanel('date');
+            });
+            cmp.on('cancel', () => {
+                this._renderPanel('date');
+            });
+            container.appendChild(cmp.el);
+            this._panel = cmp;
+        } else if (type === 'month') {
+            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
+            cmp.on('monthSelect', (ctx: any) => {
+                this._value = { ...this._value, month: ctx.data.value.month };
+                this._updateValue();
+                this._renderPanel('date');
+            });
+            cmp.on('cancel', () => {
+                this._renderPanel('date');
+            });
+            container.appendChild(cmp.el);
+            this._panel = cmp;
         }
     }
 
