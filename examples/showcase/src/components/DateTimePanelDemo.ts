@@ -36,9 +36,15 @@ class DateTimePanelDemoComponent extends Component {
                                     tag: 'div',
                                     cls: 'q-demo__time-group',
                                     children: [
-                                        { tag: 'button', name: 'hourUp', cls: 'q-demo__time-arrow' },
                                         { tag: 'button', name: 'hourBtn', cls: 'q-demo__time-btn' },
-                                        { tag: 'button', name: 'hourDown', cls: 'q-demo__time-arrow' },
+                                        {
+                                            tag: 'div',
+                                            cls: 'q-demo__time-arrows',
+                                            children: [
+                                                { tag: 'button', name: 'hourUp', cls: 'q-demo__time-arrow' },
+                                                { tag: 'button', name: 'hourDown', cls: 'q-demo__time-arrow' },
+                                            ],
+                                        },
                                     ],
                                 },
                                 { tag: 'span', cls: 'q-demo__time-sep', options: { text: ':' } },
@@ -46,9 +52,15 @@ class DateTimePanelDemoComponent extends Component {
                                     tag: 'div',
                                     cls: 'q-demo__time-group',
                                     children: [
-                                        { tag: 'button', name: 'minuteUp', cls: 'q-demo__time-arrow' },
                                         { tag: 'button', name: 'minuteBtn', cls: 'q-demo__time-btn' },
-                                        { tag: 'button', name: 'minuteDown', cls: 'q-demo__time-arrow' },
+                                        {
+                                            tag: 'div',
+                                            cls: 'q-demo__time-arrows',
+                                            children: [
+                                                { tag: 'button', name: 'minuteUp', cls: 'q-demo__time-arrow' },
+                                                { tag: 'button', name: 'minuteDown', cls: 'q-demo__time-arrow' },
+                                            ],
+                                        },
                                     ],
                                 },
                                 { tag: 'span', cls: 'q-demo__time-sep', options: { text: ':' } },
@@ -56,9 +68,15 @@ class DateTimePanelDemoComponent extends Component {
                                     tag: 'div',
                                     cls: 'q-demo__time-group',
                                     children: [
-                                        { tag: 'button', name: 'secondUp', cls: 'q-demo__time-arrow' },
                                         { tag: 'button', name: 'secondBtn', cls: 'q-demo__time-btn' },
-                                        { tag: 'button', name: 'secondDown', cls: 'q-demo__time-arrow' },
+                                        {
+                                            tag: 'div',
+                                            cls: 'q-demo__time-arrows',
+                                            children: [
+                                                { tag: 'button', name: 'secondUp', cls: 'q-demo__time-arrow' },
+                                                { tag: 'button', name: 'secondDown', cls: 'q-demo__time-arrow' },
+                                            ],
+                                        },
                                     ],
                                 },
                             ],

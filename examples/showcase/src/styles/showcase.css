@@ -346,7 +346,13 @@ body {
 .q-demo__time-group {
     display: flex;
     align-items: center;
-    gap: 1px;
+    gap: 2px;
+}
+
+.q-demo__time-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .q-demo__time-arrow {
@@ -376,6 +382,6 @@ body {
 }
 
 .q-demo__time-btn:hover {
-    border-color: var(--q-sc-primary, #6366f=1);
+    border-color: var(--q-sc-primary, #6366f1);
     background: var(--q-sc-bg-secondary, #f8fafc);
 }
