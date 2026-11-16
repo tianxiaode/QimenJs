@@ -78,6 +78,7 @@ import {
     HourPanelComponent,
     MinutePanelComponent,
     SecondPanelComponent,
+    DateTimePanelComponent,
 } from '@qimenjs/component';
 import {
     PropertyGridComponent,
@@ -148,3 +149,4 @@ DayGridComponent.register();
 HourPanelComponent.register();
 MinutePanelComponent.register();
 SecondPanelComponent.register();
+DateTimePanelComponent.register();

@@ -54,6 +54,7 @@ export { DayGridComponent } from './date/DayGridComponent';
 export { HourPanelComponent } from './date/HourPanelComponent';
 export { MinutePanelComponent } from './date/MinutePanelComponent';
 export { SecondPanelComponent } from './date/SecondPanelComponent';
+export { DateTimePanelComponent } from './date/DateTimePanelComponent';
 
 // 菜单组件
 export { MenuItemComponent } from './menu/MenuItemComponent';

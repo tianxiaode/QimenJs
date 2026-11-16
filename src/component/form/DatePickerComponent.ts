@@ -5,28 +5,22 @@
  * 下拉图标按需 add 进 fieldBody（order 排序，无预留槽位）。
  * field 设为 readonly，通过下拉面板选择值。
  *
- * 面板导航栏内嵌预览，单击字段进入对应面板，选完自动流转。
- * 导航栏：[◀上一面板] [▶下一面板] [预览...] [✓确认] [✕取消]
- *
- * 面板组件在 date/ 目录下独立存在，可复用。
- * DatePicker 只负责：Input + 浮动层 + 面板切换 + 流转逻辑。
+ * 使用 DateTimePanelComponent 作为下拉面板，面板切换逻辑内聚在 DateTimePanel 内部。
+ * type='date'：纯日期选择
+ * type='datetime'：日期+时间选择（默认）
+ * type='time'：纯时间选择
  *
  * 事件：datePicker:change / datePicker:open / datePicker:close
  *
  * @example
  * ```ts
- * new DatePickerComponent({ value: new Date(), showSeconds: true })
+ * new DatePickerComponent({ type: 'datetime', showSeconds: true })
  * picker.on('datePicker:change', ({ value }) => { ... })
  * ```
  */
 
 import { InputComponent } from './InputComponent';
-import { YearPanelComponent } from '../date/YearPanelComponent';
-import { MonthPanelComponent } from '../date/MonthPanelComponent';
-import { DatePanelComponent } from '../date/DatePanelComponent';
-import { HourPanelComponent } from '../date/HourPanelComponent';
-import { MinutePanelComponent } from '../date/MinutePanelComponent';
-import { SecondPanelComponent } from '../date/SecondPanelComponent';
+import { DateTimePanelComponent } from '../date/DateTimePanelComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
 import { DROPDOWN_ICON_ORDER } from './constants';
@@ -35,15 +29,8 @@ import {
     createDateTimeValue,
     dateTimeValueToDate,
     fixDateTime,
-    formatPreview,
-    getNextField,
-    getFlowFromEntry,
-    type DateTimeField,
     type DateTimeValue,
 } from '@/utils/date';
-import type { PanelPreviewData } from '../date/panel-preview';
-
-const FIELD_ORDER: DateTimeField[] = ['year', 'month', 'day', 'hour', 'minute', 'second'];
 
 const DatePickerComponentDefs: Definitions = {
     options: {
@@ -51,6 +38,7 @@ const DatePickerComponentDefs: Definitions = {
         clearable: false,
         showSeconds: true,
         startDayOfWeek: 0,
+        type: 'datetime',
     },
 } as const;
 
@@ -59,8 +47,6 @@ class DatePickerComponent extends InputComponent {
     _dateValue: DateTimeValue | null = null;
     _originalValue: DateTimeValue | null = null;
     _dropdownOpen: boolean = false;
-    _currentField: DateTimeField | null = null;
-    _flowQueue: DateTimeField[] = [];
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
     _dropdownIconItem: any = null;
@@ -88,6 +74,10 @@ class DatePickerComponent extends InputComponent {
         this._syncDisplayValue();
     }
 
+    _onTypeOptionChange(_value: string): void {
+        this._syncDisplayValue();
+    }
+
     onBeforeDispose(): void {
         this._closeDropdown();
         super.onBeforeDispose();
@@ -110,7 +100,7 @@ class DatePickerComponent extends InputComponent {
     onFieldFocus(): void {
         this._focused = true;
         this._applyState();
-        this._openDropdown('year');
+        this._openDropdown();
     }
 
     onFieldBlur(): void {
@@ -118,18 +108,12 @@ class DatePickerComponent extends InputComponent {
         this._applyState();
     }
 
-    _openDropdown(entryField: DateTimeField): void {
-        if (this._dropdownOpen) {
-            this._switchPanel(entryField);
-            return;
-        }
+    _openDropdown(): void {
+        if (this._dropdownOpen) return;
 
         this._dropdownOpen = true;
         this._originalValue = { ...this._dateValue! };
         this.toggleCls('q-datepicker--open', true);
-
-        this._flowQueue = getFlowFromEntry(entryField, this.showSeconds);
-        this._currentField = entryField;
 
         this._renderPanel();
         this.emit('datePicker:open', {});
@@ -149,23 +133,7 @@ class DatePickerComponent extends InputComponent {
             this._panelEl = null;
         }
 
-        this._currentField = null;
-        this._flowQueue = [];
         this.emit('datePicker:close', {});
-    }
-
-    _switchPanel(field: DateTimeField): void {
-        this._flowQueue = getFlowFromEntry(field, this.showSeconds);
-        this._currentField = field;
-        this._renderPanel();
-    }
-
-    _getPreviewData(): PanelPreviewData {
-        return {
-            value: this._dateValue!,
-            activeField: this._currentField!,
-            showSeconds: this.showSeconds,
-        };
     }
 
     _renderPanel(): void {
@@ -181,126 +149,35 @@ class DatePickerComponent extends InputComponent {
         const container = document.createElement('div');
         container.className = 'q-datepicker__dropdown';
 
-        const panelContainer = document.createElement('div');
-        panelContainer.className = 'q-datepicker__panel-area';
+        const type = this.getData('type') ?? 'datetime';
+        const panelCmp = new DateTimePanelComponent({
+            value: this._dateValue,
+            type,
+            showPrevField: false,
+            showConfirm: type !== 'date',
+            showCancel: type !== 'date',
+        });
 
-        const field = this._currentField!;
-        const value = this._dateValue!;
-        const flowIdx = FIELD_ORDER.indexOf(field);
-        const showPrevField = flowIdx > 0;
-        const showNextField = flowIdx < FIELD_ORDER.length - 1;
-        const previewData = this._getPreviewData();
+        panelCmp.on('change', (ctx: any) => {
+            this._dateValue = fixDateTime(ctx.data.value);
+            this._syncDisplayValue();
+        });
+        panelCmp.on('confirm', (ctx: any) => {
+            this._dateValue = fixDateTime(ctx.data.value);
+            this._syncDisplayValue();
+            this._closeDropdown();
+            this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
+        });
+        panelCmp.on('cancel', () => this._onCancel());
 
-        let panelCmp: any = null;
-
-        switch (field) {
-            case 'year':
-                panelCmp = new YearPanelComponent({
-                    value,
-                    previewData,
-                    showPrevField,
-                    showNextField,
-                });
-                panelCmp.on('yearSelect', (data: any) => this._onAutoNext(data.value));
-                break;
-            case 'month':
-                panelCmp = new MonthPanelComponent({
-                    value,
-                    previewData,
-                    showPrevField,
-                    showNextField,
-                });
-                panelCmp.on('monthSelect', (data: any) => this._onAutoNext(data.value));
-                break;
-            case 'day':
-                panelCmp = new DatePanelComponent({ value });
-                panelCmp.on('daySelect', (data: any) => this._onAutoNext(data.value));
-                panelCmp.on('navigate', (ctx: any) => this._switchPanel(ctx.data.target ?? 'month'));
-                break;
-            case 'hour':
-                panelCmp = new HourPanelComponent({
-                    value,
-                    previewData,
-                    showPrevField,
-                    showNextField,
-                });
-                panelCmp.on('hourSelect', (data: any) => this._onAutoNext(data.value));
-                break;
-            case 'minute':
-                panelCmp = new MinutePanelComponent({
-                    value,
-                    previewData,
-                    showPrevField,
-                    showNextField,
-                });
-                panelCmp.on('minuteSelect', (data: any) => this._onAutoNext(data.value));
-                break;
-            case 'second':
-                panelCmp = new SecondPanelComponent({
-                    value,
-                    previewData,
-                    showPrevField,
-                    showNextField,
-                });
-                panelCmp.on('secondSelect', (data: any) => this._onAutoNext(data.value));
-                break;
-        }
-
-        if (panelCmp) {
-            panelCmp.on('prevField', () => this._onPrevField());
-            panelCmp.on('nextField', () => this._onNextField());
-            panelCmp.on('confirm', (data: any) => this._onConfirm(data.value));
-            panelCmp.on('cancel', () => this._onCancel());
-            panelCmp.on('navigate', (data: any) => this._switchPanel(data.field));
-            panelContainer.appendChild(panelCmp.el);
-            this._panelCmp = panelCmp;
-        }
-
-        container.appendChild(panelContainer);
+        container.appendChild(panelCmp.el);
         this._panelEl = container;
+        this._panelCmp = panelCmp;
 
         const wrapperEl = this.getNodeEl('fieldBody');
         if (wrapperEl) {
             wrapperEl.appendChild(container);
         }
-    }
-
-    _onAutoNext(newValue: DateTimeValue): void {
-        const fixed = fixDateTime(newValue);
-        this._dateValue = fixed;
-        this._syncDisplayValue();
-
-        const nextField = getNextField(this._currentField!, this.showSeconds);
-        if (nextField) {
-            this._currentField = nextField;
-            this._renderPanel();
-        } else {
-            this._closeDropdown();
-            this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
-        }
-    }
-
-    _onPrevField(): void {
-        const idx = FIELD_ORDER.indexOf(this._currentField!);
-        if (idx > 0) {
-            this._switchPanel(FIELD_ORDER[idx - 1]);
-        }
-    }
-
-    _onNextField(): void {
-        const idx = FIELD_ORDER.indexOf(this._currentField!);
-        if (idx < FIELD_ORDER.length - 1) {
-            this._switchPanel(FIELD_ORDER[idx + 1]);
-        }
-    }
-
-    _onConfirm(value?: DateTimeValue): void {
-        if (value) {
-            this._dateValue = fixDateTime(value);
-        }
-        this._syncDisplayValue();
-        this._closeDropdown();
-        this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
     }
 
     _onCancel(): void {
@@ -320,9 +197,30 @@ class DatePickerComponent extends InputComponent {
     _syncDisplayValue(): void {
         const fieldItem = this._fieldItem;
         if (!fieldItem) return;
-        const text = formatPreview(this._dateValue!, this.showSeconds);
+        const type = this.getData('type') ?? 'datetime';
+        const text = this._formatValue(type);
         fieldItem.value = text;
         this._value = text;
+    }
+
+    _formatValue(type: string): string {
+        if (!this._dateValue) return '';
+        const v = this._dateValue;
+        const y = String(v.year).padStart(4, '0');
+        const m = String(v.month).padStart(2, '0');
+        const d = String(v.day).padStart(2, '0');
+        const h = String(v.hour).padStart(2, '0');
+        const min = String(v.minute).padStart(2, '0');
+        const sec = String(v.second ?? 0).padStart(2, '0');
+
+        if (type === 'date') {
+            return `${y}年${m}月${d}日`;
+        }
+        if (type === 'time') {
+            return this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
+        }
+        const time = this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
+        return `${y}年${m}月${d}日 ${time}`;
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {

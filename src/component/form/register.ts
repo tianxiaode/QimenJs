@@ -21,6 +21,7 @@ import { DayGridComponent } from '../date/DayGridComponent';
 import { HourPanelComponent } from '../date/HourPanelComponent';
 import { MinutePanelComponent } from '../date/MinutePanelComponent';
 import { SecondPanelComponent } from '../date/SecondPanelComponent';
+import { DateTimePanelComponent } from '../date/DateTimePanelComponent';
 
 InputComponent.register();
 InputFieldComponent.register();
@@ -45,3 +46,4 @@ DayGridComponent.register();
 HourPanelComponent.register();
 MinutePanelComponent.register();
 SecondPanelComponent.register();
+DateTimePanelComponent.register();
