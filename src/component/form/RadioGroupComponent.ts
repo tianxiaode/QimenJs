@@ -112,6 +112,11 @@ class RadioGroupComponent extends FormFieldComponent {
             el.setAttribute('role', 'radio');
             el.setAttribute('aria-checked', String(checked));
 
+            const dot = el.querySelector('.q-radio') as HTMLElement | null;
+            if (dot) {
+                dot.classList.toggle('q-radio--checked', checked);
+            }
+
             this._radioItems.push({ item: itemObj, option: opt });
         }
     }
