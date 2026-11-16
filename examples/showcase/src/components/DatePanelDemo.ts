@@ -18,7 +18,7 @@ class DatePanelDemoComponent extends Component {
                 {
                     tag: 'div',
                     name: 'panelContainer',
-                    style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', maxWidth: '400px' },
+                    style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', width: '280px' },
                 },
                 {
                     tag: 'div',

@@ -8,8 +8,9 @@
     padding: 8px;
     user-select: none;
     font-size: 14px;
-    min-width: 280px;
+    width: 280px;
     min-height: 300px;
+    box-sizing: border-box;
 }
 
 .q-dtpanel__nav {
