@@ -31,6 +31,9 @@ import './date-panel.css';
 const DatePanelComponentDefs: Definitions = {
     options: {
         value: null,
+        showPrevField: true,
+        showConfirm: true,
+        showCancel: true,
     },
 } as const;
 
@@ -67,6 +70,16 @@ class DatePanelComponent extends Component {
         this._value = this.getData('value') ?? createDateTimeValue();
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
+
+        if (!this.getData('showPrevField')) {
+            this.addCls('hidden', 'prevFieldBtn');
+        }
+        if (!this.getData('showConfirm')) {
+            this.addCls('hidden', 'confirmBtn');
+        }
+        if (!this.getData('showCancel')) {
+            this.addCls('hidden', 'cancelBtn');
+        }
 
         this._updateLabel();
         this._updateDayGrid();

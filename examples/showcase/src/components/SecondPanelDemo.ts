@@ -34,7 +34,7 @@ class SecondPanelDemoComponent extends Component {
         const cmp = new SecondPanelComponent({
             value: this._value,
             showPrevField: false,
-            showNextField: false,
+            showNextField: false, showConfirm: false, showCancel: false,
         });
         cmp.on('secondSelect', (ctx: any) => {
             this._value = { ...this._value, second: ctx.data.value.second };
@@ -73,7 +73,7 @@ export const SECONDPANEL_DEMO: DemoConfig = {
 const panel = new SecondPanelComponent({
     value: createDateTimeValue(new Date()),
     showPrevField: false,
-    showNextField: false,
+    showNextField: false, showConfirm: false, showCancel: false,
 });
 panel.on('secondSelect', ({ value }) => {
     console.log('选中秒:', value.second);
@@ -83,11 +83,11 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'second-panel', options: { showPrevField: false, showNextField: false } }`,
+            code: `{ type: 'second-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'second-panel', options: { showPrevField: false, showNextField: false } }],
+                children: [{ type: 'second-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
             },
         },
     ],

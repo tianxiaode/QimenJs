@@ -31,7 +31,7 @@ class DatePanelDemoComponent extends Component {
     onAfterInit(): void {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
-        const cmp = new DatePanelComponent({ value: this._value });
+        const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
         cmp.on('daySelect', (ctx: any) => {
             this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
             this._updateValue();
@@ -71,6 +71,9 @@ export const DATEPANEL_DEMO: DemoConfig = {
 
 const panel = new DatePanelComponent({
     value: createDateTimeValue(new Date()),
+    showPrevField: false,
+    showConfirm: false,
+    showCancel: false,
 });
 panel.on('daySelect', ({ value }) => {
     console.log('选中日期:', value.year, value.month, value.day);
@@ -80,11 +83,11 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'date-panel', options: {} }`,
+            code: `{ type: 'date-panel', options: { showPrevField: false, showConfirm: false, showCancel: false } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', maxWidth: '400px' },
-                children: [{ type: 'date-panel', options: {} }],
+                children: [{ type: 'date-panel', options: { showPrevField: false, showConfirm: false, showCancel: false } }],
             },
         },
     ],

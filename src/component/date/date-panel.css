@@ -68,9 +68,7 @@
 }
 
 .q-dtpanel__nav-btn--disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    pointer-events: none;
+    display: none !important;
 }
 
 .q-dtpanel__date-nav {

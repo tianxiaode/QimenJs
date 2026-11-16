@@ -27,6 +27,8 @@ const SecondPanelComponentDefs: Definitions = {
         previewData: null,
         showPrevField: true,
         showNextField: true,
+        showConfirm: true,
+        showCancel: true,
     },
 } as const;
 
@@ -61,10 +63,16 @@ class SecondPanelComponent extends Component {
         this._onesSelected = this._value.second % 10;
 
         if (!this.getData('showPrevField')) {
-            this.addCls('q-dtpanel__nav-btn--disabled', 'prevFieldBtn');
+            this.addCls('hidden', 'prevFieldBtn');
         }
         if (!this.getData('showNextField')) {
-            this.addCls('q-dtpanel__nav-btn--disabled', 'nextFieldBtn');
+            this.addCls('hidden', 'nextFieldBtn');
+        }
+        if (!this.getData('showConfirm')) {
+            this.addCls('hidden', 'confirmBtn');
+        }
+        if (!this.getData('showCancel')) {
+            this.addCls('hidden', 'cancelBtn');
         }
 
         this._renderPreview();

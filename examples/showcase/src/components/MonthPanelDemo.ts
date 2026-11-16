@@ -34,7 +34,7 @@ class MonthPanelDemoComponent extends Component {
         const cmp = new MonthPanelComponent({
             value: this._value,
             showPrevField: false,
-            showNextField: false,
+            showNextField: false, showConfirm: false, showCancel: false,
         });
         cmp.on('monthSelect', (ctx: any) => {
             this._value = { ...this._value, month: ctx.data.value.month };
@@ -73,7 +73,7 @@ export const MONTHPANEL_DEMO: DemoConfig = {
 const panel = new MonthPanelComponent({
     value: createDateTimeValue(new Date()),
     showPrevField: false,
-    showNextField: false,
+    showNextField: false, showConfirm: false, showCancel: false,
 });
 panel.on('monthSelect', ({ value }) => {
     console.log('选中月份:', value.month);
@@ -83,11 +83,11 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'month-panel', options: { showPrevField: false, showNextField: false } }`,
+            code: `{ type: 'month-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'month-panel', options: { showPrevField: false, showNextField: false } }],
+                children: [{ type: 'month-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
             },
         },
     ],

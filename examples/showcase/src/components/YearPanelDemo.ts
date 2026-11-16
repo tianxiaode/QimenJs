@@ -34,7 +34,7 @@ class YearPanelDemoComponent extends Component {
         const cmp = new YearPanelComponent({
             value: this._value,
             showPrevField: false,
-            showNextField: false,
+            showNextField: false, showConfirm: false, showCancel: false,
         });
         cmp.on('yearSelect', (ctx: any) => {
             this._value = { ...this._value, year: ctx.data.value.year };
@@ -73,7 +73,7 @@ export const YEARPANEL_DEMO: DemoConfig = {
 const panel = new YearPanelComponent({
     value: createDateTimeValue(new Date()),
     showPrevField: false,
-    showNextField: false,
+    showNextField: false, showConfirm: false, showCancel: false,
 });
 panel.on('yearSelect', ({ value }) => {
     console.log('选中年份:', value.year);
@@ -83,11 +83,11 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'year-panel', options: { showPrevField: false, showNextField: false } }`,
+            code: `{ type: 'year-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'year-panel', options: { showPrevField: false, showNextField: false } }],
+                children: [{ type: 'year-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
             },
         },
     ],

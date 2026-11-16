@@ -34,7 +34,7 @@ class MinutePanelDemoComponent extends Component {
         const cmp = new MinutePanelComponent({
             value: this._value,
             showPrevField: false,
-            showNextField: false,
+            showNextField: false, showConfirm: false, showCancel: false,
         });
         cmp.on('minuteSelect', (ctx: any) => {
             this._value = { ...this._value, minute: ctx.data.value.minute };
@@ -73,7 +73,7 @@ export const MINUTEPANEL_DEMO: DemoConfig = {
 const panel = new MinutePanelComponent({
     value: createDateTimeValue(new Date()),
     showPrevField: false,
-    showNextField: false,
+    showNextField: false, showConfirm: false, showCancel: false,
 });
 panel.on('minuteSelect', ({ value }) => {
     console.log('选中分钟:', value.minute);
@@ -83,11 +83,11 @@ container.appendChild(panel.el);`,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'minute-panel', options: { showPrevField: false, showNextField: false } }`,
+            code: `{ type: 'minute-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'minute-panel', options: { showPrevField: false, showNextField: false } }],
+                children: [{ type: 'minute-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
             },
         },
     ],
