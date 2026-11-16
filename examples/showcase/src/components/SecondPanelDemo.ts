@@ -22,7 +22,7 @@ class SecondPanelDemoComponent extends Component {
                     name: 'valueDisplay',
                     classes: 'q-demo__value-tag',
                     style: { fontSize: '16px', fontWeight: 'bold' },
-                    options: { text: `当前秒: ${String(this._value.second).padStart(2, '0')}` },
+                    options: { text: '当前秒: --' },
                 },
             ],
         };
@@ -46,6 +46,7 @@ class SecondPanelDemoComponent extends Component {
         });
         container.appendChild(cmp.el);
         this._panel = cmp;
+        this._updateValue();
     }
 
     onBeforeDispose(): void {

@@ -22,7 +22,7 @@ class MonthPanelDemoComponent extends Component {
                     name: 'valueDisplay',
                     classes: 'q-demo__value-tag',
                     style: { fontSize: '16px', fontWeight: 'bold' },
-                    options: { text: `当前月份: ${String(this._value.month).padStart(2, '0')}` },
+                    options: { text: '当前月份: --' },
                 },
             ],
         };
@@ -46,6 +46,7 @@ class MonthPanelDemoComponent extends Component {
         });
         container.appendChild(cmp.el);
         this._panel = cmp;
+        this._updateValue();
     }
 
     onBeforeDispose(): void {

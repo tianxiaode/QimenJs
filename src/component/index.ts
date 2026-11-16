@@ -46,6 +46,15 @@ export { FormComponent } from './form/FormComponent';
 export { FormFieldComponent } from './form/FormFieldComponent';
 export { InputInfoGroupComponent } from './form/InputInfoGroupComponent';
 
+// 日期面板组件（可脱离 DatePicker 独立使用）
+export { YearPanelComponent } from './date/YearPanelComponent';
+export { MonthPanelComponent } from './date/MonthPanelComponent';
+export { DatePanelComponent } from './date/DatePanelComponent';
+export { DayGridComponent } from './date/DayGridComponent';
+export { HourPanelComponent } from './date/HourPanelComponent';
+export { MinutePanelComponent } from './date/MinutePanelComponent';
+export { SecondPanelComponent } from './date/SecondPanelComponent';
+
 // 菜单组件
 export { MenuItemComponent } from './menu/MenuItemComponent';
 export { MenuComponent } from './menu/MenuComponent';

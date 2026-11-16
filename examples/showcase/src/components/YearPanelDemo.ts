@@ -22,7 +22,7 @@ class YearPanelDemoComponent extends Component {
                     name: 'valueDisplay',
                     classes: 'q-demo__value-tag',
                     style: { fontSize: '16px', fontWeight: 'bold' },
-                    options: { text: `当前年份: ${this._value.year}` },
+                    options: { text: '当前年份: ----' },
                 },
             ],
         };
@@ -46,6 +46,7 @@ class YearPanelDemoComponent extends Component {
         });
         container.appendChild(cmp.el);
         this._panel = cmp;
+        this._updateValue();
     }
 
     onBeforeDispose(): void {

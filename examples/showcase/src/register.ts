@@ -71,6 +71,13 @@ import {
     PasswordInputComponent,
     FormComponent,
     FormFieldComponent,
+    YearPanelComponent,
+    MonthPanelComponent,
+    DatePanelComponent,
+    DayGridComponent,
+    HourPanelComponent,
+    MinutePanelComponent,
+    SecondPanelComponent,
 } from '@qimenjs/component';
 import {
     PropertyGridComponent,
@@ -134,3 +141,10 @@ TextareaComponent.register();
 PasswordInputComponent.register();
 FormComponent.register();
 FormFieldComponent.register();
+YearPanelComponent.register();
+MonthPanelComponent.register();
+DatePanelComponent.register();
+DayGridComponent.register();
+HourPanelComponent.register();
+MinutePanelComponent.register();
+SecondPanelComponent.register();
