@@ -148,7 +148,7 @@
     background: var(--q-color-bg-hover, #f7fafc);
 }
 
-.q-dtpanel__day-cell--selected {
+.q-dtpanel__day-cell--active {
     background: var(--q-color-primary, #3b82f6);
     color: #fff;
 }
@@ -159,8 +159,6 @@
 
 .q-dtpanel__day-cell--today {
     border: 1px solid var(--q-color-primary, #3b82f6);
-}
-
 }
 
 .q-dtpanel__panel {
@@ -175,7 +173,7 @@
     gap: 2px;
 }
 
-.q-dtpanel__option-cell {
+.q-dtpanel__cell {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -185,11 +183,11 @@
     font-size: 13px;
 }
 
-.q-dtpanel__option-cell:hover {
+.q-dtpanel__cell:hover {
     background: var(--q-color-bg-hover, #f7fafc);
 }
 
-.q-dtpanel__option-cell--selected {
+.q-dtpanel__cell--active {
     background: var(--q-color-primary, #3b82f6);
     color: #fff;
 }

@@ -90,7 +90,7 @@ class DatePanelComponent extends Component {
 
         const dayGridCmp = this.getNode('dayGrid');
         if (dayGridCmp) {
-            dayGridCmp.on('daySelect', (data: any) => this._onDaySelect(data.day));
+            dayGridCmp.on('daySelect', (ctx: any) => this._onDaySelect(ctx.data.day));
         }
     }
 

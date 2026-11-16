@@ -12,7 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { SYSTEM_EVENTS } from '@/events';
 import { DAY_GRID_TPL } from './day-grid-tpl';
@@ -34,6 +34,12 @@ const DayGridComponentDefs: Definitions = {
 
 class DayGridComponent extends Component {
     static type = 'day-grid';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'dayGrid', handler: 'onDayGridClick' },
+        ],
+    };
 
     get tpl(): TemplateDecl {
         return DAY_GRID_TPL;
@@ -70,11 +76,13 @@ class DayGridComponent extends Component {
         this._applyGrid();
     }
 
-    onDayGridClick(e: Event): void {
-        const target = e.target as HTMLElement;
-        const value = target.dataset.value;
+    onDayGridClick(domEvt: any): void {
+        const originalEvent = domEvt?.data?.originalEvent;
+        const target = (originalEvent?.target ?? domEvt?.target) as HTMLElement;
+        const value = target?.dataset?.value;
         if (value === undefined) return;
         this._lastClickedDay = parseInt(value);
+        this.emit('daySelect', { day: this._lastClickedDay });
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
