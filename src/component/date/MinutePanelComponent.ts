@@ -92,10 +92,11 @@ class MinutePanelComponent extends Component {
         return { value: this._value };
     }
 
-    onDigitColumnsClick(e: Event): void {
-        const target = e.target as HTMLElement;
-        const part = target.dataset.digit as DigitPart | undefined;
-        const value = target.dataset.value;
+    onDigitColumnsClick(domEvt: any): void {
+        const originalEvent = domEvt?.data?.originalEvent;
+        const target = (originalEvent?.target ?? domEvt?.target) as HTMLElement;
+        const part = target?.dataset?.digit as DigitPart | undefined;
+        const value = target?.dataset?.value;
         if (!part || value === undefined) return;
         if (part === 'tens') {
             this._onTensSelect(parseInt(value));

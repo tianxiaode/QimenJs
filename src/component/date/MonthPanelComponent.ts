@@ -87,9 +87,10 @@ class MonthPanelComponent extends Component {
         this.emit('cancel', {});
     }
 
-    onGridClick(e: Event): void {
-        const target = e.target as HTMLElement;
-        const value = target.dataset.value;
+    onGridClick(domEvt: any): void {
+        const originalEvent = domEvt?.data?.originalEvent;
+        const target = (originalEvent?.target ?? domEvt?.target) as HTMLElement;
+        const value = target?.dataset?.value;
         if (value === undefined) return;
         const month = parseInt(value);
         this._value = { ...this._value, month };

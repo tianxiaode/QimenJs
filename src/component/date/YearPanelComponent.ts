@@ -104,10 +104,11 @@ class YearPanelComponent extends Component {
         return { value: this._value };
     }
 
-    onDigitColumnsClick(e: Event): void {
-        const target = e.target as HTMLElement;
-        const position = target.dataset.position as DigitPosition | undefined;
-        const digit = target.dataset.value;
+    onDigitColumnsClick(domEvt: any): void {
+        const originalEvent = domEvt?.data?.originalEvent;
+        const target = (originalEvent?.target ?? domEvt?.target) as HTMLElement;
+        const position = target?.dataset?.position as DigitPosition | undefined;
+        const digit = target?.dataset?.value;
         if (!position || digit === undefined) return;
         this._onDigitSelect(position, parseInt(digit));
     }
@@ -151,7 +152,7 @@ class YearPanelComponent extends Component {
                 }
             } else {
                 const nums = digits[pos];
-                const splitIdx = nums.findIndex(d => d >= 6);
+                const splitIdx = nums.findIndex(d => d >= 5);
                 const leftNums = splitIdx >= 0 ? nums.slice(0, splitIdx) : nums;
                 const rightNums = splitIdx >= 0 ? nums.slice(splitIdx) : [];
 
