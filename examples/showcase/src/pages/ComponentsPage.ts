@@ -91,7 +91,7 @@ const COMPONENT_CATEGORIES = [
     },
     {
         label: '日期',
-        components: ['YearPanel', 'MonthPanel', 'DatePanel', 'HourPanel', 'MinutePanel', 'SecondPanel'],
+        components: ['DatePicker', 'YearPanel', 'MonthPanel', 'DatePanel', 'HourPanel', 'MinutePanel', 'SecondPanel'],
     },
     {
         label: '表单',

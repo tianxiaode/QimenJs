@@ -1,4 +1,4 @@
 /* MinutePanel */
-.q-dtpanel__nav-btn--disabled {
-    /* TODO: 添加样式 */
+.q-dtpanel__digit-columns {
+    grid-template-columns: 1fr 1fr;
 }
