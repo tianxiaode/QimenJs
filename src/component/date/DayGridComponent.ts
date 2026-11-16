@@ -102,7 +102,11 @@ class DayGridComponent extends Component {
         const grid = this.getNodeEl('dayGrid');
         if (!row || !grid) return;
 
+        row.innerHTML = '';
+        grid.innerHTML = '';
         this._weekdayCells = [];
+        this._dayCells = [];
+
         for (let i = 0; i < TOTAL_WEEKDAYS; i++) {
             const cell = document.createElement('div');
             cell.className = 'q-dtpanel__weekday-cell';
