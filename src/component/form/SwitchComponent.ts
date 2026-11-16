@@ -72,6 +72,36 @@ class SwitchComponent extends FormFieldComponent {
         } else {
             trackEl.removeAttribute('data-text');
         }
+        this._adjustTrackWidth();
+    }
+
+    _adjustTrackWidth(): void {
+        const trackEl = this._getTrackEl();
+        if (!trackEl) return;
+        const texts = [this.activeText, this.inactiveText].filter(Boolean) as string[];
+        if (texts.length === 0) {
+            trackEl.style.removeProperty('--q-switch-width');
+            return;
+        }
+        const styles = getComputedStyle(this.el!);
+        const baseWidth = parseFloat(styles.getPropertyValue('--q-switch-width')) || 44;
+        const thumbSize = parseFloat(styles.getPropertyValue('--q-switch-thumb-size')) || 18;
+        const maxTextWidth = this._measureMaxTextWidth(trackEl, texts);
+        const neededWidth = Math.max(baseWidth, thumbSize + 8 + maxTextWidth);
+        trackEl.style.setProperty('--q-switch-width', `${neededWidth}px`);
+    }
+
+    _measureMaxTextWidth(parent: HTMLElement, texts: string[]): number {
+        let maxWidth = 0;
+        for (const text of texts) {
+            const el = document.createElement('span');
+            el.style.cssText = 'font-size:10px;font-weight:600;line-height:1;position:absolute;visibility:hidden;white-space:nowrap;';
+            el.textContent = text;
+            parent.appendChild(el);
+            maxWidth = Math.max(maxWidth, el.offsetWidth);
+            el.remove();
+        }
+        return maxWidth;
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
