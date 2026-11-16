@@ -27,25 +27,54 @@ export const DATE_PANEL_TPL: TemplateDecl = {
                             classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev',
                         },
                         {
-                            tag: 'button',
-                            name: 'prev1y',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
+                            tag: 'div',
+                            name: 'yearGroup',
+                            classes: 'q-dtpanel__field-group',
+                            children: [
+                                { tag: 'span', name: 'yearLabel', classes: 'q-dtpanel__field-label' },
+                                {
+                                    tag: 'div',
+                                    name: 'yearArrows',
+                                    classes: 'q-dtpanel__field-arrows',
+                                    children: [
+                                        {
+                                            tag: 'button',
+                                            name: 'prev1y',
+                                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
+                                        },
+                                        {
+                                            tag: 'button',
+                                            name: 'next1y',
+                                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                         {
-                            tag: 'button',
-                            name: 'prev1m',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
-                        },
-                        { tag: 'span', name: 'dateLabel', classes: 'q-dtpanel__date-nav-label' },
-                        {
-                            tag: 'button',
-                            name: 'next1m',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
-                        },
-                        {
-                            tag: 'button',
-                            name: 'next1y',
-                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
+                            tag: 'div',
+                            name: 'monthGroup',
+                            classes: 'q-dtpanel__field-group',
+                            children: [
+                                { tag: 'span', name: 'monthLabel', classes: 'q-dtpanel__field-label' },
+                                {
+                                    tag: 'div',
+                                    name: 'monthArrows',
+                                    classes: 'q-dtpanel__field-arrows',
+                                    children: [
+                                        {
+                                            tag: 'button',
+                                            name: 'prev1m',
+                                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up',
+                                        },
+                                        {
+                                            tag: 'button',
+                                            name: 'next1m',
+                                            classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down',
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                         {
                             tag: 'button',

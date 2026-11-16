@@ -148,7 +148,7 @@ class DayGridComponent extends Component {
                 continue;
             }
 
-            cell.textContent = day.isCurrentMonth ? String(day.date.getDate()) : '';
+            cell.textContent = String(day.date.getDate());
             cell.className = 'q-dtpanel__day-cell';
 
             if (!day.isCurrentMonth) {

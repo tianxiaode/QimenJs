@@ -6,9 +6,9 @@
  * confirmBtn 用 emits 自动转发 confirm 事件，快捷按钮用 emits 自动转发 daySelect 事件。
  * 数据通过 getEventData 提取。
  * daySelect 来自 DayGrid 子组件，在 _onDaySelect 中手动 emit。
- * navigate 来自 dateLabel 点击，数据形状不同，手动 emit。
+ * navigate 来自 yearLabel/monthLabel 点击，带 target 字段区分目标面板。
  *
- * 导航栏：← 返回 | ◀◀ ◀ ◀ | 年月标签 | ▶ ▶ ▶▶ | 确认 ✓
+ * 导航栏：← 返回 | ◀◀ | 2026年 ▲▼ | 11月 ▲▼ | ▶▶ | 确认 ✓
  * 底部：[昨天] [今天] [明天]
  *
  * 事件：daySelect / back / confirm / navigate
@@ -55,7 +55,8 @@ class DatePanelComponent extends Component {
             { path: 'yesterdayBtn', handler: 'onYesterdayBtnClick' },
             { path: 'todayBtn', handler: 'onTodayBtnClick' },
             { path: 'tomorrowBtn', handler: 'onTomorrowBtnClick' },
-            { path: 'dateLabel', handler: 'onDateLabelClick' },
+            { path: 'yearLabel', handler: 'onYearLabelClick' },
+            { path: 'monthLabel', handler: 'onMonthLabelClick' },
         ],
     };
 
@@ -177,8 +178,12 @@ class DatePanelComponent extends Component {
         this._updateDayGrid();
     }
 
-    onDateLabelClick(): void {
-        this.emit('navigate', { year: this._viewYear, month: this._viewMonth });
+    onYearLabelClick(): void {
+        this.emit('navigate', { target: 'year', year: this._viewYear, month: this._viewMonth });
+    }
+
+    onMonthLabelClick(): void {
+        this.emit('navigate', { target: 'month', year: this._viewYear, month: this._viewMonth });
     }
 
     _navigate(yearDelta: number, monthDelta: number): void {
@@ -195,11 +200,13 @@ class DatePanelComponent extends Component {
     _updateLabel(): void {
         const locale = this.i18nConfig();
         const months = locale?.months;
-        const text =
+        const yearText = `${this._viewYear}年`;
+        const monthText =
             months && months.length === 12
-                ? `${this._viewYear} ${months[this._viewMonth - 1]}`
-                : `${this._viewYear}年 ${String(this._viewMonth).padStart(2, '0')}月`;
-        this.setNodeText(text, 'dateLabel');
+                ? months[this._viewMonth - 1]
+                : `${String(this._viewMonth).padStart(2, '0')}月`;
+        this.setNodeText(yearText, 'yearLabel');
+        this.setNodeText(monthText, 'monthLabel');
     }
 
     _updateQuickBtns(): void {

@@ -215,7 +215,7 @@ class DatePickerComponent extends InputComponent {
             case 'day':
                 panelCmp = new DatePanelComponent({ value });
                 panelCmp.on('daySelect', (data: any) => this._onAutoNext(data.value));
-                panelCmp.on('navigate', (_data: any) => this._switchPanel('month'));
+                panelCmp.on('navigate', (ctx: any) => this._switchPanel(ctx.data.target ?? 'month'));
                 break;
             case 'hour':
                 panelCmp = new HourPanelComponent({
