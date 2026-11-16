@@ -292,3 +292,25 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+.q-demo__tab-btn {
+    padding: 4px 12px;
+    border: 1px solid var(--q-sc-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--q-sc-bg, #fff);
+    color: var(--q-sc-text-secondary, #64748b);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+}
+
+.q-demo__tab-btn:hover {
+    border-color: var(--q-sc-primary, #6366f1);
+    color: var(--q-sc-primary, #6366f1);
+}
+
+.q-demo__tab-btn--active {
+    border-color: var(--q-sc-primary, #6366f1);
+    background: var(--q-sc-primary, #6366f1);
+    color: #fff;
+}
