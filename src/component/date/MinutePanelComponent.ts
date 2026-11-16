@@ -63,6 +63,11 @@ class MinutePanelComponent extends Component {
         this._onesSelected = this._value.minute % 10;
         this._selectingTens = true;
 
+        this.setNodeText('←', 'prevFieldBtn');
+        this.setNodeText('→', 'nextFieldBtn');
+        this.setNodeText('✓', 'confirmBtn');
+        this.setNodeText('✕', 'cancelBtn');
+
         if (!this.getData('showPrevField')) {
             this.addCls('hidden', 'prevFieldBtn');
         }

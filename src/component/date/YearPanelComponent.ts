@@ -75,6 +75,11 @@ class YearPanelComponent extends Component {
         this._digits = { thousands: th, hundreds: h, tens: t, ones: o };
         this._currentPosition = 'thousands';
 
+        this.setNodeText('←', 'prevFieldBtn');
+        this.setNodeText('→', 'nextFieldBtn');
+        this.setNodeText('✓', 'confirmBtn');
+        this.setNodeText('✕', 'cancelBtn');
+
         if (!this.getData('showPrevField')) {
             this.addCls('hidden', 'prevFieldBtn');
         }
