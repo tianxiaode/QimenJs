@@ -1,9 +1,77 @@
+import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
+import { DatePickerComponent } from '@/component/form/DatePickerComponent';
+
+class DatePickerInteractiveDemo extends Component {
+    _picker: any = null;
+
+    get tpl(): TemplateDecl {
+        return {
+            tag: 'div',
+            style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+            children: [
+                {
+                    tag: 'div',
+                    name: 'pickerContainer',
+                    style: { display: 'flex', gap: '8px', alignItems: 'center' },
+                },
+                {
+                    tag: 'div',
+                    name: 'valueDisplay',
+                    classes: 'q-demo__value-tag',
+                    style: { fontSize: '16px', fontWeight: 'bold' },
+                    options: { text: '当前值: 未选择' },
+                },
+            ],
+        };
+    }
+
+    onAfterInit(): void {
+        const container = this.getNodeEl('pickerContainer');
+        if (!container) return;
+
+        const picker = new DatePickerComponent({
+            placeholder: '请选择日期时间',
+            showSeconds: true,
+        });
+        picker.on('change', (ctx: any) => {
+            const v = ctx.data?.value;
+            if (v) {
+                const dateStr = `${v.year}-${String(v.month).padStart(2, '0')}-${String(v.day).padStart(2, '0')} ${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}:${String(v.second ?? 0).padStart(2, '0')}`;
+                this.setNodeText(`当前值: ${dateStr}`, 'valueDisplay');
+            }
+        });
+        container.appendChild(picker.el);
+        this._picker = picker;
+    }
+
+    onBeforeDispose(): void {
+        try {
+            this._picker?.dispose();
+        } catch (e) {
+            // ignore
+        }
+    }
+}
 
 export const DATEPICKER_DEMO: DemoConfig = {
     title: 'DatePicker',
     description: '日期时间选择器组件，支持年/月/日/时/分/秒选择、showSeconds、startDayOfWeek',
     sections: [
+        {
+            label: '交互式完整体验',
+            code: `import { DatePickerComponent } from '@/component/form/DatePickerComponent';
+
+const picker = new DatePickerComponent({
+    placeholder: '请选择日期时间',
+    showSeconds: true,
+});
+picker.on('change', ({ value }) => {
+    console.log('选中:', value);
+});
+container.appendChild(picker.el);`,
+            component: DatePickerInteractiveDemo,
+        },
         {
             label: '基础日期选择',
             code: `{ type: 'date-picker', options: { placeholder: '请选择日期' } }
