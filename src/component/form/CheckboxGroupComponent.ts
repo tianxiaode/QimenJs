@@ -1,6 +1,7 @@
 import { FormFieldComponent } from './FormFieldComponent';
 import type { TemplateDecl } from '@/component-core';
 import { Definitions } from '@/composable';
+import { resolveI18nValue } from '@/i18n';
 import { FORMFIELD_TPL } from './formfield-tpl';
 import { FIELD_ACTION } from './constants';
 import './checkboxgroup.css';
@@ -115,7 +116,7 @@ class CheckboxGroupComponent extends FormFieldComponent {
     /** 组头全选框（selectAll=true 时渲染，action=select-all 经基类统一监听分发） */
     _renderSelectAll(fieldBodyCmp: any): void {
         fieldBodyCmp.add({
-            ...checkboxItemTpl('@common.selectAll'),
+            ...checkboxItemTpl(''),
             classes: 'q-checkbox-group__item q-checkbox-group__select-all',
             action: FIELD_ACTION.SELECT_ALL,
         });
@@ -123,6 +124,9 @@ class CheckboxGroupComponent extends FormFieldComponent {
         const el = this._selectAllItem?.el as HTMLElement | undefined;
         if (!el) return;
         el.setAttribute('role', 'checkbox');
+        const box = el.querySelector('.q-checkbox');
+        el.textContent = resolveI18nValue('@common.selectAll');
+        if (box) el.appendChild(box);
         this._updateSelectAllState();
     }
 
