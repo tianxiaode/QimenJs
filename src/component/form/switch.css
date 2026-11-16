@@ -62,7 +62,7 @@
 
 .q-switch:not(.q-switch--checked) .q-switch__track[data-text]::after {
     right: 6px;
-    color: var(--q-color-text-placeholder, #bfbfbf);
+    color: var(--q-color-text-secondary);
 }
 
 .q-switch--checked .q-switch__track[data-text]::after {
