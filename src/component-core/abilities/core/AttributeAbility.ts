@@ -35,7 +35,11 @@ export const AttributeAbility: AbilityDefinition = {
         if (!el) return;
         const style = el.style as any;
         for (const [key, value] of Object.entries(styles)) {
-            style[key] = value;
+            if (key.startsWith('--')) {
+                style.setProperty(key, value);
+            } else {
+                style[key] = value;
+            }
         }
     },
 
@@ -44,7 +48,11 @@ export const AttributeAbility: AbilityDefinition = {
         if (!el) return;
         const style = el.style as any;
         for (const key of styles) {
-            style[key] = '';
+            if (key.startsWith('--')) {
+                style.removeProperty(key);
+            } else {
+                style[key] = '';
+            }
         }
     },
 
