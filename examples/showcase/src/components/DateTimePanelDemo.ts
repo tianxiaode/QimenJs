@@ -1,4 +1,4 @@
-import { Component, type TemplateDecl } from '@qimenjs/component-core';
+import { Component, type TemplateDecl, type DomEventsMap } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
 import { DatePanelComponent } from '@/component/date/DatePanelComponent';
 import { YearPanelComponent } from '@/component/date/YearPanelComponent';
@@ -18,35 +18,25 @@ class DateTimePanelDemoComponent extends Component {
     get tpl(): TemplateDecl {
         return {
             tag: 'div',
-            style: { display: 'flex', flexDirection: 'column', gap: '8px' },
+            style: { display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' },
             children: [
                 {
                     tag: 'div',
-                    name: 'valueDisplay',
-                    style: {
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        padding: '4px',
-                        color: 'var(--q-color-primary, #3b82f6)',
-                    },
-                    options: { text: '----' },
-                },
-                {
-                    tag: 'div',
-                    name: 'tabRow',
-                    style: { display: 'flex', gap: '4px', justifyContent: 'center' },
-                    children: [
-                        { tag: 'button', name: 'tabDate', cls: 'q-demo__tab-btn q-demo__tab-btn--active', options: { text: '日期' } },
-                        { tag: 'button', name: 'tabHour', cls: 'q-demo__tab-btn', options: { text: '时' } },
-                        { tag: 'button', name: 'tabMinute', cls: 'q-demo__tab-btn', options: { text: '分' } },
-                        { tag: 'button', name: 'tabSecond', cls: 'q-demo__tab-btn', options: { text: '秒' } },
-                    ],
-                },
-                {
-                    tag: 'div',
                     name: 'panelContainer',
-                    style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', width: '280px', alignSelf: 'center' },
+                    style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', width: '280px' },
+                },
+                {
+                    tag: 'div',
+                    name: 'timeBar',
+                    cls: 'q-demo__time-bar',
+                    style: { display: 'flex', gap: '2px', alignItems: 'center', justifyContent: 'center', width: '280px', padding: '4px 0' },
+                    children: [
+                        { tag: 'button', name: 'hourBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
+                        { tag: 'span', options: { text: ':' } },
+                        { tag: 'button', name: 'minuteBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
+                        { tag: 'span', options: { text: ':' } },
+                        { tag: 'button', name: 'secondBtn', cls: 'q-demo__time-btn', options: { text: '--' } },
+                   5],
                 },
             ],
         };
@@ -54,38 +44,30 @@ class DateTimePanelDemoComponent extends Component {
 
     domEvents: DomEventsMap = {
         click: [
-            { path: 'tabDate', handler: 'onTabDateClick' },
-            { path: 'tabHour', handler: 'onTabHourClick' },
-            { path: 'tabMinute', handler: 'onTabMinuteClick' },
-            { path: 'tabSecond', handler: 'onTabSecondClick' },
+            { path: 'hourBtn', handler: 'onHourBtnClick' },
+            { path: 'minuteBtn', handler: 'onMinuteBtnClick' },
+            { path: 'secondBtn', handler: 'onSecondBtnClick' },
         ],
     };
 
     onAfterInit(): void {
         this._renderPanel('date');
-        this._updateValue();
+        this._updateTimeBar();
     }
 
     onBeforeDispose(): void {
         try { this._panel?.dispose(); } catch (e) { /* ignore */ }
     }
 
-    _switchTab(tab: PanelType): void {
-        const tabs: Record<string, string> = { date: 'tabDate', hour: 'tabHour', minute: 'tabMinute', second: 'tabSecond' };
-        for (const [key, nodeName] of Object.entries(tabs)) {
-            if (key === tab) {
-                this.addCls('q-demo__tab-btn--active', nodeName);
-            } else {
-                this.removeCls('q-demo__tab-btn--active', nodeName);
-            }
-        }
-        this._renderPanel(tab);
-    }
+    onHourBtnClick(): void { this._renderPanel('hour'); }
+    onMinuteBtnClick(): void { this._renderPanel('minute'); }
+    onSecondBtnClick(): void { this._renderPanel('second'); }
 
-    onTabDateClick(): void { this._switchTab('date'); }
-    onTabHourClick(): void { this._switchTab('hour'); }
-    onTabMinuteClick(): void { this._switchTab('minute'); }
-    onTabSecondClick(): void { this._switchTab('second'); }
+    _updateTimeBar(): void {
+        this.setNodeText(String(this._value.hour).padStart(2, '0'), 'hourBtn');
+        this.setNodeText(String(this._value.minute).padStart(2, '0'), 'minuteBtn');
+        this.setNodeText(String(this._value.second ?? 0).padStart(2, '0'), 'secondBtn');
+    }
 
     _renderPanel(type: PanelType): void {
         const container = this.getNodeEl('panelContainer');
@@ -106,7 +88,6 @@ class DateTimePanelDemoComponent extends Component {
             const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
             cmp.on('daySelect', (ctx: any) => {
                 this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
-                this._updateValue();
             });
             cmp.on('navigate', (ctx: any) => {
                 const target = ctx.data?.target;
@@ -119,12 +100,11 @@ class DateTimePanelDemoComponent extends Component {
             const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: true, showConfirm: true, showCancel: true });
             cmp.on('yearSelect', (ctx: any) => {
                 this._value = { ...this._value, year: ctx.data.value.year };
-                this._updateValue();
                 this._renderPanel('month');
             });
             cmp.on('nextField', () => this._renderPanel('month'));
             cmp.on('confirm', (ctx: any) => {
-                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; this._updateValue(); }
+                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; }
                 this._renderPanel('date');
             });
             cmp.on('cancel', () => this._renderPanel('date'));
@@ -134,39 +114,57 @@ class DateTimePanelDemoComponent extends Component {
             const cmp = new MonthPanelComponent({ value: this._value, showPrevField: true, showNextField: false, showConfirm: true, showCancel: true });
             cmp.on('monthSelect', (ctx: any) => {
                 this._value = { ...this._value, month: ctx.data.value.month };
-                this._updateValue();
                 this._renderPanel('date');
             });
             cmp.on('prevField', () => this._renderPanel('year'));
             cmp.on('confirm', (ctx: any) => {
-                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; this._updateValue(); }
+                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; }
                 this._renderPanel('date');
             });
             cmp.on('cancel', () => this._renderPanel('date'));
             wrapper.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'hour') {
-            const cmp = new HourPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
+            const cmp = new HourPanelComponent({ value: this._value, showPrevField: false, showNextField: true, showConfirm: true, showCancel: true });
             cmp.on('hourSelect', (ctx: any) => {
                 this._value = { ...this._value, hour: ctx.data.value.hour };
-                this._updateValue();
+                this._updateTimeBar();
             });
+            cmp.on('nextField', () => this._renderPanel('minute'));
+            cmp.on('confirm', (ctx: any) => {
+                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; this._updateTimeBar(); }
+                this._renderPanel('date');
+            });
+            cmp.on('cancel', () => this._renderPanel('date'));
             wrapper.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'minute') {
-            const cmp = new MinutePanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
+            const cmp = new MinutePanelComponent({ value: this._value, showPrevField: true, showNextField: true, showConfirm: true, showCancel: true });
             cmp.on('minuteSelect', (ctx: any) => {
                 this._value = { ...this._value, minute: ctx.data.value.minute };
-                this._updateValue();
+                this._updateTimeBar();
             });
+            cmp.on('prevField', () => this._renderPanel('hour'));
+            cmp.on('nextField', () => this._renderPanel('second'));
+            cmp.on('confirm', (ctx: any) => {
+                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; this._updateTimeBar(); }
+                this._renderPanel('date');
+            });
+            cmp.on('cancel', () => this._renderPanel('date'));
             wrapper.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'second') {
-            const cmp = new SecondPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
+            const cmp = new SecondPanelComponent({ value: this._value, showPrevField: true, showNextField: false, showConfirm: true, showCancel: true });
             cmp.on('secondSelect', (ctx: any) => {
                 this._value = { ...this._value, second: ctx.data.value.second };
-                this._updateValue();
+                this._updateTimeBar();
             });
+            cmp.on('prevField', () => this._renderPanel('minute'));
+            cmp.on('confirm', (ctx: any) => {
+                if (ctx.data?.value) { this._value = { ...this._value, ...ctx.data.value }; this._updateTimeBar(); }
+                this._renderPanel('date');
+            });
+            cmp.on('cancel', () => this._renderPanel('date'));
             wrapper.appendChild(cmp.el);
             this._panel = cmp;
         }
@@ -175,25 +173,17 @@ class DateTimePanelDemoComponent extends Component {
             wrapper.classList.add('q-demo__panel-fade--in');
         });
     }
-
-    _updateValue(): void {
-        const v = this._value;
-        const dateStr = `${v.year}-${String(v.month).padStart(2, '0')}-${String(v.day).padStart(2, '0')}`;
-        const timeStr = `${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}:${String(v.second ?? 0).padStart(2, '0')}`;
-        this.setNodeText(`${dateStr} ${timeStr}`, 'valueDisplay');
-    }
 }
 
 export const DATETIMEPANEL_DEMO: DemoConfig = {
     title: 'DateTimePanel',
-    description: '日期时间组合面板，在一个界面中切换日期/时/分/秒面板，测试日期和时间的组合选择',
+    description: '日期时间组合面板 — 以日期面板为主，底部显示时间（HH:mm:ss），点击时分秒切换到对应面板，面板间通过导航按钮切换',
     sections: [
         {
             label: '组合面板',
-            code: `// 日期时间组合面板
-// 顶部显示完整日期时间值
-// 底部标签切换：日期 | 时 | 分 | 秒
-// 日期面板中点击年份/月份标签可切换到对应选择面板`,
+            code: `// 日期面板为主，底部时间栏可点击切换到时/分/秒面板
+// 时间面板之间通过 ← → 导航按钮切换
+// 确认/取消按钮返回日期面板`,
             component: DateTimePanelDemoComponent,
         },
     ],

@@ -314,3 +314,22 @@ body {
     background: var(--q-sc-primary, #6366f1);
     color: #fff;
 }
+
+.q-demo__time-btn {
+    padding: 2px 8px;
+    border: 1px solid var(--q-sc-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--q-sc-bg, #fff);
+    color: var(--q-sc-primary, #6366f1);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 36px;
+    text-align: center;
+    transition: all 0.15s;
+}
+
+.q-demo__time-btn:hover {
+    border-color: var(--q-sc-primary, #6366f=1);
+    background: var(--q-sc-bg-secondary, #f8fafc);
+}
