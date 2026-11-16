@@ -136,11 +136,15 @@ class MinutePanelComponent extends Component {
         tensHeader.className = 'q-dtpanel__digit-header';
         tensHeader.textContent = this._tensSelected >= 0 ? String(this._tensSelected) : '–';
         tensCol.appendChild(tensHeader);
+
+        const tensGrid = document.createElement('div');
+        tensGrid.className = 'q-dtpanel__digit-tens-grid';
         for (const d of digits.tens) {
-            tensCol.appendChild(
+            tensGrid.appendChild(
                 this._createCell(d, 'tens', 'q-dtpanel__high-btn', 'q-dtpanel__high-btn--active')
             );
         }
+        tensCol.appendChild(tensGrid);
 
         const onesCol = document.createElement('div');
         onesCol.className = 'q-dtpanel__digit-col';

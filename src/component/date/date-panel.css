@@ -246,3 +246,10 @@
     background: var(--q-color-primary, #3b82f6);
     color: #fff;
 }
+
+.q-dtpanel__digit-tens-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    width: 100%;
+}
