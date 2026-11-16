@@ -17,7 +17,7 @@ import { Definitions } from '@/composable';
 import { SYSTEM_EVENTS } from '@/events';
 import { DAY_GRID_TPL } from './day-grid-tpl';
 import { generateCalendarView, type CalendarDay } from '@/utils/date';
-//import './date-panel.css';
+import './date-panel.css';
 
 const TOTAL_WEEKDAYS = 7;
 const TOTAL_DAY_CELLS = 42;
