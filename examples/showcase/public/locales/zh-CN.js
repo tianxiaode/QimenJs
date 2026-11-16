@@ -63,6 +63,7 @@ __qimen_i18n_register__('zh-CN', {
         no: '否',
         ok: '确定',
         all: '全部',
+        selectAll: '全选',
         selected: '已选择 {count} 项',
         greeting: '你好, {name}',
     },

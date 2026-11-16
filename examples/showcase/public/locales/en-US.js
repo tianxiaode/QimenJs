@@ -63,6 +63,7 @@ __qimen_i18n_register__('en-US', {
         no: 'No',
         ok: 'OK',
         all: 'All',
+        selectAll: 'Select All',
         selected: '{count} item(s) selected',
         greeting: 'Hello, {name}',
     },
