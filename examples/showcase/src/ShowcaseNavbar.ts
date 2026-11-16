@@ -2,6 +2,7 @@ import { NavbarComponent } from '@qimenjs/component';
 import { ListenItem } from '@qimenjs/component-core';
 
 const THEME_PRESETS = [
+    { key: '', name: '@theme.default' },
     { key: 'cinnabar', name: '@theme.cinnabar' },
     { key: 'indigo', name: '@theme.indigo' },
     { key: 'pine', name: '@theme.pine' },
@@ -178,11 +179,15 @@ class ShowcaseNavbar extends NavbarComponent {
         this._updateMenuChecked('lang', data.action);
     }
 
-    _onThemeChange(data: any): void {
-        const preset = data.action.replace('set-theme-', '');
+_onThemeChange(data: any): void {
+    const preset = data.action.replace('set-theme-', '');
+    if (preset) {
         document.documentElement.setAttribute('data-theme-preset', preset);
-        this._updateMenuChecked('theme', data.action);
+    } else {
+        document.documentElement.removeAttribute('data-theme-preset');
     }
+    this._updateMenuChecked('theme', data.action);
+}
 
     _onDarkThemeToggle(data: any) {
         data.pressed

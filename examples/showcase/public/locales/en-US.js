@@ -142,6 +142,7 @@ __qimen_i18n_register__('en-US', {
         login: 'Login',
     },
     theme: {
+        default: 'Default',
         cinnabar: 'Cinnabar',
         indigo: 'Indigo',
         pine: 'Pine',

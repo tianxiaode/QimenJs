@@ -142,6 +142,7 @@ __qimen_i18n_register__('zh-CN', {
         login: '登录',
     },
     theme: {
+        default: '默认',
         cinnabar: '朱砂红',
         indigo: '黛蓝',
         pine: '松花绿',
