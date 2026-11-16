@@ -82,15 +82,6 @@
     color: #fff;
 }
 
-.q-dtpanel__nav-preview {
-    flex: 1;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--q-color-text, #333);
-    min-width: 60px;
-}
-
 .q-dtpanel__nav-btn--disabled {
     opacity: 0.4;
     cursor: not-allowed;

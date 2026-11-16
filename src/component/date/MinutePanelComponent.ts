@@ -12,7 +12,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { MINUTE_PANEL_TPL } from './minute-panel-tpl';
 import { createDateTimeValue, generateMinuteSecondDigits, type DateTimeValue } from '@/utils/date';
@@ -33,6 +33,16 @@ type DigitPart = 'tens' | 'ones';
 
 class MinutePanelComponent extends Component {
     static type = 'minute-panel';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
+            { path: 'nextFieldBtn', handler: 'onNextFieldBtnClick' },
+            { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
+            { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'digitColumns', handler: 'onDigitColumnsClick' },
+        ],
+    };
 
     get tpl(): TplNode {
         return MINUTE_PANEL_TPL;
@@ -95,9 +105,13 @@ class MinutePanelComponent extends Component {
     }
 
     _renderPreview(): void {
-        if (!this._previewData) return;
         const previewEl = this.getNodeEl('preview');
-        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        if (!previewEl) return;
+        if (this._previewData) {
+            renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        } else {
+            previewEl.textContent = `${String(this._value.minute).padStart(2, '0')}分`;
+        }
     }
 
     _renderColumns(): void {

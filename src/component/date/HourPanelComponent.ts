@@ -10,7 +10,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { HOUR_PANEL_TPL } from './hour-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
@@ -29,6 +29,16 @@ const HourPanelComponentDefs: Definitions = {
 
 class HourPanelComponent extends Component {
     static type = 'hour-panel';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
+            { path: 'nextFieldBtn', handler: 'onNextFieldBtnClick' },
+            { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
+            { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'grid', handler: 'onGridClick' },
+        ],
+    };
 
     get tpl(): TemplateDecl {
         return HOUR_PANEL_TPL;
@@ -82,9 +92,13 @@ class HourPanelComponent extends Component {
     }
 
     _renderPreview(): void {
-        if (!this._previewData) return;
         const previewEl = this.getNodeEl('preview');
-        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        if (!previewEl) return;
+        if (this._previewData) {
+            renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        } else {
+            previewEl.textContent = `${String(this._value.hour).padStart(2, '0')}时`;
+        }
     }
 
     _renderGrid(): void {

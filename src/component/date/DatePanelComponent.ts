@@ -15,7 +15,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TemplateDecl } from '@qimenjs/component-core';
+import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { DATE_PANEL_TPL } from './date-panel-tpl';
 import {
@@ -36,6 +36,24 @@ const DatePanelComponentDefs: Definitions = {
 
 class DatePanelComponent extends Component {
     static type = 'date-panel';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
+            { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
+            { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'prev10y', handler: 'onPrev10yClick' },
+            { path: 'prev1y', handler: 'onPrev1yClick' },
+            { path: 'prev1m', handler: 'onPrev1mClick' },
+            { path: 'next1m', handler: 'onNext1mClick' },
+            { path: 'next1y', handler: 'onNext1yClick' },
+            { path: 'next10y', handler: 'onNext10yClick' },
+            { path: 'yesterdayBtn', handler: 'onYesterdayBtnClick' },
+            { path: 'todayBtn', handler: 'onTodayBtnClick' },
+            { path: 'tomorrowBtn', handler: 'onTomorrowBtnClick' },
+            { path: 'dateLabel', handler: 'onDateLabelClick' },
+        ],
+    };
 
     get tpl(): TemplateDecl {
         return DATE_PANEL_TPL;

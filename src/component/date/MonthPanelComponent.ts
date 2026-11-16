@@ -11,7 +11,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { MONTH_PANEL_TPL } from './month-panel-tpl';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
@@ -32,6 +32,16 @@ const MonthPanelComponentDefs: Definitions = {
 
 class MonthPanelComponent extends Component {
     static type = 'month-panel';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
+            { path: 'nextFieldBtn', handler: 'onNextFieldBtnClick' },
+            { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
+            { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'grid', handler: 'onGridClick' },
+        ],
+    };
 
     get tpl(): TplNode {
         return MONTH_PANEL_TPL;
@@ -91,9 +101,18 @@ class MonthPanelComponent extends Component {
     }
 
     _renderPreview(): void {
-        if (!this._previewData) return;
         const previewEl = this.getNodeEl('preview');
-        renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        if (!previewEl) return;
+        if (this._previewData) {
+            renderPreview(previewEl, this._previewData, field => this.emit('navigate', { field }));
+        } else {
+            const locale = this.i18nConfig();
+            const months = locale?.months;
+            const text = months && months.length === 12
+                ? months[this._value.month - 1]
+                : `${String(this._value.month).padStart(2, '0')}月`;
+            previewEl.textContent = text;
+        }
     }
 
     _getMonthsShort(): string[] | undefined {

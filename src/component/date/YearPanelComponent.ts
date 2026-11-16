@@ -13,7 +13,7 @@
  */
 
 import { Component } from '@qimenjs/component-core';
-import type { TplNode } from '@qimenjs/component-core';
+import type { TplNode, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { YEAR_PANEL_TPL } from './year-panel-tpl';
 import './yearpanel.css';
@@ -41,6 +41,16 @@ const YearPanelComponentDefs: Definitions = {
 
 class YearPanelComponent extends Component {
     static type = 'year-panel';
+
+    domEvents: DomEventsMap = {
+        click: [
+            { path: 'prevFieldBtn', handler: 'onPrevFieldBtnClick' },
+            { path: 'nextFieldBtn', handler: 'onNextFieldBtnClick' },
+            { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
+            { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'digitColumns', handler: 'onDigitColumnsClick' },
+        ],
+    };
 
     get tpl(): TplNode {
         return YEAR_PANEL_TPL;
