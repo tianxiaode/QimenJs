@@ -7,9 +7,29 @@ const HOBBY_ITEMS = [
     { label: '旅行', value: 'travel' },
 ];
 
+const MANY_CHECKBOX_ITEMS = [
+    { label: '阅读', value: 'reading' },
+    { label: '运动', value: 'sports' },
+    { label: '音乐', value: 'music' },
+    { label: '旅行', value: 'travel' },
+    { label: '摄影', value: 'photography' },
+    { label: '烹饪', value: 'cooking' },
+    { label: '编程', value: 'programming' },
+    { label: '绘画', value: 'painting' },
+];
+
 const GENDER_ITEMS = [
     { label: '男', value: 'male' },
     { label: '女', value: 'female' },
+];
+
+const CITY_ITEMS = [
+    { label: '北京', value: 'beijing' },
+    { label: '上海', value: 'shanghai' },
+    { label: '广州', value: 'guangzhou' },
+    { label: '深圳', value: 'shenzhen' },
+    { label: '成都', value: 'chengdu' },
+    { label: '杭州', value: 'hangzhou' },
 ];
 
 export const CHECKBOX_DEMO: DemoConfig = {
@@ -106,6 +126,22 @@ export const CHECKBOX_DEMO: DemoConfig = {
                 ],
             },
         },
+        {
+            label: '多行多列（horizontal + wrap）',
+            code: `{ type: 'checkbox-group', options: {
+    items: [...8项],
+    direction: 'horizontal',
+    label: '多行多列',
+} }
+// 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px', '--q-itemgroup-wrap': 'wrap' },
+                children: [
+                    { type: 'checkbox-group', options: { items: MANY_CHECKBOX_ITEMS, direction: 'horizontal', label: '多行多列' } },
+                ],
+            },
+        },
     ],
 };
 
@@ -169,6 +205,22 @@ export const RADIO_DEMO: DemoConfig = {
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
                     { type: 'radio-group', options: { items: GENDER_ITEMS, required: true, label: '必选项' } },
+                ],
+            },
+        },
+        {
+            label: '多行多列（horizontal + wrap）',
+            code: `{ type: 'radio-group', options: {
+    items: [...6项],
+    direction: 'horizontal',
+    label: '多行多列',
+} }
+// 外层容器设置 --q-itemgroup-wrap: wrap 实现自动换行`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px', '--q-itemgroup-wrap': 'wrap' },
+                children: [
+                    { type: 'radio-group', options: { items: CITY_ITEMS, direction: 'horizontal', label: '多行多列' } },
                 ],
             },
         },
