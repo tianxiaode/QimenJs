@@ -75,8 +75,8 @@
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 4px;
+    justify-content: center;
+    gap: 8px;
 }
 
 .q-dtpanel__field-group {
@@ -86,9 +86,9 @@
 }
 
 .q-dtpanel__field-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--q-color-text, #333);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--q-color-primary, #3b82f6);
     cursor: pointer;
     padding: 2px 4px;
     border-radius: 2px;
@@ -166,8 +166,8 @@
     display: flex;
     justify-content: space-around;
     padding: 2px 0;
-    font-size: 12px;
-    color: var(--q-color-text-secondary, #666);
+    font-size: 13px;
+    color: var(--q-color-text, #333);
 }
 
 .q-dtpanel__day-grid {
