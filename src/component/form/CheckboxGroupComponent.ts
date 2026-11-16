@@ -67,11 +67,11 @@ class CheckboxGroupComponent extends FormFieldComponent {
         const el = fieldBodyCmp.el as HTMLElement;
         if (!el) return;
         if (this.cols > 1) {
-            el.style.setProperty('--q-itemgroup-cols', String(this.cols));
-            el.classList.add('q-itemgroup__items--cols');
+            el.style.display = 'grid';
+            el.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
         } else {
-            el.style.removeProperty('--q-itemgroup-cols');
-            el.classList.remove('q-itemgroup__items--cols');
+            el.style.display = '';
+            el.style.gridTemplateColumns = '';
         }
     }
 
