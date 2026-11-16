@@ -56,6 +56,10 @@ class DatePanelDemoComponent extends Component {
 
         this._currentPanelType = type;
 
+        const wrapper = document.createElement('div');
+        wrapper.className = 'q-demo__panel-fade';
+        container.appendChild(wrapper);
+
         if (type === 'date') {
             const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
             cmp.on('daySelect', (ctx: any) => {
@@ -68,27 +72,37 @@ class DatePanelDemoComponent extends Component {
                     this._renderPanel(target);
                 }
             });
-            container.appendChild(cmp.el);
+            wrapper.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'year') {
-            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
+            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
             cmp.on('yearSelect', (ctx: any) => {
                 this._value = { ...this._value, year: ctx.data.value.year };
                 this._updateValue();
+                this._renderPanel('month');
+            });
+            cmp.on('cancel', () => {
                 this._renderPanel('date');
             });
-            container.appendChild(cmp.el);
+            wrapper.appendChild(cmp.el);
             this._panel = cmp;
         } else if (type === 'month') {
-            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
+            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: true });
             cmp.on('monthSelect', (ctx: any) => {
                 this._value = { ...this._value, month: ctx.data.value.month };
                 this._updateValue();
                 this._renderPanel('date');
             });
-            container.appendChild(cmp.el);
+            cmp.on('cancel', () => {
+                this._renderPanel('date');
+            });
+            wrapper.appendChild(cmp.el);
             this._panel = cmp;
         }
+
+        requestAnimationFrame(() => {
+            wrapper.classList.add('q-demo__panel-fade--in');
+        });
     }
 
     _updateValue(): void {

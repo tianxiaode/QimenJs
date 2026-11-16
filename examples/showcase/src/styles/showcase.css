@@ -281,3 +281,14 @@ body {
     color: var(--q-sc-text-secondary);
     font-size: 15px;
 }
+
+.q-demo__panel-fade {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.q-demo__panel-fade--in {
+    opacity: 1;
+    transform: translateY(0);
+}
