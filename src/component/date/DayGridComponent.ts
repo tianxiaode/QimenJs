@@ -94,7 +94,8 @@ class DayGridComponent extends Component {
     }
 
     _getWeekdays(): string[] {
-        return this.i18nConfig()?.weekdays ?? DEFAULT_WEEKDAYS;
+        const config = this.i18nConfig();
+        return config?.weekdaysShort ?? config?.weekdays ?? DEFAULT_WEEKDAYS;
     }
 
     _createCells(): void {
