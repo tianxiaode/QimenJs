@@ -17,13 +17,13 @@
 import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { DATETIME_PANEL_TPL } from './datetime-panel-tpl';
-import { MonthPanelComponent } from './MonthPanelComponent';
-import { HourPanelComponent } from './HourPanelComponent';
-import { MinutePanelComponent } from './MinutePanelComponent';
-import { SecondPanelComponent } from './SecondPanelComponent';
 import { clampDay, type DateTimeValue } from '@/utils/date';
 import { DatePanelComponent } from './DatePanelComponent';
 import { YearPanelAbility } from './abilities/YearPanelAbility';
+import { MonthPanelAbility } from './abilities/MonthPanelAbility';
+import { HourPanelAbility } from './abilities/HourPanelAbility';
+import { MinutePanelAbility } from './abilities/MinutePanelAbility';
+import { SecondPanelAbility } from './abilities/SecondPanelAbility';
 import './datetime-panel.css';
 
 type PanelView = 'date' | 'year' | 'month' | 'hour' | 'minute' | 'second';
@@ -83,6 +83,10 @@ class DateTimePanelComponent extends DatePanelComponent {
     _currentView: PanelView = 'date';
     _subPanel: any = null;
     _onYearPanelComplete: ((value: DateTimeValue) => void) | null = null;
+    _onMonthPanelComplete: ((value: DateTimeValue) => void) | null = null;
+    _onHourPanelComplete: ((value: DateTimeValue) => void) | null = null;
+    _onMinutePanelComplete: ((value: DateTimeValue) => void) | null = null;
+    _onSecondPanelComplete: ((value: DateTimeValue) => void) | null = null;
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -123,6 +127,10 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     _disposeSubPanel(): void {
         this.disposeYearPanel?.();
+        this.disposeMonthPanel?.();
+        this.disposeHourPanel?.();
+        this.disposeMinutePanel?.();
+        this.disposeSecondPanel?.();
         if (this._subPanel) {
             try { this._subPanel.dispose(); } catch (e) { /* ignore */ }
             this._subPanel = null;
@@ -235,7 +243,6 @@ class DateTimePanelComponent extends DatePanelComponent {
         content.innerHTML = '';
 
         const value = this._value;
-        let panelCmp: any = null;
 
         switch (view) {
             case 'year':
@@ -246,24 +253,24 @@ class DateTimePanelComponent extends DatePanelComponent {
                 };
                 break;
             case 'month':
-                panelCmp = new MonthPanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
-                panelCmp.on('monthSelect', (ctx: any) => {
-                    this._value = { ...this._value, month: ctx.data.value.month };
+                this.renderMonthPanel(content, value);
+                this._onMonthPanelComplete = (v: DateTimeValue) => {
+                    this._value = { ...this._value, month: v.month };
                     this._switchBackToDate();
-                });
+                };
                 break;
             case 'hour':
-                panelCmp = new HourPanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
-                panelCmp.on('hourSelect', (ctx: any) => {
-                    this._value = { ...this._value, hour: ctx.data.value.hour };
+                this.renderHourPanel(content, value);
+                this._onHourPanelComplete = (v: DateTimeValue) => {
+                    this._value = { ...this._value, hour: v.hour };
                     this._updateTimeBar();
                     this._switchToPanel('minute');
-                });
+                };
                 break;
             case 'minute':
-                panelCmp = new MinutePanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
-                panelCmp.on('minuteSelect', (ctx: any) => {
-                    this._value = { ...this._value, minute: ctx.data.value.minute };
+                this.renderMinutePanel(content, value);
+                this._onMinutePanelComplete = (v: DateTimeValue) => {
+                    this._value = { ...this._value, minute: v.minute };
                     this._updateTimeBar();
                     const showSeconds = this.getData('showSeconds') ?? true;
                     if (showSeconds) {
@@ -271,21 +278,16 @@ class DateTimePanelComponent extends DatePanelComponent {
                     } else {
                         this._switchBackToDate();
                     }
-                });
+                };
                 break;
             case 'second':
-                panelCmp = new SecondPanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
-                panelCmp.on('secondSelect', (ctx: any) => {
-                    this._value = { ...this._value, second: ctx.data.value.second };
+                this.renderSecondPanel(content, value);
+                this._onSecondPanelComplete = (v: DateTimeValue) => {
+                    this._value = { ...this._value, second: v.second };
                     this._updateTimeBar();
                     this._switchBackToDate();
-                });
+                };
                 break;
-        }
-
-        if (panelCmp) {
-            content.appendChild(panelCmp.el);
-            this._subPanel = panelCmp;
         }
     }
 
@@ -333,11 +335,7 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     onConfirmBtnClick(): void {
-        const yearValue = this.getYearPanelValue?.();
-        if (yearValue) {
-            this._value = { ...this._value, year: yearValue.year };
-            this._updateTimeBar();
-        }
+        this._syncPanelValues();
         if (this._currentView !== 'date' && this._subPanel) {
             const subPanelValue = this._subPanel.panelValue;
             if (subPanelValue) {
@@ -372,11 +370,7 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     onSubConfirmBtnClick(): void {
-        const yearValue = this.getYearPanelValue?.();
-        if (yearValue) {
-            this._value = { ...this._value, year: yearValue.year };
-            this._updateTimeBar();
-        }
+        this._syncPanelValues();
         if (this._subPanel) {
             const subPanelValue = this._subPanel.panelValue;
             if (subPanelValue) {
@@ -411,9 +405,37 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
         return 'date';
     }
+
+    _syncPanelValues(): void {
+        const yearValue = this.getYearPanelValue?.();
+        if (yearValue) {
+            this._value = { ...this._value, year: yearValue.year };
+        }
+        const monthValue = this.getMonthPanelValue?.();
+        if (monthValue) {
+            this._value = { ...this._value, month: monthValue.month };
+        }
+        const hourValue = this.getHourPanelValue?.();
+        if (hourValue) {
+            this._value = { ...this._value, hour: hourValue.hour };
+        }
+        const minuteValue = this.getMinutePanelValue?.();
+        if (minuteValue) {
+            this._value = { ...this._value, minute: minuteValue.minute };
+        }
+        const secondValue = this.getSecondPanelValue?.();
+        if (secondValue) {
+            this._value = { ...this._value, second: secondValue.second };
+        }
+        this._updateTimeBar();
+    }
 }
 
 DateTimePanelComponent.use(YearPanelAbility);
+DateTimePanelComponent.use(MonthPanelAbility);
+DateTimePanelComponent.use(HourPanelAbility);
+DateTimePanelComponent.use(MinutePanelAbility);
+DateTimePanelComponent.use(SecondPanelAbility);
 DateTimePanelComponent.define(DateTimePanelComponentDefs);
 
 export { DateTimePanelComponent };
