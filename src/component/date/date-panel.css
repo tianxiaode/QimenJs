@@ -235,10 +235,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
+    height: 24px;
     border-radius: 2px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .q-dtpanel__cell:hover {
