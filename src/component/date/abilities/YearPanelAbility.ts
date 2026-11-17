@@ -102,7 +102,7 @@ export const YearPanelAbility: AbilityDefinition = {
 
         const container = state.container;
         container.innerHTML = '';
-        container.className = 'q-dtpanel__digit-columns';
+        container.classList.add('q-dtpanel__digit-columns');
 
         const digits = generateYearDigits(state.value.year);
 

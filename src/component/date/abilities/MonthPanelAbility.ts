@@ -81,7 +81,7 @@ export const MonthPanelAbility: AbilityDefinition = {
 
         const container = state.container;
         container.innerHTML = '';
-        container.className = 'q-dtpanel__grid';
+        container.classList.add('q-dtpanel__grid');
         container.style.gridTemplateColumns = 'repeat(3, 1fr)';
 
         const monthsShort = this.i18nConfig?.()?.monthsShort ?? MONTHS_SHORT_DEFAULT;

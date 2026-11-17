@@ -1,0 +1,436 @@
+/**
+ * ComponentsPage - 组件展示页
+ *
+ * 左侧组件导航侧栏 + 右侧组件演示区域。
+ * 点击左侧组件名 → hash 变化 → 路由事件 → 右侧动态切换演示内容。
+ */
+import { Component } from '@qimenjs/component-core';
+import { BUTTON_DEMO } from '../components/ButtonDemo';
+import { AVATAR_DEMO } from '../components/AvatarDemo';
+import { BUTTON_GROUP_DEMO } from '../components/ButtonGroupDemo';
+import { DIVIDER_DEMO } from '../components/DividerDemo';
+import { HTML_DEMO } from '../components/HtmlDemo';
+import { ICON_DEMO } from '../components/IconDemo';
+import { ICONS_DEMO } from '../components/IconsDemo';
+import { LABEL_DEMO } from '../components/LabelDemo';
+import { SPACER_DEMO } from '../components/SpacerDemo';
+import { TEXT_DEMO } from '../components/TextDemo';
+import { CARD_DEMO } from '../components/CardDemo';
+import { FIELDSET_DEMO } from '../components/FieldsetDemo';
+import { HEADER_DEMO } from '../components/HeaderDemo';
+import { HERO_DEMO } from '../components/HeroDemo';
+import { PANEL_DEMO } from '../components/PanelDemo';
+import { TABS_DEMO } from '../components/TabsDemo';
+import { BREADCRUMB_DEMO } from '../components/BreadcrumbDemo';
+import { DROPDOWN_DEMO } from '../components/DropdownDemo';
+import { MENU_DEMO } from '../components/MenuDemo';
+import { NAV_DEMO } from '../components/NavDemo';
+import { NAVBAR_DEMO } from '../components/NavbarDemo';
+import { TREENAV_DEMO } from '../components/TreeNavDemo';
+import { ACCORDION_DEMO } from '../components/AccordionDemo';
+import { ALERT_DEMO } from '../components/AlertDemo';
+import { LIST_DEMO } from '../components/ListDemo';
+import { PROGRESS_DEMO } from '../components/ProgressDemo';
+import { STATISTIC_DEMO } from '../components/StatisticDemo';
+import { TABLE_BASIC_DEMO } from '../components/TableBasicDemo';
+import { TABLE_SELECTION_DEMO } from '../components/TableSelectionDemo';
+import { TABLE_FIXED_COLUMN_DEMO } from '../components/TableFixedColumnDemo';
+import { TABLE_VIRTUAL_SCROLL_DEMO } from '../components/TableVirtualScrollDemo';
+import { TABLE_ROW_BODY_DEMO } from '../components/TableRowBodyDemo';
+import { TABLE_EDIT_DEMO } from '../components/TableEditDemo';
+import { TAG_DEMO } from '../components/TagDemo';
+import { ENTITY_SOURCE_DEMO } from '../components/EntitySourceDemo';
+import { INPUT_DEMO } from '../components/InputDemo';
+import { SELECT_DEMO } from '../components/SelectDemo';
+import { SWITCH_DEMO } from '../components/SwitchDemo';
+import { CHECKBOX_DEMO, RADIO_DEMO } from '../components/CheckboxRadioDemo';
+import { DATEPICKER_DEMO } from '../components/DatePickerDemo';
+import { DATETIMEPANEL_DEMO } from '../components/DateTimePanelDemo';
+import { YEARPANEL_DEMO } from '../components/YearPanelDemo';
+import { MONTHPANEL_DEMO } from '../components/MonthPanelDemo';
+import { DATEPANEL_DEMO } from '../components/DatePanelDemo';
+import { HOURPANEL_DEMO } from '../components/HourPanelDemo';
+import { MINUTEPANEL_DEMO } from '../components/MinutePanelDemo';
+import { SECONDPANEL_DEMO } from '../components/SecondPanelDemo';
+import { SLIDER_DEMO, TEXTAREA_DEMO } from '../components/SliderTextareaDemo';
+import { FORM_DEMO } from '../components/FormDemo';
+/** 组件分类 */
+const COMPONENT_CATEGORIES = [
+    {
+        label: '基础元素',
+        components: [
+            'Avatar',
+            'Button',
+            'ButtonGroup',
+            'Divider',
+            'Html',
+            'Icon',
+            'Icons',
+            'Label',
+            'Spacer',
+            'Text',
+        ],
+    },
+    {
+        label: '布局容器',
+        components: ['Card', 'Fieldset', 'Header', 'Hero', 'Panel', 'Tabs'],
+    },
+    {
+        label: '导航',
+        components: ['Breadcrumb', 'Dropdown', 'Menu', 'Nav', 'Navbar', 'TreeNav'],
+    },
+    {
+        label: '数据展示',
+        components: ['Accordion', 'Alert', 'List', 'Progress', 'Statistic', 'Tag'],
+    },
+    {
+        label: 'Table',
+        components: ['Basic', 'Selection', 'FixedColumn', 'VirtualScroll', 'RowBody', 'Edit'],
+    },
+    {
+        label: '日期',
+        components: ['DateTimePanel', 'YearPanel', 'MonthPanel', 'DatePanel', 'HourPanel', 'MinutePanel', 'SecondPanel'],
+    },
+    {
+        label: '表单',
+        components: ['Input', 'Select', 'Switch', 'Checkbox', 'Radio', 'DatePicker', 'Slider', 'Textarea', 'Form'],
+    },
+    {
+        label: '交互工具',
+        components: ['Dialog', 'EntityToolbar', 'ItemGroup', 'Toolbar'],
+    },
+    {
+        label: '数据来源',
+        components: ['EntitySource'],
+    },
+];
+/** 组件演示映射 */
+const DEMO_MAP = {
+    Button: BUTTON_DEMO,
+    ButtonGroup: BUTTON_GROUP_DEMO,
+    Avatar: AVATAR_DEMO,
+    Divider: DIVIDER_DEMO,
+    Html: HTML_DEMO,
+    Icon: ICON_DEMO,
+    Icons: ICONS_DEMO,
+    Label: LABEL_DEMO,
+    Spacer: SPACER_DEMO,
+    Text: TEXT_DEMO,
+    Card: CARD_DEMO,
+    Fieldset: FIELDSET_DEMO,
+    Header: HEADER_DEMO,
+    Hero: HERO_DEMO,
+    Panel: PANEL_DEMO,
+    Tabs: TABS_DEMO,
+    Breadcrumb: BREADCRUMB_DEMO,
+    Dropdown: DROPDOWN_DEMO,
+    Menu: MENU_DEMO,
+    Nav: NAV_DEMO,
+    Navbar: NAVBAR_DEMO,
+    TreeNav: TREENAV_DEMO,
+    Accordion: ACCORDION_DEMO,
+    Alert: ALERT_DEMO,
+    List: LIST_DEMO,
+    Progress: PROGRESS_DEMO,
+    Statistic: STATISTIC_DEMO,
+    Basic: TABLE_BASIC_DEMO,
+    Selection: TABLE_SELECTION_DEMO,
+    FixedColumn: TABLE_FIXED_COLUMN_DEMO,
+    VirtualScroll: TABLE_VIRTUAL_SCROLL_DEMO,
+    RowBody: TABLE_ROW_BODY_DEMO,
+    Edit: TABLE_EDIT_DEMO,
+    Tag: TAG_DEMO,
+    EntitySource: ENTITY_SOURCE_DEMO,
+    Input: INPUT_DEMO,
+    Select: SELECT_DEMO,
+    Switch: SWITCH_DEMO,
+    Checkbox: CHECKBOX_DEMO,
+    Radio: RADIO_DEMO,
+    DatePicker: DATEPICKER_DEMO,
+    DateTimePanel: DATETIMEPANEL_DEMO,
+    YearPanel: YEARPANEL_DEMO,
+    MonthPanel: MONTHPANEL_DEMO,
+    DatePanel: DATEPANEL_DEMO,
+    HourPanel: HOURPANEL_DEMO,
+    MinutePanel: MINUTEPANEL_DEMO,
+    SecondPanel: SECONDPANEL_DEMO,
+    Slider: SLIDER_DEMO,
+    Textarea: TEXTAREA_DEMO,
+    Form: FORM_DEMO,
+};
+/** TreeNav items：分类为可展开父节点，组件为叶子节点带 href */
+const TREE_NAV_ITEMS = COMPONENT_CATEGORIES.map(cat => ({
+    text: cat.label,
+    expanded: true,
+    children: cat.components.map(name => ({
+        text: name,
+        href: `/components/${name}`,
+    })),
+}));
+/** 首页模板 */
+const COMPONENTS_TPL = {
+    tag: 'div',
+    classes: 'q-components-page',
+    style: { display: 'flex', flexDirection: 'row', minHeight: '100%' },
+    children: [
+        {
+            tag: 'aside',
+            name: 'sidebar',
+            classes: 'q-components-page__sidebar',
+            children: [
+                {
+                    type: 'tree-nav',
+                    name: 'treeNav',
+                    options: { items: TREE_NAV_ITEMS },
+                },
+            ],
+        },
+        {
+            tag: 'main',
+            name: 'content',
+            classes: 'q-components-page__main',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-components-page__overview',
+                    children: [
+                        {
+                            tag: 'h2',
+                            classes: 'q-components-page__overview-title',
+                            options: { text: 'QimenJS 组件库' },
+                        },
+                        {
+                            tag: 'p',
+                            classes: 'q-components-page__overview-desc',
+                            options: {
+                                text: 'QimenJS 是一个基于组合式架构的轻量 Web 组件框架，通过 Ability 系统实现功能解耦与按需组合，提供声明式模板、事件委托、option 驱动渲染等核心能力。',
+                            },
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '组件体系' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '所有组件从 Component 基类派生，通过 withAbilities 组合 Ability（如 SizeAbility、ColorAbility、OverlayAbility 等）获得对应能力，通过 withDefinitions 定义 option 及其他成员。组件通过 option 配置驱动渲染，支持 string | ComponentClass | TemplateDecl 三路内容模式。',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '核心能力' },
+                                },
+                                {
+                                    tag: 'ul',
+                                    classes: 'q-components-page__overview-list',
+                                    children: [
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '声明式模板（TemplateDecl）—— 类级静态编译缓存',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '事件委托（DomEventsEngine）—— 路径匹配 + 多 handler 执行',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'Option 驱动 —— onXxxOptionChange 响应式更新',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'Ability 组合 —— Size/Color/Overlay/Mask/RAF 等按需引入',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: 'i18n 国际化 —— @ 前缀自动翻译 + 语言切换刷新',
+                                            },
+                                        },
+                                        {
+                                            tag: 'li',
+                                            options: {
+                                                text: '路由系统 —— hash 模式 + RouteContainerComponent',
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '使用方式' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '在模板中通过 type 引用组件名、options 传递配置；在代码中通过 new ComponentClass({ container }) 实例化。组件支持 extend() 派生子类、define() 注册子节点定义。',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            tag: 'div',
+                            classes: 'q-components-page__overview-section',
+                            children: [
+                                {
+                                    tag: 'h3',
+                                    options: { text: '可用组件' },
+                                },
+                                {
+                                    tag: 'p',
+                                    options: {
+                                        text: '当前共 35 个组件，按 6 个分类组织：基础元素（9）、布局容器（6）、导航（6）、数据展示（7）、表单（3）、交互工具（4）。从左侧导航选择组件查看详细演示。',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+};
+/** 组件展示页组件 */
+export class ComponentsPage extends Component {
+    constructor() {
+        super(...arguments);
+        this._currentDemo = null;
+        this._currentDemoName = null;
+        this._interactiveInstances = [];
+        this.listens = [{ route: true, events: { change: 'onRouteChange' } }];
+    }
+    get tpl() {
+        return COMPONENTS_TPL;
+    }
+    onAfterInit() {
+        const hash = window.location.hash;
+        const path = hash ? hash.slice(1) : '';
+        if (path.startsWith('/components/')) {
+            const componentName = path.slice('/components/'.length).split('/')[0];
+            if (componentName) {
+                this._showDemo(componentName);
+            }
+        }
+    }
+    onRouteChange(event) {
+        const path = event?.path ?? '';
+        if (path.startsWith('/components/')) {
+            const componentName = path.slice('/components/'.length).split('/')[0];
+            if (componentName) {
+                this._showDemo(componentName);
+            }
+        }
+    }
+    _showDemo(componentName) {
+        if (this._currentDemoName === componentName)
+            return;
+        this._currentDemoName = componentName;
+        const config = DEMO_MAP[componentName];
+        const contentEl = this.getNodeEl('content');
+        if (!contentEl)
+            return;
+        if (this._currentDemo) {
+            try {
+                this._currentDemo.dispose();
+            }
+            catch (e) {
+                console.error('[ComponentsPage] _showDemo dispose error', e);
+            }
+            this._currentDemo = null;
+        }
+        this._interactiveInstances.forEach(inst => {
+            try {
+                inst.dispose();
+            }
+            catch (e) {
+                console.error('[ComponentsPage] interactive dispose error', e);
+            }
+        });
+        this._interactiveInstances = [];
+        contentEl.innerHTML = '';
+        if (!config) {
+            contentEl.innerHTML = `<div class="q-components-page__coming-soon">${componentName} 演示即将上线</div>`;
+            return;
+        }
+        const demoTpl = {
+            tag: 'div',
+            classes: 'q-demo',
+            children: [
+                {
+                    tag: 'div',
+                    classes: 'q-demo__header',
+                    children: [
+                        { tag: 'h2', classes: 'q-demo__title', options: { text: config.title } },
+                        {
+                            tag: 'p',
+                            classes: 'q-demo__desc',
+                            options: { text: config.description },
+                        },
+                    ],
+                },
+                ...config.sections.map((section, i) => ({
+                    tag: 'div',
+                    classes: 'q-demo__section',
+                    children: [
+                        {
+                            tag: 'h3',
+                            classes: 'q-demo__section-label',
+                            options: { text: section.label },
+                        },
+                        section.component
+                            ? { tag: 'div', name: `section-${i}`, classes: 'q-demo__interactive' }
+                            : section.template ?? { tag: 'div' },
+                        ...(section.code
+                            ? [
+                                {
+                                    tag: 'pre',
+                                    classes: 'q-demo__code',
+                                    children: [{ tag: 'code', options: { text: section.code } }],
+                                },
+                            ]
+                            : []),
+                    ],
+                })),
+            ],
+        };
+        try {
+            this._currentDemo = new (Component.extend({
+                type: 'component-demo',
+                tpl: demoTpl,
+            }))({ container: contentEl });
+            config.sections.forEach((section, i) => {
+                if (section.component) {
+                    const containerEl = this._currentDemo.getNodeEl(`section-${i}`);
+                    if (containerEl) {
+                        this._interactiveInstances.push(new section.component({ container: containerEl }));
+                    }
+                }
+            });
+        }
+        catch (e) {
+            console.error('[ComponentsPage] _showDemo creation error', e);
+        }
+    }
+}

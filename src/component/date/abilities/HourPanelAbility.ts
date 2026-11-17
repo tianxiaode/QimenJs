@@ -79,7 +79,7 @@ export const HourPanelAbility: AbilityDefinition = {
 
         const container = state.container;
         container.innerHTML = '';
-        container.className = 'q-dtpanel__grid';
+        container.classList.add('q-dtpanel__grid');
         container.style.gridTemplateColumns = 'repeat(4, 1fr)';
 
         for (let h = 0; h <= 23; h++) {

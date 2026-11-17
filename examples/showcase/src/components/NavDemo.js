@@ -1,0 +1,284 @@
+import { Component, } from '@qimenjs/component-core';
+/** Nav 选中项交互演示 */
+class NavSelectDemo extends Component {
+    constructor() {
+        super(...arguments);
+        this.listens = [{ node: 'nav', events: { select: { handler: '_onNavSelect' } } }];
+    }
+    get tpl() {
+        return {
+            tag: 'div',
+            style: { display: 'flex', gap: '16px', alignItems: 'flex-start' },
+            children: [
+                {
+                    type: 'nav',
+                    name: 'nav',
+                    options: {
+                        activeIndex: 0,
+                        items: [
+                            { text: '首页', iconCls: 'q-icon-home' },
+                            { text: '搜索', iconCls: 'q-icon-search' },
+                            { text: '消息', iconCls: 'q-icon-info' },
+                            { text: '设置', iconCls: 'q-icon-settings' },
+                        ],
+                    },
+                },
+                {
+                    tag: 'div',
+                    name: 'result',
+                    classes: 'q-demo__hint',
+                    options: { text: '点击导航项查看效果' },
+                },
+            ],
+        };
+    }
+    _onNavSelect(ctx) {
+        const data = ctx?.data ?? {};
+        const index = data?.index;
+        const result = this.getNodeEl('result');
+        if (result && index !== undefined) {
+            result.textContent = `选中导航项: index=${index}`;
+        }
+    }
+}
+/** 外部按钮控制折叠演示 */
+class NavToggleDemo extends Component {
+    constructor() {
+        super(...arguments);
+        this.domEvents = {
+            click: {
+                path: 'toggleBtn',
+                handler: '_onToggleClick',
+            },
+        };
+    }
+    get tpl() {
+        return {
+            tag: 'div',
+            style: { display: 'flex', gap: '16px', alignItems: 'flex-start' },
+            children: [
+                {
+                    type: 'nav',
+                    name: 'nav',
+                    options: {
+                        activeIndex: 0,
+                        items: [
+                            { text: '首页', iconCls: 'q-icon-home' },
+                            { text: '搜索', iconCls: 'q-icon-search' },
+                            { text: '消息', iconCls: 'q-icon-info' },
+                            { text: '设置', iconCls: 'q-icon-settings' },
+                        ],
+                    },
+                },
+                {
+                    type: 'button',
+                    name: 'toggleBtn',
+                    options: {
+                        text: '折叠',
+                        variant: 'outline',
+                        size: 'sm',
+                    },
+                },
+            ],
+        };
+    }
+    _onToggleClick() {
+        const nav = this.getComponent('nav');
+        if (!nav)
+            return;
+        const newMode = nav.mode === 'expanded' ? 'collapsed' : 'expanded';
+        nav.update({ mode: newMode });
+        const btn = this.getComponent('toggleBtn');
+        if (btn)
+            btn.update({ text: newMode === 'collapsed' ? '展开' : '折叠' });
+    }
+}
+export const NAV_DEMO = {
+    title: 'Nav',
+    description: '导航项组组件，支持 expanded/collapsed 模式、图标、路由导航、嵌套浮层',
+    sections: [
+        {
+            label: '基本导航',
+            code: `{
+    type: 'nav',
+    options: {
+        activeIndex: 0,
+        items: [
+            { text: '首页' },
+            { text: '搜索' },
+            { text: '消息' },
+            { text: '设置' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    activeIndex: 0,
+                    items: [{ text: '首页' }, { text: '搜索' }, { text: '消息' }, { text: '设置' }],
+                },
+            },
+        },
+        {
+            label: '带图标',
+            code: `{
+    type: 'nav',
+    options: {
+        activeIndex: 0,
+        items: [
+            { text: '首页', iconCls: 'q-icon-home' },
+            { text: '搜索', iconCls: 'q-icon-search' },
+            { text: '消息', iconCls: 'q-icon-info' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    activeIndex: 0,
+                    items: [
+                        { text: '首页', iconCls: 'q-icon-home' },
+                        { text: '搜索', iconCls: 'q-icon-search' },
+                        { text: '消息', iconCls: 'q-icon-info' },
+                    ],
+                },
+            },
+        },
+        {
+            label: '折叠模式 (collapsed)',
+            code: `{
+    type: 'nav',
+    options: {
+        mode: 'collapsed',
+        activeIndex: 0,
+        items: [
+            { text: '首页', iconCls: 'q-icon-home' },
+            { text: '搜索', iconCls: 'q-icon-search' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    mode: 'collapsed',
+                    activeIndex: 0,
+                    items: [
+                        { text: '首页', iconCls: 'q-icon-home' },
+                        { text: '搜索', iconCls: 'q-icon-search' },
+                        { text: '消息', iconCls: 'q-icon-info' },
+                        { text: '设置', iconCls: 'q-icon-settings' },
+                    ],
+                },
+            },
+        },
+        {
+            label: '自带折叠按钮',
+            code: `{
+    type: 'nav',
+    options: {
+        showToggle: true,
+        activeIndex: 0,
+        items: [
+            { text: '首页', iconCls: 'q-icon-home' },
+            { text: '搜索', iconCls: 'q-icon-search' },
+            { text: '消息', iconCls: 'q-icon-info' },
+            { text: '设置', iconCls: 'q-icon-settings' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    showToggle: true,
+                    activeIndex: 0,
+                    items: [
+                        { text: '首页', iconCls: 'q-icon-home' },
+                        { text: '搜索', iconCls: 'q-icon-search' },
+                        { text: '消息', iconCls: 'q-icon-info' },
+                        { text: '设置', iconCls: 'q-icon-settings' },
+                    ],
+                },
+            },
+        },
+        {
+            label: '外部按钮控制折叠',
+            code: `// 通过 update({ mode }) 切换 expanded/collapsed
+const nav = instance.getComponent('nav');
+nav.update({ mode: 'collapsed' });`,
+            component: NavToggleDemo,
+        },
+        {
+            label: '嵌套子菜单',
+            code: `{
+    type: 'nav',
+    options: {
+        activeIndex: 0,
+        items: [
+            { text: '组件', iconCls: 'q-icon-home', popover: {
+                type: 'nav', trigger: 'hover', placement: 'right-start',
+                options: { items: [
+                    { text: 'Button', href: '/components/Button' },
+                    { text: 'Card', href: '/components/Card' },
+                ]}
+            }},
+            { text: '布局', iconCls: 'q-icon-menu', popover: {
+                type: 'nav', trigger: 'hover', placement: 'right-start',
+                options: { items: [
+                    { text: 'Panel', href: '/components/Panel' },
+                    { text: 'Tabs', href: '/components/Tabs' },
+                ]}
+            }},
+            { text: '设置', iconCls: 'q-icon-settings' },
+        ],
+    }
+}`,
+            template: {
+                type: 'nav',
+                options: {
+                    activeIndex: 0,
+                    items: [
+                        {
+                            text: '组件',
+                            iconCls: 'q-icon-home',
+                            popover: {
+                                type: 'nav',
+                                trigger: 'hover',
+                                placement: 'right-start',
+                                options: {
+                                    items: [
+                                        { text: 'Button', href: '/components/Button' },
+                                        { text: 'Card', href: '/components/Card' },
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            text: '布局',
+                            iconCls: 'q-icon-menu',
+                            popover: {
+                                type: 'nav',
+                                trigger: 'hover',
+                                placement: 'right-start',
+                                options: {
+                                    items: [
+                                        { text: 'Panel', href: '/components/Panel' },
+                                        { text: 'Tabs', href: '/components/Tabs' },
+                                    ],
+                                },
+                            },
+                        },
+                        { text: '设置', iconCls: 'q-icon-settings' },
+                    ],
+                },
+            },
+        },
+        {
+            label: '选中项交互',
+            code: `// select 事件中通过 data.index 获取选中项索引
+nav.on('select', (data) => {
+    console.log(data.index);
+})`,
+            component: NavSelectDemo,
+        },
+    ],
+};
