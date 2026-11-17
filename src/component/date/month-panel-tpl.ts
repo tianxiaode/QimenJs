@@ -16,7 +16,7 @@ export const MONTH_PANEL_TPL: TplNode = {
             tag: 'div',
             name: 'grid',
             cls: 'q-dtpanel__grid',
-            style: { gridTemplateColumns: 'repeat(4, 1fr)' },
+            style: { gridTemplateColumns: 'repeat(3, 1fr)' },
         },
     ],
 };
