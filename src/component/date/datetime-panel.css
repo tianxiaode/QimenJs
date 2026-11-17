@@ -37,11 +37,18 @@
 .q-dtpanel__bottom {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 4px 0;
+    justify-content: space-between;
+    padding: 4px 8px;
     border-top: 1px solid var(--q-color-border, #e2e8f0);
     margin-top: 4px;
     min-height: 32px;
+    gap: 8px;
+}
+
+.q-dtpanel__bottom .q-dtpanel__quick-btn--today {
+    flex-shrink: 0;
+    padding: 2px 10px;
+    font-size: 12px;
 }
 
 .q-dtpanel__time-bar {
@@ -49,6 +56,7 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
+    flex: 1;
 }
 
 .q-dtpanel__time-group {

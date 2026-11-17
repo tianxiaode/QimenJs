@@ -47,8 +47,7 @@ import { SELECT_DEMO } from '../components/SelectDemo';
 import { SWITCH_DEMO } from '../components/SwitchDemo';
 import { CHECKBOX_DEMO, RADIO_DEMO } from '../components/CheckboxRadioDemo';
 import { DATEPICKER_DEMO } from '../components/DatePickerDemo';
-import { DATETIMEPANEL_DEMO } from '../components/DateTimePanelDemo';
-import { YEARPANEL_DEMO } from '../components/YearPanelDemo';
+import { DATEPANEL_DEMO } from '../components/DatePanelDemo';import { YEARPANEL_DEMO } from '../components/YearPanelDemo';
 import { MONTHPANEL_DEMO } from '../components/MonthPanelDemo';
 import { DATEPANEL_DEMO } from '../components/DatePanelDemo';
 import { HOURPANEL_DEMO } from '../components/HourPanelDemo';
@@ -92,7 +91,7 @@ const COMPONENT_CATEGORIES = [
     },
     {
         label: '日期',
-        components: ['DateTimePanel', 'YearPanel', 'MonthPanel', 'DatePanel', 'HourPanel', 'MinutePanel', 'SecondPanel'],
+        components: ['DatePanel', 'YearPanel', 'MonthPanel', 'HourPanel', 'MinutePanel', 'SecondPanel'],
     },
     {
         label: '表单',
@@ -151,7 +150,6 @@ const DEMO_MAP: Record<string, DemoConfig> = {
     Checkbox: CHECKBOX_DEMO,
     Radio: RADIO_DEMO,
     DatePicker: DATEPICKER_DEMO,
-    DateTimePanel: DATETIMEPANEL_DEMO,
     YearPanel: YEARPANEL_DEMO,
     MonthPanel: MONTHPANEL_DEMO,
     DatePanel: DATEPANEL_DEMO,

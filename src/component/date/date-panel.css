@@ -212,7 +212,9 @@
 }
 
 .q-dtpanel__day-cell--today {
-    font-weight: 700;
+    border: 1px solid var(--q-color-primary, #3b82f6);
+    border-radius: 4px;
+    font-weight: 600;
     color: var(--q-color-primary, #3b82f6);
 }
 

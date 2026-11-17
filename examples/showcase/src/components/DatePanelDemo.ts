@@ -1,14 +1,11 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
-import { DatePanelComponent } from '@/component/date/DatePanelComponent';
-import { YearPanelComponent } from '@/component/date/YearPanelComponent';
-import { MonthPanelComponent } from '@/component/date/MonthPanelComponent';
+import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
 class DatePanelDemoComponent extends Component {
-    _panel: any = null;
+    _panel: DateTimePanelComponent | null = null;
     _value: DateTimeValue = createDateTimeValue();
-    _currentPanelType: 'date' | 'year' | 'month' = 'date';
 
     get tpl(): TemplateDecl {
         return {
@@ -32,19 +29,15 @@ class DatePanelDemoComponent extends Component {
     }
 
     onAfterInit(): void {
-        this._renderPanel('date');
+        this._renderPanel();
         this._updateValue();
     }
 
     onBeforeDispose(): void {
-        try {
-            this._panel?.dispose();
-        } catch (e) {
-            // ignore
-        }
+        try { this._panel?.dispose(); } catch (e) { /* ignore */ }
     }
 
-    _renderPanel(type: 'date' | 'year' | 'month'): void {
+    _renderPanel(): void {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
 
@@ -54,112 +47,63 @@ class DatePanelDemoComponent extends Component {
         }
         container.innerHTML = '';
 
-        this._currentPanelType = type;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'q-demo__panel-fade';
-        container.appendChild(wrapper);
-
-        if (type === 'date') {
-            const cmp = new DatePanelComponent({ value: this._value, showPrevField: false, showConfirm: false, showCancel: false });
-            cmp.on('daySelect', (ctx: any) => {
-                this._value = { ...this._value, year: ctx.data.value.year, month: ctx.data.value.month, day: ctx.data.value.day };
-                this._updateValue();
-            });
-            cmp.on('navigate', (ctx: any) => {
-                const target = ctx.data?.target;
-                if (target === 'year' || target === 'month') {
-                    this._renderPanel(target);
-                }
-            });
-            wrapper.appendChild(cmp.el);
-            this._panel = cmp;
-        } else if (type === 'year') {
-            const cmp = new YearPanelComponent({ value: this._value, showPrevField: false, showNextField: true, showConfirm: true, showCancel: true });
-            cmp.on('yearSelect', (ctx: any) => {
-                this._value = { ...this._value, year: ctx.data.value.year };
-                this._updateValue();
-                this._renderPanel('month');
-            });
-            cmp.on('nextField', () => {
-                this._renderPanel('month');
-            });
-            cmp.on('confirm', (ctx: any) => {
-                if (ctx.data?.value) {
-                    this._value = { ...this._value, ...ctx.data.value };
-                    this._updateValue();
-                }
-                this._renderPanel('date');
-            });
-            cmp.on('cancel', () => {
-                this._renderPanel('date');
-            });
-            wrapper.appendChild(cmp.el);
-            this._panel = cmp;
-        } else if (type === 'month') {
-            const cmp = new MonthPanelComponent({ value: this._value, showPrevField: true, showNextField: false, showConfirm: true, showCancel: true });
-            cmp.on('monthSelect', (ctx: any) => {
-                this._value = { ...this._value, month: ctx.data.value.month };
-                this._updateValue();
-                this._renderPanel('date');
-            });
-            cmp.on('prevField', () => {
-                this._renderPanel('year');
-            });
-            cmp.on('confirm', (ctx: any) => {
-                if (ctx.data?.value) {
-                    this._value = { ...this._value, ...ctx.data.value };
-                    this._updateValue();
-                }
-                this._renderPanel('date');
-            });
-            cmp.on('cancel', () => {
-                this._renderPanel('date');
-            });
-            wrapper.appendChild(cmp.el);
-            this._panel = cmp;
-        }
-
-        requestAnimationFrame(() => {
-            wrapper.classList.add('q-demo__panel-fade--in');
+        const cmp = new DateTimePanelComponent({
+            value: this._value,
+            type: 'datetime',
+            showPrevField: false,
+            showConfirm: true,
+            showCancel: true,
         });
+
+        cmp.on('change', (ctx: any) => {
+            this._value = ctx.data.value;
+            this._updateValue();
+        });
+        cmp.on('confirm', (ctx: any) => {
+            this._value = ctx.data.value;
+            this._updateValue();
+        });
+
+        container.appendChild(cmp.el);
+        this._panel = cmp;
     }
 
     _updateValue(): void {
-        this.setNodeText(
-            `当前值: ${this._value.year}-${String(this._value.month).padStart(2, '0')}-${String(this._value.day).padStart(2, '0')}`,
-            'valueDisplay'
-        );
+        const v = this._value;
+        const dateStr = `${v.year}-${String(v.month).padStart(2, '0')}-${String(v.day).padStart(2, '0')}`;
+        const timeStr = `${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}:${String(v.second ?? 0).padStart(2, '0')}`;
+        this.setNodeText(`当前值: ${dateStr} ${timeStr}`, 'valueDisplay');
     }
 }
 
 export const DATEPANEL_DEMO: DemoConfig = {
     title: 'DatePanel',
-    description: '日历面板组件，包含日历网格 + 导航栏（翻页按钮）+ 底部快捷按钮（昨天/今天/明天），可脱离 DatePicker 独立使用',
+    description: '日期时间面板组件 — DateTimePanelComponent 统一管理日期+时间选择，支持 type=date/datetime/time 三种模式，面板切换内聚在组件内部',
     sections: [
         {
-            label: '独立使用',
-            code: `import { DatePanelComponent } from '@/component/date/DatePanelComponent';
+            label: '日期时间模式 (type=datetime)',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 
-const panel = new DatePanelComponent({
+const panel = new DateTimePanelComponent({
     value: createDateTimeValue(new Date()),
-    showPrevField: false,
-    showConfirm: false,
-    showCancel: false,
+    type: 'datetime',
 });
-panel.on('daySelect', ({ value }) => {
-    console.log('选中日期:', value.year, value.month, value.day);
+panel.on('change', ({ value }) => {
+    console.log('值变化:', value);
+});
+panel.on('confirm', ({ value }) => {
+    console.log('确认:', value);
 });
 container.appendChild(panel.el);`,
             component: DatePanelDemoComponent,
         },
         {
             label: '模板中使用',
-            code: `{ type: 'date-panel', options: { showPrevField: false, showConfirm: false, showCancel: false } }`,
+            code: `{ type: 'datetime-panel', options: { type: 'datetime' } }`,
             template: {
                 tag: 'div',
                 style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden', width: '280px' },
-                children: [{ type: 'date-panel', options: { showPrevField: false, showConfirm: false, showCancel: false } }],
+                children: [{ type: 'datetime-panel', options: { type: 'datetime' } }],
             },
         },
     ],

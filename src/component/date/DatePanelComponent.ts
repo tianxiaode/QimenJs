@@ -1,4 +1,7 @@
 /**
+ * @deprecated 请使用 DateTimePanelComponent（type='date' 等价于 DatePanel）。
+ * DatePanelComponent 保留向后兼容，后续版本可能移除。
+ *
  * DatePanelComponent 日期主视图面板
  *
  * 包含日历网格 + 导航栏（6个翻页按钮）+ 底部快捷按钮。

@@ -85,10 +85,10 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         const type = this.getData('type') ?? 'datetime';
 
-        if (type === 'date') {
-            this.removeCls('hidden', 'todayBtn');
-            this.setNodeText('@common.today', 'todayBtn');
-        } else {
+        this.removeCls('hidden', 'todayBtn');
+        this.setNodeText('@common.today', 'todayBtn');
+
+        if (type !== 'date') {
             this.removeCls('hidden', 'timeBar');
             this._initTimeArrows();
             this._updateTimeBar();
