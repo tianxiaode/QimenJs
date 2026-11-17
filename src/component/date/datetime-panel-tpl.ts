@@ -1,5 +1,4 @@
 import type { TemplateDecl } from '@/component-core';
-import { DayGridComponent } from './DayGridComponent';
 
 export const DATETIME_PANEL_TPL: TemplateDecl = {
     tag: 'div',
@@ -66,16 +65,24 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                     name: 'dateView',
                     classes: 'q-dtpanel__date-view',
                     children: [
-                        { name: 'dayGrid', type: DayGridComponent },
+                        { tag: 'div', name: 'weekdayRow', classes: 'q-dtpanel__weekday-row' },
+                        { tag: 'div', name: 'dayGrid', classes: 'q-dtpanel__day-grid' },
                     ],
                 },
-                { tag: 'div', name: 'subPanelContainer', classes: 'q-dtpanel__sub-panel hidden', children: [
-                    { tag: 'div', name: 'subPanelContent', classes: 'q-dtpanel__sub-panel-content' },
-                    { tag: 'div', name: 'subPanelFooter', classes: 'q-dtpanel__sub-panel-footer', children: [
+                { tag: 'div', name: 'yearPanel', classes: 'q-dtpanel__panel-view hidden' },
+                { tag: 'div', name: 'monthPanel', classes: 'q-dtpanel__panel-view hidden' },
+                { tag: 'div', name: 'hourPanel', classes: 'q-dtpanel__panel-view hidden' },
+                { tag: 'div', name: 'minutePanel', classes: 'q-dtpanel__panel-view hidden' },
+                { tag: 'div', name: 'secondPanel', classes: 'q-dtpanel__panel-view hidden' },
+                {
+                    tag: 'div',
+                    name: 'subPanelFooter',
+                    classes: 'q-dtpanel__sub-panel-footer hidden',
+                    children: [
                         { tag: 'button', name: 'subConfirmBtn', classes: 'q-dtpanel__sub-btn q-dtpanel__sub-btn--confirm' },
                         { tag: 'button', name: 'subCancelBtn', classes: 'q-dtpanel__sub-btn q-dtpanel__sub-btn--cancel' },
-                    ]},
-                ]},
+                    ],
+                },
             ],
         },
         {

@@ -8,8 +8,11 @@ import '../secondpanel.css';
 const STATE_KEY = 'SecondPanelAbility:state';
 
 export const SecondPanelAbility: AbilityDefinition = {
-    renderSecondPanel(container: HTMLElement, value: DateTimeValue): void {
+    renderSecondPanel(value: DateTimeValue): void {
         this.disposeSecondPanel();
+
+        const container = this.getNodeEl('secondPanel');
+        if (!container) return;
 
         const state: DigitPanelState = {
             value,
@@ -32,8 +35,6 @@ export const SecondPanelAbility: AbilityDefinition = {
         };
         DomEventsEngine.addEventRule(this, rule);
         state.rules.push(rule);
-
-        this.onCleanup(() => this.disposeSecondPanel());
     },
 
     disposeSecondPanel(): void {
@@ -47,7 +48,6 @@ export const SecondPanelAbility: AbilityDefinition = {
 
         if (state.container) {
             state.container.innerHTML = '';
-            state.container = null;
         }
 
         this.setAbilityState(STATE_KEY, null);

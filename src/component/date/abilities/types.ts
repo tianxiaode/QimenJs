@@ -35,3 +35,13 @@ export interface DigitPanelState {
     container: HTMLElement | null;
     rules: any[];
 }
+
+export interface DayGridState {
+    year: number;
+    month: number;
+    selectedDay: number | undefined;
+    startDayOfWeek: number;
+    weekdayCells: HTMLElement[];
+    dayCells: HTMLElement[];
+    rules: any[];
+}

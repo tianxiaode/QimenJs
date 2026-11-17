@@ -10,8 +10,11 @@ const STATE_KEY = 'MonthPanelAbility:state';
 const MONTHS_SHORT_DEFAULT = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
 export const MonthPanelAbility: AbilityDefinition = {
-    renderMonthPanel(container: HTMLElement, value: DateTimeValue): void {
+    renderMonthPanel(value: DateTimeValue): void {
         this.disposeMonthPanel();
+
+        const container = this.getNodeEl('monthPanel');
+        if (!container) return;
 
         const state: MonthPanelState = {
             value,
@@ -30,8 +33,6 @@ export const MonthPanelAbility: AbilityDefinition = {
         };
         DomEventsEngine.addEventRule(this, rule);
         state.rules.push(rule);
-
-        this.onCleanup(() => this.disposeMonthPanel());
     },
 
     disposeMonthPanel(): void {
@@ -45,7 +46,6 @@ export const MonthPanelAbility: AbilityDefinition = {
 
         if (state.container) {
             state.container.innerHTML = '';
-            state.container = null;
         }
 
         this.setAbilityState(STATE_KEY, null);

@@ -8,8 +8,11 @@ import '../hourpanel.css';
 const STATE_KEY = 'HourPanelAbility:state';
 
 export const HourPanelAbility: AbilityDefinition = {
-    renderHourPanel(container: HTMLElement, value: DateTimeValue): void {
+    renderHourPanel(value: DateTimeValue): void {
         this.disposeHourPanel();
+
+        const container = this.getNodeEl('hourPanel');
+        if (!container) return;
 
         const state: HourPanelState = {
             value,
@@ -28,8 +31,6 @@ export const HourPanelAbility: AbilityDefinition = {
         };
         DomEventsEngine.addEventRule(this, rule);
         state.rules.push(rule);
-
-        this.onCleanup(() => this.disposeHourPanel());
     },
 
     disposeHourPanel(): void {
@@ -43,7 +44,6 @@ export const HourPanelAbility: AbilityDefinition = {
 
         if (state.container) {
             state.container.innerHTML = '';
-            state.container = null;
         }
 
         this.setAbilityState(STATE_KEY, null);

@@ -8,8 +8,11 @@ import '../minutepanel.css';
 const STATE_KEY = 'MinutePanelAbility:state';
 
 export const MinutePanelAbility: AbilityDefinition = {
-    renderMinutePanel(container: HTMLElement, value: DateTimeValue): void {
+    renderMinutePanel(value: DateTimeValue): void {
         this.disposeMinutePanel();
+
+        const container = this.getNodeEl('minutePanel');
+        if (!container) return;
 
         const state: DigitPanelState = {
             value,
@@ -32,8 +35,6 @@ export const MinutePanelAbility: AbilityDefinition = {
         };
         DomEventsEngine.addEventRule(this, rule);
         state.rules.push(rule);
-
-        this.onCleanup(() => this.disposeMinutePanel());
     },
 
     disposeMinutePanel(): void {
@@ -47,7 +48,6 @@ export const MinutePanelAbility: AbilityDefinition = {
 
         if (state.container) {
             state.container.innerHTML = '';
-            state.container = null;
         }
 
         this.setAbilityState(STATE_KEY, null);

@@ -20,8 +20,11 @@ function createState(value: DateTimeValue): YearPanelState {
 }
 
 export const YearPanelAbility: AbilityDefinition = {
-    renderYearPanel(container: HTMLElement, value: DateTimeValue): void {
+    renderYearPanel(value: DateTimeValue): void {
         this.disposeYearPanel();
+
+        const container = this.getNodeEl('yearPanel');
+        if (!container) return;
 
         const state = createState(value);
         this.setAbilityState(STATE_KEY, state);
@@ -37,8 +40,6 @@ export const YearPanelAbility: AbilityDefinition = {
         };
         DomEventsEngine.addEventRule(this, rule);
         state.rules.push(rule);
-
-        this.onCleanup(() => this.disposeYearPanel());
     },
 
     disposeYearPanel(): void {
@@ -52,7 +53,6 @@ export const YearPanelAbility: AbilityDefinition = {
 
         if (state.container) {
             state.container.innerHTML = '';
-            state.container = null;
         }
 
         this.setAbilityState(STATE_KEY, null);
