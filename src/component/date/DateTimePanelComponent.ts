@@ -2,12 +2,13 @@
  * DateTimePanelComponent 日期时间组合面板
  *
  * 从 DatePanelComponent 派生，复用日历网格和导航逻辑，扩展时间选择能力。
- * 统一导航栏：date 视图显示 yearGroup+monthGroup，子面板视图显示 viewLabel+backBtn。
- * 子面板导航栏通过 CSS 隐藏，confirm/cancel 由 DateTimePanel 统一接管。
- * 内聚管理面板切换（year/month/hour/minute/second），外部组件无需参与。
+ * 统一导航栏 + body(内容切换) + bottom(今天/时间栏) 三段式布局。
+ * 面板切换类似 tab 页面：dateView 和 subPanelContainer 在 body 中切换显示。
+ * bottom 区域始终可见：type='date' 显示"今天"，type='datetime'/'time' 显示时间栏。
+ * 子面板导航栏通过 CSS 隐藏，confirm/cancel/backBtn 由 DateTimePanel 统一接管。
  *
- * type='date'：纯日期选择（同 DatePanel）
- * type='datetime'：日期 + 时间栏（HH:mm:ss 带上下箭头）
+ * type='date'：纯日期选择
+ * type='datetime'：日期 + 时间栏（默认）
  * type='time'：纯时间选择（隐藏日期视图，默认进入小时面板）
  *
  * 事件：change / confirm / cancel
@@ -57,9 +58,7 @@ class DateTimePanelComponent extends DatePanelComponent {
             { path: 'prev1m', handler: 'onPrev1mClick' },
             { path: 'next1m', handler: 'onNext1mClick' },
             { path: 'next1y', handler: 'onNext1yClick' },
-            { path: 'yesterdayBtn', handler: 'onYesterdayBtnClick' },
             { path: 'todayBtn', handler: 'onTodayBtnClick' },
-            { path: 'tomorrowBtn', handler: 'onTomorrowBtnClick' },
             { path: 'yearLabel', handler: 'onYearLabelClick' },
             { path: 'monthLabel', handler: 'onMonthLabelClick' },
             { path: 'hourBtn', handler: 'onHourBtnClick' },
@@ -86,7 +85,10 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         const type = this.getData('type') ?? 'datetime';
 
-        if (type === 'datetime' || type === 'time') {
+        if (type === 'date') {
+            this.removeCls('hidden', 'todayBtn');
+            this.setNodeText('@common.today', 'todayBtn');
+        } else {
             this.removeCls('hidden', 'timeBar');
             this._initTimeArrows();
             this._updateTimeBar();
@@ -138,6 +140,21 @@ class DateTimePanelComponent extends DatePanelComponent {
         } else {
             this._switchBackToDate();
         }
+    }
+
+    onTodayBtnClick(): void {
+        const d = new Date();
+        this._value = {
+            ...this._value,
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            day: d.getDate(),
+        };
+        this._viewYear = this._value.year;
+        this._viewMonth = this._value.month;
+        this._updateLabel();
+        this._updateDayGrid();
+        this.emit('change', { value: this._value });
     }
 
     onHourUpClick(): void {

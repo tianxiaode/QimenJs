@@ -2,14 +2,23 @@
     min-height: auto;
 }
 
+.q-dtpanel__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .q-dtpanel__date-view {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 .q-dtpanel__sub-panel {
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 .q-dtpanel__sub-panel .q-dtpanel__nav {
@@ -25,13 +34,21 @@
     min-width: 60px;
 }
 
+.q-dtpanel__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    border-top: 1px solid var(--q-color-border, #e2e8f0);
+    margin-top: 4px;
+    min-height: 32px;
+}
+
 .q-dtpanel__time-bar {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    padding: 6px 0;
-    border-top: 1px solid var(--q-color-border, #e2e8f0);
 }
 
 .q-dtpanel__time-group {

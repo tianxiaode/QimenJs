@@ -10,11 +10,7 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
             name: 'nav',
             classes: 'q-dtpanel__nav',
             children: [
-                {
-                    tag: 'button',
-                    name: 'backBtn',
-                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev hidden',
-                },
+                { tag: 'button', name: 'backBtn', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev hidden' },
                 {
                     tag: 'div',
                     name: 'dateNav',
@@ -56,90 +52,83 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                         },
                     ],
                 },
-                {
-                    tag: 'span',
-                    name: 'viewLabel',
-                    classes: 'q-dtpanel__view-label hidden',
-                },
-                {
-                    tag: 'button',
-                    name: 'confirmBtn',
-                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm q-check hidden',
-                },
-                {
-                    tag: 'button',
-                    name: 'cancelBtn',
-                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--cancel q-dtpanel__nav-cancel q-close hidden',
-                },
+                { tag: 'span', name: 'viewLabel', classes: 'q-dtpanel__view-label hidden' },
+                { tag: 'button', name: 'confirmBtn', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm q-dtpanel__nav-confirm q-check hidden' },
+                { tag: 'button', name: 'cancelBtn', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--cancel q-dtpanel__nav-cancel q-close hidden' },
             ],
         },
         {
             tag: 'div',
-            name: 'dateView',
-            classes: 'q-dtpanel__date-view',
+            name: 'body',
+            classes: 'q-dtpanel__body',
             children: [
-                { name: 'dayGrid', type: DayGridComponent },
                 {
                     tag: 'div',
-                    name: 'quickRow',
-                    classes: 'q-dtpanel__quick-row',
+                    name: 'dateView',
+                    classes: 'q-dtpanel__date-view',
                     children: [
-                        { tag: 'button', name: 'yesterdayBtn', classes: 'q-dtpanel__quick-btn' },
-                        { tag: 'button', name: 'todayBtn', classes: 'q-dtpanel__quick-btn' },
-                        { tag: 'button', name: 'tomorrowBtn', classes: 'q-dtpanel__quick-btn' },
+                        { name: 'dayGrid', type: DayGridComponent },
                     ],
                 },
+                { tag: 'div', name: 'subPanelContainer', classes: 'q-dtpanel__sub-panel hidden' },
             ],
         },
-        { tag: 'div', name: 'subPanelContainer', classes: 'q-dtpanel__sub-panel hidden' },
         {
             tag: 'div',
-            name: 'timeBar',
-            classes: 'q-dtpanel__time-bar hidden',
+            name: 'bottom',
+            classes: 'q-dtpanel__bottom',
             children: [
+                { tag: 'button', name: 'todayBtn', classes: 'q-dtpanel__quick-btn q-dtpanel__quick-btn--today hidden' },
                 {
                     tag: 'div',
-                    classes: 'q-dtpanel__time-group',
+                    name: 'timeBar',
+                    classes: 'q-dtpanel__time-bar hidden',
                     children: [
-                        { tag: 'button', name: 'hourBtn', classes: 'q-dtpanel__time-btn' },
                         {
                             tag: 'div',
-                            classes: 'q-dtpanel__time-arrows',
+                            classes: 'q-dtpanel__time-group',
                             children: [
-                                { tag: 'button', name: 'hourUp', classes: 'q-dtpanel__time-arrow' },
-                                { tag: 'button', name: 'hourDown', classes: 'q-dtpanel__time-arrow' },
+                                { tag: 'button', name: 'hourBtn', classes: 'q-dtpanel__time-btn' },
+                                {
+                                    tag: 'div',
+                                    classes: 'q-dtpanel__time-arrows',
+                                    children: [
+                                        { tag: 'button', name: 'hourUp', classes: 'q-dtpanel__time-arrow' },
+                                        { tag: 'button', name: 'hourDown', classes: 'q-dtpanel__time-arrow' },
+                                    ],
+                                },
                             ],
                         },
-                    ],
-                },
-                { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
-                {
-                    tag: 'div',
-                    classes: 'q-dtpanel__time-group',
-                    children: [
-                        { tag: 'button', name: 'minuteBtn', classes: 'q-dtpanel__time-btn' },
+                        { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
                         {
                             tag: 'div',
-                            classes: 'q-dtpanel__time-arrows',
+                            classes: 'q-dtpanel__time-group',
                             children: [
-                                { tag: 'button', name: 'minuteUp', classes: 'q-dtpanel__time-arrow' },
-                                { tag: 'button', name: 'minuteDown', classes: 'q-dtpanel__time-arrow' },
+                                { tag: 'button', name: 'minuteBtn', classes: 'q-dtpanel__time-btn' },
+                                {
+                                    tag: 'div',
+                                    classes: 'q-dtpanel__time-arrows',
+                                    children: [
+                                        { tag: 'button', name: 'minuteUp', classes: 'q-dtpanel__time-arrow' },
+                                        { tag: 'button', name: 'minuteDown', classes: 'q-dtpanel__time-arrow' },
+                                    ],
+                                },
                             ],
                         },
-                    ],
-                },
-                { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
-                {
-                    tag: 'div',
-                    classes: 'q-dtpanel__time-group',
-                    children: [
-                        { tag: 'button', name: 'secondBtn', classes: 'q-dtpanel__time-btn' },
+                        { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
                         {
                             tag: 'div',
-                            classes: 'q-dtpanel__time-arrows',
+                            classes: 'q-dtpanel__time-group',
                             children: [
-                                { tag: 'button', name: 'secondUp', classes: 'q-dtpanel__time-arrow' },
-                                { tag: 'button', name: 'secondDown', classes: 'q-dtpanel__time-arrow' },
+                                { tag: 'button', name: 'secondBtn', classes: 'q-dtpanel__time-btn' },
+                                {
+                                    tag: 'div',
+                                    classes: 'q-dtpanel__time-arrows',
+                                    children: [
+                                        { tag: 'button', name: 'secondUp', classes: 'q-dtpanel__time-arrow' },
+                                        { tag: 'button', name: 'secondDown', classes: 'q-dtpanel__time-arrow' },
+                                    ],
+                                },
                             ],
                         },
                     ],
