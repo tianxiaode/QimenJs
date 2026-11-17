@@ -17,13 +17,13 @@
 import type { TemplateDecl, DomEventsMap } from '@qimenjs/component-core';
 import { Definitions } from '@/composable';
 import { DATETIME_PANEL_TPL } from './datetime-panel-tpl';
-import { YearPanelComponent } from './YearPanelComponent';
 import { MonthPanelComponent } from './MonthPanelComponent';
 import { HourPanelComponent } from './HourPanelComponent';
 import { MinutePanelComponent } from './MinutePanelComponent';
 import { SecondPanelComponent } from './SecondPanelComponent';
 import { clampDay, type DateTimeValue } from '@/utils/date';
 import { DatePanelComponent } from './DatePanelComponent';
+import { YearPanelAbility } from './abilities/YearPanelAbility';
 import './datetime-panel.css';
 
 type PanelView = 'date' | 'year' | 'month' | 'hour' | 'minute' | 'second';
@@ -82,6 +82,7 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     _currentView: PanelView = 'date';
     _subPanel: any = null;
+    _onYearPanelComplete: ((value: DateTimeValue) => void) | null = null;
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -121,6 +122,7 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     _disposeSubPanel(): void {
+        this.disposeYearPanel?.();
         if (this._subPanel) {
             try { this._subPanel.dispose(); } catch (e) { /* ignore */ }
             this._subPanel = null;
@@ -237,11 +239,11 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         switch (view) {
             case 'year':
-                panelCmp = new YearPanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
-                panelCmp.on('yearSelect', (ctx: any) => {
-                    this._value = { ...this._value, year: ctx.data.value.year };
+                this.renderYearPanel(content, value);
+                this._onYearPanelComplete = (v: DateTimeValue) => {
+                    this._value = { ...this._value, year: v.year };
                     this._switchToPanel('month');
-                });
+                };
                 break;
             case 'month':
                 panelCmp = new MonthPanelComponent({ value, showPrevField: false, showNextField: false, showConfirm: false, showCancel: false });
@@ -331,6 +333,11 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     onConfirmBtnClick(): void {
+        const yearValue = this.getYearPanelValue?.();
+        if (yearValue) {
+            this._value = { ...this._value, year: yearValue.year };
+            this._updateTimeBar();
+        }
         if (this._currentView !== 'date' && this._subPanel) {
             const subPanelValue = this._subPanel.panelValue;
             if (subPanelValue) {
@@ -365,6 +372,11 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     onSubConfirmBtnClick(): void {
+        const yearValue = this.getYearPanelValue?.();
+        if (yearValue) {
+            this._value = { ...this._value, year: yearValue.year };
+            this._updateTimeBar();
+        }
         if (this._subPanel) {
             const subPanelValue = this._subPanel.panelValue;
             if (subPanelValue) {
@@ -401,6 +413,7 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 }
 
+DateTimePanelComponent.use(YearPanelAbility);
 DateTimePanelComponent.define(DateTimePanelComponentDefs);
 
 export { DateTimePanelComponent };
