@@ -69,7 +69,13 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                         { name: 'dayGrid', type: DayGridComponent },
                     ],
                 },
-                { tag: 'div', name: 'subPanelContainer', classes: 'q-dtpanel__sub-panel hidden' },
+                { tag: 'div', name: 'subPanelContainer', classes: 'q-dtpanel__sub-panel hidden', children: [
+                    { tag: 'div', name: 'subPanelContent', classes: 'q-dtpanel__sub-panel-content' },
+                    { tag: 'div', name: 'subPanelFooter', classes: 'q-dtpanel__sub-panel-footer', children: [
+                        { tag: 'button', name: 'subConfirmBtn', classes: 'q-dtpanel__sub-btn q-dtpanel__sub-btn--confirm' },
+                        { tag: 'button', name: 'subCancelBtn', classes: 'q-dtpanel__sub-btn q-dtpanel__sub-btn--cancel' },
+                    ]},
+                ]},
             ],
         },
         {

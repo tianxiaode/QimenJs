@@ -55,6 +55,8 @@ class DateTimePanelComponent extends DatePanelComponent {
             { path: 'viewLabel', handler: 'onViewLabelClick' },
             { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
             { path: 'cancelBtn', handler: 'onCancelBtnClick' },
+            { path: 'subConfirmBtn', handler: 'onSubConfirmBtnClick' },
+            { path: 'subCancelBtn', handler: 'onSubCancelBtnClick' },
             { path: 'prev1y', handler: 'onPrev1yClick' },
             { path: 'prev1m', handler: 'onPrev1mClick' },
             { path: 'next1m', handler: 'onNext1mClick' },
@@ -89,6 +91,8 @@ class DateTimePanelComponent extends DatePanelComponent {
         this.removeCls('hidden', 'todayBtn');
         this.setNodeText('@common.today', 'todayBtn');
 
+        this._updateDayGrid();
+
         if (type !== 'date') {
             this.removeCls('hidden', 'timeBar');
             this._initTimeArrows();
@@ -105,6 +109,10 @@ class DateTimePanelComponent extends DatePanelComponent {
             this.addCls('hidden', 'dateView');
             this._switchToPanel('hour');
         }
+    }
+
+    _updateQuickBtns(): void {
+        // DateTimePanel 只有 todayBtn，不需要 yesterday/tomorrow
     }
 
     onBeforeDispose(): void {
@@ -212,15 +220,17 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
         this.removeCls('hidden', 'subPanelContainer');
 
-        this.addCls('hidden', 'dateNav');
-        this.removeCls('hidden', 'viewLabel');
-        this.setNodeText(VIEW_LABELS[view] ?? '', 'viewLabel');
+        this.addCls('hidden', 'confirmBtn');
+        this.addCls('hidden', 'cancelBtn');
+
+        this.setNodeText('@common.confirm', 'subConfirmBtn');
+        this.setNodeText('@common.cancel', 'subCancelBtn');
 
         this._disposeSubPanel();
 
-        const container = this.getNodeEl('subPanelContainer');
-        if (!container) return;
-        container.innerHTML = '';
+        const content = this.getNodeEl('subPanelContent');
+        if (!content) return;
+        content.innerHTML = '';
 
         const value = this._value;
         let panelCmp: any = null;
@@ -272,7 +282,7 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
 
         if (panelCmp) {
-            container.appendChild(panelCmp.el);
+            content.appendChild(panelCmp.el);
             this._subPanel = panelCmp;
         }
     }
@@ -286,8 +296,12 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
         this.addCls('hidden', 'subPanelContainer');
 
-        this.removeCls('hidden', 'dateNav');
-        this.addCls('hidden', 'viewLabel');
+        if (this.getData('showConfirm')) {
+            this.removeCls('hidden', 'confirmBtn');
+        }
+        if (this.getData('showCancel')) {
+            this.removeCls('hidden', 'cancelBtn');
+        }
 
         this._disposeSubPanel();
 
@@ -347,6 +361,32 @@ class DateTimePanelComponent extends DatePanelComponent {
             } else {
                 this._switchBackToDate();
             }
+        }
+    }
+
+    onSubConfirmBtnClick(): void {
+        if (this._subPanel) {
+            const subPanelValue = this._subPanel.panelValue;
+            if (subPanelValue) {
+                this._value = { ...this._value, ...subPanelValue };
+                this._updateTimeBar();
+            }
+        }
+
+        const type = this.getData('type') ?? 'datetime';
+        if (type === 'time') {
+            this.emit('confirm', { value: this._value });
+        } else {
+            this._switchBackToDate();
+        }
+    }
+
+    onSubCancelBtnClick(): void {
+        const type = this.getData('type') ?? 'datetime';
+        if (type === 'time') {
+            this.emit('cancel', {});
+        } else {
+            this._switchBackToDate();
         }
     }
 

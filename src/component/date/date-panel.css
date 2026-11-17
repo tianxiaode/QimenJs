@@ -8,7 +8,7 @@
     padding: 8px;
     user-select: none;
     font-size: 14px;
-    width: 280px;
+    width: 320px;
     min-height: 300px;
     box-sizing: border-box;
 }
@@ -215,7 +215,8 @@
     border: 1px solid var(--q-color-primary, #3b82f6);
     border-radius: 4px;
     font-weight: 600;
-    color: var(--q-color-text, #1a1a1a);
+    color: var(--q-color-primary, #3b82f6);
+    background: var(--q-color-primary-light, #eff6ff);
 }
 
 .q-dtpanel__panel {

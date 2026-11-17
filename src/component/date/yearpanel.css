@@ -2,7 +2,7 @@
 
 .q-dtpanel__digit-columns {
     display: grid;
-    grid-template-columns: 0.6fr 1fr 1fr 1fr;
+    grid-template-columns: 0.8fr 1fr 1fr 1fr;
     gap: 4px;
     padding: 4px 0;
 }
