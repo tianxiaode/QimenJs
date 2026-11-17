@@ -5,7 +5,7 @@
  * 统一导航栏 + body(内容切换) + bottom(今天/时间栏) 三段式布局。
  * 面板切换类似 tab 页面：dateView 和 subPanelContainer 在 body 中切换显示。
  * bottom 区域始终可见：type='date' 显示"今天"，type='datetime'/'time' 显示时间栏。
- * 子面板导航栏通过 CSS 隐藏，confirm/cancel/backBtn 由 DateTimePanel 统一接管。
+ * 子面板导航栏通过 CSS 隐藏，confirm/cancel 由 DateTimePanel 统一接管，viewLabel 可点击回退。
  *
  * type='date'：纯日期选择
  * type='datetime'：日期 + 时间栏（默认）
@@ -43,6 +43,7 @@ const DateTimePanelComponentDefs: Definitions = {
         showConfirm: true,
         showCancel: true,
         type: 'datetime',
+        showSeconds: true,
     },
 } as const;
 
@@ -51,7 +52,7 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     domEvents: DomEventsMap = {
         click: [
-            { path: 'backBtn', handler: 'onBackBtnClick' },
+            { path: 'viewLabel', handler: 'onViewLabelClick' },
             { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
             { path: 'cancelBtn', handler: 'onCancelBtnClick' },
             { path: 'prev1y', handler: 'onPrev1yClick' },
@@ -92,6 +93,12 @@ class DateTimePanelComponent extends DatePanelComponent {
             this.removeCls('hidden', 'timeBar');
             this._initTimeArrows();
             this._updateTimeBar();
+
+            const showSeconds = this.getData('showSeconds') ?? true;
+            if (!showSeconds) {
+                this.addCls('hidden', 'secondGroup');
+                this.addCls('hidden', 'timeSep2');
+            }
         }
 
         if (type === 'time') {
@@ -117,8 +124,11 @@ class DateTimePanelComponent extends DatePanelComponent {
         this.setNodeText('▼', 'hourDown');
         this.setNodeText('▲', 'minuteUp');
         this.setNodeText('▼', 'minuteDown');
-        this.setNodeText('▲', 'secondUp');
-        this.setNodeText('▼', 'secondDown');
+        const showSeconds = this.getData('showSeconds') ?? true;
+        if (showSeconds) {
+            this.setNodeText('▲', 'secondUp');
+            this.setNodeText('▼', 'secondDown');
+        }
     }
 
     onYearLabelClick(): void {
@@ -133,7 +143,7 @@ class DateTimePanelComponent extends DatePanelComponent {
     onMinuteBtnClick(): void { this._switchToPanel('minute'); }
     onSecondBtnClick(): void { this._switchToPanel('second'); }
 
-    onBackBtnClick(): void {
+    onViewLabelClick(): void {
         const type = this.getData('type') ?? 'datetime';
         if (type === 'time') {
             this.emit('cancel', {});
@@ -204,7 +214,6 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         this.addCls('hidden', 'dateNav');
         this.removeCls('hidden', 'viewLabel');
-        this.removeCls('hidden', 'backBtn');
         this.setNodeText(VIEW_LABELS[view] ?? '', 'viewLabel');
 
         this._disposeSubPanel();
@@ -244,7 +253,12 @@ class DateTimePanelComponent extends DatePanelComponent {
                 panelCmp.on('minuteSelect', (ctx: any) => {
                     this._value = { ...this._value, minute: ctx.data.value.minute };
                     this._updateTimeBar();
-                    this._switchToPanel('second');
+                    const showSeconds = this.getData('showSeconds') ?? true;
+                    if (showSeconds) {
+                        this._switchToPanel('second');
+                    } else {
+                        this._switchBackToDate();
+                    }
                 });
                 break;
             case 'second':
@@ -274,7 +288,6 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         this.removeCls('hidden', 'dateNav');
         this.addCls('hidden', 'viewLabel');
-        this.addCls('hidden', 'backBtn');
 
         this._disposeSubPanel();
 
@@ -285,7 +298,10 @@ class DateTimePanelComponent extends DatePanelComponent {
     _updateTimeBar(): void {
         this.setNodeText(String(this._value.hour).padStart(2, '0'), 'hourBtn');
         this.setNodeText(String(this._value.minute).padStart(2, '0'), 'minuteBtn');
-        this.setNodeText(String(this._value.second ?? 0).padStart(2, '0'), 'secondBtn');
+        const showSeconds = this.getData('showSeconds') ?? true;
+        if (showSeconds) {
+            this.setNodeText(String(this._value.second ?? 0).padStart(2, '0'), 'secondBtn');
+        }
     }
 
     _onDaySelect(day: number): void {
@@ -310,7 +326,9 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
 
         const type = this.getData('type') ?? 'datetime';
-        if (this._currentView === 'date' || (type === 'time' && this._currentView === 'second')) {
+        const showSeconds = this.getData('showSeconds') ?? true;
+        const isLastTimeView = this._currentView === 'second' || (!showSeconds && this._currentView === 'minute');
+        if (this._currentView === 'date' || (type === 'time' && isLastTimeView)) {
             this.emit('confirm', { value: this._value });
         } else if (type === 'time') {
             this._switchToPanel(this._getNextTimeView());
@@ -333,7 +351,8 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     _getNextTimeView(): PanelView {
-        const order: PanelView[] = ['hour', 'minute', 'second'];
+        const showSeconds = this.getData('showSeconds') ?? true;
+        const order: PanelView[] = showSeconds ? ['hour', 'minute', 'second'] : ['hour', 'minute'];
         const idx = order.indexOf(this._currentView);
         if (idx >= 0 && idx < order.length - 1) {
             return order[idx + 1];

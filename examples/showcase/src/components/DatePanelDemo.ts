@@ -3,9 +3,11 @@ import type { DemoConfig } from './types';
 import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
-class DatePanelDemoComponent extends Component {
+class DateTimePanelDemoComponent extends Component {
     _panel: DateTimePanelComponent | null = null;
     _value: DateTimeValue = createDateTimeValue();
+    _panelType: string = 'datetime';
+    _showSeconds: boolean = true;
 
     get tpl(): TemplateDecl {
         return {
@@ -49,7 +51,8 @@ class DatePanelDemoComponent extends Component {
 
         const cmp = new DateTimePanelComponent({
             value: this._value,
-            type: 'datetime',
+            type: this._panelType,
+            showSeconds: this._showSeconds,
             showPrevField: false,
             showConfirm: true,
             showCancel: true,
@@ -71,15 +74,43 @@ class DatePanelDemoComponent extends Component {
     _updateValue(): void {
         const v = this._value;
         const dateStr = `${v.year}-${String(v.month).padStart(2, '0')}-${String(v.day).padStart(2, '0')}`;
-        const timeStr = `${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}:${String(v.second ?? 0).padStart(2, '0')}`;
+        const timeStr = this._showSeconds
+            ? `${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}:${String(v.second ?? 0).padStart(2, '0')}`
+            : `${String(v.hour).padStart(2, '0')}:${String(v.minute).padStart(2, '0')}`;
         this.setNodeText(`当前值: ${dateStr} ${timeStr}`, 'valueDisplay');
     }
 }
 
+class DateOnlyPanelDemoComponent extends DateTimePanelDemoComponent {
+    _panelType = 'date';
+}
+
+class DateTimeNoSecondsDemoComponent extends DateTimePanelDemoComponent {
+    _panelType = 'datetime';
+    _showSeconds = false;
+}
+
 export const DATEPANEL_DEMO: DemoConfig = {
     title: 'DatePanel',
-    description: '日期时间面板组件 — DateTimePanelComponent 统一管理日期+时间选择，支持 type=date/datetime/time 三种模式，面板切换内聚在组件内部',
+    description: '日期时间面板组件 — DateTimePanelComponent 统一管理日期+时间选择，支持 type=date/datetime/time 三种模式，showSeconds 控制秒选择',
     sections: [
+        {
+            label: '纯日期模式 (type=date)',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
+
+const panel = new DateTimePanelComponent({
+    value: createDateTimeValue(new Date()),
+    type: 'date',
+});
+panel.on('change', ({ value }) => {
+    console.log('值变化:', value);
+});
+panel.on('confirm', ({ value }) => {
+    console.log('确认:', value);
+});
+container.appendChild(panel.el);`,
+            component: DateOnlyPanelDemoComponent,
+        },
         {
             label: '日期时间模式 (type=datetime)',
             code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
@@ -95,7 +126,25 @@ panel.on('confirm', ({ value }) => {
     console.log('确认:', value);
 });
 container.appendChild(panel.el);`,
-            component: DatePanelDemoComponent,
+            component: DateTimePanelDemoComponent,
+        },
+        {
+            label: '日期时间无秒模式 (type=datetime, showSeconds=false)',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
+
+const panel = new DateTimePanelComponent({
+    value: createDateTimeValue(new Date()),
+    type: 'datetime',
+    showSeconds: false,
+});
+panel.on('change', ({ value }) => {
+    console.log('值变化:', value);
+});
+panel.on('confirm', ({ value }) => {
+    console.log('确认:', value);
+});
+container.appendChild(panel.el);`,
+            component: DateTimeNoSecondsDemoComponent,
         },
         {
             label: '模板中使用',

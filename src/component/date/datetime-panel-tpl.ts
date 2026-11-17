@@ -10,7 +10,6 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
             name: 'nav',
             classes: 'q-dtpanel__nav',
             children: [
-                { tag: 'button', name: 'backBtn', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev hidden' },
                 {
                     tag: 'div',
                     name: 'dateNav',
@@ -99,7 +98,7 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                                 },
                             ],
                         },
-                        { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
+                        { tag: 'span', name: 'timeSep1', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
                         {
                             tag: 'div',
                             classes: 'q-dtpanel__time-group',
@@ -115,9 +114,10 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                                 },
                             ],
                         },
-                        { tag: 'span', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
+                        { tag: 'span', name: 'timeSep2', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
                         {
                             tag: 'div',
+                            name: 'secondGroup',
                             classes: 'q-dtpanel__time-group',
                             children: [
                                 { tag: 'button', name: 'secondBtn', classes: 'q-dtpanel__time-btn' },
