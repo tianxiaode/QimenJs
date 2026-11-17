@@ -23,55 +23,6 @@
     justify-content: center;
 }
 
-.q-dtpanel__sub-panel-footer {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    padding: 6px 0 2px;
-    border-top: 1px solid var(--q-color-border, #e2e8f0);
-    margin-top: 4px;
-}
-
-.q-dtpanel__sub-btn {
-    padding: 4px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s;
-    border: 1px solid transparent;
-}
-
-.q-dtpanel__sub-btn--confirm {
-    background: var(--q-color-primary, #3b82f6);
-    color: #fff;
-    border-color: var(--q-color-primary, #3b82f6);
-}
-
-.q-dtpanel__sub-btn--confirm:hover {
-    opacity: 0.9;
-}
-
-.q-dtpanel__sub-btn--cancel {
-    background: var(--q-color-bg, #fff);
-    color: var(--q-color-text-secondary, #666);
-    border-color: var(--q-color-border, #e2e8f0);
-}
-
-.q-dtpanel__sub-btn--cancel:hover {
-    border-color: var(--q-color-primary, #3b82f6);
-    color: var(--q-color-primary, #3b82f6);
-}
-
-.q-dtpanel__view-label {
-    flex: 1;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--q-color-primary, #3b82f6);
-    min-width: 60px;
-}
-
 .q-dtpanel__bottom {
     display: flex;
     align-items: center;
@@ -103,12 +54,6 @@
     gap: 2px;
 }
 
-.q-dtpanel__time-arrows {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
 .q-dtpanel__time-btn {
     padding: 2px 6px;
     border: 1px solid var(--q-color-border, #e2e8f0);
@@ -126,25 +71,6 @@
 .q-dtpanel__time-btn:hover {
     border-color: var(--q-color-primary, #3b82f6);
     background: var(--q-color-bg-hover, #f8fafc);
-}
-
-.q-dtpanel__time-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--q-color-text-secondary, #666);
-    cursor: pointer;
-    font-size: 8px;
-    line-height: 1;
-}
-
-.q-dtpanel__time-arrow:hover {
-    color: var(--q-color-primary, #3b82f6);
 }
 
 .q-dtpanel__time-sep {
