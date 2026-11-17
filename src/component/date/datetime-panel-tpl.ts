@@ -9,8 +9,6 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
             name: 'nav',
             classes: 'q-dtpanel__nav',
             children: [
-                { tag: 'button', name: 'prev1y', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev' },
-                { tag: 'button', name: 'prev1m', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--prev' },
                 {
                     tag: 'div',
                     name: 'dateNav',
@@ -21,9 +19,11 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                         { tag: 'span', name: 'dayLabel', classes: 'q-dtpanel__field-label' },
                     ],
                 },
-                { tag: 'button', name: 'next1m', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next' },
-                { tag: 'button', name: 'next1y', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--next' },
-                { tag: 'button', name: 'confirmBtn', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm hidden' },
+                {
+                    tag: 'button',
+                    name: 'confirmBtn',
+                    classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--confirm hidden',
+                },
             ],
         },
         {
@@ -52,22 +52,40 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
             name: 'bottom',
             classes: 'q-dtpanel__bottom',
             children: [
-                { tag: 'button', name: 'todayBtn', classes: 'q-dtpanel__quick-btn q-dtpanel__quick-btn--today hidden' },
+                {
+                    tag: 'button',
+                    name: 'todayBtn',
+                    classes: 'q-dtpanel__quick-btn q-dtpanel__quick-btn--today hidden',
+                },
                 {
                     tag: 'div',
                     name: 'timeBar',
                     classes: 'q-dtpanel__time-bar hidden',
                     children: [
                         { tag: 'button', name: 'hourBtn', classes: 'q-dtpanel__time-btn' },
-                        { tag: 'span', name: 'timeSep1', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
+                        {
+                            tag: 'span',
+                            name: 'timeSep1',
+                            classes: 'q-dtpanel__time-sep',
+                            options: { text: ':' },
+                        },
                         { tag: 'button', name: 'minuteBtn', classes: 'q-dtpanel__time-btn' },
-                        { tag: 'span', name: 'timeSep2', classes: 'q-dtpanel__time-sep', options: { text: ':' } },
+                        {
+                            tag: 'span',
+                            name: 'timeSep2',
+                            classes: 'q-dtpanel__time-sep',
+                            options: { text: ':' },
+                        },
                         {
                             tag: 'div',
                             name: 'secondGroup',
                             classes: 'q-dtpanel__time-group',
                             children: [
-                                { tag: 'button', name: 'secondBtn', classes: 'q-dtpanel__time-btn' },
+                                {
+                                    tag: 'button',
+                                    name: 'secondBtn',
+                                    classes: 'q-dtpanel__time-btn',
+                                },
                             ],
                         },
                     ],
