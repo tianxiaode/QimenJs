@@ -23,7 +23,7 @@ import { InputComponent } from './InputComponent';
 import { DateTimePanelComponent } from '../date/DateTimePanelComponent';
 import { Definitions } from '@/composable';
 import { IconComponent } from '../icon/IconComponent';
-import { DROPDOWN_ICON_ORDER } from './constants';
+import { DROPDOWN_ICON_ORDER, FIELD_ACTION } from './constants';
 import './datepicker.css';
 import {
     createDateTimeValue,
@@ -95,12 +95,20 @@ class DatePickerComponent extends InputComponent {
         const item = fieldBodyCmp.add({
             type: IconComponent,
             iconCls: 'q-chevron-down',
+            action: FIELD_ACTION.DROPDOWN_TOGGLE,
             order: DROPDOWN_ICON_ORDER,
         });
         if (item?.el) {
             item.el.classList.add('q-input__dropdown-icon');
         }
         this._dropdownIconItem = item;
+    }
+
+    onFieldItemClick(domEvt?: any): void {
+        super.onFieldItemClick(domEvt);
+        if (domEvt?.action === FIELD_ACTION.DROPDOWN_TOGGLE) {
+            this._openDropdown();
+        }
     }
 
     onFieldFocus(): void {
