@@ -184,6 +184,7 @@ class DateTimePanelComponent extends DatePanelComponent {
                 this.renderYearPanel(value);
                 this._onYearPanelComplete = (v: DateTimeValue) => {
                     this._value = { ...this._value, year: v.year };
+                    this._viewYear = v.year;
                     this._updateLabel();
                 };
                 break;
@@ -191,6 +192,7 @@ class DateTimePanelComponent extends DatePanelComponent {
                 this.renderMonthPanel(value);
                 this._onMonthPanelComplete = (v: DateTimeValue) => {
                     this._value = { ...this._value, month: v.month };
+                    this._viewMonth = v.month;
                     this._updateLabel();
                 };
                 break;
@@ -255,6 +257,7 @@ class DateTimePanelComponent extends DatePanelComponent {
             month: this._viewMonth,
             day: fixedDay,
         };
+        this._updateLabel();
         this._updateDayGrid();
         this.emit('change', { value: this._value });
     }

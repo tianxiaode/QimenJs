@@ -7,8 +7,6 @@ import '../monthpanel.css';
 
 const STATE_KEY = 'MonthPanelAbility:state';
 
-const MONTHS_SHORT_DEFAULT = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-
 export const MonthPanelAbility: AbilityDefinition = {
     renderMonthPanel(value: DateTimeValue): void {
         this.disposeMonthPanel();
@@ -84,12 +82,10 @@ export const MonthPanelAbility: AbilityDefinition = {
         container.classList.add('q-dtpanel__grid');
         container.style.gridTemplateColumns = 'repeat(3, 1fr)';
 
-        const monthsShort = this.i18nConfig?.()?.monthsShort ?? MONTHS_SHORT_DEFAULT;
-
         for (let m = 1; m <= 12; m++) {
             const cell = document.createElement('div');
             cell.className = 'q-dtpanel__cell';
-            cell.textContent = monthsShort[m - 1] ?? String(m).padStart(2, '0');
+            cell.textContent = String(m).padStart(2, '0');
             cell.dataset.value = String(m);
             if (state.value.month === m) {
                 cell.classList.add('q-dtpanel__cell--active');

@@ -84,10 +84,9 @@ export const YearPanelAbility: AbilityDefinition = {
         const nextPos = POSITION_ORDER[posIdx + 1];
         if (nextPos) {
             state.currentPosition = nextPos;
-        } else {
-            if (typeof this._onYearPanelComplete === 'function') {
-                this._onYearPanelComplete(state.value);
-            }
+        }
+        if (typeof this._onYearPanelComplete === 'function') {
+            this._onYearPanelComplete(state.value);
         }
     },
 
