@@ -92,12 +92,19 @@ container.appendChild(picker.el);`,
     type: 'datetime',
     label: '预约时间',
 } }
-// type='datetime' 模式下，选完日期后还需选时间，点确认按钮关闭面板`,
+{ type: 'date-picker', options: {
+    type: 'datetime',
+    showSeconds: false,
+    label: '精确到分钟',
+} }
+// type='datetime' 模式下，选完日期后还需选时间，点确认按钮关闭面板
+// showSeconds: false 时面板不显示秒，输入框只显示到分钟`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
                     { type: 'date-picker', options: { type: 'datetime', label: '预约时间' } },
+                    { type: 'date-picker', options: { type: 'datetime', showSeconds: false, label: '精确到分钟' } },
                 ],
             },
         },

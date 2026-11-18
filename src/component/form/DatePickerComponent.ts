@@ -38,7 +38,7 @@ const DatePickerComponentDefs: Definitions = {
         clearable: false,
         showSeconds: true,
         startDayOfWeek: 0,
-        type: 'datetime',
+        type: 'date',
         minDate: null,
         maxDate: null,
         range: false,
@@ -245,13 +245,13 @@ class DatePickerComponent extends InputComponent {
         const sec = String(v.second ?? 0).padStart(2, '0');
 
         if (type === 'date') {
-            return `${y}年${m}月${d}日`;
+            return `${y}-${m}-${d}`;
         }
         if (type === 'time') {
             return this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
         }
         const time = this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
-        return `${y}年${m}月${d}日 ${time}`;
+        return `${y}-${m}-${d} ${time}`;
     }
 
     getEventData(_nodeName: string, _eventName: string, _eventType: string): Record<string, any> {
