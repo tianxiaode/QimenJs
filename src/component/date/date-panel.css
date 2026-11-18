@@ -91,6 +91,7 @@
 
 .q-dtpanel__field-label {
     font-size: 20px;
+    line-height: 1;
     font-weight: 700;
     color: var(--q-color-primary, #3b82f6);
     cursor: pointer;
