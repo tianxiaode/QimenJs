@@ -101,7 +101,6 @@ class DatePickerComponent extends InputComponent {
     }
 
     onFieldFocus(): void {
-        console.log('[DatePicker] onFieldFocus called');
         this._focused = true;
         this._applyState();
         this._openDropdown();
@@ -154,25 +153,16 @@ class DatePickerComponent extends InputComponent {
         container.className = 'q-datepicker__dropdown';
 
         const type = this.getData('type') ?? 'datetime';
-        console.log('[DatePicker] _renderPanel start, type:', type, 'dateValue:', this._dateValue);
-
-        let panelCmp: any;
-        try {
-            panelCmp = new DateTimePanelComponent({
-                value: this._dateValue,
-                type,
-                showPrevField: false,
-                showConfirm: type !== 'date',
-                showCancel: type !== 'date',
-                minDate: this.getData('minDate'),
-                maxDate: this.getData('maxDate'),
-                range: this.getData('range'),
-            });
-            console.log('[DatePicker] panelCmp created, el:', panelCmp.el);
-        } catch (e) {
-            console.error('[DatePicker] DateTimePanelComponent creation failed:', e);
-            return;
-        }
+        const panelCmp = new DateTimePanelComponent({
+            value: this._dateValue,
+            type,
+            showPrevField: false,
+            showConfirm: type !== 'date',
+            showCancel: type !== 'date',
+            minDate: this.getData('minDate'),
+            maxDate: this.getData('maxDate'),
+            range: this.getData('range'),
+        });
 
         panelCmp.on('change', (ctx: any) => {
             this._dateValue = fixDateTime(ctx.data.value);
@@ -194,12 +184,8 @@ class DatePickerComponent extends InputComponent {
         this._panelCmp = panelCmp;
 
         const wrapperEl = this.getNodeEl('fieldBody');
-        console.log('[DatePicker] wrapperEl (fieldBody):', wrapperEl);
         if (wrapperEl) {
             wrapperEl.appendChild(container);
-            console.log('[DatePicker] dropdown appended to fieldBody');
-        } else {
-            console.warn('[DatePicker] fieldBody element not found!');
         }
     }
 
