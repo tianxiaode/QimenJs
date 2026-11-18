@@ -178,6 +178,17 @@ class DatePickerComponent extends InputComponent {
         panelCmp.on('change', (ctx: any) => {
             this._dateValue = fixDateTime(ctx.data.value);
             this._syncDisplayValue();
+            if (type === 'date') {
+                const isRange = this.getData('range');
+                const rangeComplete = ctx.data.rangeStart && ctx.data.rangeEnd;
+                if (!isRange || rangeComplete) {
+                    this._closeDropdown();
+                    const eventData: any = { value: dateTimeValueToDate(this._dateValue!) };
+                    if (ctx.data.rangeStart) eventData.rangeStart = ctx.data.rangeStart;
+                    if (ctx.data.rangeEnd) eventData.rangeEnd = ctx.data.rangeEnd;
+                    this.emit('datePicker:change', eventData);
+                }
+            }
         });
         panelCmp.on('confirm', (ctx: any) => {
             this._dateValue = fixDateTime(ctx.data.value);
