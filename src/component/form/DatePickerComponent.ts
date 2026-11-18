@@ -170,9 +170,11 @@ class DatePickerComponent extends InputComponent {
             showPrevField: false,
             showConfirm: type !== 'date',
             showCancel: type !== 'date',
+            showSeconds: this.getData('showSeconds') ?? true,
             minDate: this.getData('minDate'),
             maxDate: this.getData('maxDate'),
             range: this.getData('range'),
+            startDayOfWeek: this.getData('startDayOfWeek'),
         });
 
         panelCmp.on('change', (ctx: any) => {
