@@ -55,6 +55,10 @@ class DateTimePanelComponent extends DatePanelComponent {
             { path: 'yearLabel', handler: 'onYearLabelClick' },
             { path: 'monthLabel', handler: 'onMonthLabelClick' },
             { path: 'dayLabel', handler: 'onDayLabelClick' },
+            { path: 'yearUp', handler: 'onYearUpClick' },
+            { path: 'yearDown', handler: 'onYearDownClick' },
+            { path: 'monthUp', handler: 'onMonthUpClick' },
+            { path: 'monthDown', handler: 'onMonthDownClick' },
             { path: 'confirmBtn', handler: 'onConfirmBtnClick' },
             { path: 'todayBtn', handler: 'onTodayBtnClick' },
             { path: 'hourBtn', handler: 'onHourBtnClick' },
@@ -100,6 +104,8 @@ class DateTimePanelComponent extends DatePanelComponent {
 
         if (type === 'time') {
             this.addCls('hidden', 'dateView');
+            this.addCls('hidden', 'yearArrows');
+            this.addCls('hidden', 'monthArrows');
             this._switchToPanel('hour');
         }
 
@@ -164,6 +170,40 @@ class DateTimePanelComponent extends DatePanelComponent {
         }
     }
 
+    onYearUpClick(): void {
+        this._viewYear += 1;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
+
+    onYearDownClick(): void {
+        this._viewYear -= 1;
+        this._updateLabel();
+        this._updateDayGrid();
+    }
+
+    onMonthUpClick(): void {
+        if (this._viewMonth >= 12) {
+            this._viewMonth = 1;
+            this._viewYear += 1;
+        } else {
+            this._viewMonth += 1;
+        }
+        this._updateLabel();
+        this._updateDayGrid();
+    }
+
+    onMonthDownClick(): void {
+        if (this._viewMonth <= 1) {
+            this._viewMonth = 12;
+            this._viewYear -= 1;
+        } else {
+            this._viewMonth -= 1;
+        }
+        this._updateLabel();
+        this._updateDayGrid();
+    }
+
     onHourBtnClick(): void { this._switchToPanel('hour'); }
     onMinuteBtnClick(): void { this._switchToPanel('minute'); }
     onSecondBtnClick(): void { this._switchToPanel('second'); }
@@ -191,6 +231,8 @@ class DateTimePanelComponent extends DatePanelComponent {
         this._currentView = view;
 
         this.addCls('hidden', 'dateView');
+        this.addCls('hidden', 'yearArrows');
+        this.addCls('hidden', 'monthArrows');
         this.addCls('hidden', 'yearPanel');
         this.addCls('hidden', 'monthPanel');
         this.addCls('hidden', 'hourPanel');
@@ -256,6 +298,8 @@ class DateTimePanelComponent extends DatePanelComponent {
         const type = this.getData('type') ?? 'datetime';
         if (type !== 'time') {
             this.removeCls('hidden', 'dateView');
+            this.removeCls('hidden', 'yearArrows');
+            this.removeCls('hidden', 'monthArrows');
         }
 
         this._disposeSubPanel();
@@ -292,10 +336,8 @@ class DateTimePanelComponent extends DatePanelComponent {
                 }
             }
             this._value = { ...this._value, ...this._rangeStart };
-            this._viewYear = this._rangeStart.year;
-            this._viewMonth = this._rangeStart.month;
             this._updateLabel();
-            this.updateDayGridRange(this._rangeStart, this._rangeEnd);
+            this._updateDayGrid();
             this.emit('change', { value: this._value, rangeStart: this._rangeStart, rangeEnd: this._rangeEnd });
         } else {
             this._value = { ...this._value, year: this._viewYear, month: this._viewMonth, day: fixedDay };

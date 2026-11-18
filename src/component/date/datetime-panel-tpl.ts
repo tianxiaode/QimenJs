@@ -15,8 +15,26 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                     classes: 'q-dtpanel__date-nav',
                     children: [
                         { tag: 'span', name: 'yearLabel', classes: 'q-dtpanel__field-label' },
+                        {
+                            tag: 'div',
+                            name: 'yearArrows',
+                            classes: 'q-dtpanel__field-arrows',
+                            children: [
+                                { tag: 'button', name: 'yearUp', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up' },
+                                { tag: 'button', name: 'yearDown', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down' },
+                            ],
+                        },
                         { tag: 'span', name: 'dateSep1', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
                         { tag: 'span', name: 'monthLabel', classes: 'q-dtpanel__field-label' },
+                        {
+                            tag: 'div',
+                            name: 'monthArrows',
+                            classes: 'q-dtpanel__field-arrows',
+                            children: [
+                                { tag: 'button', name: 'monthUp', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up' },
+                                { tag: 'button', name: 'monthDown', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down' },
+                            ],
+                        },
                         { tag: 'span', name: 'dateSep2', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
                         { tag: 'span', name: 'dayLabel', classes: 'q-dtpanel__field-label' },
                     ],

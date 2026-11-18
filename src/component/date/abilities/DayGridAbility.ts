@@ -200,7 +200,7 @@ export const DayGridAbility: AbilityDefinition = {
                 }
             }
 
-            if (day.isCurrentMonth && rangeStartTime !== null) {
+            if (rangeStartTime !== null) {
                 if (dayTime === rangeStartTime) {
                     cell.classList.add('q-dtpanel__day-cell--range-start');
                 } else if (rangeEndTime !== null && dayTime === rangeEndTime) {
