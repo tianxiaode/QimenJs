@@ -114,7 +114,6 @@ class DatePickerComponent extends InputComponent {
     onFieldFocus(): void {
         this._focused = true;
         this._applyState();
-        this._openDropdown();
     }
 
     onFieldInput(): void {

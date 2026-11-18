@@ -90,20 +90,23 @@ container.appendChild(picker.el);`,
             label: '日期时间选择（type: "datetime"）',
             code: `{ type: 'date-picker', options: {
     type: 'datetime',
-    label: '预约时间',
+    showSeconds: true,
+    label: '完整日期时间（带秒）',
 } }
+// showSeconds: true（默认）— 面板底部显示 时:分:秒
+
 { type: 'date-picker', options: {
     type: 'datetime',
     showSeconds: false,
     label: '精确到分钟',
 } }
-// type='datetime' 选完日期后还需选时间，点确认按钮关闭
-// showSeconds: false 时面板和输入框都不显示秒`,
+// showSeconds: false — 面板底部只显示 时:分，不显示秒
+// type='datetime' 选完日期后还需选时间，点确认按钮关闭`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { type: 'datetime', label: '预约时间' } },
+                    { type: 'date-picker', options: { type: 'datetime', showSeconds: true, label: '完整日期时间（带秒）' } },
                     { type: 'date-picker', options: { type: 'datetime', showSeconds: false, label: '精确到分钟' } },
                 ],
             },
@@ -112,18 +115,22 @@ container.appendChild(picker.el);`,
             label: '纯时间选择（type: "time"）',
             code: `{ type: 'date-picker', options: {
     type: 'time',
-    label: '打卡时间',
+    showSeconds: true,
+    label: '完整时间（带秒）',
 } }
+// showSeconds: true（默认）— 面板显示 时:分:秒
+
 { type: 'date-picker', options: {
     type: 'time',
     showSeconds: false,
     label: '精确到分钟',
-} }`,
+} }
+// showSeconds: false — 面板只显示 时:分`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { type: 'time', label: '打卡时间' } },
+                    { type: 'date-picker', options: { type: 'time', showSeconds: true, label: '完整时间（带秒）' } },
                     { type: 'date-picker', options: { type: 'time', showSeconds: false, label: '精确到分钟' } },
                 ],
             },
@@ -217,11 +224,17 @@ container.appendChild(picker.el);`,
 
 { type: 'date-picker', options: {
     type: 'datetime',
-    showSeconds: false,
-    label: '手动输入日期时间',
+    showSeconds: true,
+    label: '手动输入日期时间（带秒）',
 } }
-// datetime 类型：输入 202611180930 → 2026-11-18 09:30
-// showSeconds: false 时输入框不显示秒
+// datetime + showSeconds: true — 输入 20261118093045 → 2026-11-18 09:30:45
+
+{ type: 'date-picker', options: {
+    type: 'datetime',
+    showSeconds: false,
+    label: '手动输入日期时间（精确到分钟）',
+} }
+// datetime + showSeconds: false — 输入 202611180930 → 2026-11-18 09:30
 
 { type: 'date-picker', options: {
     type: 'time',
@@ -234,7 +247,8 @@ container.appendChild(picker.el);`,
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
                     { type: 'date-picker', options: { type: 'date', label: '手动输入日期' } },
-                    { type: 'date-picker', options: { type: 'datetime', showSeconds: false, label: '手动输入日期时间' } },
+                    { type: 'date-picker', options: { type: 'datetime', showSeconds: true, label: '手动输入日期时间（带秒）' } },
+                    { type: 'date-picker', options: { type: 'datetime', showSeconds: false, label: '手动输入日期时间（精确到分钟）' } },
                     { type: 'date-picker', options: { type: 'time', showSeconds: false, label: '手动输入时间' } },
                 ],
             },
