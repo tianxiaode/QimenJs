@@ -53,6 +53,7 @@ class DatePickerComponent extends InputComponent {
     _panelEl: HTMLElement | null = null;
     _panelCmp: any = null;
     _dropdownIconItem: any = null;
+    _onDocumentClick: (e: MouseEvent) => void = () => {};
 
     onAfterInit(): void {
         super.onAfterInit();
@@ -128,6 +129,9 @@ class DatePickerComponent extends InputComponent {
         const parsed = this._parseInput(formatted);
         if (parsed) {
             this._dateValue = fixDateTime(parsed);
+            if (this._panelCmp) {
+                this._panelCmp.update({ value: this._dateValue });
+            }
         }
     }
 
@@ -219,12 +223,23 @@ class DatePickerComponent extends InputComponent {
 
         this._renderPanel();
         this.emit('datePicker:open', {});
+
+        this._onDocumentClick = (e: MouseEvent): void => {
+            const el = this.el;
+            if (el && !el.contains(e.target as Node)) {
+                this._closeDropdown();
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('click', this._onDocumentClick);
+        }, 0);
     }
 
     _closeDropdown(): void {
         if (!this._dropdownOpen) return;
         this._dropdownOpen = false;
         this.toggleCls('q-datepicker--open', false);
+        document.removeEventListener('click', this._onDocumentClick);
 
         if (this._panelCmp) {
             this._panelCmp.el?.remove();
@@ -251,7 +266,7 @@ class DatePickerComponent extends InputComponent {
         const container = document.createElement('div');
         container.className = 'q-datepicker__dropdown';
 
-        const type = this.getData('type') ?? 'datetime';
+        const type = this.getData('type') ?? 'date';
         const panelCmp = new DateTimePanelComponent({
             value: this._dateValue,
             type,
@@ -291,7 +306,9 @@ class DatePickerComponent extends InputComponent {
         });
         panelCmp.on('cancel', () => this._onCancel());
 
-        container.appendChild(panelCmp.el);
+        if (panelCmp.el) {
+            container.appendChild(panelCmp.el);
+        }
         this._panelEl = container;
         this._panelCmp = panelCmp;
 
@@ -318,7 +335,7 @@ class DatePickerComponent extends InputComponent {
     _syncDisplayValue(): void {
         const fieldItem = this._fieldItem;
         if (!fieldItem) return;
-        const type = this.getData('type') ?? 'datetime';
+        const type = this.getData('type') ?? 'date';
         const text = this._formatValue(type);
         fieldItem.value = text;
         this._value = text;
@@ -333,14 +350,15 @@ class DatePickerComponent extends InputComponent {
         const h = String(v.hour).padStart(2, '0');
         const min = String(v.minute).padStart(2, '0');
         const sec = String(v.second ?? 0).padStart(2, '0');
+        const showSeconds = this.getData('showSeconds') ?? true;
 
         if (type === 'date') {
             return `${y}-${m}-${d}`;
         }
         if (type === 'time') {
-            return this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
+            return showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
         }
-        const time = this.showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
+        const time = showSeconds ? `${h}:${min}:${sec}` : `${h}:${min}`;
         return `${y}-${m}-${d} ${time}`;
     }
 

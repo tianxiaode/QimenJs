@@ -319,7 +319,7 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     _onDaySelect(day: number): void {
         const fixedDay = clampDay(this._viewYear, this._viewMonth, day);
-        const selectedDate: DateTimeValue = { year: this._viewYear, month: this._viewMonth, day: fixedDay };
+        const selectedDate: DateTimeValue = { year: this._viewYear, month: this._viewMonth, day: fixedDay, hour: 0, minute: 0, second: 0 };
 
         if (this.getData('range')) {
             if (!this._rangeStart || this._rangeEnd) {

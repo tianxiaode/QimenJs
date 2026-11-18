@@ -205,5 +205,39 @@ container.appendChild(picker.el);`,
                 ],
             },
         },
+        {
+            label: '手动输入（输入掩码自动格式化）',
+            code: `{ type: 'date-picker', options: {
+    type: 'date',
+    label: '手动输入日期',
+} }
+// 输入框可直接键入数字，自动插入分隔符
+// 例如输入 20261118 → 自动格式化为 2026-11-18
+// 失焦时验证有效性，无效则恢复上次有效值
+
+{ type: 'date-picker', options: {
+    type: 'datetime',
+    showSeconds: false,
+    label: '手动输入日期时间',
+} }
+// datetime 类型：输入 202611180930 → 2026-11-18 09:30
+// showSeconds: false 时输入框不显示秒
+
+{ type: 'date-picker', options: {
+    type: 'time',
+    showSeconds: false,
+    label: '手动输入时间',
+} }
+// time 类型：输入 0930 → 09:30`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'date-picker', options: { type: 'date', label: '手动输入日期' } },
+                    { type: 'date-picker', options: { type: 'datetime', showSeconds: false, label: '手动输入日期时间' } },
+                    { type: 'date-picker', options: { type: 'time', showSeconds: false, label: '手动输入时间' } },
+                ],
+            },
+        },
     ],
 };
