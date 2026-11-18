@@ -64,9 +64,12 @@ class DatePickerComponent extends InputComponent {
             fieldItem.inputType = null;
         }
 
-        const date = this.value ? new Date(this.value) : new Date();
-        this._dateValue = createDateTimeValue(date);
-        this._originalValue = { ...this._dateValue };
+        if (this.value) {
+            this._dateValue = createDateTimeValue(new Date(this.value));
+        } else {
+            this._dateValue = null;
+        }
+        this._originalValue = this._dateValue ? { ...this._dateValue } : null;
 
         this._mountDropdownIcon();
         this._syncDisplayValue();
@@ -115,7 +118,7 @@ class DatePickerComponent extends InputComponent {
         if (this._dropdownOpen) return;
 
         this._dropdownOpen = true;
-        this._originalValue = { ...this._dateValue! };
+        this._originalValue = this._dateValue ? { ...this._dateValue } : null;
         this.toggleCls('q-datepicker--open', true);
 
         this._renderPanel();
@@ -190,7 +193,7 @@ class DatePickerComponent extends InputComponent {
     }
 
     _onCancel(): void {
-        this._dateValue = { ...this._originalValue! };
+        this._dateValue = this._originalValue ? { ...this._originalValue } : null;
         this._syncDisplayValue();
         this._closeDropdown();
     }
