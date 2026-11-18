@@ -130,5 +130,37 @@ container.appendChild(picker.el);`,
                 ],
             },
         },
+        {
+            label: '禁止选择范围（minDate/maxDate）',
+            code: `{ type: 'date-picker', options: {
+    minDate: { year: 2026, month: 11, day: 10 },
+    maxDate: { year: 2026, month: 11, day: 20 },
+    label: '只能选11月10-20日',
+} }`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'date-picker', options: { minDate: { year: 2026, month: 11, day: 10 }, maxDate: { year: 2026, month: 11, day: 20 }, label: '只能选11月10-20日' } },
+                ],
+            },
+        },
+        {
+            label: '日期范围选择（range）',
+            code: `{ type: 'date-picker', options: {
+    range: true,
+    label: '选择日期范围',
+} }
+// confirm 事件携带 rangeStart/rangeEnd 数据
+// 第一次点击选起始日期，第二次选结束日期
+// 点击早于起始日期时重置为新的起始日期`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'date-picker', options: { range: true, label: '选择日期范围' } },
+                ],
+            },
+        },
     ],
 };

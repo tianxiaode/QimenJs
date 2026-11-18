@@ -39,6 +39,9 @@ const DatePickerComponentDefs: Definitions = {
         showSeconds: true,
         startDayOfWeek: 0,
         type: 'datetime',
+        minDate: null,
+        maxDate: null,
+        range: false,
     },
 } as const;
 
@@ -156,6 +159,9 @@ class DatePickerComponent extends InputComponent {
             showPrevField: false,
             showConfirm: type !== 'date',
             showCancel: type !== 'date',
+            minDate: this.getData('minDate'),
+            maxDate: this.getData('maxDate'),
+            range: this.getData('range'),
         });
 
         panelCmp.on('change', (ctx: any) => {
@@ -166,7 +172,10 @@ class DatePickerComponent extends InputComponent {
             this._dateValue = fixDateTime(ctx.data.value);
             this._syncDisplayValue();
             this._closeDropdown();
-            this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
+            const eventData: any = { value: dateTimeValueToDate(this._dateValue!) };
+            if (ctx.data.rangeStart) eventData.rangeStart = ctx.data.rangeStart;
+            if (ctx.data.rangeEnd) eventData.rangeEnd = ctx.data.rangeEnd;
+            this.emit('datePicker:change', eventData);
         });
         panelCmp.on('cancel', () => this._onCancel());
 
