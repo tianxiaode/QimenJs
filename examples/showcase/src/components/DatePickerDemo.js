@@ -1,5 +1,6 @@
 import { Component } from '@qimenjs/component-core';
 import { DatePickerComponent } from '@/component/form/DatePickerComponent';
+
 class DatePickerInteractiveDemo extends Component {
     constructor() {
         super(...arguments);
@@ -27,10 +28,10 @@ class DatePickerInteractiveDemo extends Component {
     }
     onAfterInit() {
         const container = this.getNodeEl('pickerContainer');
-        if (!container)
-            return;
+        if (!container) return;
         const picker = new DatePickerComponent({
             placeholder: '请选择日期时间',
+            type: 'datetime',
             showSeconds: true,
         });
         picker.on('change', (ctx) => {
@@ -46,22 +47,23 @@ class DatePickerInteractiveDemo extends Component {
     onBeforeDispose() {
         try {
             this._picker?.dispose();
-        }
-        catch (e) {
+        } catch (e) {
             // ignore
         }
     }
 }
+
 export const DATEPICKER_DEMO = {
     title: 'DatePicker',
-    description: '日期时间选择器组件，支持年/月/日/时/分/秒选择、showSeconds、startDayOfWeek',
+    description: '日期时间选择器组件，支持 type=date/datetime/time 三种模式',
     sections: [
         {
-            label: '交互式完整体验',
+            label: '交互式完整体验（datetime）',
             code: `import { DatePickerComponent } from '@/component/form/DatePickerComponent';
 
 const picker = new DatePickerComponent({
     placeholder: '请选择日期时间',
+    type: 'datetime',
     showSeconds: true,
 });
 picker.on('change', ({ value }) => {
@@ -71,35 +73,42 @@ container.appendChild(picker.el);`,
             component: DatePickerInteractiveDemo,
         },
         {
-            label: '基础日期选择',
-            code: `{ type: 'date-picker', options: { placeholder: '请选择日期' } }
-{ type: 'date-picker', options: { label: '入职日期', placeholder: '选择日期' } }`,
+            label: '纯日期选择（type: "date"）— 点击日期自动关闭',
+            code: `{ type: 'date-picker', options: { type: 'date', placeholder: '请选择日期' } }
+{ type: 'date-picker', options: { type: 'date', label: '入职日期' } }
+// type='date' 模式下，点击日期即选中并关闭面板，无需点确认按钮`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { placeholder: '请选择日期' } },
-                    { type: 'date-picker', options: { label: '入职日期', placeholder: '选择日期' } },
+                    { type: 'date-picker', options: { type: 'date', placeholder: '请选择日期' } },
+                    { type: 'date-picker', options: { type: 'date', label: '入职日期' } },
                 ],
             },
         },
         {
-            label: '默认值（value）',
+            label: '日期时间选择（type: "datetime"）— 需点确认按钮',
             code: `{ type: 'date-picker', options: {
-    value: new Date('2024-01-15'),
-    label: '默认2024-01-15',
-} }`,
+    type: 'datetime',
+    label: '预约时间',
+} }
+// type='datetime' 模式下，选完日期后还需选时间，点确认按钮关闭面板`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { value: new Date('2024-01-15'), label: '默认2024-01-15' } },
+                    { type: 'date-picker', options: { type: 'datetime', label: '预约时间' } },
                 ],
             },
         },
         {
-            label: '不显示秒（showSeconds: false）',
+            label: '纯时间选择（type: "time"）',
             code: `{ type: 'date-picker', options: {
+    type: 'time',
+    label: '打卡时间',
+} }
+{ type: 'date-picker', options: {
+    type: 'time',
     showSeconds: false,
     label: '精确到分钟',
 } }`,
@@ -107,17 +116,41 @@ container.appendChild(picker.el);`,
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { showSeconds: false, label: '精确到分钟' } },
+                    { type: 'date-picker', options: { type: 'time', label: '打卡时间' } },
+                    { type: 'date-picker', options: { type: 'time', showSeconds: false, label: '精确到分钟' } },
+                ],
+            },
+        },
+        {
+            label: '默认值（value）',
+            code: `{ type: 'date-picker', options: {
+    type: 'date',
+    value: new Date('2024-01-15'),
+    label: '默认2024-01-15',
+} }
+{ type: 'date-picker', options: {
+    type: 'datetime',
+    value: new Date('2024-06-01T09:30:00'),
+    label: '默认2024-06-01 09:30',
+} }`,
+            template: {
+                tag: 'div',
+                style: { display: 'flex', flexDirection: 'column', gap: '12px' },
+                children: [
+                    { type: 'date-picker', options: { type: 'date', value: new Date('2024-01-15'), label: '默认2024-01-15' } },
+                    { type: 'date-picker', options: { type: 'datetime', value: new Date('2024-06-01T09:30:00'), label: '默认2024-06-01 09:30' } },
                 ],
             },
         },
         {
             label: '周起始日（startDayOfWeek）',
             code: `{ type: 'date-picker', options: {
+    type: 'date',
     startDayOfWeek: 1,
     label: '周一起始',
 } }
 { type: 'date-picker', options: {
+    type: 'date',
     startDayOfWeek: 0,
     label: '周日起始（默认）',
 } }`,
@@ -125,14 +158,15 @@ container.appendChild(picker.el);`,
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { startDayOfWeek: 1, label: '周一起始' } },
-                    { type: 'date-picker', options: { startDayOfWeek: 0, label: '周日起始（默认）' } },
+                    { type: 'date-picker', options: { type: 'date', startDayOfWeek: 1, label: '周一起始' } },
+                    { type: 'date-picker', options: { type: 'date', startDayOfWeek: 0, label: '周日起始（默认）' } },
                 ],
             },
         },
         {
             label: '禁止选择范围（minDate/maxDate）',
             code: `{ type: 'date-picker', options: {
+    type: 'date',
     minDate: { year: 2026, month: 11, day: 10 },
     maxDate: { year: 2026, month: 11, day: 20 },
     label: '只能选11月10-20日',
@@ -141,24 +175,25 @@ container.appendChild(picker.el);`,
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { minDate: { year: 2026, month: 11, day: 10 }, maxDate: { year: 2026, month: 11, day: 20 }, label: '只能选11月10-20日' } },
+                    { type: 'date-picker', options: { type: 'date', minDate: { year: 2026, month: 11, day: 10 }, maxDate: { year: 2026, month: 11, day: 20 }, label: '只能选11月10-20日' } },
                 ],
             },
         },
         {
             label: '日期范围选择（range）',
             code: `{ type: 'date-picker', options: {
+    type: 'date',
     range: true,
     label: '选择日期范围',
 } }
-// confirm 事件携带 rangeStart/rangeEnd 数据
-// 第一次点击选起始日期，第二次选结束日期
+// range 模式：第一次点击选起始日期，第二次选结束日期
+// 选完两个日期后自动关闭面板
 // 点击早于起始日期时重置为新的起始日期`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { range: true, label: '选择日期范围' } },
+                    { type: 'date-picker', options: { type: 'date', range: true, label: '选择日期范围' } },
                 ],
             },
         },
