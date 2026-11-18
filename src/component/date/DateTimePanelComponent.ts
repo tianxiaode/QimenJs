@@ -40,6 +40,9 @@ const DateTimePanelComponentDefs: Definitions = {
         showCancel: true,
         type: 'datetime',
         showSeconds: true,
+        minDate: null,
+        maxDate: null,
+        range: false,
     },
 } as const;
 
@@ -64,6 +67,8 @@ class DateTimePanelComponent extends DatePanelComponent {
     }
 
     _currentView: PanelView = 'date';
+    _rangeStart: DateTimeValue | null = null;
+    _rangeEnd: DateTimeValue | null = null;
     _onYearPanelComplete: ((value: DateTimeValue) => void) | null = null;
     _onMonthPanelComplete: ((value: DateTimeValue) => void) | null = null;
     _onHourPanelComplete: ((value: DateTimeValue) => void) | null = null;
@@ -96,6 +101,12 @@ class DateTimePanelComponent extends DatePanelComponent {
             this.addCls('hidden', 'dateView');
             this._switchToPanel('hour');
         }
+
+        const minDate = this.getData('minDate');
+        const maxDate = this.getData('maxDate');
+        if (minDate || maxDate) {
+            this.updateDayGridBounds(minDate ?? null, maxDate ?? null);
+        }
     }
 
     _updateQuickBtns(): void {
@@ -109,6 +120,9 @@ class DateTimePanelComponent extends DatePanelComponent {
                 ? this._value.day
                 : undefined
         );
+        if (this.getData('range')) {
+            this.updateDayGridRange(this._rangeStart, this._rangeEnd);
+        }
     }
 
     _updateLabel(): void {
@@ -158,6 +172,10 @@ class DateTimePanelComponent extends DatePanelComponent {
         };
         this._viewYear = this._value.year;
         this._viewMonth = this._value.month;
+        if (this.getData('range')) {
+            this._rangeStart = null;
+            this._rangeEnd = null;
+        }
         this._updateLabel();
         this._updateDayGrid();
         this.emit('change', { value: this._value });
@@ -251,20 +269,44 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     _onDaySelect(day: number): void {
         const fixedDay = clampDay(this._viewYear, this._viewMonth, day);
-        this._value = {
-            ...this._value,
-            year: this._viewYear,
-            month: this._viewMonth,
-            day: fixedDay,
-        };
-        this._updateLabel();
-        this._updateDayGrid();
-        this.emit('change', { value: this._value });
+        const selectedDate: DateTimeValue = { year: this._viewYear, month: this._viewMonth, day: fixedDay };
+
+        if (this.getData('range')) {
+            if (!this._rangeStart || this._rangeEnd) {
+                this._rangeStart = selectedDate;
+                this._rangeEnd = null;
+            } else {
+                const startTime = new Date(this._rangeStart.year, this._rangeStart.month - 1, this._rangeStart.day).getTime();
+                const clickTime = new Date(selectedDate.year, selectedDate.month - 1, selectedDate.day).getTime();
+                if (clickTime >= startTime) {
+                    this._rangeEnd = selectedDate;
+                } else {
+                    this._rangeStart = selectedDate;
+                    this._rangeEnd = null;
+                }
+            }
+            this._value = { ...this._value, ...this._rangeStart };
+            this._viewYear = this._rangeStart.year;
+            this._viewMonth = this._rangeStart.month;
+            this._updateLabel();
+            this.updateDayGridRange(this._rangeStart, this._rangeEnd);
+            this.emit('change', { value: this._value, rangeStart: this._rangeStart, rangeEnd: this._rangeEnd });
+        } else {
+            this._value = { ...this._value, year: this._viewYear, month: this._viewMonth, day: fixedDay };
+            this._updateLabel();
+            this._updateDayGrid();
+            this.emit('change', { value: this._value });
+        }
     }
 
     onConfirmBtnClick(): void {
         this._syncPanelValues();
-        this.emit('confirm', { value: this._value });
+        const eventData: any = { value: this._value };
+        if (this.getData('range')) {
+            eventData.rangeStart = this._rangeStart;
+            eventData.rangeEnd = this._rangeEnd;
+        }
+        this.emit('confirm', eventData);
     }
 
     _syncPanelValues(): void {

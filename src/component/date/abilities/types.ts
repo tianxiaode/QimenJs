@@ -41,6 +41,10 @@ export interface DayGridState {
     month: number;
     selectedDay: number | undefined;
     startDayOfWeek: number;
+    minDate: DateTimeValue | null;
+    maxDate: DateTimeValue | null;
+    rangeStart: DateTimeValue | null;
+    rangeEnd: DateTimeValue | null;
     weekdayCells: HTMLElement[];
     dayCells: HTMLElement[];
     rules: any[];

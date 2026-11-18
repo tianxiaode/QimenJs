@@ -1,6 +1,6 @@
 import type { AbilityDefinition } from '@/composable';
 import { DomEventsEngine } from '@/component-core/engine';
-import { generateCalendarView, type CalendarDay } from '@/utils/date';
+import { generateCalendarView, type CalendarDay, type DateTimeValue } from '@/utils/date';
 import type { DayGridState } from './types';
 import '../date-panel.css';
 
@@ -17,6 +17,10 @@ export const DayGridAbility: AbilityDefinition = {
             month: 1,
             selectedDay: undefined,
             startDayOfWeek: this.i18nConfig?.()?.weekStart ?? 0,
+            minDate: null,
+            maxDate: null,
+            rangeStart: null,
+            rangeEnd: null,
             weekdayCells: [],
             dayCells: [],
             rules: [],
@@ -87,6 +91,22 @@ export const DayGridAbility: AbilityDefinition = {
         this._applyDayGrid();
     },
 
+    updateDayGridRange(rangeStart: DateTimeValue | null, rangeEnd: DateTimeValue | null): void {
+        const state = this.abilityState(STATE_KEY) as DayGridState | undefined;
+        if (!state) return;
+        state.rangeStart = rangeStart;
+        state.rangeEnd = rangeEnd;
+        this._applyDayGrid();
+    },
+
+    updateDayGridBounds(minDate: DateTimeValue | null, maxDate: DateTimeValue | null): void {
+        const state = this.abilityState(STATE_KEY) as DayGridState | undefined;
+        if (!state) return;
+        state.minDate = minDate;
+        state.maxDate = maxDate;
+        this._applyDayGrid();
+    },
+
     _createDayCells(): void {
         const state = this.abilityState(STATE_KEY) as DayGridState | undefined;
         if (!state) return;
@@ -147,6 +167,11 @@ export const DayGridAbility: AbilityDefinition = {
             state.startDayOfWeek
         );
 
+        const minTime = state.minDate ? new Date(state.minDate.year, state.minDate.month - 1, state.minDate.day).getTime() : -Infinity;
+        const maxTime = state.maxDate ? new Date(state.maxDate.year, state.maxDate.month - 1, state.maxDate.day).getTime() : Infinity;
+        const rangeStartTime = state.rangeStart ? new Date(state.rangeStart.year, state.rangeStart.month - 1, state.rangeStart.day).getTime() : null;
+        const rangeEndTime = state.rangeEnd ? new Date(state.rangeEnd.year, state.rangeEnd.month - 1, state.rangeEnd.day).getTime() : null;
+
         for (let i = 0; i < TOTAL_DAY_CELLS; i++) {
             const cell = state.dayCells[i];
             const day = days[i];
@@ -160,12 +185,28 @@ export const DayGridAbility: AbilityDefinition = {
             cell.textContent = String(day.date.getDate());
             cell.className = 'q-dtpanel__day-cell';
 
+            const dayTime = day.date.getTime();
+            const isDisabled = dayTime < minTime || dayTime > maxTime;
+
             if (!day.isCurrentMonth) {
                 cell.classList.add('q-dtpanel__day-cell--other-month');
+            } else if (isDisabled) {
+                cell.classList.add('q-dtpanel__day-cell--disabled');
+                delete cell.dataset.value;
             } else {
                 cell.dataset.value = String(day.date.getDate());
                 if (state.selectedDay !== undefined && day.date.getDate() === state.selectedDay) {
                     cell.classList.add('q-dtpanel__day-cell--active');
+                }
+            }
+
+            if (day.isCurrentMonth && rangeStartTime !== null) {
+                if (dayTime === rangeStartTime) {
+                    cell.classList.add('q-dtpanel__day-cell--range-start');
+                } else if (rangeEndTime !== null && dayTime === rangeEndTime) {
+                    cell.classList.add('q-dtpanel__day-cell--range-end');
+                } else if (rangeEndTime !== null && dayTime > rangeStartTime && dayTime < rangeEndTime) {
+                    cell.classList.add('q-dtpanel__day-cell--range-in');
                 }
             }
 

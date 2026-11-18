@@ -219,6 +219,32 @@
     color: var(--q-color-text-disabled, #cbd5e0);
 }
 
+.q-dtpanel__day-cell--disabled {
+    color: var(--q-color-text-disabled, #cbd5e0);
+    cursor: not-allowed;
+}
+
+.q-dtpanel__day-cell--disabled:hover {
+    background: transparent;
+}
+
+.q-dtpanel__day-cell--range-start {
+    background: var(--q-color-primary, #3b82f6);
+    color: #fff;
+    border-radius: 2px 0 0 2px;
+}
+
+.q-dtpanel__day-cell--range-end {
+    background: var(--q-color-primary, #3b82f6);
+    color: #fff;
+    border-radius: 0 2px 2px 0;
+}
+
+.q-dtpanel__day-cell--range-in {
+    background: var(--q-color-primary-light, #eff6ff);
+    color: var(--q-color-primary, #3b82f6);
+}
+
 .q-dtpanel__day-cell--today {
     border: 1px solid var(--q-color-primary, #3b82f6);
     border-radius: 4px;
