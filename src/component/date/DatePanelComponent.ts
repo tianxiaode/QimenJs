@@ -197,7 +197,7 @@ class DatePanelComponent extends Component {
         const monthText =
             months && months.length === 12
                 ? months[this._viewMonth - 1]
-                : `${String(this._viewMonth).padStart(2, '0')}月`;
+                : `${String(this._viewMonth).padStart(2, '0')}`;
         this.setNodeText(yearText, 'yearLabel');
         this.setNodeText(monthText, 'monthLabel');
     }

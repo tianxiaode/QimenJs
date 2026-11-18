@@ -91,7 +91,6 @@ export const SecondPanelAbility: AbilityDefinition = {
         const container = state.container;
         container.innerHTML = '';
         container.classList.add('q-dtpanel__digit-columns');
-        container.style.gridTemplateColumns = '1fr 1fr';
 
         const digits = generateMinuteSecondDigits();
 

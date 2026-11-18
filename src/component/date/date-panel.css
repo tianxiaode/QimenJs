@@ -79,8 +79,8 @@
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 2px;
 }
 
 .q-dtpanel__field-group {
@@ -97,8 +97,15 @@
     padding: 2px 4px;
     border-radius: 2px;
     transition: background 0.15s;
-    min-width: 60px;
+    min-width: 36px;
     text-align: center;
+}
+
+.q-dtpanel__field-sep {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--q-color-text, #333);
+    padding: 2px 0;
 }
 
 .q-dtpanel__field-label:hover {

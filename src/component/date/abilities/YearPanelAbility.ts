@@ -109,6 +109,7 @@ export const YearPanelAbility: AbilityDefinition = {
         for (const pos of POSITION_ORDER) {
             const col = document.createElement('div');
             col.className = 'q-dtpanel__digit-col';
+            col.style.flex = pos === 'thousands' ? '0.4' : '1.2';
 
             const header = document.createElement('div');
             header.className = 'q-dtpanel__digit-header';
