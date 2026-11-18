@@ -113,7 +113,7 @@ class DateTimePanelComponent extends DatePanelComponent {
 
     _updateLabel(): void {
         super._updateLabel();
-        this.setNodeText(`${String(this._value.day).padStart(2, '0')}日`, 'dayLabel');
+        this.setNodeText(`${String(this._value.day).padStart(2, '0')}`, 'dayLabel');
     }
 
     onBeforeDispose(): void {

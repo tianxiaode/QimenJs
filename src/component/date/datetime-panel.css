@@ -16,11 +16,8 @@
 }
 
 .q-dtpanel__panel-view {
-    display: flex;
-    flex-direction: column;
     flex: 1;
     overflow: visible;
-    justify-content: center;
 }
 
 .q-dtpanel__bottom {

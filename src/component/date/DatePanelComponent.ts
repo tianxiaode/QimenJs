@@ -193,7 +193,7 @@ class DatePanelComponent extends Component {
     _updateLabel(): void {
         const locale = this.i18nConfig();
         const months = locale?.months;
-        const yearText = `${this._viewYear}年`;
+        const yearText = `${this._viewYear}`;
         const monthText =
             months && months.length === 12
                 ? months[this._viewMonth - 1]
