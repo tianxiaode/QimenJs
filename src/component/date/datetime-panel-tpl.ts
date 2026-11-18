@@ -24,7 +24,6 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                                 { tag: 'button', name: 'yearDown', classes: 'q-dtpanel__nav-btn q-icon-chevron-down' },
                             ],
                         },
-                        { tag: 'span', name: 'dateSep1', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
                         { tag: 'span', name: 'monthLabel', classes: 'q-dtpanel__field-label' },
                         {
                             tag: 'div',
@@ -35,7 +34,6 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                                 { tag: 'button', name: 'monthDown', classes: 'q-dtpanel__nav-btn q-icon-chevron-down' },
                             ],
                         },
-                        { tag: 'span', name: 'dateSep2', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
                         { tag: 'span', name: 'dayLabel', classes: 'q-dtpanel__field-label' },
                     ],
                 },
