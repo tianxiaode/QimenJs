@@ -63,12 +63,12 @@
 
 .q-dtpanel__nav-btn--up::before {
     content: '▲';
-    font-size: 10px;
+    font-size: 7px;
 }
 
 .q-dtpanel__nav-btn--down::before {
     content: '▼';
-    font-size: 10px;
+    font-size: 7px;
 }
 
 .q-dtpanel__nav-btn--disabled {
@@ -119,10 +119,10 @@
 }
 
 .q-dtpanel__field-arrows .q-dtpanel__nav-btn {
-    min-width: 20px;
-    height: 14px;
+    min-width: 16px;
+    height: 10px;
     padding: 0;
-    font-size: 8px;
+    font-size: 6px;
 }
 
 .q-dtpanel__nav-btn--confirm {
