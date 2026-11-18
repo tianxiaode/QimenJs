@@ -1,10 +1,10 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
-import { YearPanelComponent } from '@/component/date/YearPanelComponent';
+import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
 class YearPanelDemoComponent extends Component {
-    _panel: any = null;
+    _panel: DateTimePanelComponent | null = null;
     _value: DateTimeValue = createDateTimeValue();
 
     get tpl(): TemplateDecl {
@@ -31,17 +31,18 @@ class YearPanelDemoComponent extends Component {
     onAfterInit(): void {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
-        const cmp = new YearPanelComponent({
+        const cmp = new DateTimePanelComponent({
             value: this._value,
-            showPrevField: false,
-            showNextField: false, showConfirm: false, showCancel: false,
+            type: 'date',
+            initialView: 'year',
+            showConfirm: true,
         });
-        cmp.on('yearSelect', (ctx: any) => {
-            this._value = { ...this._value, year: ctx.data.value.year };
+        cmp.on('change', (ctx: any) => {
+            this._value = ctx.data.value;
             this._updateValue();
         });
         cmp.on('confirm', (ctx: any) => {
-            this._value = { ...this._value, ...ctx.data.value };
+            this._value = ctx.data.value;
             this._updateValue();
         });
         container.appendChild(cmp.el);
@@ -50,11 +51,7 @@ class YearPanelDemoComponent extends Component {
     }
 
     onBeforeDispose(): void {
-        try {
-            this._panel?.dispose();
-        } catch (e) {
-            // ignore
-        }
+        try { this._panel?.dispose(); } catch (e) { /* ignore */ }
     }
 
     _updateValue(): void {
@@ -64,31 +61,22 @@ class YearPanelDemoComponent extends Component {
 
 export const YEARPANEL_DEMO: DemoConfig = {
     title: 'YearPanel',
-    description: '年份选择面板，4列布局（千/百/十/个位），依次点4个数字选中年份，可脱离 DatePicker 独立使用',
+    description: '年份选择面板 — 4列布局（千/百/十/个位），依次点4个数字选中年份，使用 DateTimePanelComponent Ability 驱动',
     sections: [
         {
-            label: '独立使用',
-            code: `import { YearPanelComponent } from '@/component/date/YearPanelComponent';
+            label: '通过 DateTimePanelComponent 使用',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 
-const panel = new YearPanelComponent({
-    value: createDateTimeValue(new Date()),
-    showPrevField: false,
-    showNextField: false, showConfirm: false, showCancel: false,
+const panel = new DateTimePanelComponent({
+    type: 'date',
+    initialView: 'year',
+    showConfirm: true,
 });
-panel.on('yearSelect', ({ value }) => {
+panel.on('change', ({ value }) => {
     console.log('选中年份:', value.year);
 });
 container.appendChild(panel.el);`,
             component: YearPanelDemoComponent,
-        },
-        {
-            label: '模板中使用',
-            code: `{ type: 'year-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
-            template: {
-                tag: 'div',
-                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'year-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
-            },
         },
     ],
 };

@@ -43,6 +43,7 @@ const DateTimePanelComponentDefs: Definitions = {
         minDate: null,
         maxDate: null,
         range: false,
+        initialView: 'date',
     },
 } as const;
 
@@ -100,6 +101,11 @@ class DateTimePanelComponent extends DatePanelComponent {
         if (type === 'time') {
             this.addCls('hidden', 'dateView');
             this._switchToPanel('hour');
+        }
+
+        const initialView = this.getData('initialView') ?? 'date';
+        if (initialView !== 'date' && type !== 'time') {
+            this._switchToPanel(initialView);
         }
 
         const minDate = this.getData('minDate');

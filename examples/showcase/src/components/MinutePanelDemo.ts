@@ -1,10 +1,10 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
-import { MinutePanelComponent } from '@/component/date/MinutePanelComponent';
+import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
 class MinutePanelDemoComponent extends Component {
-    _panel: any = null;
+    _panel: DateTimePanelComponent | null = null;
     _value: DateTimeValue = createDateTimeValue();
 
     get tpl(): TemplateDecl {
@@ -31,17 +31,18 @@ class MinutePanelDemoComponent extends Component {
     onAfterInit(): void {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
-        const cmp = new MinutePanelComponent({
+        const cmp = new DateTimePanelComponent({
             value: this._value,
-            showPrevField: false,
-            showNextField: false, showConfirm: false, showCancel: false,
+            type: 'datetime',
+            initialView: 'minute',
+            showConfirm: true,
         });
-        cmp.on('minuteSelect', (ctx: any) => {
-            this._value = { ...this._value, minute: ctx.data.value.minute };
+        cmp.on('change', (ctx: any) => {
+            this._value = ctx.data.value;
             this._updateValue();
         });
         cmp.on('confirm', (ctx: any) => {
-            this._value = { ...this._value, ...ctx.data.value };
+            this._value = ctx.data.value;
             this._updateValue();
         });
         container.appendChild(cmp.el);
@@ -50,11 +51,7 @@ class MinutePanelDemoComponent extends Component {
     }
 
     onBeforeDispose(): void {
-        try {
-            this._panel?.dispose();
-        } catch (e) {
-            // ignore
-        }
+        try { this._panel?.dispose(); } catch (e) { /* ignore */ }
     }
 
     _updateValue(): void {
@@ -64,31 +61,22 @@ class MinutePanelDemoComponent extends Component {
 
 export const MINUTEPANEL_DEMO: DemoConfig = {
     title: 'MinutePanel',
-    description: '分钟选择面板，十位/个位并排两列布局，依次点2个数字选中分钟，可脱离 DatePicker 独立使用',
+    description: '分钟选择面板 — 十位/个位并排两列布局，依次点2个数字选中分钟，使用 DateTimePanelComponent Ability 驱动',
     sections: [
         {
-            label: '独立使用',
-            code: `import { MinutePanelComponent } from '@/component/date/MinutePanelComponent';
+            label: '通过 DateTimePanelComponent 使用',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 
-const panel = new MinutePanelComponent({
-    value: createDateTimeValue(new Date()),
-    showPrevField: false,
-    showNextField: false, showConfirm: false, showCancel: false,
+const panel = new DateTimePanelComponent({
+    type: 'datetime',
+    initialView: 'minute',
+    showConfirm: true,
 });
-panel.on('minuteSelect', ({ value }) => {
+panel.on('change', ({ value }) => {
     console.log('选中分钟:', value.minute);
 });
 container.appendChild(panel.el);`,
             component: MinutePanelDemoComponent,
-        },
-        {
-            label: '模板中使用',
-            code: `{ type: 'minute-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
-            template: {
-                tag: 'div',
-                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'minute-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
-            },
         },
     ],
 };

@@ -1,10 +1,10 @@
 import { Component, type TemplateDecl } from '@qimenjs/component-core';
 import type { DemoConfig } from './types';
-import { MonthPanelComponent } from '@/component/date/MonthPanelComponent';
+import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 import { createDateTimeValue, type DateTimeValue } from '@/utils/date';
 
 class MonthPanelDemoComponent extends Component {
-    _panel: any = null;
+    _panel: DateTimePanelComponent | null = null;
     _value: DateTimeValue = createDateTimeValue();
 
     get tpl(): TemplateDecl {
@@ -31,17 +31,18 @@ class MonthPanelDemoComponent extends Component {
     onAfterInit(): void {
         const container = this.getNodeEl('panelContainer');
         if (!container) return;
-        const cmp = new MonthPanelComponent({
+        const cmp = new DateTimePanelComponent({
             value: this._value,
-            showPrevField: false,
-            showNextField: false, showConfirm: false, showCancel: false,
+            type: 'date',
+            initialView: 'month',
+            showConfirm: true,
         });
-        cmp.on('monthSelect', (ctx: any) => {
-            this._value = { ...this._value, month: ctx.data.value.month };
+        cmp.on('change', (ctx: any) => {
+            this._value = ctx.data.value;
             this._updateValue();
         });
         cmp.on('confirm', (ctx: any) => {
-            this._value = { ...this._value, ...ctx.data.value };
+            this._value = ctx.data.value;
             this._updateValue();
         });
         container.appendChild(cmp.el);
@@ -50,11 +51,7 @@ class MonthPanelDemoComponent extends Component {
     }
 
     onBeforeDispose(): void {
-        try {
-            this._panel?.dispose();
-        } catch (e) {
-            // ignore
-        }
+        try { this._panel?.dispose(); } catch (e) { /* ignore */ }
     }
 
     _updateValue(): void {
@@ -64,31 +61,22 @@ class MonthPanelDemoComponent extends Component {
 
 export const MONTHPANEL_DEMO: DemoConfig = {
     title: 'MonthPanel',
-    description: '月份选择面板，6列×2行直接显示1-12月，点击即选中，月份标签从 i18n 获取，可脱离 DatePicker 独立使用',
+    description: '月份选择面板 — 3列×4行显示01-12，点击即选中，使用 DateTimePanelComponent Ability 驱动',
     sections: [
         {
-            label: '独立使用',
-            code: `import { MonthPanelComponent } from '@/component/date/MonthPanelComponent';
+            label: '通过 DateTimePanelComponent 使用',
+            code: `import { DateTimePanelComponent } from '@/component/date/DateTimePanelComponent';
 
-const panel = new MonthPanelComponent({
-    value: createDateTimeValue(new Date()),
-    showPrevField: false,
-    showNextField: false, showConfirm: false, showCancel: false,
+const panel = new DateTimePanelComponent({
+    type: 'date',
+    initialView: 'month',
+    showConfirm: true,
 });
-panel.on('monthSelect', ({ value }) => {
+panel.on('change', ({ value }) => {
     console.log('选中月份:', value.month);
 });
 container.appendChild(panel.el);`,
             component: MonthPanelDemoComponent,
-        },
-        {
-            label: '模板中使用',
-            code: `{ type: 'month-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }`,
-            template: {
-                tag: 'div',
-                style: { border: '1px solid var(--q-color-border)', borderRadius: '8px', overflow: 'hidden' },
-                children: [{ type: 'month-panel', options: { showPrevField: false, showNextField: false, showConfirm: false, showCancel: false } }],
-            },
         },
     ],
 };
