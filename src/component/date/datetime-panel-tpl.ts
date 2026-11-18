@@ -20,8 +20,8 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                             name: 'yearArrows',
                             classes: 'q-dtpanel__field-arrows',
                             children: [
-                                { tag: 'button', name: 'yearUp', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up' },
-                                { tag: 'button', name: 'yearDown', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down' },
+                                { tag: 'button', name: 'yearUp', classes: 'q-dtpanel__nav-btn q-icon-caret-up' },
+                                { tag: 'button', name: 'yearDown', classes: 'q-dtpanel__nav-btn q-icon-caret-down' },
                             ],
                         },
                         { tag: 'span', name: 'dateSep1', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
@@ -31,8 +31,8 @@ export const DATETIME_PANEL_TPL: TemplateDecl = {
                             name: 'monthArrows',
                             classes: 'q-dtpanel__field-arrows',
                             children: [
-                                { tag: 'button', name: 'monthUp', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--up' },
-                                { tag: 'button', name: 'monthDown', classes: 'q-dtpanel__nav-btn q-dtpanel__nav-btn--down' },
+                                { tag: 'button', name: 'monthUp', classes: 'q-dtpanel__nav-btn q-icon-caret-up' },
+                                { tag: 'button', name: 'monthDown', classes: 'q-dtpanel__nav-btn q-icon-caret-down' },
                             ],
                         },
                         { tag: 'span', name: 'dateSep2', classes: 'q-dtpanel__field-sep', options: { text: '-' } },
