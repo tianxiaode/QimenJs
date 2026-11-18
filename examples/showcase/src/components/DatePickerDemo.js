@@ -55,7 +55,7 @@ class DatePickerInteractiveDemo extends Component {
 
 export const DATEPICKER_DEMO = {
     title: 'DatePicker',
-    description: '日期时间选择器组件，支持 type=date/datetime/time 三种模式',
+    description: '日期时间选择器，支持 type=date/datetime/time、手动输入、范围选择、minDate/maxDate 约束',
     sections: [
         {
             label: '交互式完整体验（datetime）',
@@ -73,21 +73,21 @@ container.appendChild(picker.el);`,
             component: DatePickerInteractiveDemo,
         },
         {
-            label: '纯日期选择（type: "date"）— 点击日期自动关闭',
-            code: `{ type: 'date-picker', options: { type: 'date', placeholder: '请选择日期' } }
-{ type: 'date-picker', options: { type: 'date', label: '入职日期' } }
-// type='date' 模式下，点击日期即选中并关闭面板，无需点确认按钮`,
+            label: '纯日期选择（type: "date"，默认）',
+            code: `{ type: 'date-picker', options: { placeholder: '请选择日期' } }
+{ type: 'date-picker', options: { label: '入职日期' } }
+// type='date' 是默认模式，点击日期自动选中并关闭面板`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
                 children: [
-                    { type: 'date-picker', options: { type: 'date', placeholder: '请选择日期' } },
-                    { type: 'date-picker', options: { type: 'date', label: '入职日期' } },
+                    { type: 'date-picker', options: { placeholder: '请选择日期' } },
+                    { type: 'date-picker', options: { label: '入职日期' } },
                 ],
             },
         },
         {
-            label: '日期时间选择（type: "datetime"）— 需点确认按钮',
+            label: '日期时间选择（type: "datetime"）',
             code: `{ type: 'date-picker', options: {
     type: 'datetime',
     label: '预约时间',
@@ -97,8 +97,8 @@ container.appendChild(picker.el);`,
     showSeconds: false,
     label: '精确到分钟',
 } }
-// type='datetime' 模式下，选完日期后还需选时间，点确认按钮关闭面板
-// showSeconds: false 时面板不显示秒，输入框只显示到分钟`,
+// type='datetime' 选完日期后还需选时间，点确认按钮关闭
+// showSeconds: false 时面板和输入框都不显示秒`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },
@@ -139,7 +139,8 @@ container.appendChild(picker.el);`,
     type: 'datetime',
     value: new Date('2024-06-01T09:30:00'),
     label: '默认2024-06-01 09:30',
-} }`,
+} }
+// 无 value 时输入框为空，显示 placeholder`,
             template: {
                 tag: 'div',
                 style: { display: 'flex', flexDirection: 'column', gap: '12px' },

@@ -3,11 +3,11 @@
  *
  * 从 InputComponent 派生，共享统一模板（继承父类模板，无需 useTemplate）。
  * 下拉图标按需 add 进 fieldBody（order 排序，无预留槽位）。
- * field 设为 readonly，通过下拉面板选择值。
+ * 支持手动输入（输入掩码自动格式化）和面板选择两种方式。
  *
  * 使用 DateTimePanelComponent 作为下拉面板，面板切换逻辑内聚在 DateTimePanel 内部。
- * type='date'：纯日期选择
- * type='datetime'：日期+时间选择（默认）
+ * type='date'：纯日期选择（默认）
+ * type='datetime'：日期+时间选择
  * type='time'：纯时间选择
  *
  * 事件：datePicker:change / datePicker:open / datePicker:close
@@ -60,7 +60,6 @@ class DatePickerComponent extends InputComponent {
 
         const fieldItem = this._fieldItem;
         if (fieldItem) {
-            fieldItem.readonly = true;
             fieldItem.inputType = null;
         }
 
@@ -117,9 +116,98 @@ class DatePickerComponent extends InputComponent {
         this._openDropdown();
     }
 
+    onFieldInput(): void {
+        const fieldItem = this._fieldItem;
+        if (!fieldItem) return;
+        const raw = fieldItem.value;
+        const formatted = this._applyInputMask(raw);
+        if (formatted !== raw) {
+            fieldItem.value = formatted;
+        }
+        this._value = formatted;
+        const parsed = this._parseInput(formatted);
+        if (parsed) {
+            this._dateValue = fixDateTime(parsed);
+        }
+    }
+
     onFieldBlur(): void {
         this._focused = false;
         this._applyState();
+        const fieldItem = this._fieldItem;
+        if (!fieldItem) return;
+        const text = fieldItem.value;
+        const parsed = this._parseInput(text);
+        if (parsed) {
+            this._dateValue = fixDateTime(parsed);
+            this._syncDisplayValue();
+            this.emit('datePicker:change', { value: dateTimeValueToDate(this._dateValue!) });
+        } else if (text.trim() === '') {
+            this._dateValue = null;
+            this._syncDisplayValue();
+            this.emit('datePicker:change', { value: null });
+        } else {
+            this._syncDisplayValue();
+        }
+    }
+
+    _applyInputMask(raw: string): string {
+        const digits = raw.replace(/\D/g, '');
+        const type = this.getData('type') ?? 'date';
+        const showSeconds = this.getData('showSeconds') ?? true;
+        if (type === 'date') {
+            return this._formatDateDigits(digits);
+        }
+        if (type === 'time') {
+            return this._formatTimeDigits(digits, showSeconds);
+        }
+        const dateDigits = digits.slice(0, 8);
+        const timeDigits = digits.slice(8);
+        let result = this._formatDateDigits(dateDigits);
+        if (timeDigits.length > 0) {
+            result += ' ' + this._formatTimeDigits(timeDigits, showSeconds);
+        }
+        return result;
+    }
+
+    _formatDateDigits(digits: string): string {
+        if (digits.length <= 4) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+        return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+    }
+
+    _formatTimeDigits(digits: string, showSeconds: boolean): string {
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 4) return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+        if (showSeconds) return `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4, 6)}`;
+        return `${digits.slice(0, 2)}:${digits.slice(2, 4)}`;
+    }
+
+    _parseInput(text: string): DateTimeValue | null {
+        const type = this.getData('type') ?? 'date';
+        const showSeconds = this.getData('showSeconds') ?? true;
+        if (type === 'date') {
+            const m = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) return null;
+            const year = +m[1], month = +m[2], day = +m[3];
+            if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+            return { year, month, day, hour: 0, minute: 0, second: 0 };
+        }
+        if (type === 'time') {
+            const re = showSeconds ? /^(\d{2}):(\d{2}):(\d{2})$/ : /^(\d{2}):(\d{2})$/;
+            const m = text.match(re);
+            if (!m) return null;
+            const hour = +m[1], minute = +m[2], second = showSeconds ? +m[3] : 0;
+            if (hour > 23 || minute > 59 || second > 59) return null;
+            const now = new Date();
+            return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate(), hour, minute, second };
+        }
+        const re = showSeconds ? /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/ : /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/;
+        const m = text.match(re);
+        if (!m) return null;
+        const year = +m[1], month = +m[2], day = +m[3], hour = +m[4], minute = +m[5], second = showSeconds ? +m[6] : 0;
+        if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 59) return null;
+        return { year, month, day, hour, minute, second };
     }
 
     _openDropdown(): void {
